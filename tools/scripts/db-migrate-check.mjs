@@ -3,7 +3,10 @@ import { existsSync } from "node:fs";
 const requiredInputs = [
   "docs/data/database-design.md",
   "docs/data/seed-data.md",
-  "infra/docker/docker-compose.yml"
+  "infra/docker/docker-compose.yml",
+  "prisma/schema.prisma",
+  "prisma/migrations/000001_core_identity_foundation/migration.sql",
+  "prisma/seed.mjs"
 ];
 
 const missingInputs = requiredInputs.filter((path) => !existsSync(path));

@@ -1,9 +1,9 @@
-import type { Role } from "@jp2/shared-types";
+import type { Role, UserStatus } from "@jp2/shared-types";
 
 export interface Principal {
   id: string;
   roles: readonly Role[];
-  status: "active" | "inactive" | "invited" | "archived";
+  status: UserStatus;
 }
 
 export function hasRole(principal: Principal, role: Role): boolean {

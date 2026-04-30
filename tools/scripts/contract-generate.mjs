@@ -1,15 +1,23 @@
-import { existsSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule } from "@nestjs/swagger";
 
-const requiredDocs = [
-  "docs/api/api-contract-format.md",
-  "docs/api/api-contract-overview.md",
-  "docs/api/error-contract.md"
-];
+const appModuleUrl = pathToFileURL(`${process.cwd()}/apps/api/dist/app.module.js`).href;
+const mainModuleUrl = pathToFileURL(`${process.cwd()}/apps/api/dist/main.js`).href;
 
-const missingDocs = requiredDocs.filter((path) => !existsSync(path));
+const [{ AppModule }, { buildOpenApiConfig }] = await Promise.all([
+  import(appModuleUrl),
+  import(mainModuleUrl)
+]);
 
-if (missingDocs.length > 0) {
-  throw new Error(`Cannot prepare contract generation; missing ${missingDocs.join(", ")}`);
-}
+const app = await NestFactory.create(AppModule, { logger: false });
+app.setGlobalPrefix("api");
 
-console.log("OpenAPI generation target is registered; implementation will add generated output.");
+const document = SwaggerModule.createDocument(app, buildOpenApiConfig());
+document.openapi = "3.1.0";
+mkdirSync("generated", { recursive: true });
+writeFileSync("generated/openapi.json", `${JSON.stringify(document, null, 2)}\n`);
+await app.close();
+
+console.log("Generated generated/openapi.json.");

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getApiHealth } from "./main.js";
+import { buildOpenApiConfig } from "./main.js";
 
-describe("api shell", () => {
-  it("starts in api mode by default", () => {
-    expect(getApiHealth().runtimeMode).toBe("api");
+describe("API bootstrap", () => {
+  it("defines the V1 OpenAPI document metadata", () => {
+    expect(buildOpenApiConfig().info).toMatchObject({
+      title: "JP2 Knights API",
+      version: "0.1.0"
+    });
   });
 });

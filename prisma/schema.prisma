@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  active
+  inactive
+  invited
+  archived
+}
+
+enum Role {
+  CANDIDATE
+  BROTHER
+  OFFICER
+  SUPER_ADMIN
+}
+
+enum ChoragiewStatus {
+  active
+  archived
+}
+
+enum MembershipStatus {
+  active
+  inactive
+  archived
+}
+
+model User {
+  id                String              @id @default(uuid()) @db.Uuid
+  email             String              @db.Citext
+  phone             String?
+  displayName       String              @map("display_name")
+  status            UserStatus          @default(invited)
+  preferredLanguage String?             @map("preferred_language")
+  lastLoginAt       DateTime?           @map("last_login_at") @db.Timestamptz(6)
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt        DateTime?           @map("archived_at") @db.Timestamptz(6)
+
+  roles                  UserRole[]           @relation("UserRoles")
+  rolesCreated           UserRole[]           @relation("RoleCreator")
+  memberships            Membership[]
+  officerAssignments     OfficerAssignment[]  @relation("OfficerUser")
+  officerAssignmentsMade OfficerAssignment[]  @relation("OfficerAssignmentCreator")
+  auditLogs              AuditLog[]           @relation("AuditActor")
+
+  @@index([status])
+  @@map("users")
+}
+
+model UserRole {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  role      Role
+  createdBy String?   @map("created_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  user    User  @relation("UserRoles", fields: [userId], references: [id], onDelete: Restrict)
+  creator User? @relation("RoleCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([role])
+  @@map("user_roles")
+}
+
+model Choragiew {
+  id                String           @id @default(uuid()) @db.Uuid
+  name              String
+  city              String
+  country           String
+  parish            String?
+  status            ChoragiewStatus  @default(active)
+  publicDescription String?          @map("public_description")
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt        DateTime?        @map("archived_at") @db.Timestamptz(6)
+
+  memberships        Membership[]
+  officerAssignments OfficerAssignment[]
+
+  @@index([status])
+  @@map("choragiew")
+}
+
+model Membership {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  choragiewId    String           @map("choragiew_id") @db.Uuid
+  status         MembershipStatus @default(active)
+  currentDegree  String?          @map("current_degree")
+  joinedAt       DateTime?        @map("joined_at") @db.Date
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt     DateTime?        @map("archived_at") @db.Timestamptz(6)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  choragiew Choragiew @relation(fields: [choragiewId], references: [id], onDelete: Restrict)
+
+  @@index([choragiewId, status])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model OfficerAssignment {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  choragiewId String    @map("choragiew_id") @db.Uuid
+  title       String?
+  startsAt    DateTime  @map("starts_at") @db.Date
+  endsAt      DateTime? @map("ends_at") @db.Date
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user      User      @relation("OfficerUser", fields: [userId], references: [id], onDelete: Restrict)
+  choragiew Choragiew @relation(fields: [choragiewId], references: [id], onDelete: Restrict)
+  creator   User?     @relation("OfficerAssignmentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([choragiewId])
+  @@map("officer_assignments")
+}
+
+model AuditLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  actorUserId       String?  @map("actor_user_id") @db.Uuid
+  action            String
+  entityType        String   @map("entity_type")
+  entityId          String   @map("entity_id") @db.Uuid
+  scopeChoragiewId  String?  @map("scope_choragiew_id") @db.Uuid
+  beforeSummary     Json?    @map("before_summary")
+  afterSummary      Json?    @map("after_summary")
+  requestId         String?  @map("request_id")
+  ipAddress         String?  @map("ip_address") @db.Inet
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([scopeChoragiewId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

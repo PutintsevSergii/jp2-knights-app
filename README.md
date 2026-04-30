@@ -17,10 +17,11 @@ Start here:
 
 ## Current Implementation Status
 
-Phase 1 has started with a pnpm/Nx TypeScript workspace, placeholder app shells,
-shared contract libraries, local infrastructure config, and quality-gate commands.
-The API, Admin Lite, and mobile apps are launchable placeholders; NestJS, Next.js,
-and Expo scaffolding come next inside the same app folders.
+Phase 1 has started with a pnpm/Nx TypeScript workspace, shared contract libraries,
+local infrastructure config, and quality-gate commands. The API is now a minimal
+NestJS app with OpenAPI generation and a `/api/health` endpoint. Admin Lite and
+mobile are still launchable TypeScript placeholders; Next.js and Expo scaffolding
+come next inside the same app folders.
 
 ## Prerequisites
 
@@ -55,6 +56,25 @@ pnpm dev:mobile:demo
 
 `APP_RUNTIME_MODE` supports `api`, `demo`, and `test`. Production builds must reject
 `demo` mode once real app builds are added.
+
+The API health endpoint is available at:
+
+```text
+GET /api/health
+```
+
+## Database Commands
+
+```sh
+pnpm prisma:validate
+pnpm prisma:generate
+pnpm db:migrate:check
+pnpm db:seed
+```
+
+The current Prisma baseline covers the Phase 2 identity and organization
+foundation: users, roles, chorągwie, memberships, officer assignments, and audit
+logs. Run PostgreSQL through Docker Compose before applying migrations or seeds.
 
 ## Quality Gates
 
