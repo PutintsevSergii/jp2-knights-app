@@ -1,0 +1,43 @@
+# Admin API
+
+Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped to assigned chorągiew unless explicitly global and approved.
+
+| Method | Path | Role | Request | Response | Errors | Rules |
+| --- | --- | --- | --- | --- | --- | --- |
+| GET | `/admin/dashboard` | Officer/Super Admin | none | scoped counts/tasks | 403 | No unrelated scope |
+| GET/POST | `/admin/choragiew` | Super Admin for write | list/create payload | list/detail | 403,400 | Officers read own only |
+| GET/PATCH | `/admin/choragiew/:id` | Officer scoped / Super Admin | edit payload | detail | 403,404 | Archive not hard delete |
+| GET/POST | `/admin/brothers` | Officer/Super Admin | create/list | records | 403,400,409 | Critical changes audited |
+| GET/PATCH | `/admin/brothers/:id` | Officer/Super Admin | updates | detail | 403,404 | Scope required |
+| GET | `/admin/candidate-requests` | Officer/Super Admin | filters/page | request list | 403,400 | Scoped/unassigned policy |
+| GET/PATCH | `/admin/candidate-requests/:id` | Officer/Super Admin | status/assignment/note | request detail | 403,404,409 | Pipeline audited |
+| POST | `/admin/candidate-requests/:id/convert` | Officer/Super Admin | invitation/account data | candidate profile | 403,409 | Does not create brother |
+| GET | `/admin/candidates` | Officer/Super Admin | filters/page | candidate profile list | 403,400 | Officer scope; no brother profiles |
+| GET/PATCH | `/admin/candidates/:id` | Officer/Super Admin | status/contact/assignment payload | candidate profile detail | 403,404,409 | Scoped candidate management |
+| POST | `/admin/candidates/:id/convert-to-brother` | Officer/Super Admin | membership payload | brother membership summary | 403,404,409 | Creates/activates membership and deactivates candidate access |
+| GET/POST | `/admin/prayers` | Permitted admin | filters/create payload | list/detail | 403,400 | Status/visibility required |
+| GET/PATCH | `/admin/prayers/:id` | Permitted admin | edit/status/visibility payload | detail | 403,404,409 | Visibility changes audited |
+| GET/POST | `/admin/events` | Officer/Super Admin | filters/create payload | list/detail | 403,400 | Visibility explicit |
+| GET/PATCH | `/admin/events/:id` | Officer/Super Admin | edit/cancel/archive payload | detail | 403,404,409 | Scope required |
+| GET/POST | `/admin/announcements` | Officer/Super Admin | filters/create payload | list/detail | 403,400 | Push audience-safe |
+| GET/PATCH | `/admin/announcements/:id` | Officer/Super Admin | edit/publish/archive payload | detail | 403,404,409 | Audience changes audited |
+| GET/POST | `/admin/roadmap-definitions` | Super Admin or permitted | filters/create payload | list/detail | 403,400 | Requires content approval |
+| GET/PATCH | `/admin/roadmap-definitions/:id` | Super Admin or permitted | edit/status payload | detail | 403,404,409 | No auto degree |
+| GET | `/admin/roadmap-submissions` | Officer/Super Admin | filters/page | scoped review queue | 403,400 | Officer scope |
+| GET/PATCH | `/admin/roadmap-submissions/:id` | Officer/Super Admin | approve/reject/comment | submission | 403,404,409 | Decision audited |
+| GET/POST/PATCH | `/admin/silent-prayer-events` | Officer/Super Admin | session payload | list/detail | 403,400 | Participant lists hidden |
+| GET | `/admin/audit-logs` | Super Admin | filters/pagination | logs | 403 | Limited officer view only if approved |
+
+## Admin Validation Rules
+
+- Every publishable record requires `status`, `visibility`, and language where applicable.
+- `CHORAGIEW` visibility requires `target_choragiew_id`.
+- Officer writes must use own chorągiew unless super admin.
+- Mutations that create records accept an optional `idempotencyKey`.
+- Critical mutations record before/after summaries with sensitive fields redacted.
+
+## Canonical Admin Route Names
+
+- Roadmap configuration routes use `/admin/roadmap-definitions`; admin UI routes must use the same path.
+- Audit routes use `/admin/audit-logs`; `/admin/audit` is not a canonical V1 route.
+- Candidate request conversion creates an authenticated candidate profile only. Candidate-to-brother conversion is a separate audited operation on `/admin/candidates/:id/convert-to-brother`.

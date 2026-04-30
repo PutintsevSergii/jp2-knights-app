@@ -1,0 +1,63 @@
+# Quality Gates
+
+Coding agents must keep the pipeline green. These gates are mandatory once the implementation workspace exists.
+
+## Standard Completion Commands
+
+Run the repo's configured equivalents of:
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:coverage
+pnpm build
+pnpm contract:generate
+pnpm contract:check
+pnpm db:migrate:check
+```
+
+If Nx targets are available, prefer affected commands for speed during development and full commands before phase completion:
+
+```sh
+pnpm nx affected -t lint,typecheck,test,build
+```
+
+## Required Extra Gates by Change Type
+
+| Change type | Extra gates |
+| --- | --- |
+| API contract | OpenAPI generation, generated client compile, API integration tests |
+| Auth/permission/visibility | Matrix tests for guest, candidate, brother, officer, super admin, two chorągwie |
+| Database migration | Clean DB migrate, previous-state migrate, seed load, rollback/forward-fix note |
+| Mobile screen | Mode routing smoke test, offline/error/forbidden states, accessibility labels |
+| Admin screen | Officer scope E2E, form validation, audit behavior for critical actions |
+| UI/theming | Token usage check, no raw hex/ad hoc design constants, contrast checks for key states |
+| App shell/runtime | Launch command smoke checks, demo mode without backend, production config rejects demo mode |
+| Silent prayer | Socket reconnect, duplicate join, Redis TTL expiry, multi-instance-safe counter behavior |
+| Notification | Preference filtering, token revocation, audience-safe payload test |
+| Privacy lifecycle | Archive, export, erasure/anonymization, audit redaction tests |
+| Dependency upgrade | Lockfile update, changelog note, full lint/typecheck/test/build |
+
+## Coverage Gate
+
+- Unit test coverage must be at least 80% for statements, branches, functions, and lines in every implemented app/library.
+- Coverage must be enforced in CI.
+- New or changed business logic needs meaningful unit tests, not just incidental coverage.
+- Generated files and framework bootstrap files may be excluded only through narrow, documented patterns.
+- Security-sensitive shared libraries should exceed the minimum where practical.
+
+## Red Pipeline Rule
+
+- Do not finish a task with a failing required gate.
+- Do not skip, weaken, or delete tests to make the pipeline green.
+- If a failure is unrelated, document evidence and still avoid merging/completing phase work until the human owner accepts it.
+- If a command is unavailable because the repo is not bootstrapped yet, add the missing script/target during Phase 1.
+
+## Quality Bar
+
+- Public/private separation is tested, not assumed.
+- New behavior has the narrowest useful test that would fail without the change.
+- Generated files are updated by documented commands, not hand-edited.
+- No new dependency, enum, schema, formatter, API client, guard, or utility is added without searching for an existing one first.
+- Final response must list quality gates run and the result.

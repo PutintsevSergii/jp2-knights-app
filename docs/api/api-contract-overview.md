@@ -1,0 +1,68 @@
+# API Contract Overview
+
+See [api-contract-format.md](api-contract-format.md) for the required endpoint documentation template.
+
+## Groups
+
+| Group | Base path | Auth | Users |
+| --- | --- | --- | --- |
+| Public | `/public/*` | No | Guests and all app users |
+| Auth | `/auth/*` | Mixed | Authenticated account flows |
+| Candidate | `/candidate/*` | Yes | Candidate |
+| Brother | `/brother/*` | Yes | Brother |
+| Admin | `/admin/*` | Yes | Officer/Super Admin |
+| Domain subgroups | `/events`, `/prayers`, `/announcements`, `/roadmap`, `/silent-prayer` | Mixed by route | Shared resource contracts |
+
+## Common List Response
+
+Small admin lists may use page pagination:
+
+```json
+{
+  "items": [],
+  "page": 1,
+  "pageSize": 20,
+  "total": 0
+}
+```
+
+High-growth or user-facing lists should use cursor pagination:
+
+```json
+{
+  "items": [],
+  "nextCursor": null,
+  "pageSize": 20
+}
+```
+
+## Shared DTO Profiles
+
+These profiles are the minimum field groups expected before endpoint-specific schemas are generated. They do not replace Zod/OpenAPI schemas.
+
+| DTO profile | Minimum public/client fields | Fields never exposed outside admin/system |
+| --- | --- | --- |
+| `PublicContentSummary` | `id`, `title`, `language`, `visibility`, `publishedAt` | draft body, approval notes, private admin notes |
+| `EventSummary` | `id`, `title`, `type`, `startAt`, `endAt`, `locationLabel`, `visibility`, `targetChoragiewId`, `status` | private address, internal planning notes |
+| `ParticipationIntent` | `eventId`, `userId` only for self/admin-scoped responses, `intentStatus`, `createdAt`, `cancelledAt` | unrelated participants, attendance verification |
+| `CandidateProfileSummary` | `id`, `status`, `assignedChoragiewId`, `responsibleOfficerId`, `createdAt` | candidate request private message unless admin-scoped |
+| `BrotherProfileSummary` | `id`, `displayName`, `membershipStatus`, `currentDegree`, `choragiewId`, `joinedAt` | unrelated brother records, audit summaries |
+| `SilentPrayerSession` | `id`, `title`, `intention`, `linkedPrayerId`, `startAt`, `endAt`, `visibility`, `counter` | participant list, personal join history |
+| `AuditLogSummary` | `id`, `actorUserId`, `action`, `entityType`, `entityId`, `scopeChoragiewId`, `requestId`, `createdAt` | unredacted sensitive before/after values |
+
+## Route Canonicalization
+
+- Roadmap definition routes are `/admin/roadmap-definitions` and `/admin/roadmap-definitions/:id`.
+- Roadmap review routes are `/admin/roadmap-submissions` and `/admin/roadmap-submissions/:id`.
+- Audit log routes are `/admin/audit-logs`.
+- Candidate request routes manage public interest requests; `/admin/candidates` routes manage authenticated candidate profiles.
+- Candidate-to-brother conversion is separate from request-to-candidate conversion.
+
+## Common Acceptance Criteria
+
+- Every endpoint has permission tests.
+- Every content endpoint has visibility tests.
+- Admin write endpoints audit critical actions.
+- Public endpoints never return private fields or private content.
+- Generated API types compile in mobile and admin apps.
+- OpenAPI output is committed or generated in CI and checked for breaking changes.

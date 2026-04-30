@@ -1,0 +1,24 @@
+# Implementation Roadmap
+
+This roadmap mirrors `JP2_APP_IMPLEMENTATION_ROADMAP.md` and must be followed unless the human owner approves a change.
+
+| Phase | Name | Goal | Primary outputs |
+| --- | --- | --- | --- |
+| 0 | Product and technical baseline | Confirm V1 scope and rules | Docs, role matrix, visibility model |
+| 1 | Repository/infrastructure baseline | Runnable launchable monorepo | Nx, pnpm, apps, launch commands, demo mode, DB/Redis local setup, CI, OpenAPI generation target |
+| 2 | Core domain/API foundation | Identity, organization, content base | Users, roles, chorągiew, Prisma migrations, visibility tests |
+| 3 | Public discovery mode | App opens without login | Public shell, home, about, join/login links |
+| 4 | Public content | Useful prayers/events before login | Prayer/event APIs, admin CRUD, mobile views |
+| 5 | Authentication and modes | Candidate/brother login routing | Auth API, session, mode resolution |
+| 6 | Admin Lite foundation | Operate V1 safely | Admin shell, scoped dashboard |
+| 7 | Candidate funnel | Convert interest into candidate journey | Requests, candidates, candidate dashboard |
+| 8 | Brother companion core | Daily brother utility | Today, profile, chorągiew |
+| 9 | Events/announcements/push | Community coordination | Participation intent, announcements, push prefs |
+| 10 | Formation roadmap | Human-reviewed formation | Definitions, assignments, submissions, review |
+| 11 | Silent online prayer | Aggregate real-time prayer | Sessions, sockets, Redis presence |
+| 12 | Privacy/security/audit/content approval | Pilot safety | privacy controls, audit logs, approval, retention/export/erasure support |
+| 13 | Release hardening/pilot | Real pilot readiness | seed data, launch-readiness wrap-up, restore test, support runbook, scenario validation |
+
+## Rule
+
+V2 backlog items are not part of the default V1 phase plan. If there is a strong product, security, or architectural argument to pull one forward, pause implementation, ask the human owner for explicit permission, and update scope/backlog/traceability plus affected API/data/screen/test docs before or with implementation.
