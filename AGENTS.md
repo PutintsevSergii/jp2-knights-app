@@ -61,8 +61,14 @@ Never mark a task complete with a red pipeline. Do not skip, weaken, or delete t
 
 Every completed coding task must report:
 
+- short summary of exactly what was done;
 - what changed;
 - which requirement/phase it satisfies;
 - quality gates run and results;
+- coverage result after the change, including statement, branch, function, and line coverage when coverage tooling exists;
+- how many tests were added or changed, which tests were run, and what behavior those tests cover;
+- whether TDD was used. If yes, state the failing test written first and the implementation that made it pass. If no, state why TDD was not used, for example documentation-only work, scaffolding, or mechanical configuration;
 - migrations/seeds/contracts/docs updated;
 - any residual risk or explicit owner-approved exception.
+
+If no tests were added, explicitly say `Tests added: 0` and explain why existing tests or documentation-only validation were sufficient.
