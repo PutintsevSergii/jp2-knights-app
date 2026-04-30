@@ -2,18 +2,18 @@
 
 ## Local Development Seed
 
-| Data | Minimum |
-| --- | --- |
-| Super Admin | 1 active user with `SUPER_ADMIN` |
-| Chorągiew | 1 pilot chorągiew |
-| Officer | 1 user with `OFFICER` scoped to pilot chorągiew |
-| Brothers | 2-5 sample brothers |
-| Candidate | 1 candidate profile and 1 candidate request |
-| Prayers | Public prayer, candidate prayer, brother prayer |
-| Events | Public event, candidate event, brother/chorągiew event |
-| Announcement | One per audience: public/candidate/brother |
-| Roadmap | Candidate roadmap and brother roadmap |
-| Silent prayer | Public and brother sessions |
+| Data          | Minimum                                                |
+| ------------- | ------------------------------------------------------ |
+| Super Admin   | 1 active user with `SUPER_ADMIN`                       |
+| Chorągiew     | 2 chorągwie once Phase 2 officer scope tests exist     |
+| Officer       | 1 user with `OFFICER` scoped to pilot chorągiew        |
+| Brothers      | 2-5 sample brothers                                    |
+| Candidate     | 1 candidate profile and 1 candidate request            |
+| Prayers       | Public prayer, candidate prayer, brother prayer        |
+| Events        | Public event, candidate event, brother/chorągiew event |
+| Announcement  | One per audience: public/candidate/brother             |
+| Roadmap       | Candidate roadmap and brother roadmap                  |
+| Silent prayer | Public and brother sessions                            |
 
 Local seed data must include at least two chorągwie for permission and visibility tests once officer scoping is implemented. A one-chorągiew seed is acceptable only before Phase 2 scope tests exist.
 
