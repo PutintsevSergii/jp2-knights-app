@@ -1,0 +1,19 @@
+{
+  "name": "shared-design-tokens",
+  "sourceRoot": "libs/shared/design-tokens/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "command": "eslint libs/shared/design-tokens/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b libs/shared/design-tokens/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run libs/shared/design-tokens"
+    },
+    "build": {
+      "command": "tsc -p libs/shared/design-tokens/tsconfig.json"
+    }
+  }
+}

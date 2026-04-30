@@ -1,0 +1,13 @@
+{
+  "name": "@jp2/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -b tsconfig.json && node dist/main.js"
+  },
+  "dependencies": {
+    "@jp2/shared-types": "workspace:*",
+    "@jp2/shared-validation": "workspace:*"
+  }
+}

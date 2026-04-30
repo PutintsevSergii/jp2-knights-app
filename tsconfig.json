@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/admin" },
+    { "path": "./apps/mobile" },
+    { "path": "./libs/shared/types" },
+    { "path": "./libs/shared/validation" },
+    { "path": "./libs/shared/auth" },
+    { "path": "./libs/shared/design-tokens" }
+  ]
+}

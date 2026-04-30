@@ -1,6 +1,7 @@
 # JP2 App
 
-This workspace currently contains the JP2 App product and technical documentation package. Implementation has not been bootstrapped yet.
+This workspace contains the JP2 App product and technical documentation package plus the
+Phase 1 monorepo baseline.
 
 Start here:
 
@@ -14,4 +15,62 @@ Start here:
 - [Support and maintenance](docs/delivery/support-and-maintenance.md)
 - [Agent operating contract](AGENTS.md)
 
-When implementation begins, this root README must be expanded with install, run, test, environment, migration, seed, and deployment commands.
+## Current Implementation Status
+
+Phase 1 has started with a pnpm/Nx TypeScript workspace, placeholder app shells,
+shared contract libraries, local infrastructure config, and quality-gate commands.
+The API, Admin Lite, and mobile apps are launchable placeholders; NestJS, Next.js,
+and Expo scaffolding come next inside the same app folders.
+
+## Prerequisites
+
+- Node.js `20.20.0` or newer
+- Corepack enabled for pnpm
+- Docker for local PostgreSQL and Redis
+
+## Install
+
+```sh
+corepack enable
+pnpm install
+```
+
+## Local Infrastructure
+
+```sh
+docker compose -f infra/docker/docker-compose.yml up -d
+```
+
+Copy `.env.example` to `.env` when local app configuration is needed.
+
+## Launch Commands
+
+```sh
+pnpm dev:api
+pnpm dev:admin
+pnpm dev:mobile
+pnpm dev:admin:demo
+pnpm dev:mobile:demo
+```
+
+`APP_RUNTIME_MODE` supports `api`, `demo`, and `test`. Production builds must reject
+`demo` mode once real app builds are added.
+
+## Quality Gates
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:coverage
+pnpm build
+pnpm contract:generate
+pnpm contract:check
+pnpm db:migrate:check
+```
+
+Run all configured gates:
+
+```sh
+pnpm quality
+```

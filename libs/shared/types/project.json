@@ -1,0 +1,19 @@
+{
+  "name": "shared-types",
+  "sourceRoot": "libs/shared/types/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "command": "eslint libs/shared/types/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b libs/shared/types/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run libs/shared/types"
+    },
+    "build": {
+      "command": "tsc -p libs/shared/types/tsconfig.json"
+    }
+  }
+}

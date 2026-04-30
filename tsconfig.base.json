@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "types": ["node"],
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@jp2/shared-types": ["libs/shared/types/src/index.ts"],
+      "@jp2/shared-validation": ["libs/shared/validation/src/index.ts"],
+      "@jp2/shared-auth": ["libs/shared/auth/src/index.ts"],
+      "@jp2/shared-design-tokens": ["libs/shared/design-tokens/src/index.ts"]
+    }
+  }
+}

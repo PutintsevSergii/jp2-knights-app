@@ -3,10 +3,12 @@ node_modules/
 
 # Build outputs
 dist/
+**/dist/
 build/
 .next/
 .expo/
 coverage/
+.nx/
 
 # Environment and local config
 .env

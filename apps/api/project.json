@@ -1,0 +1,22 @@
+{
+  "name": "api",
+  "sourceRoot": "apps/api/src",
+  "projectType": "application",
+  "targets": {
+    "dev": {
+      "command": "pnpm --filter @jp2/api dev"
+    },
+    "lint": {
+      "command": "eslint apps/api/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b apps/api/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run apps/api"
+    },
+    "build": {
+      "command": "tsc -p apps/api/tsconfig.json"
+    }
+  }
+}

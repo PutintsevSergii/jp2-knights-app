@@ -1,0 +1,19 @@
+{
+  "name": "shared-validation",
+  "sourceRoot": "libs/shared/validation/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "command": "eslint libs/shared/validation/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b libs/shared/validation/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run libs/shared/validation"
+    },
+    "build": {
+      "command": "tsc -p libs/shared/validation/tsconfig.json"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "shared-auth",
+  "sourceRoot": "libs/shared/auth/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "command": "eslint libs/shared/auth/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b libs/shared/auth/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run libs/shared/auth"
+    },
+    "build": {
+      "command": "tsc -p libs/shared/auth/tsconfig.json"
+    }
+  }
+}

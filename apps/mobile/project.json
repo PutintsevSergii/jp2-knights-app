@@ -1,0 +1,22 @@
+{
+  "name": "mobile",
+  "sourceRoot": "apps/mobile/src",
+  "projectType": "application",
+  "targets": {
+    "dev": {
+      "command": "pnpm --filter @jp2/mobile dev"
+    },
+    "lint": {
+      "command": "eslint apps/mobile/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b apps/mobile/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run apps/mobile"
+    },
+    "build": {
+      "command": "tsc -p apps/mobile/tsconfig.json"
+    }
+  }
+}
