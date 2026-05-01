@@ -1,12 +1,12 @@
 # Admin API
 
-Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped to assigned chorągiew unless explicitly global and approved.
+Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped to assigned organization units unless explicitly global and approved.
 
 | Method | Path | Role | Request | Response | Errors | Rules |
 | --- | --- | --- | --- | --- | --- | --- |
 | GET | `/admin/dashboard` | Officer/Super Admin | none | scoped counts/tasks | 403 | No unrelated scope |
-| GET/POST | `/admin/choragiew` | Super Admin for write | list/create payload | list/detail | 403,400 | Officers read own only |
-| GET/PATCH | `/admin/choragiew/:id` | Officer scoped / Super Admin | edit payload | detail | 403,404 | Archive not hard delete |
+| GET/POST | `/admin/organization-units` | Super Admin for write | list/create payload | list/detail | 403,400 | Officers read assigned units only |
+| GET/PATCH | `/admin/organization-units/:id` | Officer scoped / Super Admin | edit payload | detail | 403,404 | Archive not hard delete |
 | GET/POST | `/admin/brothers` | Officer/Super Admin | create/list | records | 403,400,409 | Critical changes audited |
 | GET/PATCH | `/admin/brothers/:id` | Officer/Super Admin | updates | detail | 403,404 | Scope required |
 | GET | `/admin/candidate-requests` | Officer/Super Admin | filters/page | request list | 403,400 | Scoped/unassigned policy |
@@ -31,8 +31,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 ## Admin Validation Rules
 
 - Every publishable record requires `status`, `visibility`, and language where applicable.
-- `CHORAGIEW` visibility requires `target_choragiew_id`.
-- Officer writes must use own chorągiew unless super admin.
+- `ORGANIZATION_UNIT` visibility requires `target_organization_unit_id`.
+- Officer writes must use assigned organization units unless super admin.
 - Mutations that create records accept an optional `idempotencyKey`.
 - Critical mutations record before/after summaries with sensitive fields redacted.
 

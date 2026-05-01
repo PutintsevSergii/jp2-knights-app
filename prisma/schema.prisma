@@ -21,7 +21,15 @@ enum Role {
   SUPER_ADMIN
 }
 
-enum ChoragiewStatus {
+enum OrganizationUnitType {
+  ORDER
+  PROVINCE
+  COMMANDERY
+  CHORAGIEW
+  OTHER
+}
+
+enum OrganizationUnitStatus {
   active
   archived
 }
@@ -71,29 +79,35 @@ model UserRole {
   @@map("user_roles")
 }
 
-model Choragiew {
+model OrganizationUnit {
   id                String           @id @default(uuid()) @db.Uuid
+  type              OrganizationUnitType @default(CHORAGIEW)
+  parentUnitId      String?          @map("parent_unit_id") @db.Uuid
   name              String
   city              String
   country           String
   parish            String?
-  status            ChoragiewStatus  @default(active)
+  status            OrganizationUnitStatus  @default(active)
   publicDescription String?          @map("public_description")
   createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
   archivedAt        DateTime?        @map("archived_at") @db.Timestamptz(6)
 
+  parent             OrganizationUnit?  @relation("OrganizationUnitHierarchy", fields: [parentUnitId], references: [id], onDelete: Restrict)
+  children           OrganizationUnit[] @relation("OrganizationUnitHierarchy")
   memberships        Membership[]
   officerAssignments OfficerAssignment[]
 
+  @@index([parentUnitId])
+  @@index([type, status])
   @@index([status])
-  @@map("choragiew")
+  @@map("organization_units")
 }
 
 model Membership {
   id             String           @id @default(uuid()) @db.Uuid
   userId         String           @map("user_id") @db.Uuid
-  choragiewId    String           @map("choragiew_id") @db.Uuid
+  organizationUnitId String       @map("organization_unit_id") @db.Uuid
   status         MembershipStatus @default(active)
   currentDegree  String?          @map("current_degree")
   joinedAt       DateTime?        @map("joined_at") @db.Date
@@ -102,9 +116,9 @@ model Membership {
   archivedAt     DateTime?        @map("archived_at") @db.Timestamptz(6)
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
-  choragiew Choragiew @relation(fields: [choragiewId], references: [id], onDelete: Restrict)
+  organizationUnit OrganizationUnit @relation(fields: [organizationUnitId], references: [id], onDelete: Restrict)
 
-  @@index([choragiewId, status])
+  @@index([organizationUnitId, status])
   @@index([userId])
   @@map("memberships")
 }
@@ -112,7 +126,7 @@ model Membership {
 model OfficerAssignment {
   id          String    @id @default(uuid()) @db.Uuid
   userId      String    @map("user_id") @db.Uuid
-  choragiewId String    @map("choragiew_id") @db.Uuid
+  organizationUnitId String @map("organization_unit_id") @db.Uuid
   title       String?
   startsAt    DateTime  @map("starts_at") @db.Date
   endsAt      DateTime? @map("ends_at") @db.Date
@@ -120,11 +134,11 @@ model OfficerAssignment {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user      User      @relation("OfficerUser", fields: [userId], references: [id], onDelete: Restrict)
-  choragiew Choragiew @relation(fields: [choragiewId], references: [id], onDelete: Restrict)
+  organizationUnit OrganizationUnit @relation(fields: [organizationUnitId], references: [id], onDelete: Restrict)
   creator   User?     @relation("OfficerAssignmentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([userId])
-  @@index([choragiewId])
+  @@index([organizationUnitId])
   @@map("officer_assignments")
 }
 
@@ -134,7 +148,7 @@ model AuditLog {
   action            String
   entityType        String   @map("entity_type")
   entityId          String   @map("entity_id") @db.Uuid
-  scopeChoragiewId  String?  @map("scope_choragiew_id") @db.Uuid
+  scopeOrganizationUnitId String?  @map("scope_organization_unit_id") @db.Uuid
   beforeSummary     Json?    @map("before_summary")
   afterSummary      Json?    @map("after_summary")
   requestId         String?  @map("request_id")
@@ -145,7 +159,7 @@ model AuditLog {
 
   @@index([actorUserId])
   @@index([entityType, entityId])
-  @@index([scopeChoragiewId])
+  @@index([scopeOrganizationUnitId])
   @@index([createdAt])
   @@map("audit_logs")
 }

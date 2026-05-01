@@ -4,12 +4,27 @@ export type Role = (typeof ROLES)[number];
 export const USER_STATUSES = ["active", "inactive", "invited", "archived"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
 
+export const ORGANIZATION_UNIT_TYPES = [
+  "ORDER",
+  "PROVINCE",
+  "COMMANDERY",
+  "CHORAGIEW",
+  "OTHER"
+] as const;
+export type OrganizationUnitType = (typeof ORGANIZATION_UNIT_TYPES)[number];
+
+export const ORGANIZATION_UNIT_STATUSES = ["active", "archived"] as const;
+export type OrganizationUnitStatus = (typeof ORGANIZATION_UNIT_STATUSES)[number];
+
+export const MEMBERSHIP_STATUSES = ["active", "inactive", "archived"] as const;
+export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+
 export const VISIBILITIES = [
   "PUBLIC",
   "FAMILY_OPEN",
   "CANDIDATE",
   "BROTHER",
-  "CHORAGIEW",
+  "ORGANIZATION_UNIT",
   "OFFICER",
   "ADMIN"
 ] as const;

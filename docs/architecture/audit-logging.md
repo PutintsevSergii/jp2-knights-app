@@ -10,7 +10,7 @@ Audit logs provide traceability for critical administrative changes without beco
 - role assigned/removed;
 - status changed;
 - degree changed;
-- chorągiew assignment changed;
+- organization-unit assignment changed;
 - officer assignment changed;
 - candidate request status changed;
 - roadmap submission approved/rejected;
@@ -28,7 +28,7 @@ Audit logs provide traceability for critical administrative changes without beco
 | `action` | Machine-readable action |
 | `entity_type` | Target entity type |
 | `entity_id` | Target entity id |
-| `scope_choragiew_id` | Scope if applicable |
+| `scope_organization_unit_id` | Scope if applicable |
 | `before_summary` | JSON summary of previous critical values |
 | `after_summary` | JSON summary of new critical values |
 | `request_id` | Request correlation id |
@@ -38,4 +38,3 @@ Audit logs provide traceability for critical administrative changes without beco
 ## Rules
 
 Audit logs should be append-only. If redaction is legally required, redact sensitive JSON summaries while preserving the event existence.
-

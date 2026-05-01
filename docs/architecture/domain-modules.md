@@ -2,8 +2,8 @@
 
 | Module | Responsibilities | Entities | APIs | Dependencies | V1 scope | V2 extension points |
 | --- | --- | --- | --- | --- | --- | --- |
-| Identity | Users, roles, status, sessions | users, user_roles, device_tokens | Auth API, current user | Audit | Required | SSO/invitations refinements |
-| Organization | Chorągwie, memberships, officer assignments | choragiew, memberships, officer_assignments | My chorągiew, admin org | Identity | Simplified chorągiew model | Province/Commandery/Generalate |
+| Identity | Users, roles, status, external auth provider links, sessions | users, user_roles, identity_provider_accounts, device_tokens | Auth API, current user | Audit, Auth Provider Adapter | Required | SSO/invitations refinements, provider replacement |
+| Organization | Organization units, hierarchy, memberships, officer assignments | organization_units, memberships, officer_assignments | My organization units, admin organization units | Identity | Generic unit model; `CHORAGIEW` is one unit type | Hierarchy-derived permissions, broader rollups |
 | Content | Shared publish/approval metadata | content status fields, approval metadata | Admin content lifecycle | Identity, Audit | Shared rules | Advanced editorial workflow |
 | Prayers | Prayer categories and texts | prayers, prayer_categories | Public/brother/admin prayers | Content | Required | Offline document library |
 | Events | Events and participation intent | events, event_participation | Events API | Organization, Content | Required | Attendance/check-in |

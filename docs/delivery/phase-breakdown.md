@@ -9,10 +9,10 @@
 | 2 | Core RBAC/visibility utilities have tests; database constraints and migration policy are in place |
 | 3 | Fresh install opens public home without login |
 | 4 | Public prayer/event content works and private content is hidden |
-| 5 | Login/logout/session refresh and mode switching work |
+| 5 | Firebase-backed provider adapter verifies tokens/session cookies; local provider-account linking, logout/session handling, inactive-user blocking, and mode switching work; fake-provider tests prove replacement path |
 | 6 | Officer/Super Admin can enter Admin Lite with scoped navigation |
 | 7 | Join request to candidate account flow works |
-| 8 | Brother Today/profile/chorągiew work |
+| 8 | Brother Today/profile/assigned organization-unit work |
 | 9 | Event intent, announcements, preferences work |
 | 10 | Roadmap submission and officer review work |
 | 11 | Silent prayer counters work across reconnects |

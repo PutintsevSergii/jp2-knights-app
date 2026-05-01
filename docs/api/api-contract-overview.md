@@ -4,6 +4,11 @@ See [api-contract-format.md](api-contract-format.md) for the required endpoint d
 
 ## Groups
 
+The NestJS API currently serves these route groups under the global `/api` prefix
+in generated OpenAPI and local runtime URLs. Canonical endpoint tables below omit
+that deployment prefix for readability unless they are explicitly describing the
+generated contract.
+
 | Group | Base path | Auth | Users |
 | --- | --- | --- | --- |
 | Public | `/public/*` | No | Guests and all app users |
@@ -43,12 +48,12 @@ These profiles are the minimum field groups expected before endpoint-specific sc
 | DTO profile | Minimum public/client fields | Fields never exposed outside admin/system |
 | --- | --- | --- |
 | `PublicContentSummary` | `id`, `title`, `language`, `visibility`, `publishedAt` | draft body, approval notes, private admin notes |
-| `EventSummary` | `id`, `title`, `type`, `startAt`, `endAt`, `locationLabel`, `visibility`, `targetChoragiewId`, `status` | private address, internal planning notes |
+| `EventSummary` | `id`, `title`, `type`, `startAt`, `endAt`, `locationLabel`, `visibility`, `targetOrganizationUnitId`, `status` | private address, internal planning notes |
 | `ParticipationIntent` | `eventId`, `userId` only for self/admin-scoped responses, `intentStatus`, `createdAt`, `cancelledAt` | unrelated participants, attendance verification |
-| `CandidateProfileSummary` | `id`, `status`, `assignedChoragiewId`, `responsibleOfficerId`, `createdAt` | candidate request private message unless admin-scoped |
-| `BrotherProfileSummary` | `id`, `displayName`, `membershipStatus`, `currentDegree`, `choragiewId`, `joinedAt` | unrelated brother records, audit summaries |
+| `CandidateProfileSummary` | `id`, `status`, `assignedOrganizationUnitId`, `responsibleOfficerId`, `createdAt` | candidate request private message unless admin-scoped |
+| `BrotherProfileSummary` | `id`, `displayName`, `membershipStatus`, `currentDegree`, `organizationUnitIds`, `joinedAt` | unrelated brother records, audit summaries |
 | `SilentPrayerSession` | `id`, `title`, `intention`, `linkedPrayerId`, `startAt`, `endAt`, `visibility`, `counter` | participant list, personal join history |
-| `AuditLogSummary` | `id`, `actorUserId`, `action`, `entityType`, `entityId`, `scopeChoragiewId`, `requestId`, `createdAt` | unredacted sensitive before/after values |
+| `AuditLogSummary` | `id`, `actorUserId`, `action`, `entityType`, `entityId`, `scopeOrganizationUnitId`, `requestId`, `createdAt` | unredacted sensitive before/after values |
 
 ## Route Canonicalization
 

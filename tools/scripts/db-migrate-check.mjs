@@ -24,17 +24,19 @@ const requiredMigrationSnippets = [
   "CREATE EXTENSION IF NOT EXISTS citext",
   "CREATE TYPE user_status AS ENUM",
   "CREATE TYPE role AS ENUM",
+  "CREATE TYPE organization_unit_type AS ENUM",
+  "CREATE TYPE organization_unit_status AS ENUM",
   "CREATE TABLE users",
   "CREATE TABLE user_roles",
-  "CREATE TABLE choragiew",
+  "CREATE TABLE organization_units",
   "CREATE TABLE memberships",
   "CREATE TABLE officer_assignments",
   "CREATE TABLE audit_logs",
   "CREATE UNIQUE INDEX users_email_active_unique",
   "WHERE archived_at IS NULL",
   "CREATE UNIQUE INDEX user_roles_user_role_active_unique",
-  "CREATE UNIQUE INDEX choragiew_name_city_active_unique",
-  "CREATE UNIQUE INDEX memberships_user_active_unique"
+  "CREATE UNIQUE INDEX organization_units_type_name_city_active_unique",
+  "CREATE UNIQUE INDEX memberships_user_unit_active_unique"
 ];
 
 const missingMigrationSnippets = requiredMigrationSnippets.filter(
@@ -52,7 +54,8 @@ const requiredSeedSnippets = [
   "admin@example.test",
   "officer@example.test",
   "Pilot Choragiew",
-  "Second Scope Choragiew"
+  "Second Scope Choragiew",
+  "organizationUnit"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -63,5 +66,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization, and scope fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, and scope fixtures."
 );

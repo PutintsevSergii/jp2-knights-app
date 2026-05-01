@@ -19,7 +19,7 @@ Publishable content should include:
 
 - `status`;
 - `visibility`;
-- `target_choragiew_id` where applicable;
+- `target_organization_unit_id` where applicable;
 - `language`;
 - `created_by`;
 - `updated_by`;
@@ -35,4 +35,3 @@ Publishable content should include:
 - Changing visibility is a critical action and should be audited.
 - Archived content remains in the database but is excluded from normal lists.
 - Prayer and official explanatory content require pastoral/content approval before production publication.
-

@@ -4,8 +4,8 @@ These items are documented as extension points only.
 
 | Epic | Possible capabilities | Depends on |
 | --- | --- | --- |
-| Missions | Charity action list, volunteering, mission reports, cross-chorągiew best practices | Stable event/content model |
-| Extended hierarchy | Province, Commandery, Generalate, hierarchical permissions | V1 RBAC and chorągiew model |
+| Missions | Charity action list, volunteering, mission reports, cross-unit best practices | Stable event/content model |
+| Extended hierarchy UX | Managing deep hierarchy, inherited permissions, rollup dashboards | V1 generic organization-unit foundation |
 | Advanced formation | Retreat tracking, time intervals, chaplain/officer reviews, degree-specific materials | V1 roadmap |
 | Knowledge library | Rule, ceremonial, official documents, writings of St. John Paul II, offline documents | Content publishing model |
 | Analytics | Event participation, candidate conversion, growth reporting | Privacy review |

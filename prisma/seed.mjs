@@ -3,18 +3,20 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const pilotChoragiew = await findOrCreateChoragiew({
+  const pilotUnit = await findOrCreateOrganizationUnit({
+    type: "CHORAGIEW",
     name: "Pilot Choragiew",
     city: "Riga",
     country: "LV",
-    publicDescription: "Demo pilot choragiew for local development."
+    publicDescription: "Demo pilot organization unit for local development."
   });
 
-  await findOrCreateChoragiew({
+  await findOrCreateOrganizationUnit({
+    type: "CHORAGIEW",
     name: "Second Scope Choragiew",
     city: "Warsaw",
     country: "PL",
-    publicDescription: "Demo second choragiew for officer scope checks."
+    publicDescription: "Demo second organization unit for officer scope checks."
   });
 
   const existingSuperAdmin = await prisma.user.findFirst({
@@ -80,7 +82,7 @@ async function main() {
     create: {
       id: "00000000-0000-0000-0000-000000000003",
       userId: officer.id,
-      choragiewId: pilotChoragiew.id,
+      organizationUnitId: pilotUnit.id,
       title: "Demo Officer",
       startsAt: new Date("2026-01-01T00:00:00.000Z"),
       createdBy: superAdmin.id
@@ -88,9 +90,10 @@ async function main() {
   });
 }
 
-async function findOrCreateChoragiew(data) {
-  const existing = await prisma.choragiew.findFirst({
+async function findOrCreateOrganizationUnit(data) {
+  const existing = await prisma.organizationUnit.findFirst({
     where: {
+      type: data.type,
       name: data.name,
       city: data.city,
       archivedAt: null
@@ -99,7 +102,7 @@ async function findOrCreateChoragiew(data) {
 
   return (
     existing ??
-    prisma.choragiew.create({
+    prisma.organizationUnit.create({
       data
     })
   );

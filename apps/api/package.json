@@ -7,8 +7,10 @@
     "dev": "tsc -b tsconfig.json && node dist/main.js"
   },
   "dependencies": {
+    "@jp2/shared-auth": "workspace:*",
     "@jp2/shared-types": "workspace:*",
     "@jp2/shared-validation": "workspace:*",
+    "@prisma/client": "6.19.3",
     "@nestjs/common": "11.1.19",
     "@nestjs/core": "11.1.19",
     "@nestjs/platform-express": "11.1.19",

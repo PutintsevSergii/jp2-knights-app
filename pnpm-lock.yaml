@@ -81,6 +81,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@jp2/shared-auth':
+        specifier: workspace:*
+        version: link:../../libs/shared/auth
       '@jp2/shared-types':
         specifier: workspace:*
         version: link:../../libs/shared/types

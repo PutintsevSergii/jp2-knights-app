@@ -18,10 +18,13 @@ Start here:
 ## Current Implementation Status
 
 Phase 1 is in place with a pnpm/Nx TypeScript workspace, shared contract libraries,
-local infrastructure config, and quality-gate commands. Phase 2 has started with
-shared role/scope/visibility helpers, matrix tests for officer scoping and private
-visibility, and a Prisma identity/organization/audit baseline. The API is still a
-minimal NestJS app with OpenAPI generation and a `/api/health` endpoint. Admin Lite
+local infrastructure config, and quality-gate commands. Phase 2 is in place with
+shared role/scope/visibility helpers, mobile-mode resolution, published-content
+filtering, matrix tests for officer scoping and private visibility, and a Prisma
+identity/organization/audit baseline. The API includes Phase 2 foundation routes
+for `/api/health`, `/api/auth/me`, `/api/brother/my-organization-units`, and
+`/api/admin/organization-units`, with request/response schemas, shared Zod validation for
+organization writes, and session abstractions ready for later real auth. Admin Lite
 and mobile are launchable TypeScript placeholders; Next.js and Expo scaffolding
 come next inside the same app folders.
 
@@ -75,8 +78,8 @@ pnpm db:seed
 ```
 
 The current Prisma baseline covers the Phase 2 identity and organization
-foundation: users, roles, chorągwie, memberships, officer assignments, and audit
-logs. Local seed data includes a super admin, a scoped officer, and two chorągwie
+foundation: users, roles, generic organization units, memberships, officer assignments, and audit
+logs. Local seed data includes a super admin, a scoped officer, and two organization units
 for scope checks. Run PostgreSQL through Docker Compose before applying migrations
 or seeds.
 

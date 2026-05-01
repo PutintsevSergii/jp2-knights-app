@@ -10,28 +10,27 @@
 ## Candidate
 
 - Can read own candidate profile and assigned contact.
-- Can read public, family-open, candidate, and assigned chorągiew candidate content.
+- Can read public, family-open, candidate, and assigned organization-unit candidate content.
 - Can read own roadmap assignment and submissions.
 - Cannot read brother-only content or brother profiles.
 
 ## Brother
 
 - Can read own user/membership/profile.
-- Can read own chorągiew summary.
-- Can read public, family-open, brother, and own chorągiew content.
+- Can read own active organization-unit summaries.
+- Can read public, family-open, brother, and own organization-unit content.
 - Can create/cancel own event participation intent.
 - Can create own roadmap submissions.
 - Cannot update critical membership fields.
 
 ## Officer
 
-- Can read/write operational records scoped to assigned chorągiew.
-- Can manage candidate requests assigned to own chorągiew or in approved unassigned workflow.
-- Can approve/reject roadmap submissions for own chorągiew.
-- Cannot access unrelated chorągiew private data.
+- Can read/write operational records scoped to assigned organization units.
+- Can manage candidate requests assigned to own organization units or in approved unassigned workflow.
+- Can approve/reject roadmap submissions for assigned organization units.
+- Cannot access unrelated organization-unit private data.
 
 ## Super Admin
 
 - Can manage all V1 data.
 - Should still use audit logging for critical actions.
-

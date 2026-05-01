@@ -23,6 +23,7 @@ This stack is selected for long-term maintainability, typed contracts, strong pr
 | Navigation | React Navigation with public/authenticated stacks |
 | Styling | Typed theme object generated/adapted from shared design tokens |
 | State | TanStack Query for server state; lightweight local store for mode/session/UI state |
+| Auth | Firebase client SDK obtains ID tokens; app sends them to API through the provider-agnostic auth client |
 | API client | Generated typed REST client from OpenAPI plus shared DTO types |
 | Demo mode | Mock service/fixture adapter behind the same repository interface as the API client |
 | Push | Expo Notifications for V1; token storage remains provider-agnostic |
@@ -39,7 +40,7 @@ This stack is selected for long-term maintainability, typed contracts, strong pr
 | Styling | CSS variables/Tailwind theme generated/adapted from shared design tokens |
 | Forms | React Hook Form with Zod schemas from shared validation |
 | Boundaries | Server components for protected data fetch where practical; client components for forms |
-| Auth | Admin session guarded by backend role checks |
+| Auth | Firebase sign-in with backend-verified ID token or secure API session cookie; Admin access still guarded by backend role checks |
 | API integration | Generated typed REST client; no direct database access |
 | Demo mode | Fixture-backed data provider for local UI work without backend |
 | Testing | Component tests for forms and Playwright E2E tests for scoped admin flows |
@@ -54,7 +55,7 @@ This stack is selected for long-term maintainability, typed contracts, strong pr
 | HTTP adapter | NestJS default Express adapter for compatibility; keep adapter-specific code isolated |
 | Contract | OpenAPI 3.1 generated in CI and used for typed clients |
 | Validation | Shared Zod schemas for runtime validation and TypeScript inference |
-| Auth | Token/session guards, refresh endpoint, inactive-user guard |
+| Auth | Provider adapter verifies Firebase ID tokens/session cookies; local inactive-user, role, and scope guards enforce app authorization |
 | Authorization | Central RBAC and scope guards |
 | Database access | Prisma ORM with explicit, committed migrations |
 | Jobs | Nest-compatible worker process for notifications, cleanup, and scheduled maintenance |

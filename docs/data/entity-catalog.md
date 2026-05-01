@@ -2,11 +2,12 @@
 
 | Entity | Owner module | Main users | Notes |
 | --- | --- | --- | --- |
-| User | Identity | Candidate, Brother, Officer, Super Admin | Authentication identity; not public |
+| User | Identity | Candidate, Brother, Officer, Super Admin | Local application identity and authorization anchor; not public |
+| Identity Provider Account | Identity | System | Links Firebase or replacement provider subject to a local user; stores profile mirror only, never tokens |
 | Role Assignment | Identity | Admin | Allows multiple roles; revoke rather than delete |
-| Chorągiew | Organization | Brother, Officer, Super Admin | Simplified local unit for V1 |
-| Membership | Organization | Brother, Officer | Critical brother data |
-| Officer Assignment | Organization | Officer, Super Admin | Defines admin scope |
+| Organization Unit | Organization | Brother, Officer, Super Admin | Generic Order part; `CHORAGIEW` is a unit type, not a table |
+| Membership | Organization | Brother, Officer | User-to-organization-unit relationship; users may have multiple active units |
+| Officer Assignment | Organization | Officer, Super Admin | Defines admin scope by organization unit |
 | Candidate Request | Candidate | Guest, Officer | Created publicly with consent |
 | Candidate Profile | Candidate | Candidate, Officer | Authenticated candidate record |
 | Content Page | Content | Guest, Candidate, Brother, Admin | Approved informational pages such as About/FAQ |

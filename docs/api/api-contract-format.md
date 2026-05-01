@@ -9,7 +9,7 @@ Every endpoint document must use this contract shape before implementation start
 | Method and path | HTTP method, route, path params |
 | Purpose | User/business outcome, not only CRUD wording |
 | Auth policy | public, authenticated, role, active status, scope |
-| Visibility policy | allowed visibility values, target chorągiew rule, hidden-field behavior |
+| Visibility policy | allowed visibility values, target organization-unit rule, hidden-field behavior |
 | Request schema | body/query/path schema with required fields, limits, enum values |
 | Response schema | success shape, nullable fields, redacted/private fields |
 | Errors | expected error codes and when 404 is used instead of 403 |

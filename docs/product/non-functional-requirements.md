@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | NFR-PRIV-001 | Privacy | Use least-privilege visibility and role filtering on every read path | Public APIs cannot return private records in tests |
 | NFR-PRIV-002 | GDPR/RODO | Store consent for candidate requests and support archive/deactivation | Consent timestamp and text/version are stored |
-| NFR-SEC-001 | Authentication | Sessions must use secure tokens, expiry, refresh, logout, and inactive-user blocking | Expired/inactive sessions cannot access private APIs |
+| NFR-SEC-001 | Authentication | Sessions must use Firebase-backed provider verification behind a replaceable adapter, secure tokens/cookies, expiry, refresh/session handling, logout, provider-account linking, and inactive-user blocking | Expired/revoked/provider-invalid/inactive sessions cannot access private APIs; fake-provider tests prove Firebase is replaceable |
 | NFR-SEC-002 | Authorization | RBAC and officer chorągiew scoping must be centralized | Permission tests cover all roles |
 | NFR-AUD-001 | Auditability | Critical admin changes must create audit logs | Audit rows include actor, action, entity, timestamp |
 | NFR-PERF-001 | API performance | Normal list endpoints should support pagination and indexed filters | Key lists respond acceptably for pilot scale |

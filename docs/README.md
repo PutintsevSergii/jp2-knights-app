@@ -33,6 +33,7 @@ This is not a full ERP for the whole Order. Implementation agents must build pha
 | --- | --- |
 | V1 scope and exclusions | [product/v1-scope.md](product/v1-scope.md), [product/out-of-scope.md](product/out-of-scope.md) |
 | Roles, mode precedence, and permissions | [product/roles-and-permissions.md](product/roles-and-permissions.md), [product/public-vs-authenticated-mode.md](product/public-vs-authenticated-mode.md) |
+| Auth provider integration | [architecture/authentication-and-authorization.md](architecture/authentication-and-authorization.md), [architecture/auth-provider-adapter.md](architecture/auth-provider-adapter.md) |
 | Visibility and audience filtering | [product/visibility-model.md](product/visibility-model.md) |
 | Functional requirements | [product/functional-requirements.md](product/functional-requirements.md) |
 | Technical stack decisions | [architecture/technology-stack.md](architecture/technology-stack.md), [architecture/technical-decisions.md](architecture/technical-decisions.md) |

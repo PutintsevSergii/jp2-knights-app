@@ -8,7 +8,7 @@ V1 includes four modes:
 | --- | --- | --- |
 | Public Discovery | Yes | Discover the Order, read public prayers, view public/family events, submit interest |
 | Candidate | Yes | Guided onboarding and candidate-visible content |
-| Brother | Yes | Daily companion, profile, chorągiew, prayers, events, roadmap, silent prayer |
+| Brother | Yes | Daily companion, profile, assigned organization unit, prayers, events, roadmap, silent prayer |
 | Admin Lite | Yes | Manage V1 data and workflows without ERP complexity |
 
 ## In Scope
@@ -24,19 +24,21 @@ V1 includes four modes:
 - candidate account and dashboard;
 - candidate roadmap, events, announcements, and assigned contact;
 - brother Today dashboard;
-- brother profile and my chorągiew;
+- brother profile and assigned organization units;
 - brother prayer library, events, participation intent, announcements;
 - formation roadmap and officer review;
 - silent brother prayer;
 - notification preferences and device tokens for authenticated users;
-- Admin Lite for chorągwie, brothers, candidates, content, events, announcements, roadmap submissions, silent prayer;
+- Admin Lite for organization units, brothers, candidates, content, events, announcements, roadmap submissions, silent prayer;
 - audit metadata and critical action logs;
 - PostgreSQL, Redis, NestJS API, React Native mobile, Next.js admin, Nx monorepo.
 - TypeScript strict mode, pnpm workspaces, Prisma migrations, OpenAPI contracts, and shared Zod validation schemas.
 
 ## V1 Limitations
 
-- one simplified organization layer around chorągiew; no full Generalate/Province/Commandery hierarchy;
+- a generic organization-unit foundation with `type`, `parentUnitId`, status, and scoped user relations;
+- V1 screens may initially use `CHORAGIEW` organization units only, while the data/API contract must not hardcode one Order structure;
+- full hierarchy management UX, hierarchy-derived permissions, and cross-unit rollups remain later work unless explicitly approved;
 - participation intent only, not verified attendance;
 - aggregate silent prayer counters only, not participant lists;
 - basic content approval, not a complex editorial workflow;
@@ -44,4 +46,4 @@ V1 includes four modes:
 
 ## Launch Target
 
-The first release should be validated with one pilot chorągiew, one super admin, one officer, a small brother registry, several candidates, and representative public/private content.
+The first release should be validated with one pilot `CHORAGIEW` organization unit, one super admin, one officer, a small brother registry, several candidates, and representative public/private content.

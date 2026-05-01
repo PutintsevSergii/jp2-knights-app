@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CONTENT_STATUSES, PARTICIPATION_STATUSES, RUNTIME_MODES, VISIBILITIES } from "./index.js";
+import {
+  CONTENT_STATUSES,
+  MEMBERSHIP_STATUSES,
+  ORGANIZATION_UNIT_STATUSES,
+  ORGANIZATION_UNIT_TYPES,
+  PARTICIPATION_STATUSES,
+  RUNTIME_MODES,
+  VISIBILITIES
+} from "./index.js";
 
 describe("shared types", () => {
   it("keeps public visibility as an explicit contract value", () => {
@@ -16,5 +24,11 @@ describe("shared types", () => {
 
   it("keeps operational statuses in snake_case", () => {
     expect(PARTICIPATION_STATUSES).toContain("planning_to_attend");
+  });
+
+  it("keeps organization lifecycle statuses shared for API and admin code", () => {
+    expect(ORGANIZATION_UNIT_TYPES).toContain("CHORAGIEW");
+    expect(ORGANIZATION_UNIT_STATUSES).toEqual(["active", "archived"]);
+    expect(MEMBERSHIP_STATUSES).toEqual(["active", "inactive", "archived"]);
   });
 });
