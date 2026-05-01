@@ -118,6 +118,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@jp2/shared-auth':
+        specifier: workspace:*
+        version: link:../../libs/shared/auth
       '@jp2/shared-design-tokens':
         specifier: workspace:*
         version: link:../../libs/shared/design-tokens

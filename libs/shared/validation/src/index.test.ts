@@ -9,6 +9,8 @@ import {
   organizationUnitStatusSchema,
   organizationUnitTypeSchema,
   parseRuntimeMode,
+  publicHomeQuerySchema,
+  publicHomeResponseSchema,
   roleSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
@@ -17,6 +19,13 @@ import {
 describe("shared validation", () => {
   it("defaults runtime mode to api", () => {
     expect(parseRuntimeMode(undefined)).toBe("api");
+  });
+
+  it("rejects demo runtime mode in production", () => {
+    expect(parseRuntimeMode("demo", { nodeEnv: "development" })).toBe("demo");
+    expect(() => parseRuntimeMode("demo", { nodeEnv: "production" })).toThrow(
+      "Demo runtime mode is not allowed in production."
+    );
   });
 
   it("validates visibility values from the shared contract", () => {
@@ -80,5 +89,29 @@ describe("shared validation", () => {
     expect(adminOrganizationUnitListResponseSchema.parse({ organizationUnits: [unit] })).toEqual({
       organizationUnits: [unit]
     });
+  });
+
+  it("validates public home query and response DTOs", () => {
+    expect(publicHomeQuerySchema.parse({ language: " en " })).toEqual({ language: "en" });
+    expect(() => publicHomeQuerySchema.parse({ language: "e" })).toThrow();
+
+    const response = {
+      intro: {
+        title: "JP2 App",
+        body: "Public discovery content is being prepared for approval."
+      },
+      prayerOfDay: null,
+      nextEvents: [],
+      ctas: [
+        {
+          id: "join",
+          label: "Join",
+          action: "join",
+          targetRoute: "JoinRequestForm"
+        }
+      ]
+    };
+
+    expect(publicHomeResponseSchema.parse(response)).toEqual(response);
   });
 });

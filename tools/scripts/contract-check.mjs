@@ -24,6 +24,7 @@ if (openApi.openapi !== "3.1.0") {
 
 const requiredPaths = [
   "/api/health",
+  "/api/public/home",
   "/api/auth/me",
   "/api/brother/my-organization-units",
   "/api/admin/organization-units",
@@ -37,6 +38,7 @@ if (missingPaths.length > 0) {
 
 const responseSchemaChecks = [
   ["/api/health", "get", "200"],
+  ["/api/public/home", "get", "200"],
   ["/api/auth/me", "get", "200"],
   ["/api/auth/me", "get", "401"],
   ["/api/auth/me", "get", "403"],

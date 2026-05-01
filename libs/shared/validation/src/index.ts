@@ -92,6 +92,42 @@ export const organizationUnitDetailResponseSchema = z.object({
   organizationUnit: organizationUnitSummarySchema
 });
 
+export const publicHomeQuerySchema = z
+  .object({
+    language: z.string().trim().min(2).max(10).optional()
+  })
+  .strict();
+
+export const publicHomeCtaSchema = z.object({
+  id: z.string().trim().min(1).max(50),
+  label: z.string().trim().min(1).max(80),
+  action: z.enum(["learn", "pray", "events", "join", "login"]),
+  targetRoute: z.string().trim().min(1).max(80)
+});
+
+export const publicHomeEventSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  startAt: z.iso.datetime(),
+  locationLabel: z.string().trim().min(1).max(200).nullable(),
+  visibility: z.enum(["PUBLIC", "FAMILY_OPEN"])
+});
+
+export const publicHomeResponseSchema = z.object({
+  intro: z.object({
+    title: z.string().trim().min(1).max(120),
+    body: z.string().trim().min(1).max(1000)
+  }),
+  prayerOfDay: z
+    .object({
+      title: z.string().trim().min(1).max(200),
+      body: z.string().trim().min(1).max(4000)
+    })
+    .nullable(),
+  nextEvents: z.array(publicHomeEventSummarySchema),
+  ctas: z.array(publicHomeCtaSchema).min(1)
+});
+
 export type OrganizationUnitSummaryDto = z.infer<typeof organizationUnitSummarySchema>;
 export type CreateOrganizationUnitRequestDto = z.infer<typeof createOrganizationUnitRequestSchema>;
 export type UpdateOrganizationUnitRequestDto = z.infer<typeof updateOrganizationUnitRequestSchema>;
@@ -100,7 +136,22 @@ export type AdminOrganizationUnitListResponseDto = z.infer<
   typeof adminOrganizationUnitListResponseSchema
 >;
 export type OrganizationUnitDetailResponseDto = z.infer<typeof organizationUnitDetailResponseSchema>;
+export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
+export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
 
-export function parseRuntimeMode(value: string | undefined) {
-  return runtimeModeSchema.parse(value ?? "api");
+export interface RuntimeModeParseOptions {
+  nodeEnv?: string | undefined;
+}
+
+export function parseRuntimeMode(
+  value: string | undefined,
+  options: RuntimeModeParseOptions = {}
+) {
+  const runtimeMode = runtimeModeSchema.parse(value ?? "api");
+
+  if (runtimeMode === "demo" && options.nodeEnv === "production") {
+    throw new Error("Demo runtime mode is not allowed in production.");
+  }
+
+  return runtimeMode;
 }

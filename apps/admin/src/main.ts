@@ -2,10 +2,13 @@ import { designTokens } from "@jp2/shared-design-tokens";
 import type { HealthStatus } from "@jp2/shared-types";
 import { parseRuntimeMode } from "@jp2/shared-validation";
 
-export function getAdminHealth(mode = process.env.APP_RUNTIME_MODE): HealthStatus {
+export function getAdminHealth(
+  mode = process.env.APP_RUNTIME_MODE,
+  nodeEnv = process.env.NODE_ENV
+): HealthStatus {
   return {
     app: "admin",
-    runtimeMode: parseRuntimeMode(mode),
+    runtimeMode: parseRuntimeMode(mode, { nodeEnv }),
     status: "ok"
   };
 }

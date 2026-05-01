@@ -5,15 +5,25 @@ This matrix links product requirements to the expected implementation surface. U
 ## Current Implementation Progress
 
 The rows below describe the full expected V1 surface, not completion status. Current
-implementation is through the Phase 2 foundation:
+implementation is through the Phase 2 foundation, plus the first Phase 3 public
+discovery slice:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
   filtering, Prisma identity/organization/audit baseline, migration checks, and
   seed fixtures are in place.
-- Generated OpenAPI currently includes `/api/health`, `/api/auth/me`,
-  `/api/brother/my-organization-units`, `/api/admin/organization-units`, and
-  `/api/admin/organization-units/{id}` as foundation contracts with request/response schemas.
+- Runtime-mode parsing is shared, and API/admin/mobile reject `demo` mode when
+  `NODE_ENV=production`.
+- Phase 3 has started with an unauthenticated `/api/public/home` fallback
+  discovery shell that returns no private content while approved content tables
+  remain Phase 4 work.
+- Mobile launch-state resolution now opens `PublicHome` without a session, marks
+  demo mode visibly, and routes active candidates/brothers to their mode landing
+  screens.
+- Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
+  `/api/auth/me`, `/api/brother/my-organization-units`,
+  `/api/admin/organization-units`, and `/api/admin/organization-units/{id}` as
+  foundation contracts with request/response schemas.
 - `/api/auth/me` is a guarded current-user contract backed by a session abstraction;
   Firebase-backed provider verification, provider-account linking, login/session-cookie
   establishment, logout, refresh/session handling, and real token/session persistence
@@ -29,6 +39,7 @@ implementation is through the Phase 2 foundation:
 | Requirement                                | APIs                                                                                                                     | Screens                            | Data                                                              | Key tests                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
 | NFR-SEC-001 Authentication                 | `/auth/session`, `/auth/logout`, `/auth/refresh`, `GET /auth/me`                                                         | Login, Admin Login                 | users, identity_provider_accounts, user_roles, memberships        | Firebase adapter verification, fake-provider replacement, inactive-user blocking, provider-linking |
+| NFR-DEMO-001 Demo mode                     | runtime mode config                                                                                                      | Mobile/Admin launch shells         | demo fixtures once screen flows exist                              | shared parser, mobile/admin/API production rejection tests      |
 | FR-PUBLIC-001 Public Home                  | `GET /public/home`                                                                                                       | `PublicHome`                       | prayers, events, content pages                                    | public no-auth, no private content, empty state                 |
 | FR-PUBLIC-002 About the Order              | public content endpoint or `/public/home` section                                                                        | `AboutOrder`                       | content pages                                                     | approved content only, fallback state                           |
 | FR-PRAYER-001 Public Prayer Library        | `GET /public/prayers`, `GET /public/prayers/:id`                                                                         | public prayer category/list/detail | prayer_categories, prayers                                        | published public only, private id returns 404                   |

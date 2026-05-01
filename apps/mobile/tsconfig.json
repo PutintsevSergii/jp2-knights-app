@@ -7,6 +7,7 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
+    { "path": "../../libs/shared/auth" },
     { "path": "../../libs/shared/design-tokens" },
     { "path": "../../libs/shared/types" },
     { "path": "../../libs/shared/validation" }

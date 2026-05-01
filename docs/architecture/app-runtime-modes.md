@@ -22,6 +22,7 @@ Production builds must default to `api` mode and must fail fast if configured fo
 - Demo mode must not write to production services, send push notifications, create real accounts, or call payment/map/analytics providers.
 - Demo mode must include loading, empty, error, forbidden, offline, and happy-path states for core screens.
 - Demo fixtures must be versioned with the API contract; if DTOs change, demo fixtures and contract tests must change together.
+- Shared runtime-mode parsing must reject `demo` when `NODE_ENV=production`; app shell/build entry points must pass production environment into that parser instead of reimplementing the rule.
 
 ## Mobile Expectations
 
