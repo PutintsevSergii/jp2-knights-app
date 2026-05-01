@@ -25,7 +25,7 @@
     "prisma:validate": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma",
     "db:seed": "node prisma/seed.mjs",
     "db:migrate:check": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma && node tools/scripts/db-migrate-check.mjs",
-    "quality": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
+    "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

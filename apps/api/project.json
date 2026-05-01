@@ -6,16 +6,24 @@
     "dev": {
       "command": "pnpm --filter @jp2/api dev"
     },
+    "prisma-generate": {
+      "cache": false,
+      "command": "pnpm prisma:generate"
+    },
     "lint": {
+      "dependsOn": ["prisma-generate"],
       "command": "eslint apps/api/src --max-warnings=0"
     },
     "typecheck": {
+      "dependsOn": ["prisma-generate"],
       "command": "tsc -b apps/api/tsconfig.json"
     },
     "test": {
+      "dependsOn": ["prisma-generate"],
       "command": "vitest run apps/api"
     },
     "build": {
+      "dependsOn": ["prisma-generate"],
       "command": "tsc -p apps/api/tsconfig.json"
     }
   }
