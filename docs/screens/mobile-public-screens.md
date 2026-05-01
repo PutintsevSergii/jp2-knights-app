@@ -14,7 +14,13 @@
 | Public Silent Prayer | `PublicSilentPrayer` | Anonymous prayer session | title/intention/counter | join/leave | disconnected/closed | Aggregate only |
 | Login | `Login` | Auth entry | login fields/provider | login | auth errors | No public registration bypass |
 
+## Current Implementation Note
+
+The current Phase 3 mobile app includes an Expo entry point, typed public launch
+state, a token-backed `PublicHome` screen model, and a React Native `PublicHome`
+screen. The model covers `ready`, `empty`, `loading`, `error`, `forbidden`, and
+`offline` states and maps public CTAs to canonical public routes.
+
 ## Analytics
 
 Only basic product events are useful in V1, such as public home opened, join request submitted, and public prayer opened. Do not track prayer participation as personal spiritual analytics.
-

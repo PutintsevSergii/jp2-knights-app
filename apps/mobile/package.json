@@ -3,13 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "dev": "tsc -b tsconfig.json && node dist/main.js"
+    "dev": "tsc -b tsconfig.json && node dist/main.js",
+    "expo:start": "expo start",
+    "expo:start:demo": "APP_RUNTIME_MODE=demo expo start"
   },
   "dependencies": {
     "@jp2/shared-auth": "workspace:*",
     "@jp2/shared-design-tokens": "workspace:*",
     "@jp2/shared-types": "workspace:*",
-    "@jp2/shared-validation": "workspace:*"
+    "@jp2/shared-validation": "workspace:*",
+    "expo": "55.0.19",
+    "react": "19.2.0",
+    "react-native": "0.83.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14"
   }
 }

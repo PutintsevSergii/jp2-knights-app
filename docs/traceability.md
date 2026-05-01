@@ -20,6 +20,11 @@ discovery slice:
 - Mobile launch-state resolution now opens `PublicHome` without a session, marks
   demo mode visibly, and routes active candidates/brothers to their mode landing
   screens.
+- Mobile public screen models now map the public-home DTO into token-backed
+  `PublicHome` ready/empty/loading/error/offline/forbidden states for the future
+  Expo screen.
+- Mobile now has an Expo entry point and React Native `PublicHome` screen that
+  renders the public screen model without requiring login.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
   `/api/auth/me`, `/api/brother/my-organization-units`,
   `/api/admin/organization-units`, and `/api/admin/organization-units/{id}` as

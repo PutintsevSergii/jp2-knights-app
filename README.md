@@ -27,10 +27,11 @@ baseline. The API includes Phase 2 foundation routes for `/api/health`,
 `/api/admin/organization-units`, plus the first Phase 3 public discovery route
 at `/api/public/home`. Implemented routes have request/response schemas, shared
 Zod validation where applicable, and session abstractions ready for later real
-auth. The mobile placeholder resolves a no-session launch to `PublicHome` using
-the same public-home DTO shape and visibly marks demo mode. Admin Lite and mobile
-are launchable TypeScript placeholders; Next.js and Expo scaffolding come next
-inside the same app folders.
+auth. The mobile app has an Expo entry point and a React Native `PublicHome`
+screen backed by the shared public-home DTO shape; it visibly marks demo mode
+and covers ready/empty/loading/error/offline and forbidden states through a
+token-backed screen model. Admin Lite remains a launchable TypeScript
+placeholder; Next.js scaffolding comes next inside the same app folder.
 
 ## Prerequisites
 
@@ -61,10 +62,14 @@ pnpm dev:admin
 pnpm dev:mobile
 pnpm dev:admin:demo
 pnpm dev:mobile:demo
+pnpm dev:mobile:expo
+pnpm dev:mobile:expo:demo
 ```
 
-`APP_RUNTIME_MODE` supports `api`, `demo`, and `test`. API, admin, and mobile shell
-helpers reject `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`.
+`APP_RUNTIME_MODE` supports `api`, `demo`, and `test`. API, admin, and mobile
+shell helpers reject `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`. The
+Expo commands start the interactive mobile development server; the plain
+`dev:mobile` commands remain fast smoke checks for CI/local validation.
 
 The API health endpoint is available at:
 

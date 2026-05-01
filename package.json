@@ -14,6 +14,8 @@
     "dev:mobile": "pnpm --filter @jp2/mobile dev",
     "dev:admin:demo": "APP_RUNTIME_MODE=demo pnpm --filter @jp2/admin dev",
     "dev:mobile:demo": "APP_RUNTIME_MODE=demo pnpm --filter @jp2/mobile dev",
+    "dev:mobile:expo": "pnpm --filter @jp2/mobile expo:start",
+    "dev:mobile:expo:demo": "APP_RUNTIME_MODE=demo pnpm --filter @jp2/mobile expo:start",
     "lint": "nx run-many -t lint --all",
     "typecheck": "nx run-many -t typecheck --all",
     "test": "nx run-many -t test --all",
