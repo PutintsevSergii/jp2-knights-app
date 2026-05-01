@@ -1,12 +1,24 @@
-# Traceability Matrix
+# Traceability Matrix — CANONICAL Implementation Status
 
-This matrix links product requirements to the expected implementation surface. Update it whenever requirements, APIs, screens, or data tables change.
+**THIS IS THE SINGLE SOURCE OF TRUTH for implementation progress.**
+
+Use this document to:
+- See current phase and what's complete in that phase
+- Understand requirement-to-implementation mapping (FR-* → APIs → screens → data → tests)
+- Find the expected implementation surface for any V1 feature
+- Report progress to stakeholders (update the narrative below each phase completion)
+
+**Last Updated**: May 1, 2026 (Phase 2 ~80% complete; Phase 3 ~30% started)
+
+---
 
 ## Current Implementation Progress
 
-The rows below describe the full expected V1 surface, not completion status. Current
-implementation is through the Phase 2 foundation, plus the first Phase 3 public
-discovery slice:
+The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
+
+### Current Phase: Phase 2 (Core Domain) & Phase 3 (Public Discovery)
+
+Implementation is through the Phase 2 foundation, plus the first Phase 3 public discovery slice:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -40,6 +52,25 @@ discovery slice:
   and broader admin workflows remain later-phase work.
 - Phases 3 through 13 product workflows are not implemented yet unless explicitly
   listed above.
+
+### How to Update This Document
+
+**After each phase completion:**
+1. Update the "Current Phase" section above
+2. Update the narrative bullets with what's newly complete
+3. Update the requirement rows below to mark phase/status in "Key tests" or other fields if needed
+4. Commit with message: "Phase X complete: [specific accomplishments]"
+
+**Before each phase starts:**
+1. Review the roadmap in [docs/delivery/implementation-roadmap.md](delivery/implementation-roadmap.md)
+2. Verify Phase N-1 exit criteria are met
+3. Update "Current Phase" to Phase N
+
+**If requirements change:**
+1. Update scope docs first: [docs/product/v1-scope.md](product/v1-scope.md), [docs/product/out-of-scope.md](product/out-of-scope.md)
+2. Update requirement row in matrix below
+3. Update [docs/delivery/DECISION_LOG.md](delivery/DECISION_LOG.md) if architectural impact
+4. Update [docs/delivery/RISK_AND_MITIGATION.md](delivery/RISK_AND_MITIGATION.md) if risk impact
 
 | Requirement                                | APIs                                                                                                                     | Screens                            | Data                                                              | Key tests                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |

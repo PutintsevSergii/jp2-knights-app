@@ -1,10 +1,21 @@
-# JP2 App — Implementation Roadmap for Coding Agent
+# JP2 App — Implementation Roadmap (HISTORICAL REFERENCE)
 
-## Purpose
+⚠️ **STATUS: HISTORICAL REFERENCE ONLY**
 
-This document is the implementation roadmap for the **JP2 App digital ecosystem**.
+**Do not use this file for implementation guidance or status tracking.**
 
-This file is the original source brief. The focused documentation under `docs/` is now the canonical implementation contract. If this roadmap conflicts with the canonical docs, follow `docs/README.md` and update this roadmap only as a summary.
+The canonical, up-to-date implementation contract is in the `/docs` folder, especially:
+- **⭐ [docs/traceability.md](docs/traceability.md)** — Current phase, what's implemented, requirement mapping
+- [docs/delivery/implementation-roadmap.md](docs/delivery/implementation-roadmap.md) — Planned phases and goals
+- [docs/README.md](docs/README.md) — Navigation to all canonical docs
+
+**This file exists for historical reference only.** It documents the original V1 feature set and phasing plan from project inception. It is no longer updated. Use [docs/traceability.md](docs/traceability.md) for current progress.
+
+---
+
+## Original Purpose
+
+This document was the original implementation roadmap for the **JP2 App digital ecosystem**. The focused documentation under `docs/` is now the canonical implementation contract. If this historical document conflicts with current canonical docs, follow the canonical docs and [docs/traceability.md](docs/traceability.md).
 
 The product is not only a closed internal app for brothers. It must support:
 

@@ -2,12 +2,43 @@
 
 This file is the operating contract for coding agents working in this repository.
 
-## Start Here
+## 📋 Quick Checklist for Coding Agents
 
-1. Read [docs/README.md](docs/README.md).
-2. Read the canonical docs for the current task: scope, roles, visibility, functional requirements, phase, API, data, and screens.
-3. Check [docs/traceability.md](docs/traceability.md) for the requirement-to-code surface.
-4. Search the repository before creating new code. Reuse existing contracts, utilities, tests, and patterns.
+**Before starting work**:
+- ✅ Check [docs/traceability.md](docs/traceability.md) — what phase are we in?
+- ✅ Read phase scope in [docs/delivery/implementation-roadmap.md](docs/delivery/implementation-roadmap.md)
+- ✅ Search repo for existing patterns (roles, visibility, DTOs, schemas)
+- ✅ Run quality gates: `pnpm quality`
+
+**While implementing**:
+- ✅ Keep APIs server-side filtered (never client-side only)
+- ✅ Update OpenAPI/DTOs if changing contracts
+- ✅ Add tests for new logic (80% coverage minimum)
+- ✅ Update [docs/traceability.md](docs/traceability.md) as you complete requirements
+
+**Before submitting work**:
+- ✅ All quality gates pass
+- ✅ [docs/traceability.md](docs/traceability.md) updated with what's done
+- ✅ Relevant doc updates in same commit
+- ✅ Final response includes test results and coverage
+
+---
+
+## Start Here — Full Setup
+
+**⭐ CANONICAL SOURCE FOR PROGRESS**: [docs/traceability.md](docs/traceability.md)
+
+1. Read [docs/README.md](docs/README.md) and [docs/GLOSSARY.md](docs/GLOSSARY.md).
+2. **Check [docs/traceability.md](docs/traceability.md)** — the ONE source of truth for:
+   - What phase we're in right now
+   - What's already implemented
+   - What requirements are mapped to APIs/screens/data/tests
+3. Read [docs/GETTING_STARTED_BY_ROLE.md](docs/GETTING_STARTED_BY_ROLE.md) to find the engineer's onboarding path.
+4. Read the canonical docs for the current task: scope, roles, visibility, functional requirements, phase, API, data, and screens.
+5. Check [docs/delivery/DECISION_LOG.md](docs/delivery/DECISION_LOG.md) to understand why key choices were made.
+6. Search the repository before creating new code. Reuse existing contracts, utilities, tests, and patterns.
+
+**After completing a task or phase**: Update [docs/traceability.md](docs/traceability.md) with what you accomplished
 
 ## Architecture Defaults
 
@@ -19,16 +50,30 @@ This file is the operating contract for coding agents working in this repository
 - Provider integrations belong behind adapters.
 - Mobile/admin support `api` and backend-free `demo` runtime modes. Demo mode is for local development, CI smoke checks, and controlled demos only; production builds must reject it.
 
-## Non-Negotiables
+## ⛔ Non-Negotiables (Hard Rules)
 
-- Keep V1 scope disciplined. If a V2 or out-of-scope item has a strong product, security, or architectural argument, pause implementation and ask the human owner for permission with the rationale, tradeoffs, and impact.
+### Scope
+- Keep V1 scope disciplined. If a V2 or out-of-scope item has a strong product, security, or architectural argument, pause implementation and ask the human owner for permission with the rationale, tradeoffs, and impact. See [docs/delivery/DECISION_LOG.md](docs/delivery/DECISION_LOG.md) (ADR-001) for the scope control policy.
 - Implement approved scope expansions only after the human owner gives explicit permission and the relevant docs are updated in the same change.
-- Public APIs must never return private content.
-- Officer access must be scoped by chorągiew.
+- **Never silently add**: chat, payments, maps, analytics, social features, or extended hierarchy. If justified, ask first.
+
+### Security & Privacy
+- Public APIs must never return private content (enforced server-side, never client-side only).
+- Officer access must be scoped by chorągiew (no cross-unit leaks).
 - Silent prayer exposes aggregate counters only, never participant lists.
+- Do not duplicate security-sensitive logic such as roles, visibility, permissions, DTOs, error shapes, API clients, or content status workflows. See [docs/agent/no-duplicate-policy.md](docs/agent/no-duplicate-policy.md).
+- Ensure accessibility (WCAG 2.1 Level AA). See [docs/product/ACCESSIBILITY_AND_INCLUSION.md](docs/product/ACCESSIBILITY_AND_INCLUSION.md).
+
+### Data Handling
 - Business entities are archived/deactivated instead of destructively deleted unless explicitly approved.
-- Do not duplicate security-sensitive logic such as roles, visibility, permissions, DTOs, error shapes, API clients, or content status workflows.
+- Mitigate identified risks. See [docs/delivery/RISK_AND_MITIGATION.md](docs/delivery/RISK_AND_MITIGATION.md).
+
+### UI & Styling
 - Do not hardcode brand colors, spacing, typography, radius, or status styling in screens. Use shared design tokens and platform adapters.
+
+### Status Tracking
+- **Update [docs/traceability.md](docs/traceability.md) in the same commit as your code changes.** This is THE source of truth for progress.
+- Never leave status docs out of sync with implementation.
 
 ## Coding Workflow
 
@@ -72,3 +117,24 @@ Every completed coding task must report:
 - any residual risk or explicit owner-approved exception.
 
 If no tests were added, explicitly say `Tests added: 0` and explain why existing tests or documentation-only validation were sufficient.
+
+## Approval Process for Scope Changes
+
+When a V2 or out-of-scope feature is proposed:
+
+1. **Pause implementation** — do not code anything yet.
+2. **Document the case** in a task description or PR comment with:
+   - Product value: Why do users need this? What problem does it solve?
+   - Technical impact: How many files change? How long will it take?
+   - Risk impact: Does it introduce new risks? See [docs/delivery/RISK_AND_MITIGATION.md](docs/delivery/RISK_AND_MITIGATION.md).
+   - Privacy/security impact: Does it expose new data or create surveillance risk?
+3. **Request explicit approval** from the human owner (Product Owner or Lead Architect).
+4. **Get written confirmation** (comment in task/PR; saved for record).
+5. **Update docs** before or with the implementation:
+   - [docs/product/v1-scope.md](docs/product/v1-scope.md) or [docs/product/v2-backlog.md](docs/product/v2-backlog.md)
+   - [docs/traceability.md](docs/traceability.md)
+   - Relevant API/data/screen docs
+   - [docs/delivery/DECISION_LOG.md](docs/delivery/DECISION_LOG.md) (if a major decision)
+6. **Proceed with implementation** only after approval and docs are updated.
+
+**Example**: "I'd like to add email notifications (not in V1 scope). Value: officers get updates when roadmap submissions arrive. Impact: adds EmailProvider adapter, SMTP integration, 3-4 days work. Risk: potential spam if rate limiting not careful. Privacy: email addresses already stored; this doesn't create new risk. Requesting approval to proceed."

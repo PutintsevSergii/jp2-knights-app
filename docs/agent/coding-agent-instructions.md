@@ -2,14 +2,17 @@
 
 ## How to Start
 
-1. Read `/docs/README.md`.
-2. Read product scope, roles, visibility, and functional requirements.
-3. Read the phase you are implementing.
-4. Read API/data/screen docs relevant to that phase.
-5. Read `/docs/architecture/app-runtime-modes.md` when touching app launch, API clients, screen data loading, fixtures, or environment config.
-6. Read `/docs/architecture/design-system-and-theming.md` when touching mobile/admin UI, components, styling, branding, icons, layout primitives, or accessibility.
-7. Search the repo for existing helpers, DTOs, schemas, enums, UI patterns, guards, and tests before adding new code.
-8. Implement only that phase's scope.
+1. Check **[docs/traceability.md](../traceability.md)** — THE source of truth for what phase we're in and what's already done
+2. Read [docs/README.md](../README.md) and [docs/GLOSSARY.md](../GLOSSARY.md)
+3. Read product scope, roles, visibility, and functional requirements relevant to your phase
+4. Read the current phase in [docs/delivery/implementation-roadmap.md](../delivery/implementation-roadmap.md)
+5. Read API/data/screen docs relevant to that phase
+6. Read [docs/architecture/app-runtime-modes.md](../app-runtime-modes.md) when touching app launch, API clients, screen data loading, fixtures, or environment config
+7. Read [docs/architecture/design-system-and-theming.md](../design-system-and-theming.md) when touching mobile/admin UI, components, styling, branding, icons, layout primitives, or accessibility
+8. Search the repo for existing helpers, DTOs, schemas, enums, UI patterns, guards, and tests before adding new code
+9. Implement only that phase's scope
+
+**After completing a phase**: Update [docs/traceability.md](../traceability.md) with progress and mark the phase complete
 
 ## Recommended Implementation Order
 
