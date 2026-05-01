@@ -19,6 +19,8 @@ This file is the operating contract for coding agents working in this repository
 **Before submitting work**:
 - ✅ All quality gates pass
 - ✅ [docs/traceability.md](docs/traceability.md) updated with what's done
+- ✅ [docs/delivery/IMPLEMENTATION_STATUS.md](docs/delivery/IMPLEMENTATION_STATUS.md) updated to reflect traceability changes (same commit)
+- ✅ See "Synchronizing traceability.md and IMPLEMENTATION_STATUS.md" section in Coding Workflow for exact procedure
 - ✅ Relevant doc updates in same commit
 - ✅ Final response includes test results and coverage
 
@@ -85,6 +87,96 @@ This file is the operating contract for coding agents working in this repository
 6. Update design tokens/component variants when styling or branding changes.
 7. Add or update tests that would fail without the change.
 8. Run quality gates before completing the task.
+
+### Synchronizing traceability.md and IMPLEMENTATION_STATUS.md
+
+**Both documents must stay in sync in the same commit.** Here's the concrete workflow:
+
+#### Step 1: Update docs/traceability.md
+
+Find the requirement row (FR-*, NFR-*) in the matrix. Update the "Current Implementation Progress" narrative at the top:
+
+```markdown
+## Current Implementation Progress
+
+### Current Phase: Phase 3 (Public Discovery)
+
+Implementation now includes:
+
+- Phase 1 repository/infrastructure baseline is in place.
+- Phase 2 shared auth/visibility helpers... [existing narrative]
+- **Phase 3 NEW** (added May 2, 2026):
+  - ✅ FR-PUBLIC-001: `/api/public/home` endpoint fully implemented with unauthenticated access
+  - ✅ FR-PUBLIC-002: About the Order content endpoint returns approved content only
+  - ✅ Mobile PublicHome screen renders public API responses with state handling (ready/empty/loading/error/offline)
+  - ✅ Tests added: 8 integration tests for public visibility, 6 tests for content filtering
+  - (see requirement rows below for full details)
+```
+
+#### Step 2: Update docs/delivery/IMPLEMENTATION_STATUS.md
+
+Find the corresponding phase section and update three places:
+
+**A. Executive Summary table** — Update the phase row:
+
+```markdown
+| **3** | 🟡 IN PROGRESS | ~45% | ██████████░░░░░░░░░░ | `/api/public/home`, PublicHome screen, About the Order | Link content tables (Phase 4) |
+```
+
+**B. Phase Status Details section** — Move completed items from "In Progress" to "Completed":
+
+```markdown
+### Phase 3: Public Discovery 🟡
+
+**Status**: IN PROGRESS (~45%)
+
+**Completed**:
+- ✅ `/api/public/home` endpoint (contract defined, returns DTO, rejects private content)
+- ✅ Mobile `PublicHome` screen (React Native component implemented, handles state)
+- ✅ Mobile launch resolution (detects guest/candidate/brother, routes appropriately)
+- ✅ Demo mode visibility (marked "DEMO" on launch screen)
+- ✅ About the Order content endpoint
+
+**In Progress**:
+- 🟡 Content approval workflow integration
+- 🟡 Prayer/event seed data population
+
+**Exit criteria**: 🟡 Public/API foundation complete, content integration in progress
+
+**Next step**: Implement prayer library API (Phase 4)
+```
+
+**C. Quality Gate Status table** — Mark any tests added:
+
+```markdown
+| **Unit tests (80%)** | ✅ | 🟡 ~82% | 🟡 ~75% | Growing; 14 public endpoint tests added |
+| **Integration tests** | ✅ | 🟡 In progress | 🟡 8 public visibility tests added | Permission/visibility matrix |
+```
+
+#### Step 3: Commit Both Files
+
+```bash
+git add <your code changes>
+git add docs/traceability.md
+git add docs/delivery/IMPLEMENTATION_STATUS.md
+
+git commit -m "Phase 3: Implement public home and about order endpoints
+
+- Add /api/public/home unauthenticated endpoint with visibility filtering
+- Add /api/public/about unauthenticated content endpoint
+- Implement PublicHome mobile screen with state handling
+- Add 8 integration tests for public visibility filtering
+- Update traceability.md (Phase 3 progress narrative)
+- Update IMPLEMENTATION_STATUS.md (phase summary, quality gates)"
+```
+
+#### Key Rules
+
+- **Same commit**: Code + traceability.md + IMPLEMENTATION_STATUS.md all in one change
+- **Update narrative first**: Write what's done in traceability.md's "Current Implementation Progress"
+- **Update dashboard second**: Reflect that progress in IMPLEMENTATION_STATUS.md tables and sections
+- **Both reference each other**: IMPLEMENTATION_STATUS.md links to traceability.md for details; agents check traceability.md first
+- **Never update only one**: If you update the code and traceability.md but forget IMPLEMENTATION_STATUS.md, the dashboard drifts
 
 ## Quality Gates
 
