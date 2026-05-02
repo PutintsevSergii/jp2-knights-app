@@ -6,10 +6,11 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsc -b tsconfig.json && node dist/main.js",
-    "expo:start": "expo start",
-    "expo:start:demo": "APP_RUNTIME_MODE=demo expo start"
+    "expo:start": "expo start --clear",
+    "expo:start:demo": "expo start --clear"
   },
   "dependencies": {
+    "@babel/runtime": "7.29.2",
     "@jp2/shared-auth": "workspace:*",
     "@jp2/shared-design-tokens": "workspace:*",
     "@jp2/shared-types": "workspace:*",

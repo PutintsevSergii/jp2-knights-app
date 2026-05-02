@@ -2,12 +2,14 @@
 
 ## Local Development Seed
 
-Seed data grows with the implementation phase. The committed Phase 2 seed currently
-covers only the identity and organization foundation needed for scope checks:
+Seed data grows with the implementation phase. The committed seed currently
+covers the identity and organization foundation needed for scope checks plus the
+Phase 3 public About content fallback:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
 - two active organization units.
+- one published `PUBLIC` `about-order` content page for local development.
 
 The full V1 local-development target is:
 

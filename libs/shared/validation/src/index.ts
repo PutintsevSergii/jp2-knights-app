@@ -98,6 +98,19 @@ export const publicHomeQuerySchema = z
   })
   .strict();
 
+export const publicContentPageSlugSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must use lowercase letters, numbers, and hyphens.");
+
+export const publicContentPageQuerySchema = z
+  .object({
+    language: z.string().trim().min(2).max(10).optional()
+  })
+  .strict();
+
 export const publicHomeCtaSchema = z.object({
   id: z.string().trim().min(1).max(50),
   label: z.string().trim().min(1).max(80),
@@ -128,6 +141,16 @@ export const publicHomeResponseSchema = z.object({
   ctas: z.array(publicHomeCtaSchema).min(1)
 });
 
+export const publicContentPageResponseSchema = z.object({
+  page: z.object({
+    id: z.uuid(),
+    slug: publicContentPageSlugSchema,
+    title: z.string().trim().min(1).max(200),
+    body: z.string().trim().min(1).max(12000),
+    language: z.string().trim().min(2).max(10)
+  })
+});
+
 export type OrganizationUnitSummaryDto = z.infer<typeof organizationUnitSummarySchema>;
 export type CreateOrganizationUnitRequestDto = z.infer<typeof createOrganizationUnitRequestSchema>;
 export type UpdateOrganizationUnitRequestDto = z.infer<typeof updateOrganizationUnitRequestSchema>;
@@ -138,6 +161,8 @@ export type AdminOrganizationUnitListResponseDto = z.infer<
 export type OrganizationUnitDetailResponseDto = z.infer<typeof organizationUnitDetailResponseSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
+export type PublicContentPageQueryDto = z.infer<typeof publicContentPageQuerySchema>;
+export type PublicContentPageResponseDto = z.infer<typeof publicContentPageResponseSchema>;
 
 export interface RuntimeModeParseOptions {
   nodeEnv?: string | undefined;

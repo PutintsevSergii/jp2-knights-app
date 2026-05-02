@@ -88,6 +88,41 @@ async function main() {
       createdBy: superAdmin.id
     }
   });
+
+  await prisma.contentPage.upsert({
+    where: {
+      slug_language: {
+        slug: "about-order",
+        language: "en"
+      }
+    },
+    update: {
+      title: "About the Order",
+      body: "Approved public information about the Order is prepared here for local development.",
+      visibility: "PUBLIC",
+      status: "PUBLISHED",
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000004",
+      slug: "about-order",
+      title: "About the Order",
+      body: "Approved public information about the Order is prepared here for local development.",
+      language: "en",
+      visibility: "PUBLIC",
+      status: "PUBLISHED",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
 }
 
 async function findOrCreateOrganizationUnit(data) {

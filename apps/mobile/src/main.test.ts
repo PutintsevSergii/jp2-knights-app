@@ -3,6 +3,7 @@ import {
   buildPublicHomeScreen,
   getMobileHealth,
   getMobileThemePreview,
+  readMobileRuntimeMode,
   resolveMobileLaunchState
 } from "./main.js";
 
@@ -21,6 +22,22 @@ describe("mobile shell", () => {
     } finally {
       env.APP_RUNTIME_MODE = previousRuntimeMode;
     }
+  });
+
+  it("uses Expo public runtime mode for bundled mobile launches", () => {
+    expect(readMobileRuntimeMode({ EXPO_PUBLIC_APP_RUNTIME_MODE: "demo" })).toBe("demo");
+    expect(
+      readMobileRuntimeMode({
+        EXPO_PUBLIC_APP_RUNTIME_MODE: "api",
+        APP_RUNTIME_MODE: "demo"
+      })
+    ).toBe("api");
+  });
+
+  it("defaults local Expo launches to demo and production builds to api", () => {
+    expect(readMobileRuntimeMode({ NODE_ENV: "development" })).toBe("demo");
+    expect(readMobileRuntimeMode({ NODE_ENV: "production" })).toBe("api");
+    expect(readMobileRuntimeMode({})).toBe("demo");
   });
 
   it("rejects demo mode for production builds", () => {

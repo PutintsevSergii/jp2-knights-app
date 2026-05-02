@@ -3,6 +3,26 @@
 This workspace contains the JP2 App product and technical documentation package plus the
 Phase 1 monorepo baseline.
 
+## Quick Mobile Launch
+
+To see the current mobile app without running the API:
+
+```sh
+pnpm dev:mobile:expo -- --offline --port 8090
+```
+
+Then open the printed `exp://...:8090` URL in Expo Go on your phone, or scan
+the QR code shown by Expo. The current screen is `PublicHome`.
+
+If port `8090` is busy, change it to another free port:
+
+```sh
+pnpm dev:mobile:expo -- --offline --port 8091
+```
+
+Mobile runtime mode is configured in code: local development defaults to `demo`,
+production builds default to `api`.
+
 Start here:
 
 - [Documentation map](docs/README.md)

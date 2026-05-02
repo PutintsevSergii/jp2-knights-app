@@ -118,6 +118,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@babel/runtime':
+        specifier: 7.29.2
+        version: 7.29.2
       '@jp2/shared-auth':
         specifier: workspace:*
         version: link:../../libs/shared/auth

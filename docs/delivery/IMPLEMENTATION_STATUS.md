@@ -15,7 +15,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **0** | ✅ COMPLETE | 100% | ████████████████████ | Scope, roles, visibility | — |
 | **1** | ✅ COMPLETE | 100% | ████████████████████ | Monorepo, apps, CI, gates | — |
 | **2** | 🟡 IN PROGRESS | ~80% | ████████████████░░░░ | Prisma, auth helpers, filters | Complete guards/tests |
-| **3** | 🟡 IN PROGRESS | ~30% | ██████░░░░░░░░░░░░░░ | `/api/public/home`, PublicHome screen | Content tables |
+| **3** | 🟡 IN PROGRESS | ~55% | ███████████░░░░░░░░░ | `/api/public/home`, public content pages, live PublicHome API loading | Prayer/event APIs |
 | **4** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Prayer/event APIs | Start after Phase 3 |
 | **5** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching | Start after Phase 4 |
 | **6–13** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit | — |
@@ -88,18 +88,20 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 3: Public Discovery Mode 🟡
 
-**Status**: IN PROGRESS (~30%)
+**Status**: IN PROGRESS (~55%)
 
 **Completed**:
 - ✅ `/api/public/home` endpoint (contract defined, returns DTO)
 - ✅ Mobile `PublicHome` screen (React Native component implemented)
 - ✅ Mobile launch resolution (detects guest/candidate/brother, routes appropriately)
 - ✅ Demo mode visibility (marked "DEMO" on launch screen)
+- ✅ Mobile API mode loads `/api/public/home`, validates DTO responses, and maps error/offline states
+- ✅ `/api/public/content-pages/{slug}` endpoint for published `PUBLIC` About content
+- ✅ `content_pages` table and `about-order` seed fixture
 
 **In Progress**:
-- 🟡 Connect mobile screen to live API endpoint
-- 🟡 Link endpoints to content tables (prayers, events)
-- 🟡 "About the Order" screen and content approval
+- 🟡 Link prayer/event endpoints to content tables
+- 🟡 Mobile `AboutOrder` screen integration
 
 **Not Yet**:
 - ⏳ Public prayer library API (Phase 4)
@@ -107,9 +109,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ⏳ Prayer/event content seed data (Phase 4)
 - ⏳ Join interest form (Phase 7)
 
-**Exit criteria**: 🟡 Mobile/API foundation complete, content integration pending
+**Exit criteria**: 🟡 Mobile/API foundation plus About content endpoint complete; prayer/event integration pending
 
-**Next step**: Phase 4 content APIs; populate seed data
+**Next step**: Implement Phase 4 public prayer/event APIs and populate representative prayer/event seed data
 
 ---
 
@@ -136,8 +138,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 |------|---------|---------|---------|-------|
 | **Lint** | ✅ | ✅ | ✅ | Enforced in CI |
 | **Typecheck** | ✅ | ✅ | ✅ | TypeScript strict mode |
-| **Unit tests (80%)** | ✅ | 🟡 ~75% | 🟡 ~70% | Growing; priority on critical libs |
-| **Integration tests** | ✅ | 🟡 In progress | 🟡 In progress | Permission/visibility matrix |
+| **Unit tests (80%)** | ✅ | ✅ 98%+ | ✅ 98%+ | `vitest --coverage` currently above threshold |
+| **Integration tests** | ✅ | 🟡 In progress | 🟡 In progress | Public-home API client validation added; broader permission/visibility matrix still expanding |
 | **Build** | ✅ | ✅ | ✅ | All apps compile |
 | **OpenAPI generation** | ✅ | ✅ | ✅ | Contract artifact |
 | **Contract check** | ✅ | ✅ | ✅ | Generated client compiles |
@@ -164,6 +166,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Unauthenticated `/api/public/home` endpoint (fallback discovery shell)
 - Mobile `PublicHome` screen with state model (ready/empty/loading/error/offline/forbidden)
 - Mobile Expo entry point
+- Mobile API-mode public-home loader with shared DTO validation and demo-mode fallback
+- Public content-page endpoint with `content_pages` migration and `about-order` seed fixture
 - Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/auth/me`, org unit endpoints
 - `/api/brother/my-organization-units` (returns summaries only)
 - `/api/admin/organization-units` (scoped listing + super admin CRUD)
@@ -185,7 +189,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [ ] Seed data includes Phase 3 fallback content
 
 2. **Finalize Phase 3**
-   - [ ] Connect mobile PublicHome to real `/api/public/home`
+   - [x] Connect mobile PublicHome to real `/api/public/home`
+   - [x] Public About content table/endpoint seeded
    - [ ] Phase 4 content tables created (prayers, events)
    - [ ] Update this dashboard after changes
 

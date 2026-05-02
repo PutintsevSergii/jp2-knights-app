@@ -4,6 +4,9 @@ export const designTokens = {
       app: "#f8fafc",
       surface: "#ffffff"
     },
+    border: {
+      subtle: "#d1d5db"
+    },
     text: {
       primary: "#111827",
       muted: "#4b5563",

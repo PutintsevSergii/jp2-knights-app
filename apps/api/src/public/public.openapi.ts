@@ -68,3 +68,28 @@ export const publicHomeResponseOpenApiSchema = {
     }
   }
 };
+
+export const publicContentPageResponseOpenApiSchema = {
+  type: "object",
+  required: ["page"],
+  additionalProperties: false,
+  properties: {
+    page: {
+      type: "object",
+      required: ["id", "slug", "title", "body", "language"],
+      additionalProperties: false,
+      properties: {
+        id: { type: "string", format: "uuid" },
+        slug: {
+          type: "string",
+          minLength: 1,
+          maxLength: 120,
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        title: { type: "string", minLength: 1, maxLength: 200 },
+        body: { type: "string", minLength: 1, maxLength: 12000 },
+        language: { type: "string", minLength: 2, maxLength: 10 }
+      }
+    }
+  }
+};

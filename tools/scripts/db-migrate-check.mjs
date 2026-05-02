@@ -6,6 +6,7 @@ const requiredInputs = [
   "infra/docker/docker-compose.yml",
   "prisma/schema.prisma",
   "prisma/migrations/000001_core_identity_foundation/migration.sql",
+  "prisma/migrations/000002_public_content_pages/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -49,13 +50,39 @@ if (missingMigrationSnippets.length > 0) {
   );
 }
 
+const publicContentMigrationSql = readFileSync(
+  "prisma/migrations/000002_public_content_pages/migration.sql",
+  "utf8"
+);
+
+const requiredPublicContentMigrationSnippets = [
+  "CREATE TYPE visibility AS ENUM",
+  "CREATE TYPE content_status AS ENUM",
+  "CREATE TABLE content_pages",
+  "CREATE UNIQUE INDEX content_pages_slug_language_unique",
+  "CREATE INDEX content_pages_visibility_status_language_idx",
+  "CREATE INDEX content_pages_status_published_at_idx"
+];
+
+const missingPublicContentMigrationSnippets = requiredPublicContentMigrationSnippets.filter(
+  (snippet) => !publicContentMigrationSql.includes(snippet)
+);
+
+if (missingPublicContentMigrationSnippets.length > 0) {
+  throw new Error(
+    `Public content migration is missing required SQL: ${missingPublicContentMigrationSnippets.join(", ")}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
   "officer@example.test",
   "Pilot Choragiew",
   "Second Scope Choragiew",
-  "organizationUnit"
+  "organizationUnit",
+  "about-order",
+  "contentPage"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -66,5 +93,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, and scope fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, and Phase 3 public content-page fixtures."
 );

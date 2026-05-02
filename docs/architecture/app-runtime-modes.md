@@ -15,6 +15,8 @@ Production builds must default to `api` mode and must fail fast if configured fo
 ## Demo Mode Requirements
 
 - Demo mode must be enabled by explicit config, such as `APP_RUNTIME_MODE=demo`.
+  Expo mobile local development defaults to `demo` in code, while production
+  defaults to `api`; `EXPO_PUBLIC_APP_RUNTIME_MODE` remains an explicit override.
 - Demo fixtures live in a dedicated fixture package or app-local fixture directory and are clearly marked non-production.
 - Demo data must cover public, candidate, brother, officer, and super admin journeys without using real personal data.
 - Demo mode must exercise the same screen routing, state handling, generated DTO shapes, and visibility assumptions as the real app.
@@ -27,6 +29,7 @@ Production builds must default to `api` mode and must fail fast if configured fo
 ## Mobile Expectations
 
 - A developer can launch the mobile app without the backend and navigate public, candidate, and brother demo flows.
+- In `api` mode, mobile reads the public API base URL from `EXPO_PUBLIC_API_BASE_URL`, then `API_BASE_URL`, then falls back to `http://localhost:3000` for local development.
 - Authenticated demo personas are selected through a development-only switch or fixture login, never through production auth code.
 - Demo mode must not weaken production auth, token, or visibility logic.
 

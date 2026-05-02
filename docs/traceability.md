@@ -8,7 +8,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 1, 2026 (Phase 2 ~80% complete; Phase 3 ~30% started)
+**Last Updated**: May 2, 2026 (Phase 2 ~80% complete; Phase 3 ~55% in progress)
 
 ---
 
@@ -18,7 +18,7 @@ The rows below describe the full expected V1 surface (all 42 requirements). The 
 
 ### Current Phase: Phase 2 (Core Domain) & Phase 3 (Public Discovery)
 
-Implementation is through the Phase 2 foundation, plus the first Phase 3 public discovery slice:
+Implementation is through the Phase 2 foundation, plus the active Phase 3 public discovery slice:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -37,7 +37,18 @@ Implementation is through the Phase 2 foundation, plus the first Phase 3 public 
   Expo screen.
 - Mobile now has an Expo entry point and React Native `PublicHome` screen that
   renders the public screen model without requiring login.
+- Mobile `api` mode now loads `/api/public/home` through a small API client,
+  validates the response with the shared DTO schema, and maps request failures
+  to error/offline states. Mobile `demo` mode keeps using the local fallback
+  discovery payload without backend calls.
+- Phase 3 now includes a public content-page foundation: `content_pages` table,
+  seed fallback content for `about-order`, and unauthenticated
+  `/api/public/content-pages/{slug}` endpoint that returns only currently
+  published `PUBLIC` pages with English fallback.
+- Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
+  project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
+  `/api/public/content-pages/{slug}`,
   `/api/auth/me`, `/api/brother/my-organization-units`,
   `/api/admin/organization-units`, and `/api/admin/organization-units/{id}` as
   foundation contracts with request/response schemas.
@@ -77,7 +88,7 @@ Implementation is through the Phase 2 foundation, plus the first Phase 3 public 
 | NFR-SEC-001 Authentication                 | `/auth/session`, `/auth/logout`, `/auth/refresh`, `GET /auth/me`                                                         | Login, Admin Login                 | users, identity_provider_accounts, user_roles, memberships        | Firebase adapter verification, fake-provider replacement, inactive-user blocking, provider-linking |
 | NFR-DEMO-001 Demo mode                     | runtime mode config                                                                                                      | Mobile/Admin launch shells         | demo fixtures once screen flows exist                              | shared parser, mobile/admin/API production rejection tests      |
 | FR-PUBLIC-001 Public Home                  | `GET /public/home`                                                                                                       | `PublicHome`                       | prayers, events, content pages                                    | public no-auth, no private content, empty state                 |
-| FR-PUBLIC-002 About the Order              | public content endpoint or `/public/home` section                                                                        | `AboutOrder`                       | content pages                                                     | approved content only, fallback state                           |
+| FR-PUBLIC-002 About the Order              | `GET /public/content-pages/{slug}`                                                                                       | `AboutOrder`                       | content_pages                                                     | published `PUBLIC` content only, private/missing pages 404, English fallback |
 | FR-PRAYER-001 Public Prayer Library        | `GET /public/prayers`, `GET /public/prayers/:id`                                                                         | public prayer category/list/detail | prayer_categories, prayers                                        | published public only, private id returns 404                   |
 | FR-EVENT-001 Public Events                 | `GET /public/events`, `GET /public/events/:id`                                                                           | public event list/detail           | events                                                            | public/family only, date filters                                |
 | FR-PRAYER-002 Public Silent Prayer         | `GET/POST /public/silent-prayer-events`                                                                                  | public silent prayer               | silent_prayer_events, silent_prayer_participation, Redis presence | anonymous aggregate only, duplicate join                        |
