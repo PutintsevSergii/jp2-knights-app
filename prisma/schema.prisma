@@ -40,6 +40,28 @@ enum MembershipStatus {
   archived
 }
 
+enum Visibility {
+  PUBLIC
+  FAMILY_OPEN
+  CANDIDATE
+  BROTHER
+  ORGANIZATION_UNIT
+  OFFICER
+  ADMIN
+
+  @@map("visibility")
+}
+
+enum ContentStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+
+  @@map("content_status")
+}
+
 model User {
   id                String              @id @default(uuid()) @db.Uuid
   email             String              @db.Citext
@@ -162,4 +184,30 @@ model AuditLog {
   @@index([scopeOrganizationUnitId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model ContentPage {
+  id                       String        @id @default(uuid()) @db.Uuid
+  slug                     String
+  title                    String
+  body                     String
+  language                 String
+  visibility               Visibility
+  targetOrganizationUnitId String?       @map("target_organization_unit_id") @db.Uuid
+  status                   ContentStatus
+  createdBy                String?       @map("created_by") @db.Uuid
+  updatedBy                String?       @map("updated_by") @db.Uuid
+  approvedBy               String?       @map("approved_by") @db.Uuid
+  publishedBy              String?       @map("published_by") @db.Uuid
+  createdAt                DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  approvedAt               DateTime?     @map("approved_at") @db.Timestamptz(6)
+  publishedAt              DateTime?     @map("published_at") @db.Timestamptz(6)
+  archivedAt               DateTime?     @map("archived_at") @db.Timestamptz(6)
+
+  @@unique([slug, language])
+  @@index([visibility, status, language])
+  @@index([status, publishedAt])
+  @@index([targetOrganizationUnitId])
+  @@map("content_pages")
 }

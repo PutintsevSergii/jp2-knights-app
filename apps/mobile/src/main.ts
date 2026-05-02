@@ -2,6 +2,13 @@ import { designTokens } from "@jp2/shared-design-tokens";
 import type { HealthStatus } from "@jp2/shared-types";
 import { parseRuntimeMode } from "@jp2/shared-validation";
 export { fallbackPublicHome } from "./public-home.js";
+export {
+  buildPublicHomeUrl,
+  fetchPublicHome,
+  publicHomeLoadFailureState,
+  readPublicApiBaseUrl
+} from "./public-home-api.js";
+export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js";
 export { resolveMobileLaunchState } from "./navigation.js";
 export { buildPublicHomeScreen } from "./public-screens.js";
 export type { MobileInitialRoute, MobileLaunchState, MobileScreenState } from "./navigation.js";

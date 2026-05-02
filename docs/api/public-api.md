@@ -17,3 +17,4 @@
 - Public APIs never return users, memberships, candidate profiles, roadmap records, brother-only announcements, or private chorągiew content.
 - Public candidate request creation must store consent timestamp and consent text/version.
 - Public content pages are for approved About/FAQ/candidate-path content only. Draft or unapproved official wording is never returned.
+- The implemented public content-page read path returns only `PUBLISHED` + `PUBLIC` rows, excludes archived or future-published pages, and falls back to English when a requested language is unavailable.

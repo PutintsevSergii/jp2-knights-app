@@ -9,6 +9,9 @@ import {
   organizationUnitStatusSchema,
   organizationUnitTypeSchema,
   parseRuntimeMode,
+  publicContentPageQuerySchema,
+  publicContentPageResponseSchema,
+  publicContentPageSlugSchema,
   publicHomeQuerySchema,
   publicHomeResponseSchema,
   roleSchema,
@@ -113,5 +116,23 @@ describe("shared validation", () => {
     };
 
     expect(publicHomeResponseSchema.parse(response)).toEqual(response);
+  });
+
+  it("validates public content page route and response DTOs", () => {
+    expect(publicContentPageSlugSchema.parse(" about-order ")).toBe("about-order");
+    expect(() => publicContentPageSlugSchema.parse("About Order")).toThrow();
+    expect(publicContentPageQuerySchema.parse({ language: " pl " })).toEqual({ language: "pl" });
+
+    const response = {
+      page: {
+        id: "11111111-1111-4111-8111-111111111111",
+        slug: "about-order",
+        title: "About the Order",
+        body: "Approved public information.",
+        language: "en"
+      }
+    };
+
+    expect(publicContentPageResponseSchema.parse(response)).toEqual(response);
   });
 });

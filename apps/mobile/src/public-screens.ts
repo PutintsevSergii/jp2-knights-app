@@ -25,6 +25,7 @@ export interface PublicScreenSection {
 export interface PublicScreenTheme {
   background: string;
   surface: string;
+  border: string;
   text: string;
   mutedText: string;
   primaryAction: string;
@@ -178,6 +179,7 @@ const publicHomeStateCopy: Record<MobileScreenState, { title: string; body: stri
 const publicScreenTheme: PublicScreenTheme = {
   background: designTokens.color.background.app,
   surface: designTokens.color.background.surface,
+  border: designTokens.color.border.subtle,
   text: designTokens.color.text.primary,
   mutedText: designTokens.color.text.muted,
   primaryAction: designTokens.color.action.primary,

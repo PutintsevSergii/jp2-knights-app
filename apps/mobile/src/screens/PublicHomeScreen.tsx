@@ -19,7 +19,8 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
       <ScrollView
         contentContainerStyle={{
           gap: screen.theme.spacing,
-          padding: screen.theme.spacing
+          padding: screen.theme.spacing,
+          paddingTop: screen.theme.spacing * 2
         }}
       >
         {screen.demoChromeVisible ? (
@@ -42,6 +43,8 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
         <View
           style={[
             {
+              borderColor: screen.theme.border,
+              borderWidth: 1,
               backgroundColor: screen.theme.surface,
               borderRadius: screen.theme.radius,
               gap: screen.theme.spacing / 2,
@@ -58,6 +61,8 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
             key={section.id}
             style={[
               {
+                borderColor: screen.theme.border,
+                borderWidth: 1,
                 backgroundColor: screen.theme.surface,
                 borderRadius: screen.theme.radius,
                 gap: screen.theme.spacing / 2,
@@ -106,9 +111,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start"
   },
   title: {
+    fontSize: 24,
     fontWeight: "700"
   },
   sectionTitle: {
+    fontSize: 18,
     fontWeight: "700"
   },
   action: {

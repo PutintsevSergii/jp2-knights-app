@@ -27,6 +27,7 @@ describe("mobile public screen models", () => {
     expect(buildPublicHomeScreen(resolveMobileLaunchState(null)).theme).toEqual({
       background: designTokens.color.background.app,
       surface: designTokens.color.background.surface,
+      border: designTokens.color.border.subtle,
       text: designTokens.color.text.primary,
       mutedText: designTokens.color.text.muted,
       primaryAction: designTokens.color.action.primary,
