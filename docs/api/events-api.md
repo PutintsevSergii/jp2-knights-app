@@ -23,3 +23,10 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 - Participation intent is not attendance tracking.
 - Candidate participation is allowed only for events visible through candidate endpoints. Candidates cannot act on brother-only or brother chorągiew-private events.
 - Cancelled events remain visible to users who could previously see them when useful, marked cancelled.
+
+## Implemented Public Read Rules
+
+- `GET /public/events` supports `from`, `type`, `limit`, and `offset`.
+- Public event list reads default to upcoming events and return only currently published `PUBLIC` or `FAMILY_OPEN` events.
+- Private, archived, draft, cancelled, future-published, and brother/candidate/scoped events are hidden from guests.
+- `GET /public/events/:id` returns 404 for any event that is missing or not publicly visible.

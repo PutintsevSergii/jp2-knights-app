@@ -62,6 +62,15 @@ enum ContentStatus {
   @@map("content_status")
 }
 
+enum EventStatus {
+  draft
+  published
+  cancelled
+  archived
+
+  @@map("event_status")
+}
+
 model User {
   id                String              @id @default(uuid()) @db.Uuid
   email             String              @db.Citext
@@ -210,4 +219,77 @@ model ContentPage {
   @@index([status, publishedAt])
   @@index([targetOrganizationUnitId])
   @@map("content_pages")
+}
+
+model PrayerCategory {
+  id          String        @id @default(uuid()) @db.Uuid
+  slug        String
+  title       String
+  language    String
+  sortOrder   Int           @default(0) @map("sort_order")
+  status      ContentStatus
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  publishedAt DateTime?     @map("published_at") @db.Timestamptz(6)
+  archivedAt  DateTime?     @map("archived_at") @db.Timestamptz(6)
+
+  prayers Prayer[]
+
+  @@unique([slug, language])
+  @@index([status, language, sortOrder])
+  @@map("prayer_categories")
+}
+
+model Prayer {
+  id                       String        @id @default(uuid()) @db.Uuid
+  categoryId               String?       @map("category_id") @db.Uuid
+  title                    String
+  body                     String
+  language                 String
+  visibility               Visibility
+  targetOrganizationUnitId String?       @map("target_organization_unit_id") @db.Uuid
+  status                   ContentStatus
+  createdBy                String?       @map("created_by") @db.Uuid
+  updatedBy                String?       @map("updated_by") @db.Uuid
+  approvedBy               String?       @map("approved_by") @db.Uuid
+  publishedBy              String?       @map("published_by") @db.Uuid
+  createdAt                DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  approvedAt               DateTime?     @map("approved_at") @db.Timestamptz(6)
+  publishedAt              DateTime?     @map("published_at") @db.Timestamptz(6)
+  archivedAt               DateTime?     @map("archived_at") @db.Timestamptz(6)
+
+  category PrayerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([visibility, status, language])
+  @@index([status, publishedAt])
+  @@index([targetOrganizationUnitId])
+  @@map("prayers")
+}
+
+model Event {
+  id                       String      @id @default(uuid()) @db.Uuid
+  title                    String
+  description              String?
+  type                     String
+  startAt                  DateTime    @map("start_at") @db.Timestamptz(6)
+  endAt                    DateTime?   @map("end_at") @db.Timestamptz(6)
+  locationLabel            String?     @map("location_label")
+  visibility               Visibility
+  targetOrganizationUnitId String?     @map("target_organization_unit_id") @db.Uuid
+  status                   EventStatus
+  createdBy                String?     @map("created_by") @db.Uuid
+  updatedBy                String?     @map("updated_by") @db.Uuid
+  publishedBy              String?     @map("published_by") @db.Uuid
+  createdAt                DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  publishedAt              DateTime?   @map("published_at") @db.Timestamptz(6)
+  cancelledAt              DateTime?   @map("cancelled_at") @db.Timestamptz(6)
+  archivedAt               DateTime?   @map("archived_at") @db.Timestamptz(6)
+
+  @@index([visibility, status, startAt])
+  @@index([status, publishedAt])
+  @@index([targetOrganizationUnitId])
+  @@map("events")
 }

@@ -1345,6 +1345,568 @@
           "public"
         ]
       }
+    },
+    "/api/public/prayers": {
+      "get": {
+        "operationId": "PublicController_listPublicPrayers",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "language",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 10
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published public prayer categories and prayers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "categories",
+                    "prayers",
+                    "pagination"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "slug",
+                          "title",
+                          "language"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "slug": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "language": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 10
+                          }
+                        }
+                      }
+                    },
+                    "prayers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "excerpt",
+                          "language",
+                          "category"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "excerpt": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          },
+                          "language": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 10
+                          },
+                          "category": {
+                            "nullable": true,
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "required": [
+                                  "id",
+                                  "slug",
+                                  "title",
+                                  "language"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "slug": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200
+                                  },
+                                  "language": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 10
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "required": [
+                        "limit",
+                        "offset"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 50
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/public/prayers/{id}": {
+      "get": {
+        "operationId": "PublicController_getPublicPrayer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published public prayer detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "prayer"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "prayer": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "excerpt",
+                        "language",
+                        "category",
+                        "body"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 240
+                        },
+                        "language": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 10
+                        },
+                        "category": {
+                          "nullable": true,
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "slug",
+                                "title",
+                                "language"
+                              ],
+                              "additionalProperties": false,
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "slug": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 120
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 10
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "body": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 8000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No published public prayer matched the id."
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/public/events": {
+      "get": {
+        "operationId": "PublicController_listPublicEvents",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published public and family-open event summaries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "events",
+                    "pagination"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "type",
+                          "startAt",
+                          "endAt",
+                          "locationLabel",
+                          "visibility"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "type": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "startAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "endAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "locationLabel": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "visibility": {
+                            "type": "string",
+                            "enum": [
+                              "PUBLIC",
+                              "FAMILY_OPEN"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "required": [
+                        "limit",
+                        "offset"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 50
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/public/events/{id}": {
+      "get": {
+        "operationId": "PublicController_getPublicEvent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published public or family-open event detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "type",
+                        "startAt",
+                        "endAt",
+                        "locationLabel",
+                        "visibility",
+                        "description"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "type": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "startAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "endAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "locationLabel": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "PUBLIC",
+                            "FAMILY_OPEN"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 8000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No published public or family-open event matched the id."
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
     }
   },
   "info": {

@@ -12,8 +12,14 @@ import {
   publicContentPageQuerySchema,
   publicContentPageResponseSchema,
   publicContentPageSlugSchema,
+  publicEventDetailResponseSchema,
+  publicEventListQuerySchema,
+  publicEventListResponseSchema,
   publicHomeQuerySchema,
   publicHomeResponseSchema,
+  publicPrayerDetailResponseSchema,
+  publicPrayerListQuerySchema,
+  publicPrayerListResponseSchema,
   roleSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
@@ -134,5 +140,82 @@ describe("shared validation", () => {
     };
 
     expect(publicContentPageResponseSchema.parse(response)).toEqual(response);
+  });
+
+  it("validates public prayer DTOs with safe pagination defaults", () => {
+    expect(publicPrayerListQuerySchema.parse({ language: " en ", limit: "10" })).toEqual({
+      language: "en",
+      limit: 10,
+      offset: 0
+    });
+
+    const category = {
+      id: "22222222-2222-4222-8222-222222222222",
+      slug: "daily",
+      title: "Daily Prayer",
+      language: "en"
+    };
+    const summary = {
+      id: "33333333-3333-4333-8333-333333333333",
+      title: "Morning Offering",
+      excerpt: "A public morning prayer.",
+      language: "en",
+      category
+    };
+
+    expect(
+      publicPrayerListResponseSchema.parse({
+        categories: [category],
+        prayers: [summary],
+        pagination: { limit: 10, offset: 0 }
+      })
+    ).toEqual({
+      categories: [category],
+      prayers: [summary],
+      pagination: { limit: 10, offset: 0 }
+    });
+    expect(publicPrayerDetailResponseSchema.parse({ prayer: { ...summary, body: summary.excerpt } }))
+      .toEqual({ prayer: { ...summary, body: summary.excerpt } });
+  });
+
+  it("validates public event DTOs with PUBLIC and FAMILY_OPEN visibility only", () => {
+    expect(publicEventListQuerySchema.parse({ type: " open-evening ", limit: "5" })).toEqual({
+      type: "open-evening",
+      limit: 5,
+      offset: 0
+    });
+
+    const event = {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Open Evening",
+      type: "open-evening",
+      startAt: "2026-05-10T18:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "FAMILY_OPEN"
+    };
+
+    expect(
+      publicEventListResponseSchema.parse({
+        events: [event],
+        pagination: { limit: 5, offset: 0 }
+      })
+    ).toEqual({
+      events: [event],
+      pagination: { limit: 5, offset: 0 }
+    });
+    expect(
+      publicEventDetailResponseSchema.parse({
+        event: { ...event, description: "Public introduction evening." }
+      })
+    ).toEqual({
+      event: { ...event, description: "Public introduction evening." }
+    });
+    expect(
+      publicEventListResponseSchema.safeParse({
+        events: [{ ...event, visibility: "BROTHER" }],
+        pagination: { limit: 5, offset: 0 }
+      }).success
+    ).toBe(false);
   });
 });

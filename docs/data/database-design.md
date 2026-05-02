@@ -22,7 +22,7 @@
 | `candidate_requests` | Public join interest | `id`, `first_name`, `last_name`, `email`, `phone`, `country`, `city`, `preferred_language`, `message`, `consent_text_version`, `consent_at`, `status`, `assigned_organization_unit_id`, `officer_note` | indexes `status`, `assigned_organization_unit_id`, `email` | archive | Admin scoped |
 | `candidate_profiles` | Authenticated candidate | `id`, `user_id`, `candidate_request_id`, `assigned_organization_unit_id`, `responsible_officer_id`, `status` | unique active `user_id`, indexes scope/status | archive/convert | Candidate private |
 | `content_pages` | Approved informational pages | `id`, `slug`, `title`, `body`, `language`, `visibility`, `status`, approval/publish metadata | unique `(slug, language)`, index visibility/status | archive | Official wording approval |
-| `prayer_categories` | Prayer grouping | `id`, `name`, `slug`, `language`, `sort_order`, `status` | unique `(slug, language)` | archive | Public if category has public content |
+| `prayer_categories` | Prayer grouping | `id`, `title`, `slug`, `language`, `sort_order`, `status`, `published_at` | unique `(slug, language)`, index `status,language,sort_order` | archive | Public if category has public content |
 | `prayers` | Prayer content | `id`, `category_id`, `title`, `body`, `language`, `visibility`, `target_organization_unit_id`, `status`, approval/publish metadata | indexes `visibility,status,language` | archive | Pastoral approval |
 | `events` | Public/private events | `id`, `title`, `description`, `type`, `start_at`, `end_at`, `location_label`, `visibility`, `target_organization_unit_id`, `status` | indexes `start_at,status,visibility,target_organization_unit_id` | archive/cancel | Location not private address |
 | `event_participation` | Intent to attend | `id`, `event_id`, `user_id`, `intent_status`, `created_at`, `cancelled_at` | unique active `(event_id,user_id)` | cancel | Not attendance tracking |
@@ -171,7 +171,7 @@ The following content tables share: `id uuid PK`, `visibility visibility enum`, 
 | Table | Required content columns | Main FKs/indexes | Unique constraints | Notes |
 | --- | --- | --- | --- | --- |
 | `content_pages` | `slug text`, `title text`, `body text`, `language text` | index `visibility,status,language` | unique `(slug, language)` | About/FAQ/candidate path content; approval required |
-| `prayer_categories` | `name text`, `slug text`, `language text`, `sort_order int`, `status text` | index `language,status` | unique `(slug, language)` | Archive if unused |
+| `prayer_categories` | `title text`, `slug text`, `language text`, `sort_order int`, `status content_status` | index `status,language,sort_order` | unique `(slug, language)` | Archive if unused |
 | `prayers` | `category_id uuid`, `title text`, `body text`, `language text` | FK category, index `visibility,status,language,target_organization_unit_id` | none required | Pastoral/content approval |
 | `events` | `title text`, `description text`, `type text`, `start_at timestamptz`, `end_at timestamptz`, `location_label text` | index `start_at,status,visibility,target_organization_unit_id` | none required | Avoid private addresses |
 | `announcements` | `title text`, `body text`, `pinned boolean default false` | index `visibility,status,target_organization_unit_id,pinned` | none required | One-way messages |

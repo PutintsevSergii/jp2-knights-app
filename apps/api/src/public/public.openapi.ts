@@ -93,3 +93,130 @@ export const publicContentPageResponseOpenApiSchema = {
     }
   }
 };
+
+const publicPaginationOpenApiSchema = {
+  type: "object",
+  required: ["limit", "offset"],
+  additionalProperties: false,
+  properties: {
+    limit: { type: "integer", minimum: 1, maximum: 50 },
+    offset: { type: "integer", minimum: 0, maximum: 1000 }
+  }
+};
+
+const publicPrayerCategorySummaryOpenApiSchema = {
+  type: "object",
+  required: ["id", "slug", "title", "language"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    slug: { type: "string", minLength: 1, maxLength: 120 },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    language: { type: "string", minLength: 2, maxLength: 10 }
+  }
+};
+
+const publicPrayerSummaryOpenApiSchema = {
+  type: "object",
+  required: ["id", "title", "excerpt", "language", "category"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    excerpt: { type: "string", minLength: 1, maxLength: 240 },
+    language: { type: "string", minLength: 2, maxLength: 10 },
+    category: {
+      nullable: true,
+      oneOf: [publicPrayerCategorySummaryOpenApiSchema]
+    }
+  }
+};
+
+export const publicPrayerListResponseOpenApiSchema = {
+  type: "object",
+  required: ["categories", "prayers", "pagination"],
+  additionalProperties: false,
+  properties: {
+    categories: {
+      type: "array",
+      items: publicPrayerCategorySummaryOpenApiSchema
+    },
+    prayers: {
+      type: "array",
+      items: publicPrayerSummaryOpenApiSchema
+    },
+    pagination: publicPaginationOpenApiSchema
+  }
+};
+
+export const publicPrayerDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["prayer"],
+  additionalProperties: false,
+  properties: {
+    prayer: {
+      ...publicPrayerSummaryOpenApiSchema,
+      required: ["id", "title", "excerpt", "language", "category", "body"],
+      properties: {
+        ...publicPrayerSummaryOpenApiSchema.properties,
+        body: { type: "string", minLength: 1, maxLength: 8000 }
+      }
+    }
+  }
+};
+
+const publicEventSummaryOpenApiSchema = {
+  type: "object",
+  required: ["id", "title", "type", "startAt", "endAt", "locationLabel", "visibility"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    type: { type: "string", minLength: 1, maxLength: 80 },
+    startAt: { type: "string", format: "date-time" },
+    endAt: { type: "string", nullable: true, format: "date-time" },
+    locationLabel: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
+    visibility: {
+      type: "string",
+      enum: ["PUBLIC", "FAMILY_OPEN"]
+    }
+  }
+};
+
+export const publicEventListResponseOpenApiSchema = {
+  type: "object",
+  required: ["events", "pagination"],
+  additionalProperties: false,
+  properties: {
+    events: {
+      type: "array",
+      items: publicEventSummaryOpenApiSchema
+    },
+    pagination: publicPaginationOpenApiSchema
+  }
+};
+
+export const publicEventDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["event"],
+  additionalProperties: false,
+  properties: {
+    event: {
+      ...publicEventSummaryOpenApiSchema,
+      required: [
+        "id",
+        "title",
+        "type",
+        "startAt",
+        "endAt",
+        "locationLabel",
+        "visibility",
+        "description"
+      ],
+      properties: {
+        ...publicEventSummaryOpenApiSchema.properties,
+        description: { type: "string", nullable: true, minLength: 1, maxLength: 8000 }
+      }
+    }
+  }
+};

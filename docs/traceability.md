@@ -8,7 +8,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 2, 2026 (Phase 2 ~80% complete; Phase 3 ~55% in progress)
+**Last Updated**: May 2, 2026 (Phase 2 ~80% complete; Phase 3 ~65% in progress; Phase 4 ~30% started)
 
 ---
 
@@ -16,7 +16,7 @@ Use this document to:
 
 The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
 
-### Current Phase: Phase 2 (Core Domain) & Phase 3 (Public Discovery)
+### Current Phase: Phase 2 (Core Domain), Phase 3 (Public Discovery) & Phase 4 (Public Content)
 
 Implementation is through the Phase 2 foundation, plus the active Phase 3 public discovery slice:
 
@@ -45,10 +45,18 @@ Implementation is through the Phase 2 foundation, plus the active Phase 3 public
   seed fallback content for `about-order`, and unauthenticated
   `/api/public/content-pages/{slug}` endpoint that returns only currently
   published `PUBLIC` pages with English fallback.
+- Phase 4 has started with `prayer_categories`, `prayers`, and `events` tables,
+  representative public/private seed fixtures, and unauthenticated
+  `/api/public/prayers`, `/api/public/prayers/{id}`, `/api/public/events`, and
+  `/api/public/events/{id}` read endpoints. Public prayer reads return only
+  currently published `PUBLIC` prayers; public event reads return only currently
+  published `PUBLIC` or `FAMILY_OPEN` events.
 - Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
   project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
   `/api/public/content-pages/{slug}`,
+  `/api/public/prayers`, `/api/public/prayers/{id}`,
+  `/api/public/events`, `/api/public/events/{id}`,
   `/api/auth/me`, `/api/brother/my-organization-units`,
   `/api/admin/organization-units`, and `/api/admin/organization-units/{id}` as
   foundation contracts with request/response schemas.
@@ -61,7 +69,8 @@ Implementation is through the Phase 2 foundation, plus the active Phase 3 public
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive. Full Admin Lite navigation, detail views, audit logging,
   and broader admin workflows remain later-phase work.
-- Phases 3 through 13 product workflows are not implemented yet unless explicitly
+- Phase 4 admin CRUD, mobile public prayer/event screens, and Phases 5 through 13
+  product workflows are not implemented yet unless explicitly
   listed above.
 
 ### How to Update This Document

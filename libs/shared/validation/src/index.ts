@@ -151,6 +151,84 @@ export const publicContentPageResponseSchema = z.object({
   })
 });
 
+export const publicPaginationQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).max(1000).default(0)
+});
+
+export const publicPrayerListQuerySchema = publicPaginationQuerySchema
+  .extend({
+    categoryId: z.uuid().optional(),
+    q: z.string().trim().min(1).max(120).optional(),
+    language: z.string().trim().min(2).max(10).optional()
+  })
+  .strict();
+
+export const publicPrayerIdSchema = z.uuid();
+
+const publicPrayerCategorySummarySchema = z.object({
+  id: z.uuid(),
+  slug: z.string().trim().min(1).max(120),
+  title: z.string().trim().min(1).max(200),
+  language: z.string().trim().min(2).max(10)
+});
+
+const publicPrayerSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  excerpt: z.string().trim().min(1).max(240),
+  language: z.string().trim().min(2).max(10),
+  category: publicPrayerCategorySummarySchema.nullable()
+});
+
+export const publicPrayerListResponseSchema = z.object({
+  categories: z.array(publicPrayerCategorySummarySchema),
+  prayers: z.array(publicPrayerSummarySchema),
+  pagination: z.object({
+    limit: z.number().int().min(1).max(50),
+    offset: z.number().int().min(0).max(1000)
+  })
+});
+
+export const publicPrayerDetailResponseSchema = z.object({
+  prayer: publicPrayerSummarySchema.extend({
+    body: z.string().trim().min(1).max(8000)
+  })
+});
+
+export const publicEventListQuerySchema = publicPaginationQuerySchema
+  .extend({
+    from: z.iso.datetime().optional(),
+    type: z.string().trim().min(1).max(80).optional()
+  })
+  .strict();
+
+export const publicEventIdSchema = z.uuid();
+
+const publicEventSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  type: z.string().trim().min(1).max(80),
+  startAt: z.iso.datetime(),
+  endAt: z.iso.datetime().nullable(),
+  locationLabel: z.string().trim().min(1).max(200).nullable(),
+  visibility: z.enum(["PUBLIC", "FAMILY_OPEN"])
+});
+
+export const publicEventListResponseSchema = z.object({
+  events: z.array(publicEventSummarySchema),
+  pagination: z.object({
+    limit: z.number().int().min(1).max(50),
+    offset: z.number().int().min(0).max(1000)
+  })
+});
+
+export const publicEventDetailResponseSchema = z.object({
+  event: publicEventSummarySchema.extend({
+    description: z.string().trim().min(1).max(8000).nullable()
+  })
+});
+
 export type OrganizationUnitSummaryDto = z.infer<typeof organizationUnitSummarySchema>;
 export type CreateOrganizationUnitRequestDto = z.infer<typeof createOrganizationUnitRequestSchema>;
 export type UpdateOrganizationUnitRequestDto = z.infer<typeof updateOrganizationUnitRequestSchema>;
@@ -163,6 +241,12 @@ export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
 export type PublicContentPageQueryDto = z.infer<typeof publicContentPageQuerySchema>;
 export type PublicContentPageResponseDto = z.infer<typeof publicContentPageResponseSchema>;
+export type PublicPrayerListQueryDto = z.infer<typeof publicPrayerListQuerySchema>;
+export type PublicPrayerListResponseDto = z.infer<typeof publicPrayerListResponseSchema>;
+export type PublicPrayerDetailResponseDto = z.infer<typeof publicPrayerDetailResponseSchema>;
+export type PublicEventListQueryDto = z.infer<typeof publicEventListQuerySchema>;
+export type PublicEventListResponseDto = z.infer<typeof publicEventListResponseSchema>;
+export type PublicEventDetailResponseDto = z.infer<typeof publicEventDetailResponseSchema>;
 
 export interface RuntimeModeParseOptions {
   nodeEnv?: string | undefined;

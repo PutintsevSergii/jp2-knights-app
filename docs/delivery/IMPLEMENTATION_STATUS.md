@@ -15,8 +15,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **0** | ✅ COMPLETE | 100% | ████████████████████ | Scope, roles, visibility | — |
 | **1** | ✅ COMPLETE | 100% | ████████████████████ | Monorepo, apps, CI, gates | — |
 | **2** | 🟡 IN PROGRESS | ~80% | ████████████████░░░░ | Prisma, auth helpers, filters | Complete guards/tests |
-| **3** | 🟡 IN PROGRESS | ~55% | ███████████░░░░░░░░░ | `/api/public/home`, public content pages, live PublicHome API loading | Prayer/event APIs |
-| **4** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Prayer/event APIs | Start after Phase 3 |
+| **3** | 🟡 IN PROGRESS | ~65% | █████████████░░░░░░░ | `/api/public/home`, public content pages, live PublicHome API loading | About screen integration |
+| **4** | 🟡 IN PROGRESS | ~30% | ██████░░░░░░░░░░░░░░ | Public prayer/event read APIs, seed fixtures | Admin CRUD + mobile views |
 | **5** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching | Start after Phase 4 |
 | **6–13** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit | — |
 
@@ -88,7 +88,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 3: Public Discovery Mode 🟡
 
-**Status**: IN PROGRESS (~55%)
+**Status**: IN PROGRESS (~65%)
 
 **Completed**:
 - ✅ `/api/public/home` endpoint (contract defined, returns DTO)
@@ -100,18 +100,38 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ `content_pages` table and `about-order` seed fixture
 
 **In Progress**:
-- 🟡 Link prayer/event endpoints to content tables
 - 🟡 Mobile `AboutOrder` screen integration
 
 **Not Yet**:
-- ⏳ Public prayer library API (Phase 4)
-- ⏳ Public event API (Phase 4)
-- ⏳ Prayer/event content seed data (Phase 4)
 - ⏳ Join interest form (Phase 7)
 
-**Exit criteria**: 🟡 Mobile/API foundation plus About content endpoint complete; prayer/event integration pending
+**Exit criteria**: 🟡 Mobile/API foundation plus About content endpoint complete; mobile About screen pending
 
-**Next step**: Implement Phase 4 public prayer/event APIs and populate representative prayer/event seed data
+**Next step**: Integrate mobile About screen while Phase 4 content reads continue
+
+### Phase 4: Public Content: Prayers & Events 🟡
+
+**Status**: IN PROGRESS (~30%)
+
+**Completed**:
+- ✅ `prayer_categories`, `prayers`, and `events` tables with migration
+- ✅ Representative public and private prayer/event seed fixtures
+- ✅ `/api/public/prayers` list endpoint with category, language, search, and safe pagination filters
+- ✅ `/api/public/prayers/{id}` detail endpoint; private/unpublished IDs resolve as 404
+- ✅ `/api/public/events` list endpoint for upcoming public/family-open events
+- ✅ `/api/public/events/{id}` detail endpoint; private/unpublished IDs resolve as 404
+
+**In Progress**:
+- 🟡 Public prayer/event mobile views
+- 🟡 Admin CRUD and publish/archive workflows for prayers/events
+
+**Not Yet**:
+- ⏳ Brother-visible prayer/event APIs (Phase 8/9)
+- ⏳ Participation intent (Phase 9)
+
+**Exit criteria**: 🟡 Read-only public APIs are implemented; mobile/admin surfaces still pending
+
+**Next step**: Add public prayer and event mobile screens, then admin CRUD workflows
 
 ---
 
@@ -119,7 +139,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 | Phase | Name | Status | Timeline |
 |-------|------|--------|----------|
-| **4** | Public Content: Prayers & Events | ⏳ Not started | After Phase 3 |
+| **4** | Public Content: Prayers & Events | 🟡 In progress | Started May 2 |
 | **5** | Authentication & Modes | ⏳ Not started | After Phase 4 |
 | **6** | Admin Lite Foundation | ⏳ Not started | After Phase 5 |
 | **7** | Candidate Funnel | ⏳ Not started | After Phase 6 |
@@ -139,7 +159,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **Lint** | ✅ | ✅ | ✅ | Enforced in CI |
 | **Typecheck** | ✅ | ✅ | ✅ | TypeScript strict mode |
 | **Unit tests (80%)** | ✅ | ✅ 98%+ | ✅ 98%+ | `vitest --coverage` currently above threshold |
-| **Integration tests** | ✅ | 🟡 In progress | 🟡 In progress | Public-home API client validation added; broader permission/visibility matrix still expanding |
+| **Integration tests** | ✅ | 🟡 In progress | 🟡 In progress | Public prayer/event repository visibility tests added; broader permission/visibility matrix still expanding |
 | **Build** | ✅ | ✅ | ✅ | All apps compile |
 | **OpenAPI generation** | ✅ | ✅ | ✅ | Contract artifact |
 | **Contract check** | ✅ | ✅ | ✅ | Generated client compiles |
@@ -168,14 +188,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile Expo entry point
 - Mobile API-mode public-home loader with shared DTO validation and demo-mode fallback
 - Public content-page endpoint with `content_pages` migration and `about-order` seed fixture
+- Public prayer/event read endpoints with visibility-filtered repositories and representative seed fixtures
 - Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/auth/me`, org unit endpoints
 - `/api/brother/my-organization-units` (returns summaries only)
 - `/api/admin/organization-units` (scoped listing + super admin CRUD)
 
-**Phase 4+ Not Started** ⏳:
-- Prayer library API, mobile screens, admin CRUD
-- Event API, mobile screens, admin CRUD
-- Public content visibility enforcement
+**Phase 4 In Progress** 🟡:
+- Public prayer library API and public event API reads
+- Prayer/event mobile screens and admin CRUD still pending
+- Public content visibility enforcement added for public prayer/event reads
 
 ---
 
@@ -191,14 +212,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 2. **Finalize Phase 3**
    - [x] Connect mobile PublicHome to real `/api/public/home`
    - [x] Public About content table/endpoint seeded
-   - [ ] Phase 4 content tables created (prayers, events)
-   - [ ] Update this dashboard after changes
+   - [x] Phase 4 content tables created (prayers, events)
+   - [x] Update this dashboard after changes
 
 ### Medium Term (Next 5–10 commits)
 
 3. **Phase 4: Public Content**
-   - [ ] Prayer library API + mobile screens
-   - [ ] Event API + mobile screens
+   - [x] Prayer library API
+   - [x] Event API
+   - [ ] Public prayer/event mobile screens
    - [ ] Publish/archive workflows in admin
 
 4. **Phase 5: Authentication**

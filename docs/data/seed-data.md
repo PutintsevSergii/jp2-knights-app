@@ -4,12 +4,16 @@
 
 Seed data grows with the implementation phase. The committed seed currently
 covers the identity and organization foundation needed for scope checks plus the
-Phase 3 public About content fallback:
+Phase 3 public About content fallback and Phase 4 public content fixtures:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
 - two active organization units.
 - one published `PUBLIC` `about-order` content page for local development.
+- one published `PUBLIC` prayer category and prayer.
+- one published `BROTHER` prayer fixture that must remain hidden from public reads.
+- one published `PUBLIC` event fixture.
+- one published `BROTHER` event fixture that must remain hidden from public reads.
 
 The full V1 local-development target is:
 
