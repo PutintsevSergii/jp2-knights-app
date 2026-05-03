@@ -1,6 +1,12 @@
 import { designTokens } from "@jp2/shared-design-tokens";
-import type { PublicHomeResponseDto } from "@jp2/shared-validation";
+import type {
+  PublicContentPageResponseDto,
+  PublicEventListResponseDto,
+  PublicHomeResponseDto,
+  PublicPrayerListResponseDto
+} from "@jp2/shared-validation";
 import type { MobileLaunchState, MobileScreenState } from "./navigation.js";
+import type { RuntimeMode } from "@jp2/shared-types";
 
 export type PublicRoute =
   | "PublicHome"
@@ -45,6 +51,46 @@ export interface PublicHomeScreen {
   theme: PublicScreenTheme;
 }
 
+export interface AboutOrderScreen {
+  route: "AboutOrder";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: PublicScreenSection[];
+  actions: PublicScreenAction[];
+  demoChromeVisible: boolean;
+  theme: PublicScreenTheme;
+}
+
+export interface PublicContentListScreen {
+  route: "PublicPrayerCategories" | "PublicEventsList";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: PublicScreenSection[];
+  actions: PublicScreenAction[];
+  demoChromeVisible: boolean;
+  theme: PublicScreenTheme;
+}
+
+export interface BuildAboutOrderScreenOptions {
+  state: MobileScreenState;
+  page?: PublicContentPageResponseDto["page"] | undefined;
+  runtimeMode: RuntimeMode;
+}
+
+export interface BuildPublicPrayerCategoriesScreenOptions {
+  state: MobileScreenState;
+  response?: PublicPrayerListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}
+
+export interface BuildPublicEventsListScreenOptions {
+  state: MobileScreenState;
+  response?: PublicEventListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}
+
 export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHomeScreen {
   if (launchState.mode !== "public") {
     return stateOnlyPublicHome("forbidden", launchState.demoChromeVisible);
@@ -72,6 +118,117 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
       targetRoute: toPublicRoute(cta.targetRoute)
     })),
     demoChromeVisible: launchState.demoChromeVisible,
+    theme: publicScreenTheme
+  };
+}
+
+export function buildAboutOrderScreen(options: BuildAboutOrderScreenOptions): AboutOrderScreen {
+  if (options.state !== "ready") {
+    return stateOnlyAboutOrder(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.page) {
+    return stateOnlyAboutOrder("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "AboutOrder",
+    state: "ready",
+    title: options.page.title,
+    body: "Public information approved for guest discovery.",
+    sections: [
+      {
+        id: "about-order-content",
+        title: options.page.title,
+        body: options.page.body
+      }
+    ],
+    actions: [
+      {
+        id: "join",
+        label: "Join",
+        targetRoute: "JoinRequestForm"
+      },
+      {
+        id: "home",
+        label: "Home",
+        targetRoute: "PublicHome"
+      }
+    ],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
+export function buildPublicPrayerCategoriesScreen(
+  options: BuildPublicPrayerCategoriesScreenOptions
+): PublicContentListScreen {
+  if (options.state !== "ready") {
+    return stateOnlyPublicContentList(
+      "PublicPrayerCategories",
+      options.state,
+      options.runtimeMode === "demo"
+    );
+  }
+
+  if (!options.response || options.response.prayers.length === 0) {
+    return stateOnlyPublicContentList(
+      "PublicPrayerCategories",
+      "empty",
+      options.runtimeMode === "demo"
+    );
+  }
+
+  return {
+    route: "PublicPrayerCategories",
+    state: "ready",
+    title: "Public Prayers",
+    body: "Published prayers available before login.",
+    sections: [
+      ...options.response.categories.map((category) => ({
+        id: `category-${category.id}`,
+        title: category.title,
+        body: publicPrayerCategoryBody(category.id, options.response?.prayers ?? [])
+      })),
+      ...options.response.prayers.map((prayer) => ({
+        id: `prayer-${prayer.id}`,
+        title: prayer.title,
+        body: prayer.excerpt
+      }))
+    ],
+    actions: [homeAction],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
+export function buildPublicEventsListScreen(
+  options: BuildPublicEventsListScreenOptions
+): PublicContentListScreen {
+  if (options.state !== "ready") {
+    return stateOnlyPublicContentList(
+      "PublicEventsList",
+      options.state,
+      options.runtimeMode === "demo"
+    );
+  }
+
+  if (!options.response || options.response.events.length === 0) {
+    return stateOnlyPublicContentList("PublicEventsList", "empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "PublicEventsList",
+    state: "ready",
+    title: "Public Events",
+    body: "Upcoming public and family-open events.",
+    sections: options.response.events.map((event) => ({
+      id: `event-${event.id}`,
+      title: event.title,
+      body: publicEventBody(event)
+    })),
+    actions: [homeAction],
+    demoChromeVisible: options.runtimeMode === "demo",
     theme: publicScreenTheme
   };
 }
@@ -132,6 +289,46 @@ function stateOnlyPublicHome(
   };
 }
 
+function stateOnlyAboutOrder(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): AboutOrderScreen {
+  const copy = aboutOrderStateCopy[state];
+
+  return {
+    route: "AboutOrder",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: publicScreenTheme
+  };
+}
+
+function stateOnlyPublicContentList(
+  route: PublicContentListScreen["route"],
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): PublicContentListScreen {
+  const copy =
+    route === "PublicPrayerCategories"
+      ? publicPrayerCategoriesStateCopy[state]
+      : publicEventsListStateCopy[state];
+
+  return {
+    route,
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: publicScreenTheme
+  };
+}
+
 function toPublicRoute(route: string): PublicRoute {
   if (publicRoutes.includes(route as PublicRoute)) {
     return route as PublicRoute;
@@ -176,6 +373,94 @@ const publicHomeStateCopy: Record<MobileScreenState, { title: string; body: stri
   }
 };
 
+const aboutOrderStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "About the Order",
+    body: "Approved public information is available."
+  },
+  loading: {
+    title: "Loading",
+    body: "About content is loading."
+  },
+  empty: {
+    title: "About the Order",
+    body: "About content is being prepared."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "About content could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "This public screen cannot show private content."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh about content."
+  }
+};
+
+const publicPrayerCategoriesStateCopy: Record<MobileScreenState, { title: string; body: string }> =
+  {
+    ready: {
+      title: "Public Prayers",
+      body: "Published public prayers are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Public prayers are loading."
+    },
+    empty: {
+      title: "Public Prayers",
+      body: "Public prayers are being prepared."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Public prayers could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "This public screen cannot show private content."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh public prayers."
+    }
+  };
+
+const publicEventsListStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Public Events",
+    body: "Upcoming public events are available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Public events are loading."
+  },
+  empty: {
+    title: "Public Events",
+    body: "No public events are listed yet."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Public events could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "This public screen cannot show private content."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh public events."
+  }
+};
+
+const homeAction: PublicScreenAction = {
+  id: "home",
+  label: "Home",
+  targetRoute: "PublicHome"
+};
+
 const publicScreenTheme: PublicScreenTheme = {
   background: designTokens.color.background.app,
   surface: designTokens.color.background.surface,
@@ -187,3 +472,27 @@ const publicScreenTheme: PublicScreenTheme = {
   spacing: designTokens.space[4],
   radius: designTokens.radius.md
 };
+
+function publicPrayerCategoryBody(
+  categoryId: string,
+  prayers: PublicPrayerListResponseDto["prayers"]
+) {
+  const count = prayers.filter((prayer) => prayer.category?.id === categoryId).length;
+
+  return count === 1 ? "1 public prayer" : `${count} public prayers`;
+}
+
+function publicEventBody(event: PublicEventListResponseDto["events"][number]) {
+  const date = new Date(event.startAt);
+  const formatted = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC"
+  }).format(date);
+
+  return event.locationLabel ? `${formatted} - ${event.locationLabel}` : formatted;
+}

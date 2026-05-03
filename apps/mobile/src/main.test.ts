@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAboutOrderScreen,
+  buildPublicEventsListScreen,
+  fallbackAboutOrderContentPage,
+  fallbackPublicEvents,
+  fallbackPublicPrayers,
   buildPublicHomeScreen,
+  buildPublicPrayerCategoriesScreen,
   getMobileHealth,
   getMobileThemePreview,
   readMobileRuntimeMode,
@@ -56,5 +62,32 @@ describe("mobile shell", () => {
 
   it("exports the public home screen model builder", () => {
     expect(buildPublicHomeScreen(resolveMobileLaunchState(null)).route).toBe("PublicHome");
+  });
+
+  it("exports the about order screen model builder", () => {
+    expect(
+      buildAboutOrderScreen({
+        state: "ready",
+        page: fallbackAboutOrderContentPage,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("AboutOrder");
+  });
+
+  it("exports public prayer and event list screen model builders", () => {
+    expect(
+      buildPublicPrayerCategoriesScreen({
+        state: "ready",
+        response: fallbackPublicPrayers,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("PublicPrayerCategories");
+    expect(
+      buildPublicEventsListScreen({
+        state: "ready",
+        response: fallbackPublicEvents,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("PublicEventsList");
   });
 });

@@ -17,12 +17,19 @@
 ## Current Implementation Note
 
 The current Phase 3 mobile app includes an Expo entry point, typed public launch
-state, a token-backed `PublicHome` screen model, and a React Native `PublicHome`
-screen. In `api` mode it loads `/api/public/home` from the configured API base
-URL, validates the payload with the shared DTO schema, and maps request failures
-to `error` or `offline` states. In `demo` mode it keeps using the local fallback
-payload. The model covers `ready`, `empty`, `loading`, `error`, `forbidden`, and
-`offline` states and maps public CTAs to canonical public routes.
+state, a token-backed `PublicHome` screen model, a React Native `PublicHome`
+screen, and a React Native `AboutOrder` screen. In `api` mode it loads
+`/api/public/home` and `/api/public/content-pages/about-order` from the
+configured API base URL, validates both payloads with shared DTO schemas, and
+maps request failures to `error` or `offline` states. In `demo` mode it keeps
+using local fallback payloads. The model covers `ready`, `empty`, `loading`,
+`error`, `forbidden`, and `offline` states and maps public CTAs to canonical
+public routes.
+
+Phase 4 adds React Native public prayer and event list views. `PublicPrayerCategories`
+loads `/api/public/prayers`; `PublicEventsList` loads `/api/public/events`.
+Both validate shared DTOs, support API/demo runtime modes, and expose only
+public-safe summaries. Prayer/event detail screens remain pending.
 
 ## Analytics
 
