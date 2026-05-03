@@ -40,6 +40,74 @@ describe("PublicController", () => {
       }
     });
   });
+
+  it("serves public prayers and events without an authenticated principal", async () => {
+    const controller = controllerWith();
+
+    await expect(
+      controller.listPublicPrayers({
+        categoryId: "22222222-2222-4222-8222-222222222222",
+        language: "en",
+        limit: 20,
+        offset: 0
+      })
+    ).resolves.toEqual({
+      categories: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          slug: "daily",
+          title: "Daily Prayer",
+          language: "en"
+        }
+      ],
+      prayers: [
+        {
+          id: "33333333-3333-4333-8333-333333333333",
+          title: "Morning Offering",
+          excerpt: "A public morning prayer.",
+          language: "en",
+          category: {
+            id: "22222222-2222-4222-8222-222222222222",
+            slug: "daily",
+            title: "Daily Prayer",
+            language: "en"
+          }
+        }
+      ],
+      pagination: { limit: 20, offset: 0 }
+    });
+
+    await expect(controller.getPublicPrayer("33333333-3333-4333-8333-333333333333")).resolves
+      .toMatchObject({
+        prayer: {
+          id: "33333333-3333-4333-8333-333333333333",
+          body: "A public morning prayer."
+        }
+      });
+
+    await expect(controller.listPublicEvents({ limit: 20, offset: 0 })).resolves.toEqual({
+      events: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          title: "Open Evening",
+          type: "open-evening",
+          startAt: "2026-05-10T18:00:00.000Z",
+          endAt: null,
+          locationLabel: "Riga",
+          visibility: "PUBLIC"
+        }
+      ],
+      pagination: { limit: 20, offset: 0 }
+    });
+
+    await expect(controller.getPublicEvent("44444444-4444-4444-8444-444444444444")).resolves
+      .toMatchObject({
+        event: {
+          id: "44444444-4444-4444-8444-444444444444",
+          description: "Public introduction evening."
+        }
+      });
+  });
 });
 
 function controllerWith(): PublicController {
@@ -76,6 +144,80 @@ function controllerWith(): PublicController {
             title: "About the Order",
             body: "Approved public information.",
             language: "en"
+          }
+        });
+      },
+      listPrayers: () => {
+        return Promise.resolve({
+          categories: [
+            {
+              id: "22222222-2222-4222-8222-222222222222",
+              slug: "daily",
+              title: "Daily Prayer",
+              language: "en"
+            }
+          ],
+          prayers: [
+            {
+              id: "33333333-3333-4333-8333-333333333333",
+              title: "Morning Offering",
+              excerpt: "A public morning prayer.",
+              language: "en",
+              category: {
+                id: "22222222-2222-4222-8222-222222222222",
+                slug: "daily",
+                title: "Daily Prayer",
+                language: "en"
+              }
+            }
+          ],
+          pagination: { limit: 20, offset: 0 }
+        });
+      },
+      getPrayer: () => {
+        return Promise.resolve({
+          prayer: {
+            id: "33333333-3333-4333-8333-333333333333",
+            title: "Morning Offering",
+            excerpt: "A public morning prayer.",
+            body: "A public morning prayer.",
+            language: "en",
+            category: {
+              id: "22222222-2222-4222-8222-222222222222",
+              slug: "daily",
+              title: "Daily Prayer",
+              language: "en"
+            }
+          }
+        });
+      },
+      listEvents: () => {
+        return Promise.resolve({
+          events: [
+            {
+              id: "44444444-4444-4444-8444-444444444444",
+              title: "Open Evening",
+              type: "open-evening",
+              startAt: "2026-05-10T18:00:00.000Z",
+              endAt: null,
+              locationLabel: "Riga",
+              visibility: "PUBLIC"
+            }
+          ],
+          pagination: { limit: 20, offset: 0 }
+        });
+      },
+      getEvent: () => {
+        return Promise.resolve({
+          event: {
+            id: "44444444-4444-4444-8444-444444444444",
+            title: "Open Evening",
+            type: "open-evening",
+            startAt: "2026-05-10T18:00:00.000Z",
+            endAt: null,
+            locationLabel: "Riga",
+            visibility: "PUBLIC",
+            description: "Public introduction evening."
           }
         });
       }

@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 2, 2026  
+Updated: May 4, 2026  
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -15,8 +15,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **0** | ✅ COMPLETE | 100% | ████████████████████ | Scope, roles, visibility | — |
 | **1** | ✅ COMPLETE | 100% | ████████████████████ | Monorepo, apps, CI, gates | — |
 | **2** | 🟡 IN PROGRESS | ~80% | ████████████████░░░░ | Prisma, auth helpers, filters | Complete guards/tests |
-| **3** | 🟡 IN PROGRESS | ~55% | ███████████░░░░░░░░░ | `/api/public/home`, public content pages, live PublicHome API loading | Prayer/event APIs |
-| **4** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Prayer/event APIs | Start after Phase 3 |
+| **3** | ✅ COMPLETE | 100% | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
+| **4** | 🟡 IN PROGRESS | ~45% | █████████░░░░░░░░░░░ | Public prayer/event read APIs, seed fixtures, mobile list views | Detail screens + admin CRUD |
 | **5** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching | Start after Phase 4 |
 | **6–13** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit | — |
 
@@ -86,9 +86,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ---
 
-### Phase 3: Public Discovery Mode 🟡
+### Phase 3: Public Discovery Mode ✅
 
-**Status**: IN PROGRESS (~55%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 - ✅ `/api/public/home` endpoint (contract defined, returns DTO)
@@ -98,20 +98,40 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Mobile API mode loads `/api/public/home`, validates DTO responses, and maps error/offline states
 - ✅ `/api/public/content-pages/{slug}` endpoint for published `PUBLIC` About content
 - ✅ `content_pages` table and `about-order` seed fixture
-
-**In Progress**:
-- 🟡 Link prayer/event endpoints to content tables
-- 🟡 Mobile `AboutOrder` screen integration
+- ✅ Mobile `AboutOrder` screen integration with API-mode content loading, shared DTO validation, state handling, and demo fallback
 
 **Not Yet**:
-- ⏳ Public prayer library API (Phase 4)
-- ⏳ Public event API (Phase 4)
-- ⏳ Prayer/event content seed data (Phase 4)
 - ⏳ Join interest form (Phase 7)
 
-**Exit criteria**: 🟡 Mobile/API foundation plus About content endpoint complete; prayer/event integration pending
+**Exit criteria**: ✅ Public shell, home, about content, and join/login routing links are in place
 
-**Next step**: Implement Phase 4 public prayer/event APIs and populate representative prayer/event seed data
+**Next step**: Continue Phase 4 public prayer/event mobile views and admin workflows
+
+### Phase 4: Public Content: Prayers & Events 🟡
+
+**Status**: IN PROGRESS (~45%)
+
+**Completed**:
+- ✅ `prayer_categories`, `prayers`, and `events` tables with migration
+- ✅ Representative public and private prayer/event seed fixtures
+- ✅ `/api/public/prayers` list endpoint with category, language, search, and safe pagination filters
+- ✅ `/api/public/prayers/{id}` detail endpoint; private/unpublished IDs resolve as 404
+- ✅ `/api/public/events` list endpoint for upcoming public/family-open events
+- ✅ `/api/public/events/{id}` detail endpoint; private/unpublished IDs resolve as 404
+- ✅ Mobile public prayer category/list view with API-mode DTO validation, state handling, and demo fallback
+- ✅ Mobile public events list view with API-mode DTO validation, state handling, and demo fallback
+
+**In Progress**:
+- 🟡 Public prayer/event detail mobile views
+- 🟡 Admin CRUD and publish/archive workflows for prayers/events
+
+**Not Yet**:
+- ⏳ Brother-visible prayer/event APIs (Phase 8/9)
+- ⏳ Participation intent (Phase 9)
+
+**Exit criteria**: 🟡 Read-only public APIs and mobile list views are implemented; detail/admin surfaces still pending
+
+**Next step**: Add public prayer/event detail screens, then admin CRUD workflows
 
 ---
 
@@ -119,7 +139,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 | Phase | Name | Status | Timeline |
 |-------|------|--------|----------|
-| **4** | Public Content: Prayers & Events | ⏳ Not started | After Phase 3 |
+| **4** | Public Content: Prayers & Events | 🟡 In progress | Started May 2 |
 | **5** | Authentication & Modes | ⏳ Not started | After Phase 4 |
 | **6** | Admin Lite Foundation | ⏳ Not started | After Phase 5 |
 | **7** | Candidate Funnel | ⏳ Not started | After Phase 6 |
@@ -139,7 +159,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **Lint** | ✅ | ✅ | ✅ | Enforced in CI |
 | **Typecheck** | ✅ | ✅ | ✅ | TypeScript strict mode |
 | **Unit tests (80%)** | ✅ | ✅ 98%+ | ✅ 98%+ | `vitest --coverage` currently above threshold |
-| **Integration tests** | ✅ | 🟡 In progress | 🟡 In progress | Public-home API client validation added; broader permission/visibility matrix still expanding |
+| **Integration tests** | ✅ | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; broader Phase 2 permission matrix still expanding |
 | **Build** | ✅ | ✅ | ✅ | All apps compile |
 | **OpenAPI generation** | ✅ | ✅ | ✅ | Contract artifact |
 | **Contract check** | ✅ | ✅ | ✅ | Generated client compiles |
@@ -162,20 +182,24 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Runtime-mode parsing (api/demo/test)
 - API/admin/mobile reject demo mode in production
 
-**Phase 3 Start** 🟡:
+**Phase 3 Complete** ✅:
 - Unauthenticated `/api/public/home` endpoint (fallback discovery shell)
 - Mobile `PublicHome` screen with state model (ready/empty/loading/error/offline/forbidden)
 - Mobile Expo entry point
 - Mobile API-mode public-home loader with shared DTO validation and demo-mode fallback
 - Public content-page endpoint with `content_pages` migration and `about-order` seed fixture
-- Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/auth/me`, org unit endpoints
+- Mobile `AboutOrder` API-mode loader and screen with shared DTO validation, demo fallback, and loading/error/offline/empty states
+- Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/public/content-pages/{slug}`, `/api/auth/me`, org unit endpoints
 - `/api/brother/my-organization-units` (returns summaries only)
 - `/api/admin/organization-units` (scoped listing + super admin CRUD)
 
-**Phase 4+ Not Started** ⏳:
-- Prayer library API, mobile screens, admin CRUD
-- Event API, mobile screens, admin CRUD
-- Public content visibility enforcement
+**Phase 4 In Progress** 🟡:
+- Public prayer library API and public event API reads
+- Public prayer/event read endpoints with visibility-filtered repositories and representative seed fixtures
+- Generated OpenAPI includes public prayer/event endpoints
+- Mobile public prayer and event list views with API-mode DTO validation, demo fallback, and loading/error/offline/empty states
+- Prayer/event detail mobile screens and admin CRUD still pending
+- Public content visibility enforcement added for public prayer/event reads
 
 ---
 
@@ -186,19 +210,22 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 1. **Complete Phase 2 exit criteria**
    - [ ] Permission matrix tests (guest/candidate/brother/officer × content types)
    - [ ] Visibility integration tests (public API returns no private content)
-   - [ ] Seed data includes Phase 3 fallback content
+   - [x] Seed data includes Phase 3 fallback content
 
 2. **Finalize Phase 3**
    - [x] Connect mobile PublicHome to real `/api/public/home`
    - [x] Public About content table/endpoint seeded
-   - [ ] Phase 4 content tables created (prayers, events)
-   - [ ] Update this dashboard after changes
+   - [x] Integrate mobile AboutOrder with public content-page API loading
+   - [x] Phase 4 content tables created (prayers, events)
+   - [x] Update this dashboard after changes
 
 ### Medium Term (Next 5–10 commits)
 
 3. **Phase 4: Public Content**
-   - [ ] Prayer library API + mobile screens
-   - [ ] Event API + mobile screens
+   - [x] Prayer library API
+   - [x] Event API
+   - [x] Public prayer/event mobile list screens
+   - [ ] Public prayer/event mobile detail screens
    - [ ] Publish/archive workflows in admin
 
 4. **Phase 5: Authentication**
@@ -282,6 +309,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 2, 2026  
-**Current Phase**: Phase 2 (~80%) + Phase 3 (~30%)  
-**Next Major Milestone**: Complete Phase 3, start Phase 4 (public content)
+**Last Updated**: May 4, 2026  
+**Current Phase**: Phase 2 (~80%) + Phase 4 (~45%)  
+**Next Major Milestone**: Complete Phase 2 permission/visibility tests and Phase 4 public detail screens/admin CRUD

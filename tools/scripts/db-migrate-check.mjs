@@ -7,6 +7,7 @@ const requiredInputs = [
   "prisma/schema.prisma",
   "prisma/migrations/000001_core_identity_foundation/migration.sql",
   "prisma/migrations/000002_public_content_pages/migration.sql",
+  "prisma/migrations/000003_public_prayers_events/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -74,6 +75,32 @@ if (missingPublicContentMigrationSnippets.length > 0) {
   );
 }
 
+const publicPrayersEventsMigrationSql = readFileSync(
+  "prisma/migrations/000003_public_prayers_events/migration.sql",
+  "utf8"
+);
+
+const requiredPublicPrayersEventsMigrationSnippets = [
+  "CREATE TYPE event_status AS ENUM",
+  "CREATE TABLE prayer_categories",
+  "CREATE TABLE prayers",
+  "CREATE TABLE events",
+  "CREATE UNIQUE INDEX prayer_categories_slug_language_unique",
+  "CREATE INDEX prayers_visibility_status_language_idx",
+  "CREATE INDEX events_visibility_status_start_at_idx"
+];
+
+const missingPublicPrayersEventsMigrationSnippets =
+  requiredPublicPrayersEventsMigrationSnippets.filter(
+    (snippet) => !publicPrayersEventsMigrationSql.includes(snippet)
+  );
+
+if (missingPublicPrayersEventsMigrationSnippets.length > 0) {
+  throw new Error(
+    `Public prayers/events migration is missing required SQL: ${missingPublicPrayersEventsMigrationSnippets.join(", ")}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -82,7 +109,11 @@ const requiredSeedSnippets = [
   "Second Scope Choragiew",
   "organizationUnit",
   "about-order",
-  "contentPage"
+  "contentPage",
+  "Morning Offering",
+  "Brother Only Prayer",
+  "Open Evening",
+  "Brother Formation Evening"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -93,5 +124,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, and Phase 3 public content-page fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, and Phase 4 public prayer/event fixtures."
 );

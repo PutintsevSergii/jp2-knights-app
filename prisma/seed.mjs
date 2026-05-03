@@ -123,6 +123,179 @@ async function main() {
       publishedAt: new Date("2026-01-01T00:00:00.000Z")
     }
   });
+
+  const dailyPrayerCategory = await prisma.prayerCategory.upsert({
+    where: {
+      slug_language: {
+        slug: "daily",
+        language: "en"
+      }
+    },
+    update: {
+      title: "Daily Prayer",
+      sortOrder: 10,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000005",
+      slug: "daily",
+      title: "Daily Prayer",
+      language: "en",
+      sortOrder: 10,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.prayer.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000006"
+    },
+    update: {
+      categoryId: dailyPrayerCategory.id,
+      title: "Morning Offering",
+      body: "Lord, receive this day and guide our service in truth, fraternity, and charity.",
+      language: "en",
+      visibility: "PUBLIC",
+      targetOrganizationUnitId: null,
+      status: "PUBLISHED",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000006",
+      categoryId: dailyPrayerCategory.id,
+      title: "Morning Offering",
+      body: "Lord, receive this day and guide our service in truth, fraternity, and charity.",
+      language: "en",
+      visibility: "PUBLIC",
+      status: "PUBLISHED",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.prayer.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000007"
+    },
+    update: {
+      categoryId: dailyPrayerCategory.id,
+      title: "Brother Only Prayer",
+      body: "This local fixture must never appear in public prayer responses.",
+      language: "en",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "PUBLISHED",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000007",
+      categoryId: dailyPrayerCategory.id,
+      title: "Brother Only Prayer",
+      body: "This local fixture must never appear in public prayer responses.",
+      language: "en",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "PUBLISHED",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.event.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000008"
+    },
+    update: {
+      title: "Open Evening",
+      description: "A public introduction evening for people exploring the Order.",
+      type: "open-evening",
+      startAt: new Date("2026-06-10T18:00:00.000Z"),
+      endAt: new Date("2026-06-10T20:00:00.000Z"),
+      locationLabel: "Riga",
+      visibility: "PUBLIC",
+      targetOrganizationUnitId: null,
+      status: "published",
+      updatedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      cancelledAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000008",
+      title: "Open Evening",
+      description: "A public introduction evening for people exploring the Order.",
+      type: "open-evening",
+      startAt: new Date("2026-06-10T18:00:00.000Z"),
+      endAt: new Date("2026-06-10T20:00:00.000Z"),
+      locationLabel: "Riga",
+      visibility: "PUBLIC",
+      status: "published",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.event.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000009"
+    },
+    update: {
+      title: "Brother Formation Evening",
+      description: "This local fixture must never appear in public event responses.",
+      type: "formation",
+      startAt: new Date("2026-06-12T18:00:00.000Z"),
+      endAt: new Date("2026-06-12T20:00:00.000Z"),
+      locationLabel: "Riga",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "published",
+      updatedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      cancelledAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000009",
+      title: "Brother Formation Evening",
+      description: "This local fixture must never appear in public event responses.",
+      type: "formation",
+      startAt: new Date("2026-06-12T18:00:00.000Z"),
+      endAt: new Date("2026-06-12T20:00:00.000Z"),
+      locationLabel: "Riga",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "published",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
 }
 
 async function findOrCreateOrganizationUnit(data) {
