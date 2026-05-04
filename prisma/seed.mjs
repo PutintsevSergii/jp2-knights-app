@@ -46,6 +46,16 @@ async function main() {
     }
   });
 
+  await linkExternalIdentity({
+    id: "00000000-0000-0000-0000-000000000010",
+    userId: superAdmin.id,
+    provider: "firebase",
+    providerSubject: "demo-admin",
+    email: "admin@example.test",
+    emailVerified: true,
+    displayName: "Demo Super Admin"
+  });
+
   const existingOfficer = await prisma.user.findFirst({
     where: { email: "officer@example.test", archivedAt: null }
   });
@@ -72,6 +82,16 @@ async function main() {
       role: "OFFICER",
       createdBy: superAdmin.id
     }
+  });
+
+  await linkExternalIdentity({
+    id: "00000000-0000-0000-0000-000000000011",
+    userId: officer.id,
+    provider: "firebase",
+    providerSubject: "demo-officer",
+    email: "officer@example.test",
+    emailVerified: true,
+    displayName: "Demo Officer"
   });
 
   await prisma.officerAssignment.upsert({
@@ -314,6 +334,24 @@ async function findOrCreateOrganizationUnit(data) {
       data
     })
   );
+}
+
+async function linkExternalIdentity(data) {
+  await prisma.identityProviderAccount.upsert({
+    where: {
+      id: data.id
+    },
+    update: {
+      userId: data.userId,
+      provider: data.provider,
+      providerSubject: data.providerSubject,
+      email: data.email,
+      emailVerified: data.emailVerified,
+      displayName: data.displayName,
+      revokedAt: null
+    },
+    create: data
+  });
 }
 
 await main();

@@ -9,6 +9,14 @@
 | POST | `/auth/device-tokens` | Yes | Candidate/Brother/Officer/Super Admin | platform, token | registered token id | 400 | Token belongs to current user |
 | PUT | `/auth/notification-preferences` | Yes | Candidate/Brother | category booleans | updated preferences | 400 | Preferences respected |
 
+## Current Implementation Notes
+
+- `GET /auth/me`, `POST /auth/session`, `POST /auth/logout`, and `POST /auth/refresh` are implemented in Phase 5.
+- API guards verify bearer ID tokens or `jp2_session` cookies through the replaceable provider adapter before loading local authorization data.
+- `AUTH_PROVIDER_MODE=firebase` uses the Firebase Admin SDK provider. `AUTH_PROVIDER_MODE=fake` is allowed only outside production for local seeded demo identities.
+- Session-cookie creation requires a matching `csrfToken` request body value and `x-csrf-token` header before setting the `httpOnly` cookie.
+- `POST /auth/device-tokens` and `PUT /auth/notification-preferences` remain Phase 9 work with push/notification preferences.
+
 ## Security Rules
 
 - Inactive users receive 403 and no private data.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAdminHealth, getAdminThemePreview } from "./main.js";
+import { getAdminHealth, getAdminShellRoutes, getAdminThemePreview } from "./main.js";
 
 describe("admin shell", () => {
   it("supports explicit demo mode", () => {
@@ -14,5 +14,12 @@ describe("admin shell", () => {
 
   it("uses shared design tokens", () => {
     expect(getAdminThemePreview().action).toBeDefined();
+  });
+
+  it("exposes admin content shell routes", () => {
+    expect(getAdminShellRoutes().map((route) => route.path)).toEqual([
+      "/admin/prayers",
+      "/admin/events"
+    ]);
   });
 });

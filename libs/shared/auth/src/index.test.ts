@@ -402,4 +402,52 @@ describe("shared visibility helpers", () => {
       )
     ).toBe(true);
   });
+
+  it("covers the public/private visibility matrix for each principal class", () => {
+    const records = [
+      { visibility: "PUBLIC" as const },
+      { visibility: "FAMILY_OPEN" as const },
+      { visibility: "CANDIDATE" as const, targetOrganizationUnitId: organizationUnitA },
+      { visibility: "BROTHER" as const, targetOrganizationUnitId: organizationUnitA },
+      { visibility: "ORGANIZATION_UNIT" as const, targetOrganizationUnitId: organizationUnitA },
+      { visibility: "OFFICER" as const, targetOrganizationUnitId: organizationUnitA },
+      { visibility: "ADMIN" as const, targetOrganizationUnitId: organizationUnitA }
+    ];
+
+    expect(records.map((record) => canViewByVisibility(null, record, { audience: "public" }))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]);
+    expect(
+      records.map((record) =>
+        canViewByVisibility(candidate, record, {
+          audience: "candidate",
+          candidateCanAccessOrganizationUnit: true
+        })
+      )
+    ).toEqual([true, true, true, false, true, false, false]);
+    expect(records.map((record) => canViewByVisibility(brother, record, { audience: "brother" }))).toEqual([
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]);
+    expect(records.map((record) => canViewByVisibility(officer, record, { audience: "admin" }))).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]);
+  });
 });

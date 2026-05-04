@@ -89,9 +89,33 @@ model User {
   officerAssignments     OfficerAssignment[]  @relation("OfficerUser")
   officerAssignmentsMade OfficerAssignment[]  @relation("OfficerAssignmentCreator")
   auditLogs              AuditLog[]           @relation("AuditActor")
+  identityProviderAccounts IdentityProviderAccount[]
 
   @@index([status])
   @@map("users")
+}
+
+model IdentityProviderAccount {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  provider        String
+  providerSubject String    @map("provider_subject")
+  email           String?   @db.Citext
+  emailVerified   Boolean?  @map("email_verified")
+  phone           String?
+  displayName     String?   @map("display_name")
+  photoUrl         String?   @map("photo_url")
+  lastSignInAt    DateTime? @map("last_sign_in_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([provider, providerSubject])
+  @@index([revokedAt])
+  @@map("identity_provider_accounts")
 }
 
 model UserRole {

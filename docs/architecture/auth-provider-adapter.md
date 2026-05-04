@@ -91,6 +91,26 @@ libs/auth/provider/
 
 The existing `@jp2/shared-auth` package remains the product authorization helper package. It should not verify Firebase tokens.
 
+## Current Implementation
+
+Phase 5 implements the provider boundary as `@jp2/auth-provider` in
+`libs/auth/provider`. The package exposes `ExternalAuthProvider`,
+`FirebaseAdminAuthProvider`, `createFirebaseAdminAuthProvider`, and
+`StaticTokenAuthProvider`.
+
+API configuration selects the provider with `AUTH_PROVIDER_MODE`:
+
+- `firebase`: uses the Firebase Admin SDK and reads `FIREBASE_PROJECT_ID` plus
+  optional `FIREBASE_SERVICE_ACCOUNT_JSON`; otherwise it falls back to
+  application-default credentials.
+- `fake`: local/test-only static tokens for seeded demo identities. This mode is
+  rejected when `NODE_ENV=production`.
+
+Nest guards depend on the `ExternalAuthProvider` token and local
+`AuthIdentityRepository`, not Firebase classes. Local roles, status,
+memberships, and officer scope are loaded from PostgreSQL after provider
+verification.
+
 ## Stable Contract
 
 The stable contract between the auth provider module and the JP2 API is:

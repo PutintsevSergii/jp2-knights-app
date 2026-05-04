@@ -16,7 +16,10 @@ export class CurrentUserService {
       },
       access: {
         mobileMode: resolveMobileMode(principal),
-        adminLite: canAccessAdminLite(principal)
+        adminLite: canAccessAdminLite(principal),
+        candidateOrganizationUnitId: principal.candidateOrganizationUnitId ?? null,
+        memberOrganizationUnitIds: principal.memberOrganizationUnitIds ?? [],
+        officerOrganizationUnitIds: principal.officerOrganizationUnitIds ?? []
       }
     };
   }

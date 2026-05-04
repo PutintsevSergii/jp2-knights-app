@@ -1,0 +1,19 @@
+{
+  "name": "auth-provider",
+  "sourceRoot": "libs/auth/provider/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "command": "eslint libs/auth/provider/src --max-warnings=0"
+    },
+    "typecheck": {
+      "command": "tsc -b libs/auth/provider/tsconfig.json"
+    },
+    "test": {
+      "command": "vitest run libs/auth/provider"
+    },
+    "build": {
+      "command": "tsc -p libs/auth/provider/tsconfig.json"
+    }
+  }
+}

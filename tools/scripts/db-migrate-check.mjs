@@ -8,6 +8,7 @@ const requiredInputs = [
   "prisma/migrations/000001_core_identity_foundation/migration.sql",
   "prisma/migrations/000002_public_content_pages/migration.sql",
   "prisma/migrations/000003_public_prayers_events/migration.sql",
+  "prisma/migrations/000004_identity_provider_accounts/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -101,6 +102,29 @@ if (missingPublicPrayersEventsMigrationSnippets.length > 0) {
   );
 }
 
+const identityProviderMigrationSql = readFileSync(
+  "prisma/migrations/000004_identity_provider_accounts/migration.sql",
+  "utf8"
+);
+
+const requiredIdentityProviderMigrationSnippets = [
+  "CREATE TABLE identity_provider_accounts",
+  "provider_subject",
+  "CREATE UNIQUE INDEX identity_provider_accounts_provider_subject_active_unique",
+  "WHERE revoked_at IS NULL",
+  "CREATE INDEX identity_provider_accounts_user_id_idx"
+];
+
+const missingIdentityProviderMigrationSnippets = requiredIdentityProviderMigrationSnippets.filter(
+  (snippet) => !identityProviderMigrationSql.includes(snippet)
+);
+
+if (missingIdentityProviderMigrationSnippets.length > 0) {
+  throw new Error(
+    `Identity provider migration is missing required SQL: ${missingIdentityProviderMigrationSnippets.join(", ")}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -113,7 +137,10 @@ const requiredSeedSnippets = [
   "Morning Offering",
   "Brother Only Prayer",
   "Open Evening",
-  "Brother Formation Evening"
+  "Brother Formation Evening",
+  "identityProviderAccount",
+  "demo-admin",
+  "demo-officer"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -124,5 +151,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, and Phase 4 public prayer/event fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, and Phase 5 provider-link fixtures."
 );

@@ -26,7 +26,10 @@ describe("CurrentUserService", () => {
       },
       access: {
         mobileMode: "brother",
-        adminLite: false
+        adminLite: false,
+        candidateOrganizationUnitId: "organizationUnit-a",
+        memberOrganizationUnitIds: ["organizationUnit-a"],
+        officerOrganizationUnitIds: []
       }
     });
   });
@@ -43,7 +46,10 @@ describe("CurrentUserService", () => {
       }).access
     ).toEqual({
       mobileMode: "public",
-      adminLite: true
+      adminLite: true,
+      candidateOrganizationUnitId: null,
+      memberOrganizationUnitIds: [],
+      officerOrganizationUnitIds: ["organizationUnit-a"]
     });
   });
 });

@@ -372,6 +372,13 @@ export const publicEventDetailResponseSchema = z.object({
   })
 });
 
+export const authSessionRequestSchema = z
+  .object({
+    idToken: z.string().trim().min(1).max(8192),
+    csrfToken: z.string().trim().min(16).max(512).optional()
+  })
+  .strict();
+
 export type OrganizationUnitSummaryDto = z.infer<typeof organizationUnitSummarySchema>;
 export type CreateOrganizationUnitRequestDto = z.infer<typeof createOrganizationUnitRequestSchema>;
 export type UpdateOrganizationUnitRequestDto = z.infer<typeof updateOrganizationUnitRequestSchema>;
@@ -402,6 +409,7 @@ export type PublicPrayerDetailResponseDto = z.infer<typeof publicPrayerDetailRes
 export type PublicEventListQueryDto = z.infer<typeof publicEventListQuerySchema>;
 export type PublicEventListResponseDto = z.infer<typeof publicEventListResponseSchema>;
 export type PublicEventDetailResponseDto = z.infer<typeof publicEventDetailResponseSchema>;
+export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
 
 export interface RuntimeModeParseOptions {
   nodeEnv?: string | undefined;

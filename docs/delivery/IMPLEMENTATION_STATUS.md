@@ -14,11 +14,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | -------- | -------------- | -------- | -------------------- | ----------------------------------------------------------------------- | ---------------------------- |
 | **0**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                | —                            |
 | **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                               | —                            |
-| **2**    | 🟡 IN PROGRESS | ~80%     | ████████████████░░░░ | Prisma, auth helpers, filters                                           | Complete guards/tests        |
+| **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                        | —                            |
 | **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
-| **4**    | 🟡 IN PROGRESS | ~86%     | █████████████████░░░ | Public APIs, mobile views, admin APIs, audit, admin workflow foundation | Render admin screens         |
-| **5**    | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching                                          | Start after Phase 4          |
-| **6–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit                                | —                            |
+| **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes        | —                            |
+| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API   | Phase 6 Admin Lite foundation |
+| **6–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, roadmap, silent prayer, hardening            | Start Phase 6                |
 
 ---
 
@@ -47,7 +47,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Completed**:
 
 - ✅ Nx monorepo with pnpm (TypeScript strict mode)
-- ✅ `/apps/api` (NestJS), `/apps/admin` (Next.js), `/apps/mobile` (Expo React Native)
+- ✅ `/apps/api` (NestJS), `/apps/admin` TypeScript shell/workflow foundation, `/apps/mobile` (Expo React Native)
 - ✅ `/libs/shared` (types, validation, auth helpers, design tokens)
 - ✅ Demo mode infrastructure (production rejects demo)
 - ✅ Docker Compose for PostgreSQL + Redis
@@ -60,9 +60,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ---
 
-### Phase 2: Core Domain & API Foundation 🟡
+### Phase 2: Core Domain & API Foundation ✅
 
-**Status**: IN PROGRESS (~80%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 
@@ -73,21 +73,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Prisma schema and migrations for identity/organization/audit baseline
 - ✅ OpenAPI generation target
 - ✅ Shared auth/visibility helpers with tests
+- ✅ Shared public/private visibility matrix covers guest, candidate, brother, officer, and Super Admin paths
 
-**In Progress**:
-
-- 🟡 Permission matrix tests (all 5 roles × guest/candidate/private content) — ~75% done
-- 🟡 Visibility integration tests (public API excludes private content) — in progress
-- 🟡 Seed data with Phase 3 content — pending
-
-**Not Yet**:
-
-- ⏳ Firebase-backed auth (Phase 5)
-- ⏳ Full API endpoints (in Phase 3+)
-
-**Exit criteria**: 🟡 Mostly met, integration tests in progress
-
-**Next step**: Complete permission/visibility matrix tests, verify migrations clean, update seed data
+**Exit criteria**: ✅ All met
 
 ---
 
@@ -112,11 +100,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Exit criteria**: ✅ Public shell, home, about content, and join/login routing links are in place
 
-**Next step**: Continue Phase 4 public prayer/event mobile views and admin workflows
+**Next step**: Phase 4 public content views
 
-### Phase 4: Public Content: Prayers & Events 🟡
+### Phase 4: Public Content: Prayers & Events ✅
 
-**Status**: IN PROGRESS (~86%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 
@@ -134,29 +122,53 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Admin event list/create/patch API with guarded access, shared validation, officer-scoped reads/writes, and Super Admin global writes
 - ✅ Admin prayer/event mutation audit side effects with actor, entity, scope, and redacted before/after summaries
 - ✅ Admin app prayer/event workflow foundation with authenticated API clients, DTO validation, state mapping, and list action view models
-
-**In Progress**:
-
-- 🟡 Rendered Admin Lite prayer/event screens
+- ✅ Framework-neutral rendered admin prayer/event list templates with action metadata, escaped dynamic content, and ready/empty/forbidden/demo states
+- ✅ Admin shell route integration for `/admin/prayers` and `/admin/events` with API/demo data resolution, rendered status documents, and route metadata
 
 **Not Yet**:
 
+- ⏳ Production Admin Lite web hosting/Next.js mounting
 - ⏳ Brother-visible prayer/event APIs (Phase 8/9)
 - ⏳ Participation intent (Phase 9)
 
-**Exit criteria**: 🟡 Public APIs, mobile public views, admin prayer/event APIs, audit side effects, and admin workflow models are implemented; rendered admin UI surfaces still pending
+**Exit criteria**: ✅ Public APIs, mobile public views, admin prayer/event APIs, audit side effects, admin workflow models, rendered templates, and shell routes are implemented
 
-**Next step**: Render admin prayer/event screens from the tested workflow models
+**Next step**: Phase 5 authentication and modes
 
 ---
+
+### Phase 5: Authentication & Modes ✅
+
+**Status**: COMPLETE (100%)
+
+**Completed**:
+
+- ✅ Reusable `@jp2/auth-provider` package with provider-agnostic `ExternalAuthProvider`
+- ✅ Firebase Admin SDK-backed provider verifier with session-cookie and revocation support
+- ✅ Static fake provider for local/test replacement coverage without Firebase classes
+- ✅ `identity_provider_accounts` migration, Prisma model, and local seed links
+- ✅ Provider identity to local JP2 user linking by active provider link or verified email
+- ✅ `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, and `/api/auth/me`
+- ✅ Session cookie creation path with CSRF validation when the provider supports cookies
+- ✅ Local inactive/archived user blocking remains enforced by `CurrentUserGuard`
+- ✅ Current-user response includes mobile mode, Admin Lite access, membership scope, and officer scope
+
+**Not Yet**:
+
+- ⏳ Auth device tokens and notification preferences (Phase 9 with push)
+- ⏳ Production Admin Lite web hosting/Next.js mounting (Phase 6)
+
+**Exit criteria**: ✅ Provider verification, local linking, session/logout/refresh handling, inactive-user blocking, and fake-provider replacement tests are implemented
+
+**Next step**: Start Phase 6 Admin Lite foundation
 
 ### Phases 4–13: Roadmap
 
 | Phase  | Name                             | Status         | Timeline       |
 | ------ | -------------------------------- | -------------- | -------------- |
-| **4**  | Public Content: Prayers & Events | 🟡 In progress | Started May 2  |
-| **5**  | Authentication & Modes           | ⏳ Not started | After Phase 4  |
-| **6**  | Admin Lite Foundation            | ⏳ Not started | After Phase 5  |
+| **4**  | Public Content: Prayers & Events | ✅ Complete    | Completed May 4 |
+| **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
+| **6**  | Admin Lite Foundation            | ⏳ Not started | Next            |
 | **7**  | Candidate Funnel                 | ⏳ Not started | After Phase 6  |
 | **8**  | Brother Companion Core           | ⏳ Not started | After Phase 7  |
 | **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8  |
@@ -169,17 +181,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2        | Phase 3            | Notes                                                                                                               |
-| ------------------------ | ------- | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅             | ✅                 | Enforced in CI                                                                                                      |
-| **Typecheck**            | ✅      | ✅             | ✅                 | TypeScript strict mode                                                                                              |
-| **Unit tests (80%)**     | ✅      | ✅             | ✅                 | `vitest --coverage` currently 94.62% statements / 85.47% branches / 94.14% functions / 95.10% lines                 |
-| **Integration tests**    | ✅      | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; admin event scope/controller, admin content audit, and admin workflow model tests added; broader Phase 2 permission matrix still expanding |
-| **Build**                | ✅      | ✅             | ✅                 | All apps compile                                                                                                    |
-| **OpenAPI generation**   | ✅      | ✅             | ✅                 | Contract artifact                                                                                                   |
-| **Contract check**       | ✅      | ✅             | ✅                 | Generated client compiles                                                                                           |
-| **DB migration check**   | ✅      | ✅             | ✅                 | Migrations apply cleanly                                                                                            |
-| **Demo mode smoke test** | ✅      | ✅             | ✅                 | Mobile/admin launch without backend                                                                                 |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Notes |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ----- |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | Enforced in CI |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | TypeScript strict mode |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage` currently 91.61% statements / 82.10% branches / 90.31% functions / 92.10% lines |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | Public visibility, admin scope/audit, provider adapter, provider-linking, session/CSRF, and fake-provider replacement tests |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | All apps compile |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | Contract artifact |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | Generated client compiles |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | Migrations apply cleanly |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile/admin launch without backend |
 
 ---
 
@@ -197,6 +209,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Seed fixtures (super admin, officer, sample members)
 - Runtime-mode parsing (api/demo/test)
 - API/admin/mobile reject demo mode in production
+- Provider-role visibility matrix tests cover guest/candidate/brother/officer/Super Admin
 
 **Phase 3 Complete** ✅:
 
@@ -206,11 +219,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile API-mode public-home loader with shared DTO validation and demo-mode fallback
 - Public content-page endpoint with `content_pages` migration and `about-order` seed fixture
 - Mobile `AboutOrder` API-mode loader and screen with shared DTO validation, demo fallback, and loading/error/offline/empty states
-- Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/public/content-pages/{slug}`, `/api/auth/me`, org unit endpoints
+- Generated OpenAPI with contracts: `/api/health`, `/api/public/home`, `/api/public/content-pages/{slug}`, auth session endpoints, `/api/auth/me`, org unit endpoints
 - `/api/brother/my-organization-units` (returns summaries only)
 - `/api/admin/organization-units` (scoped listing + super admin CRUD)
 
-**Phase 4 In Progress** 🟡:
+**Phase 4 Complete** ✅:
 
 - Public prayer library API and public event API reads
 - Public prayer/event read endpoints with visibility-filtered repositories and representative seed fixtures
@@ -218,10 +231,22 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile public prayer and event list/detail views with API-mode DTO validation, demo fallback, and loading/error/offline/empty states
 - Admin prayer API CRUD with scoped listing, Super Admin writes, and archive-by-status
 - Admin event API CRUD with scoped listing/writes and publish/cancel/archive status handling
-- Rendered Admin Lite prayer/event screens still pending
 - Admin prayer/event audit side effects added for create/update workflows
 - Admin app prayer/event API client and list action workflow models added
+- Admin prayer/event rendered HTML templates added from workflow models
+- Admin shell routes for `/admin/prayers` and `/admin/events` added
 - Public content visibility enforcement added for public prayer/event reads
+
+**Phase 5 Complete** ✅:
+
+- Reusable `@jp2/auth-provider` library with provider-agnostic contract
+- Firebase Admin SDK provider verifier with session-cookie/revocation support
+- Static fake provider for replacement tests
+- `identity_provider_accounts` migration and demo seed links
+- API-side provider-account linking and local user resolution
+- `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`
+- Session-cookie creation with CSRF validation and logout cookie clearing
+- Current-user response includes mode, Admin Lite access, membership scope, and officer scope
 
 ---
 
@@ -229,16 +254,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Immediate (Next 1–2 commits)
 
-1. **Complete Phase 2 exit criteria**
-   - [ ] Permission matrix tests (guest/candidate/brother/officer × content types)
-   - [ ] Visibility integration tests (public API returns no private content)
-   - [x] Seed data includes Phase 3 fallback content
+1. **Start Phase 6 Admin Lite foundation**
+   - [ ] Mount production Admin Lite web/Next.js shell or approved equivalent
+   - [ ] Add scoped dashboard route and navigation around implemented admin content routes
+   - [ ] Keep officer/Super Admin access server-side scoped
 
-2. **Finalize Phase 3**
+2. **Maintain completed Phase 3–5 foundation**
    - [x] Connect mobile PublicHome to real `/api/public/home`
    - [x] Public About content table/endpoint seeded
    - [x] Integrate mobile AboutOrder with public content-page API loading
    - [x] Phase 4 content tables created (prayers, events)
+   - [x] Phase 5 provider adapter and auth session endpoints
    - [x] Update this dashboard after changes
 
 ### Medium Term (Next 5–10 commits)
@@ -251,13 +277,14 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Admin prayer list/create/patch API
    - [x] Admin event API
    - [x] Admin workflow models/API clients for prayer/event management
-   - [ ] Rendered Admin Lite prayer/event screens
+   - [x] Rendered Admin Lite prayer/event templates
+   - [x] Admin shell/route integration for rendered screens
    - [x] Admin audit workflows for prayer/event mutations
 
 4. **Phase 5: Authentication**
-   - [ ] Firebase provider adapter
-   - [ ] Login/logout flow
-   - [ ] Mode switching based on role
+   - [x] Firebase provider adapter
+   - [x] Login/logout/session API flow
+   - [x] Mode switching based on role
 
 ---
 
@@ -337,5 +364,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 4, 2026
-**Current Phase**: Phase 2 (~80%) + Phase 4 (~86%)
-**Next Major Milestone**: Complete Phase 2 permission/visibility tests and render Phase 4 admin prayer/event screens
+**Current Phase**: Phase 6 next; Phases 0–5 complete
+**Next Major Milestone**: Start Phase 6 Admin Lite foundation

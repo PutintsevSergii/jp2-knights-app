@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { HealthStatus } from "@jp2/shared-types";
 import { parseRuntimeMode } from "@jp2/shared-validation";
+import { adminContentShellRoutes } from "./admin-content-shell.js";
 
 export function getAdminHealth(
   mode = process.env.APP_RUNTIME_MODE,
@@ -18,6 +19,10 @@ export function getAdminThemePreview() {
     background: designTokens.color.background.app,
     action: designTokens.color.action.primary
   };
+}
+
+export function getAdminShellRoutes() {
+  return [...adminContentShellRoutes];
 }
 
 /* v8 ignore next 3 */

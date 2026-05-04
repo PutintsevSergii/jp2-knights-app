@@ -18,6 +18,7 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      "@jp2/auth-provider": ["libs/auth/provider/src/index.ts"],
       "@jp2/shared-types": ["libs/shared/types/src/index.ts"],
       "@jp2/shared-validation": ["libs/shared/validation/src/index.ts"],
       "@jp2/shared-auth": ["libs/shared/auth/src/index.ts"],

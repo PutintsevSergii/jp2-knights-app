@@ -44,7 +44,7 @@ describe("CurrentUserGuard", () => {
 function sessionProvider(principal: CurrentUserPrincipal | null): AuthSessionService {
   return {
     resolveCurrentUser: () => Promise.resolve(principal)
-  };
+  } as unknown as AuthSessionService;
 }
 
 function httpContext(request: RequestWithPrincipal): ExecutionContext {

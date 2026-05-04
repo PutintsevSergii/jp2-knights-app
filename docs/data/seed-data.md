@@ -8,6 +8,7 @@ Phase 3 public About content fallback and Phase 4 public content fixtures:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
+- local Firebase-provider identity links for `demo-admin` and `demo-officer`;
 - two active organization units.
 - one published `PUBLIC` `about-order` content page for local development.
 - one published `PUBLIC` prayer category and prayer.

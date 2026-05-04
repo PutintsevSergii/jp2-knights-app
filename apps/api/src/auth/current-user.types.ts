@@ -9,6 +9,9 @@ export interface CurrentUserPrincipal extends Principal {
 
 export interface RequestWithPrincipal {
   principal?: CurrentUserPrincipal;
+  headers?: Record<string, string | string[] | undefined>;
+  cookies?: Record<string, string | undefined>;
+  body?: unknown;
 }
 
 export interface CurrentUserResponse {
@@ -23,5 +26,25 @@ export interface CurrentUserResponse {
   access: {
     mobileMode: MobileMode;
     adminLite: boolean;
+    candidateOrganizationUnitId: string | null;
+    memberOrganizationUnitIds: readonly string[];
+    officerOrganizationUnitIds: readonly string[];
   };
+}
+
+export interface AuthSessionRequest {
+  idToken: string;
+  csrfToken?: string;
+}
+
+export interface AuthSessionResponse {
+  currentUser: CurrentUserResponse;
+  session: {
+    transport: "bearer" | "cookie";
+    expiresAt: string | null;
+  };
+}
+
+export interface AuthMutationResponse {
+  success: true;
 }
