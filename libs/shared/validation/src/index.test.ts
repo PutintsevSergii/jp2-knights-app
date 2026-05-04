@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   adminOrganizationUnitListResponseSchema,
+  adminPrayerDetailResponseSchema,
+  adminPrayerListResponseSchema,
   attachmentStatusSchema,
   contentStatusSchema,
+  createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   membershipStatusSchema,
   myOrganizationUnitsResponseSchema,
@@ -21,6 +24,7 @@ import {
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
   roleSchema,
+  updateAdminPrayerRequestSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
 } from "./index.js";
@@ -174,8 +178,57 @@ describe("shared validation", () => {
       prayers: [summary],
       pagination: { limit: 10, offset: 0 }
     });
-    expect(publicPrayerDetailResponseSchema.parse({ prayer: { ...summary, body: summary.excerpt } }))
-      .toEqual({ prayer: { ...summary, body: summary.excerpt } });
+    expect(
+      publicPrayerDetailResponseSchema.parse({ prayer: { ...summary, body: summary.excerpt } })
+    ).toEqual({ prayer: { ...summary, body: summary.excerpt } });
+  });
+
+  it("validates admin prayer write and response DTOs", () => {
+    const prayer = {
+      id: "33333333-3333-4333-8333-333333333333",
+      categoryId: null,
+      title: "Morning Offering",
+      body: "A public morning prayer.",
+      language: "en",
+      visibility: "PUBLIC",
+      targetOrganizationUnitId: null,
+      status: "DRAFT",
+      publishedAt: null,
+      archivedAt: null
+    };
+
+    expect(
+      createAdminPrayerRequestSchema.parse({
+        title: " Morning Offering ",
+        body: " A public morning prayer. ",
+        language: " en ",
+        visibility: "PUBLIC",
+        status: "DRAFT"
+      })
+    ).toEqual({
+      title: "Morning Offering",
+      body: "A public morning prayer.",
+      language: "en",
+      visibility: "PUBLIC",
+      status: "DRAFT"
+    });
+    expect(() =>
+      createAdminPrayerRequestSchema.parse({
+        title: "Scoped",
+        body: "Scoped body",
+        language: "en",
+        visibility: "ORGANIZATION_UNIT",
+        status: "DRAFT"
+      })
+    ).toThrow();
+    expect(updateAdminPrayerRequestSchema.parse({ status: "ARCHIVED" })).toEqual({
+      status: "ARCHIVED"
+    });
+    expect(() => updateAdminPrayerRequestSchema.parse({})).toThrow();
+    expect(adminPrayerListResponseSchema.parse({ prayers: [prayer] })).toEqual({
+      prayers: [prayer]
+    });
+    expect(adminPrayerDetailResponseSchema.parse({ prayer })).toEqual({ prayer });
   });
 
   it("validates public event DTOs with PUBLIC and FAMILY_OPEN visibility only", () => {
