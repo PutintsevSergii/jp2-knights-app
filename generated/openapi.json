@@ -50,6 +50,828 @@
         ]
       }
     },
+    "/api/admin/events": {
+      "get": {
+        "operationId": "AdminEventController_listAdminEvents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Event records visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "events"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "description",
+                          "type",
+                          "startAt",
+                          "endAt",
+                          "locationLabel",
+                          "visibility",
+                          "targetOrganizationUnitId",
+                          "status",
+                          "publishedAt",
+                          "cancelledAt",
+                          "archivedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 8000
+                          },
+                          "type": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "startAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "endAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "locationLabel": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "visibility": {
+                            "type": "string",
+                            "enum": [
+                              "PUBLIC",
+                              "FAMILY_OPEN",
+                              "CANDIDATE",
+                              "BROTHER",
+                              "ORGANIZATION_UNIT",
+                              "OFFICER",
+                              "ADMIN"
+                            ]
+                          },
+                          "targetOrganizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "published",
+                              "cancelled",
+                              "archived"
+                            ]
+                          },
+                          "publishedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "cancelledAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-events"
+        ]
+      },
+      "post": {
+        "operationId": "AdminEventController_createAdminEvent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "type",
+                  "startAt",
+                  "visibility",
+                  "status"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "startAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "locationLabel": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "PUBLIC",
+                      "FAMILY_OPEN",
+                      "CANDIDATE",
+                      "BROTHER",
+                      "ORGANIZATION_UNIT",
+                      "OFFICER",
+                      "ADMIN"
+                    ]
+                  },
+                  "targetOrganizationUnitId": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uuid"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "cancelled",
+                      "archived"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created event record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "description",
+                        "type",
+                        "startAt",
+                        "endAt",
+                        "locationLabel",
+                        "visibility",
+                        "targetOrganizationUnitId",
+                        "status",
+                        "publishedAt",
+                        "cancelledAt",
+                        "archivedAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 8000
+                        },
+                        "type": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "startAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "endAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "locationLabel": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "PUBLIC",
+                            "FAMILY_OPEN",
+                            "CANDIDATE",
+                            "BROTHER",
+                            "ORGANIZATION_UNIT",
+                            "OFFICER",
+                            "ADMIN"
+                          ]
+                        },
+                        "targetOrganizationUnitId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "published",
+                            "cancelled",
+                            "archived"
+                          ]
+                        },
+                        "publishedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "cancelledAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "archivedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The event create payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current admin cannot create events in the requested scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-events"
+        ]
+      }
+    },
+    "/api/admin/events/{id}": {
+      "patch": {
+        "operationId": "AdminEventController_updateAdminEvent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "startAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "locationLabel": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "PUBLIC",
+                      "FAMILY_OPEN",
+                      "CANDIDATE",
+                      "BROTHER",
+                      "ORGANIZATION_UNIT",
+                      "OFFICER",
+                      "ADMIN"
+                    ]
+                  },
+                  "targetOrganizationUnitId": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uuid"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "cancelled",
+                      "archived"
+                    ]
+                  },
+                  "publishedAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "cancelledAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "archivedAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated event record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "description",
+                        "type",
+                        "startAt",
+                        "endAt",
+                        "locationLabel",
+                        "visibility",
+                        "targetOrganizationUnitId",
+                        "status",
+                        "publishedAt",
+                        "cancelledAt",
+                        "archivedAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 8000
+                        },
+                        "type": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "startAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "endAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "locationLabel": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "PUBLIC",
+                            "FAMILY_OPEN",
+                            "CANDIDATE",
+                            "BROTHER",
+                            "ORGANIZATION_UNIT",
+                            "OFFICER",
+                            "ADMIN"
+                          ]
+                        },
+                        "targetOrganizationUnitId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "published",
+                            "cancelled",
+                            "archived"
+                          ]
+                        },
+                        "publishedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "cancelledAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "archivedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The event update payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current admin cannot update events in the requested scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The event is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-events"
+        ]
+      }
+    },
     "/api/admin/prayers": {
       "get": {
         "operationId": "AdminPrayerController_listAdminPrayers",

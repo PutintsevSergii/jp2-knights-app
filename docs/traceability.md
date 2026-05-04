@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~68% in progress)
+**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~74% in progress)
 
 ---
 
@@ -67,6 +67,11 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
   `/api/admin/prayers` list/create and `/api/admin/prayers/{id}` patch/archive
   contracts. Officers can read public and assigned organization-unit scoped
   prayers; Super Admin can create/update/archive in this first slice.
+- Phase 4 admin event API CRUD has started with guarded
+  `/api/admin/events` list/create and `/api/admin/events/{id}` patch
+  contracts. Officers can read public/family-open and assigned
+  organization-unit scoped events, and officer writes are constrained to assigned
+  organization units; Super Admin can manage global and scoped events.
 - Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
   project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
@@ -75,7 +80,8 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
   `/api/public/events`, `/api/public/events/{id}`,
   `/api/auth/me`, `/api/brother/my-organization-units`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
-  `/api/admin/prayers`, and `/api/admin/prayers/{id}` as foundation contracts
+  `/api/admin/prayers`, `/api/admin/prayers/{id}`,
+  `/api/admin/events`, and `/api/admin/events/{id}` as foundation contracts
   with request/response schemas.
 - `/api/auth/me` is a guarded current-user contract backed by a session abstraction;
   Firebase-backed provider verification, provider-account linking, login/session-cookie
@@ -86,9 +92,9 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive. Full Admin Lite navigation, detail views, audit logging,
   and broader admin workflows remain later-phase work.
-- Phase 4 admin event CRUD, admin prayer UI/audit workflow, and Phases 5 through 13
-  product workflows are not implemented yet unless explicitly
-  listed above.
+- Phase 4 admin prayer/event UI and audit side-effect workflows, plus Phases 5
+  through 13 product workflows, are not implemented yet unless explicitly listed
+  above.
 
 ### How to Update This Document
 
@@ -144,7 +150,7 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 | FR-ADMIN-003 Brother Registry              | `/admin/brothers` routes                                                                                                 | brother list/detail/editor         | users, user_roles, memberships, audit_logs                        | officer scope, critical audit                                                                        |
 | FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                       | organization unit list/detail      | organization_units, officer_assignments                           | super admin write, archive                                                                           |
 | FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                  | prayer list/editor                 | prayers, audit_logs                                               | guarded list/create/patch API, visibility required, archive not delete                               |
-| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                   | event list/editor                  | events, audit_logs                                                | public/private explicit, scope                                                                       |
+| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                   | event list/editor                  | events, audit_logs                                                | guarded list/create/patch API, officer scope, public/private explicit, archive not delete            |
 | FR-ADMIN-006 Announcement Management       | `/admin/announcements` routes                                                                                            | announcement list/editor           | announcements, audit_logs                                         | audience-safe push                                                                                   |
 | FR-ADMIN-007 Silent Prayer Management      | `/admin/silent-prayer-events` routes                                                                                     | silent prayer editor               | silent_prayer_events, audit_logs                                  | no participant list                                                                                  |
 | FR-AUDIT-001 Audit Logging                 | mutation side effects, `/admin/audit-logs`                                                                               | audit log                          | audit_logs                                                        | before/after redaction, access control                                                               |

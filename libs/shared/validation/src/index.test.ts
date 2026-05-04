@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminEventDetailResponseSchema,
+  adminEventListResponseSchema,
   adminOrganizationUnitListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
   contentStatusSchema,
+  createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   membershipStatusSchema,
@@ -24,6 +27,7 @@ import {
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
   roleSchema,
+  updateAdminEventRequestSchema,
   updateAdminPrayerRequestSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
@@ -229,6 +233,69 @@ describe("shared validation", () => {
       prayers: [prayer]
     });
     expect(adminPrayerDetailResponseSchema.parse({ prayer })).toEqual({ prayer });
+  });
+
+  it("validates admin event write and response DTOs", () => {
+    const event = {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Open Evening",
+      description: "Public introduction evening.",
+      type: "open-evening",
+      startAt: "2026-05-10T18:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "FAMILY_OPEN",
+      targetOrganizationUnitId: null,
+      status: "draft",
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    };
+
+    expect(
+      createAdminEventRequestSchema.parse({
+        title: " Open Evening ",
+        description: " Public introduction evening. ",
+        type: " open-evening ",
+        startAt: "2026-05-10T18:00:00.000Z",
+        visibility: "FAMILY_OPEN",
+        status: "draft"
+      })
+    ).toEqual({
+      title: "Open Evening",
+      description: "Public introduction evening.",
+      type: "open-evening",
+      startAt: "2026-05-10T18:00:00.000Z",
+      visibility: "FAMILY_OPEN",
+      status: "draft"
+    });
+    expect(() =>
+      createAdminEventRequestSchema.parse({
+        title: "Scoped",
+        type: "retreat",
+        startAt: "2026-05-10T18:00:00.000Z",
+        visibility: "ORGANIZATION_UNIT",
+        status: "draft"
+      })
+    ).toThrow();
+    expect(() =>
+      createAdminEventRequestSchema.parse({
+        title: "Bad dates",
+        type: "retreat",
+        startAt: "2026-05-10T18:00:00.000Z",
+        endAt: "2026-05-10T17:00:00.000Z",
+        visibility: "PUBLIC",
+        status: "draft"
+      })
+    ).toThrow();
+    expect(updateAdminEventRequestSchema.parse({ status: "archived" })).toEqual({
+      status: "archived"
+    });
+    expect(() => updateAdminEventRequestSchema.parse({})).toThrow();
+    expect(adminEventListResponseSchema.parse({ events: [event] })).toEqual({
+      events: [event]
+    });
+    expect(adminEventDetailResponseSchema.parse({ event })).toEqual({ event });
   });
 
   it("validates public event DTOs with PUBLIC and FAMILY_OPEN visibility only", () => {
