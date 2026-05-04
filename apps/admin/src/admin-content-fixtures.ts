@@ -1,4 +1,43 @@
-import type { AdminEventListResponseDto, AdminPrayerListResponseDto } from "@jp2/shared-validation";
+import type {
+  AdminDashboardResponseDto,
+  AdminEventListResponseDto,
+  AdminPrayerListResponseDto
+} from "@jp2/shared-validation";
+
+export const fallbackAdminDashboard: AdminDashboardResponseDto = {
+  scope: {
+    adminKind: "OFFICER",
+    organizationUnitIds: ["11111111-1111-4111-8111-111111111111"]
+  },
+  counts: {
+    organizationUnits: 1,
+    prayers: 1,
+    events: 1
+  },
+  tasks: [
+    {
+      id: "manage-organization-units",
+      label: "Review organization units",
+      count: 1,
+      targetRoute: "/admin/organization-units",
+      priority: "normal"
+    },
+    {
+      id: "manage-prayers",
+      label: "Review prayers",
+      count: 1,
+      targetRoute: "/admin/prayers",
+      priority: "normal"
+    },
+    {
+      id: "manage-events",
+      label: "Review events",
+      count: 1,
+      targetRoute: "/admin/events",
+      priority: "normal"
+    }
+  ]
+};
 
 export const fallbackAdminPrayers: AdminPrayerListResponseDto = {
   prayers: [

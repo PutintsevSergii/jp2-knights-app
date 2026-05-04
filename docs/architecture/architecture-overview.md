@@ -5,7 +5,8 @@
 V1 uses three applications and shared libraries inside an Nx monorepo:
 
 - React Native mobile app for public, candidate, and brother modes;
-- Next.js App Router Admin Lite web panel;
+- Admin Lite web panel, currently mounted through a dependency-free TypeScript
+  HTTP shell with a Next.js App Router target still available for the full UI;
 - NestJS backend API;
 - PostgreSQL as source of truth;
 - Redis for real-time silent prayer presence and background coordination;
@@ -16,7 +17,7 @@ V1 uses three applications and shared libraries inside an Nx monorepo:
 ```mermaid
 flowchart LR
   Mobile["React Native Mobile"] --> API["NestJS API"]
-  Admin["Next.js Admin Lite"] --> API
+  Admin["Admin Lite Web"] --> API
   API --> PG["PostgreSQL"]
   API --> Redis["Redis"]
   API --> Push["Push Provider"]

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminDashboardResponseSchema,
   adminEventDetailResponseSchema,
   adminEventListResponseSchema,
   adminOrganizationUnitListResponseSchema,
@@ -296,6 +297,37 @@ describe("shared validation", () => {
       events: [event]
     });
     expect(adminEventDetailResponseSchema.parse({ event })).toEqual({ event });
+  });
+
+  it("validates admin dashboard scoped counts and task links", () => {
+    const response = {
+      scope: {
+        adminKind: "OFFICER",
+        organizationUnitIds: ["11111111-1111-4111-8111-111111111111"]
+      },
+      counts: {
+        organizationUnits: 1,
+        prayers: 2,
+        events: 3
+      },
+      tasks: [
+        {
+          id: "manage-events",
+          label: "Manage events",
+          count: 3,
+          targetRoute: "/admin/events",
+          priority: "normal"
+        }
+      ]
+    };
+
+    expect(adminDashboardResponseSchema.parse(response)).toEqual(response);
+    expect(
+      adminDashboardResponseSchema.safeParse({
+        ...response,
+        tasks: [{ ...response.tasks[0], targetRoute: "/admin/brothers" }]
+      }).success
+    ).toBe(false);
   });
 
   it("validates public event DTOs with PUBLIC and FAMILY_OPEN visibility only", () => {

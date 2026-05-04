@@ -17,8 +17,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                        | —                            |
 | **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
 | **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes        | —                            |
-| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API   | Phase 6 Admin Lite foundation |
-| **6–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, roadmap, silent prayer, hardening            | Start Phase 6                |
+| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API   | —                            |
+| **6**    | 🟡 IN PROGRESS | ~45%     | █████████░░░░░░░░░░░ | Scoped dashboard API, dashboard route, HTTP web shell navigation        | Mount full Admin Lite UI     |
+| **7–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Candidate, brother, roadmap, silent prayer, hardening                   | After Phase 6                |
 
 ---
 
@@ -127,7 +128,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Production Admin Lite web hosting/Next.js mounting
+- ⏳ Full Admin Lite UI mounting/Next.js App Router target
 - ⏳ Brother-visible prayer/event APIs (Phase 8/9)
 - ⏳ Participation intent (Phase 9)
 
@@ -156,42 +157,66 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Not Yet**:
 
 - ⏳ Auth device tokens and notification preferences (Phase 9 with push)
-- ⏳ Production Admin Lite web hosting/Next.js mounting (Phase 6)
+- ⏳ Full Admin Lite UI mounting/Next.js App Router target (Phase 6)
 
 **Exit criteria**: ✅ Provider verification, local linking, session/logout/refresh handling, inactive-user blocking, and fake-provider replacement tests are implemented
 
-**Next step**: Start Phase 6 Admin Lite foundation
+**Next step**: Continue Phase 6 Admin Lite foundation
+
+### Phase 6: Admin Lite Foundation 🟡
+
+**Status**: IN PROGRESS (~45%)
+
+**Completed**:
+
+- ✅ Guarded `/api/admin/dashboard` endpoint with scoped organization-unit, prayer, and event counts
+- ✅ Officer dashboard counts reuse server-side admin scope filters; Super Admin gets global counts
+- ✅ Admin Lite `/admin/dashboard` route metadata
+- ✅ Framework-neutral rendered dashboard document with navigation to organization units, prayers, and events
+- ✅ Dependency-free HTTP web shell mounts `/admin`, `/admin/dashboard`, `/admin/prayers`, and `/admin/events`
+- ✅ Admin dashboard API client, demo fixture, state handling, and route tests
+- ✅ Contract check now requires all currently implemented Phase 3-6 OpenAPI paths
+
+**In Progress**:
+
+- 🟡 Full Admin Lite UI mounting/Next.js App Router target
+- 🟡 Dashboard UI polish and navigation around upcoming admin detail routes
+- 🟡 Organization-unit detail/editor rendering and audit side effects
+
+**Exit criteria**: 🟡 Scoped dashboard and HTTP route foundation exist; full Admin Lite UI mounting remains
+
+**Next step**: Add organization-unit rendered list/detail/editor routes and audit side effects
 
 ### Phases 4–13: Roadmap
 
-| Phase  | Name                             | Status         | Timeline       |
-| ------ | -------------------------------- | -------------- | -------------- |
+| Phase  | Name                             | Status         | Timeline        |
+| ------ | -------------------------------- | -------------- | --------------- |
 | **4**  | Public Content: Prayers & Events | ✅ Complete    | Completed May 4 |
 | **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
-| **6**  | Admin Lite Foundation            | ⏳ Not started | Next            |
-| **7**  | Candidate Funnel                 | ⏳ Not started | After Phase 6  |
-| **8**  | Brother Companion Core           | ⏳ Not started | After Phase 7  |
-| **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8  |
-| **10** | Formation Roadmap                | ⏳ Not started | After Phase 9  |
-| **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10 |
-| **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11 |
-| **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12 |
+| **6**  | Admin Lite Foundation            | 🟡 In progress | Started May 4   |
+| **7**  | Candidate Funnel                 | ⏳ Not started | After Phase 6   |
+| **8**  | Brother Companion Core           | ⏳ Not started | After Phase 7   |
+| **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8   |
+| **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
+| **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
+| **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
+| **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12  |
 
 ---
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Notes |
-| ------------------------ | ------- | ------- | ------- | ------- | ------- | ----- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | Enforced in CI |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | TypeScript strict mode |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage` currently 91.61% statements / 82.10% branches / 90.31% functions / 92.10% lines |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | Public visibility, admin scope/audit, provider adapter, provider-linking, session/CSRF, and fake-provider replacement tests |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | All apps compile |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | Contract artifact |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | Generated client compiles |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | Migrations apply cleanly |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile/admin launch without backend |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Notes                                                                                                                     |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                     |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                     |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage` currently 92.54% statements / 82.44% branches / 92.11% functions / 93.10% lines                       |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public visibility, admin scope/audit/dashboard, provider adapter, provider-linking, session/CSRF, and fake-provider tests |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                     |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract artifact regenerated                                                                                             |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Check expanded to all implemented paths                                                                                   |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | No schema migration in this slice; migration baseline check passed                                                        |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Admin dashboard demo fixture renders without backend                                                                      |
 
 ---
 
@@ -248,15 +273,25 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Session-cookie creation with CSRF validation and logout cookie clearing
 - Current-user response includes mode, Admin Lite access, membership scope, and officer scope
 
+**Phase 6 In Progress** 🟡:
+
+- Guarded `/api/admin/dashboard` endpoint added for scoped admin counts and task links
+- Dashboard counts reuse existing admin prayer/event scope filters
+- Admin dashboard DTO, OpenAPI schema, API client, demo fixture, screen model, rendered HTML document, and route metadata added
+- Admin web shell mounts implemented dashboard/content routes over HTTP and keeps API/demo mode separation
+- Contract check expanded to require the full currently implemented OpenAPI path set
+
 ---
 
 ## Critical Path & Milestones
 
 ### Immediate (Next 1–2 commits)
 
-1. **Start Phase 6 Admin Lite foundation**
-   - [ ] Mount production Admin Lite web/Next.js shell or approved equivalent
-   - [ ] Add scoped dashboard route and navigation around implemented admin content routes
+1. **Continue Phase 6 Admin Lite foundation**
+   - [x] Add scoped dashboard route and navigation around implemented admin content routes
+   - [x] Add guarded scoped dashboard API
+   - [x] Mount dependency-free Admin Lite HTTP web shell around implemented rendered routes
+   - [ ] Add organization-unit rendered list/detail/editor routes and audit side effects
    - [ ] Keep officer/Super Admin access server-side scoped
 
 2. **Maintain completed Phase 3–5 foundation**
@@ -364,5 +399,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 4, 2026
-**Current Phase**: Phase 6 next; Phases 0–5 complete
-**Next Major Milestone**: Start Phase 6 Admin Lite foundation
+**Current Phase**: Phase 6 in progress; Phases 0–5 complete
+**Next Major Milestone**: Complete Phase 6 organization-unit admin routes and full Admin Lite UI mounting
