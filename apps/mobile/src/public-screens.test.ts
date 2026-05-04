@@ -3,13 +3,17 @@ import { describe, expect, it } from "vitest";
 import { resolveMobileLaunchState } from "./navigation.js";
 import {
   fallbackAboutOrderContentPage,
+  fallbackPublicEventDetail,
   fallbackPublicEvents,
+  fallbackPublicPrayerDetail,
   fallbackPublicPrayers
 } from "./public-content.js";
 import {
   buildAboutOrderScreen,
+  buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   buildPublicHomeScreen,
+  buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen
 } from "./public-screens.js";
 
@@ -278,6 +282,19 @@ describe("mobile public screen models", () => {
       state: "ready",
       title: "Public Prayers"
     });
+    expect(screen.actions).toEqual([
+      {
+        id: "open-first-prayer",
+        label: "Open First Prayer",
+        targetRoute: "PublicPrayerDetail",
+        targetId: "00000000-0000-0000-0000-000000000006"
+      },
+      {
+        id: "home",
+        label: "Home",
+        targetRoute: "PublicHome"
+      }
+    ]);
     expect(screen.sections).toEqual([
       {
         id: "category-00000000-0000-0000-0000-000000000005",
@@ -305,6 +322,19 @@ describe("mobile public screen models", () => {
       state: "ready",
       title: "Public Events"
     });
+    expect(screen.actions).toEqual([
+      {
+        id: "open-first-event",
+        label: "Open First Event",
+        targetRoute: "PublicEventDetail",
+        targetId: "00000000-0000-0000-0000-000000000008"
+      },
+      {
+        id: "home",
+        label: "Home",
+        targetRoute: "PublicHome"
+      }
+    ]);
     expect(screen.sections).toEqual([
       {
         id: "event-00000000-0000-0000-0000-000000000008",
@@ -327,6 +357,72 @@ describe("mobile public screen models", () => {
       title: "Unable to Load"
     });
     expect(buildPublicEventsListScreen({ state: "offline", runtimeMode: "demo" })).toMatchObject({
+      state: "offline",
+      title: "Offline",
+      demoChromeVisible: true
+    });
+  });
+
+  it("builds public prayer and event detail screens from public DTOs", () => {
+    expect(
+      buildPublicPrayerDetailScreen({
+        state: "ready",
+        response: fallbackPublicPrayerDetail,
+        runtimeMode: "api"
+      })
+    ).toMatchObject({
+      route: "PublicPrayerDetail",
+      state: "ready",
+      title: "Morning Offering",
+      sections: [
+        {
+          id: "prayer-body",
+          title: "Daily Prayer",
+          body: "Lord, receive this day and guide our service in truth, fraternity, and charity."
+        }
+      ]
+    });
+    expect(
+      buildPublicEventDetailScreen({
+        state: "ready",
+        response: fallbackPublicEventDetail,
+        runtimeMode: "api"
+      })
+    ).toMatchObject({
+      route: "PublicEventDetail",
+      state: "ready",
+      title: "Open Evening",
+      sections: [
+        {
+          id: "event-time-location",
+          title: "When and Where",
+          body: "Jun 10, 2026, 18:00 - Riga"
+        },
+        {
+          id: "event-description",
+          title: "Details",
+          body: "A public introduction evening for people exploring the Order."
+        }
+      ]
+    });
+  });
+
+  it("builds public detail loading, empty, error, and offline states", () => {
+    expect(buildPublicPrayerDetailScreen({ state: "loading", runtimeMode: "api" })).toMatchObject({
+      state: "loading",
+      title: "Loading",
+      actions: []
+    });
+    expect(buildPublicPrayerDetailScreen({ state: "empty", runtimeMode: "api" })).toMatchObject({
+      state: "empty",
+      title: "Public Prayer",
+      actions: []
+    });
+    expect(buildPublicEventDetailScreen({ state: "error", runtimeMode: "api" })).toMatchObject({
+      state: "error",
+      title: "Unable to Load"
+    });
+    expect(buildPublicEventDetailScreen({ state: "offline", runtimeMode: "demo" })).toMatchObject({
       state: "offline",
       title: "Offline",
       demoChromeVisible: true

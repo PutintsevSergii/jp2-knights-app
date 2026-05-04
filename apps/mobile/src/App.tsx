@@ -3,13 +3,20 @@ import { resolveMobileLaunchState } from "./navigation.js";
 import type { MobileLaunchState, MobileScreenState } from "./navigation.js";
 import { fetchPublicContentPage, publicContentPageLoadFailureState } from "./public-content-api.js";
 import {
+  fetchPublicEvent,
+  fetchPublicPrayer,
+  publicContentDetailLoadFailureState
+} from "./public-content-detail-api.js";
+import {
   fetchPublicEvents,
   fetchPublicPrayers,
   publicContentListLoadFailureState
 } from "./public-content-list-api.js";
 import {
   fallbackAboutOrderContentPage,
+  fallbackPublicEventDetail,
   fallbackPublicEvents,
+  fallbackPublicPrayerDetail,
   fallbackPublicPrayers
 } from "./public-content.js";
 import {
@@ -19,18 +26,23 @@ import {
 } from "./public-home-api.js";
 import {
   buildAboutOrderScreen,
+  buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   buildPublicHomeScreen,
+  buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen
 } from "./public-screens.js";
 import type { PublicRoute } from "./public-screens.js";
 import { readMobileRuntimeMode } from "./runtime-config.js";
 import { AboutOrderScreen } from "./screens/AboutOrderScreen.js";
+import { PublicContentDetailScreen } from "./screens/PublicContentDetailScreen.js";
 import { PublicContentListScreen } from "./screens/PublicContentListScreen.js";
 import { PublicHomeScreen } from "./screens/PublicHomeScreen.js";
 import type {
   PublicContentPageResponseDto,
+  PublicEventDetailResponseDto,
   PublicEventListResponseDto,
+  PublicPrayerDetailResponseDto,
   PublicPrayerListResponseDto
 } from "@jp2/shared-validation";
 
@@ -65,6 +77,20 @@ export function App() {
   const [publicEvents, setPublicEvents] = useState<PublicEventListResponseDto | undefined>(() =>
     runtimeMode === "demo" ? fallbackPublicEvents : undefined
   );
+  const [selectedPublicPrayerId, setSelectedPublicPrayerId] = useState<string | undefined>();
+  const [selectedPublicEventId, setSelectedPublicEventId] = useState<string | undefined>();
+  const [publicPrayerDetailState, setPublicPrayerDetailState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [publicPrayerDetail, setPublicPrayerDetail] = useState<
+    PublicPrayerDetailResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackPublicPrayerDetail : undefined));
+  const [publicEventDetailState, setPublicEventDetailState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [publicEventDetail, setPublicEventDetail] = useState<
+    PublicEventDetailResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackPublicEventDetail : undefined));
 
   useEffect(() => {
     if (runtimeMode === "demo") {
@@ -177,13 +203,89 @@ export function App() {
     };
   }, [currentRoute, publicApiBaseUrl, runtimeMode]);
 
-  function handlePublicRoute(route: PublicRoute) {
+  useEffect(() => {
+    if (
+      runtimeMode === "demo" ||
+      currentRoute !== "PublicPrayerDetail" ||
+      !selectedPublicPrayerId
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    setPublicPrayerDetailState("loading");
+
+    fetchPublicPrayer({ id: selectedPublicPrayerId, baseUrl: publicApiBaseUrl })
+      .then((response) => {
+        if (!cancelled) {
+          setPublicPrayerDetail(response);
+          setPublicPrayerDetailState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setPublicPrayerDetail(undefined);
+          setPublicPrayerDetailState(publicContentDetailLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRoute, publicApiBaseUrl, runtimeMode, selectedPublicPrayerId]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "PublicEventDetail" || !selectedPublicEventId) {
+      return;
+    }
+
+    let cancelled = false;
+    setPublicEventDetailState("loading");
+
+    fetchPublicEvent({ id: selectedPublicEventId, baseUrl: publicApiBaseUrl })
+      .then((response) => {
+        if (!cancelled) {
+          setPublicEventDetail(response);
+          setPublicEventDetailState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setPublicEventDetail(undefined);
+          setPublicEventDetailState(publicContentDetailLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRoute, publicApiBaseUrl, runtimeMode, selectedPublicEventId]);
+
+  function handlePublicRoute(route: PublicRoute, targetId?: string) {
     if (
       route === "PublicHome" ||
       route === "AboutOrder" ||
       route === "PublicPrayerCategories" ||
-      route === "PublicEventsList"
+      route === "PublicEventsList" ||
+      route === "PublicPrayerDetail" ||
+      route === "PublicEventDetail"
     ) {
+      if (route === "PublicPrayerDetail") {
+        setSelectedPublicPrayerId(targetId);
+        if (runtimeMode === "demo") {
+          setPublicPrayerDetail(fallbackPublicPrayerDetail);
+          setPublicPrayerDetailState(targetId ? "ready" : "empty");
+        }
+      }
+
+      if (route === "PublicEventDetail") {
+        setSelectedPublicEventId(targetId);
+        if (runtimeMode === "demo") {
+          setPublicEventDetail(fallbackPublicEventDetail);
+          setPublicEventDetailState(targetId ? "ready" : "empty");
+        }
+      }
+
       setCurrentRoute(route);
     }
   }
@@ -220,6 +322,32 @@ export function App() {
         screen={buildPublicEventsListScreen({
           state: publicEventsState,
           response: publicEvents,
+          runtimeMode
+        })}
+        onNavigate={handlePublicRoute}
+      />
+    );
+  }
+
+  if (currentRoute === "PublicPrayerDetail") {
+    return (
+      <PublicContentDetailScreen
+        screen={buildPublicPrayerDetailScreen({
+          state: publicPrayerDetailState,
+          response: publicPrayerDetail,
+          runtimeMode
+        })}
+        onNavigate={handlePublicRoute}
+      />
+    );
+  }
+
+  if (currentRoute === "PublicEventDetail") {
+    return (
+      <PublicContentDetailScreen
+        screen={buildPublicEventDetailScreen({
+          state: publicEventDetailState,
+          response: publicEventDetail,
           runtimeMode
         })}
         onNavigate={handlePublicRoute}

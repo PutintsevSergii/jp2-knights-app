@@ -92,6 +92,67 @@ export const organizationUnitDetailResponseSchema = z.object({
   organizationUnit: organizationUnitSummarySchema
 });
 
+const publishableContentTextSchema = z.string().trim().min(1).max(200);
+const publishableContentBodySchema = z.string().trim().min(1).max(8000);
+
+export const adminPrayerSummarySchema = z.object({
+  id: z.uuid(),
+  categoryId: z.uuid().nullable(),
+  title: z.string().trim().min(1).max(200),
+  body: publishableContentBodySchema,
+  language: z.string().trim().min(2).max(10),
+  visibility: visibilitySchema,
+  targetOrganizationUnitId: z.uuid().nullable(),
+  status: contentStatusSchema,
+  publishedAt: z.iso.datetime().nullable(),
+  archivedAt: z.iso.datetime().nullable()
+});
+
+export const adminPrayerListResponseSchema = z.object({
+  prayers: z.array(adminPrayerSummarySchema)
+});
+
+export const adminPrayerDetailResponseSchema = z.object({
+  prayer: adminPrayerSummarySchema
+});
+
+const adminPrayerWriteBaseSchema = z
+  .object({
+    categoryId: z.uuid().nullable().optional(),
+    title: publishableContentTextSchema,
+    body: publishableContentBodySchema,
+    language: z.string().trim().min(2).max(10),
+    visibility: visibilitySchema,
+    targetOrganizationUnitId: z.uuid().nullable().optional(),
+    status: contentStatusSchema
+  })
+  .strict();
+
+export const createAdminPrayerRequestSchema = adminPrayerWriteBaseSchema.refine(
+  (value) => value.visibility !== "ORGANIZATION_UNIT" || Boolean(value.targetOrganizationUnitId),
+  {
+    message: "ORGANIZATION_UNIT visibility requires targetOrganizationUnitId.",
+    path: ["targetOrganizationUnitId"]
+  }
+);
+
+export const updateAdminPrayerRequestSchema = adminPrayerWriteBaseSchema
+  .partial()
+  .extend({
+    archivedAt: z.iso.datetime().nullable().optional()
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one prayer field must be provided."
+  })
+  .refine(
+    (value) => value.visibility !== "ORGANIZATION_UNIT" || Boolean(value.targetOrganizationUnitId),
+    {
+      message: "ORGANIZATION_UNIT visibility requires targetOrganizationUnitId.",
+      path: ["targetOrganizationUnitId"]
+    }
+  );
+
 export const publicHomeQuerySchema = z
   .object({
     language: z.string().trim().min(2).max(10).optional()
@@ -236,7 +297,14 @@ export type MyOrganizationUnitsResponseDto = z.infer<typeof myOrganizationUnitsR
 export type AdminOrganizationUnitListResponseDto = z.infer<
   typeof adminOrganizationUnitListResponseSchema
 >;
-export type OrganizationUnitDetailResponseDto = z.infer<typeof organizationUnitDetailResponseSchema>;
+export type OrganizationUnitDetailResponseDto = z.infer<
+  typeof organizationUnitDetailResponseSchema
+>;
+export type AdminPrayerSummaryDto = z.infer<typeof adminPrayerSummarySchema>;
+export type AdminPrayerListResponseDto = z.infer<typeof adminPrayerListResponseSchema>;
+export type AdminPrayerDetailResponseDto = z.infer<typeof adminPrayerDetailResponseSchema>;
+export type CreateAdminPrayerRequestDto = z.infer<typeof createAdminPrayerRequestSchema>;
+export type UpdateAdminPrayerRequestDto = z.infer<typeof updateAdminPrayerRequestSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
 export type PublicContentPageQueryDto = z.infer<typeof publicContentPageQuerySchema>;
@@ -252,10 +320,7 @@ export interface RuntimeModeParseOptions {
   nodeEnv?: string | undefined;
 }
 
-export function parseRuntimeMode(
-  value: string | undefined,
-  options: RuntimeModeParseOptions = {}
-) {
+export function parseRuntimeMode(value: string | undefined, options: RuntimeModeParseOptions = {}) {
   const runtimeMode = runtimeModeSchema.parse(value ?? "api");
 
   if (runtimeMode === "demo" && options.nodeEnv === "production") {

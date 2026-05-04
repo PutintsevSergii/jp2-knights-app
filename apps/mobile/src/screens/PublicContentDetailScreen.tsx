@@ -1,15 +1,15 @@
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import type { PublicContentListScreen as PublicContentListScreenModel } from "../public-screens.js";
+import type { PublicContentDetailScreen as PublicContentDetailScreenModel } from "../public-screens.js";
 
-export interface PublicContentListScreenProps {
-  screen: PublicContentListScreenModel;
+export interface PublicContentDetailScreenProps {
+  screen: PublicContentDetailScreenModel;
   onNavigate?: (
-    route: PublicContentListScreenModel["actions"][number]["targetRoute"],
-    targetId: PublicContentListScreenModel["actions"][number]["targetId"]
+    route: PublicContentDetailScreenModel["actions"][number]["targetRoute"],
+    targetId: PublicContentDetailScreenModel["actions"][number]["targetId"]
   ) => void;
 }
 
-export function PublicContentListScreen({ screen, onNavigate }: PublicContentListScreenProps) {
+export function PublicContentDetailScreen({ screen, onNavigate }: PublicContentDetailScreenProps) {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
       <ScrollView

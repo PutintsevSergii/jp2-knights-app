@@ -10,15 +10,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Executive Summary
 
-| Phase | Status | Progress | Completeness | Key Outputs | Next Step |
-|-------|--------|----------|--------------|------------|-----------|
-| **0** | ✅ COMPLETE | 100% | ████████████████████ | Scope, roles, visibility | — |
-| **1** | ✅ COMPLETE | 100% | ████████████████████ | Monorepo, apps, CI, gates | — |
-| **2** | 🟡 IN PROGRESS | ~80% | ████████████████░░░░ | Prisma, auth helpers, filters | Complete guards/tests |
-| **3** | ✅ COMPLETE | 100% | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
-| **4** | 🟡 IN PROGRESS | ~45% | █████████░░░░░░░░░░░ | Public prayer/event read APIs, seed fixtures, mobile list views | Detail screens + admin CRUD |
-| **5** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching | Start after Phase 4 |
-| **6–13** | ⏳ PENDING | 0% | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit | — |
+| Phase    | Status         | Progress | Completeness         | Key Outputs                                                             | Next Step                    |
+| -------- | -------------- | -------- | -------------------- | ----------------------------------------------------------------------- | ---------------------------- |
+| **0**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                | —                            |
+| **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                               | —                            |
+| **2**    | 🟡 IN PROGRESS | ~80%     | ████████████████░░░░ | Prisma, auth helpers, filters                                           | Complete guards/tests        |
+| **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
+| **4**    | 🟡 IN PROGRESS | ~68%     | ██████████████░░░░░░ | Public APIs, mobile views, admin prayer API                             | Event CRUD + admin UI        |
+| **5**    | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching                                          | Start after Phase 4          |
+| **6–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit                                | —                            |
 
 ---
 
@@ -29,6 +29,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Status**: COMPLETE (100%)
 
 **Completed**:
+
 - ✅ V1 scope definition (public discovery + candidate + brother + admin lite)
 - ✅ Out-of-scope boundaries (no chat, payments, maps, analytics, surveillance)
 - ✅ Role and permission matrix (guest, candidate, brother, officer, super admin)
@@ -44,6 +45,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Status**: COMPLETE (100%)
 
 **Completed**:
+
 - ✅ Nx monorepo with pnpm (TypeScript strict mode)
 - ✅ `/apps/api` (NestJS), `/apps/admin` (Next.js), `/apps/mobile` (Expo React Native)
 - ✅ `/libs/shared` (types, validation, auth helpers, design tokens)
@@ -63,6 +65,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Status**: IN PROGRESS (~80%)
 
 **Completed**:
+
 - ✅ Identity domain: User, UserRole, UserStatus, Session abstraction
 - ✅ Organization domain: OrganizationUnit (generic), Membership, OfficerAssignment
 - ✅ Content base model: Status enum (draft/review/approved/published/archived), Visibility enum
@@ -72,11 +75,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Shared auth/visibility helpers with tests
 
 **In Progress**:
+
 - 🟡 Permission matrix tests (all 5 roles × guest/candidate/private content) — ~75% done
 - 🟡 Visibility integration tests (public API excludes private content) — in progress
 - 🟡 Seed data with Phase 3 content — pending
 
 **Not Yet**:
+
 - ⏳ Firebase-backed auth (Phase 5)
 - ⏳ Full API endpoints (in Phase 3+)
 
@@ -91,6 +96,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **Status**: COMPLETE (100%)
 
 **Completed**:
+
 - ✅ `/api/public/home` endpoint (contract defined, returns DTO)
 - ✅ Mobile `PublicHome` screen (React Native component implemented)
 - ✅ Mobile launch resolution (detects guest/candidate/brother, routes appropriately)
@@ -101,6 +107,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Mobile `AboutOrder` screen integration with API-mode content loading, shared DTO validation, state handling, and demo fallback
 
 **Not Yet**:
+
 - ⏳ Join interest form (Phase 7)
 
 **Exit criteria**: ✅ Public shell, home, about content, and join/login routing links are in place
@@ -109,9 +116,10 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 4: Public Content: Prayers & Events 🟡
 
-**Status**: IN PROGRESS (~45%)
+**Status**: IN PROGRESS (~68%)
 
 **Completed**:
+
 - ✅ `prayer_categories`, `prayers`, and `events` tables with migration
 - ✅ Representative public and private prayer/event seed fixtures
 - ✅ `/api/public/prayers` list endpoint with category, language, search, and safe pagination filters
@@ -120,51 +128,56 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ `/api/public/events/{id}` detail endpoint; private/unpublished IDs resolve as 404
 - ✅ Mobile public prayer category/list view with API-mode DTO validation, state handling, and demo fallback
 - ✅ Mobile public events list view with API-mode DTO validation, state handling, and demo fallback
+- ✅ Mobile public prayer detail view with API-mode DTO validation, state handling, and demo fallback
+- ✅ Mobile public event detail view with API-mode DTO validation, state handling, and demo fallback
+- ✅ Admin prayer list/create/patch API with guarded access, shared validation, scoped officer reads, and Super Admin writes
 
 **In Progress**:
-- 🟡 Public prayer/event detail mobile views
-- 🟡 Admin CRUD and publish/archive workflows for prayers/events
+
+- 🟡 Admin event CRUD and publish/archive workflows
+- 🟡 Admin prayer UI/audit workflow
 
 **Not Yet**:
+
 - ⏳ Brother-visible prayer/event APIs (Phase 8/9)
 - ⏳ Participation intent (Phase 9)
 
-**Exit criteria**: 🟡 Read-only public APIs and mobile list views are implemented; detail/admin surfaces still pending
+**Exit criteria**: 🟡 Public APIs, mobile public views, and admin prayer API are implemented; event/admin UI/audit surfaces still pending
 
-**Next step**: Add public prayer/event detail screens, then admin CRUD workflows
+**Next step**: Add admin event CRUD and admin UI/audit workflows
 
 ---
 
 ### Phases 4–13: Roadmap
 
-| Phase | Name | Status | Timeline |
-|-------|------|--------|----------|
-| **4** | Public Content: Prayers & Events | 🟡 In progress | Started May 2 |
-| **5** | Authentication & Modes | ⏳ Not started | After Phase 4 |
-| **6** | Admin Lite Foundation | ⏳ Not started | After Phase 5 |
-| **7** | Candidate Funnel | ⏳ Not started | After Phase 6 |
-| **8** | Brother Companion Core | ⏳ Not started | After Phase 7 |
-| **9** | Events/Announcements/Push | ⏳ Not started | After Phase 8 |
-| **10** | Formation Roadmap | ⏳ Not started | After Phase 9 |
-| **11** | Silent Online Prayer | ⏳ Not started | After Phase 10 |
-| **12** | Privacy/Security/Audit | ⏳ Not started | After Phase 11 |
-| **13** | Release Hardening & Pilot | ⏳ Not started | After Phase 12 |
+| Phase  | Name                             | Status         | Timeline       |
+| ------ | -------------------------------- | -------------- | -------------- |
+| **4**  | Public Content: Prayers & Events | 🟡 In progress | Started May 2  |
+| **5**  | Authentication & Modes           | ⏳ Not started | After Phase 4  |
+| **6**  | Admin Lite Foundation            | ⏳ Not started | After Phase 5  |
+| **7**  | Candidate Funnel                 | ⏳ Not started | After Phase 6  |
+| **8**  | Brother Companion Core           | ⏳ Not started | After Phase 7  |
+| **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8  |
+| **10** | Formation Roadmap                | ⏳ Not started | After Phase 9  |
+| **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10 |
+| **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11 |
+| **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12 |
 
 ---
 
 ## Quality Gate Status
 
-| Gate | Phase 1 | Phase 2 | Phase 3 | Notes |
-|------|---------|---------|---------|-------|
-| **Lint** | ✅ | ✅ | ✅ | Enforced in CI |
-| **Typecheck** | ✅ | ✅ | ✅ | TypeScript strict mode |
-| **Unit tests (80%)** | ✅ | ✅ 98%+ | ✅ 98%+ | `vitest --coverage` currently above threshold |
-| **Integration tests** | ✅ | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; broader Phase 2 permission matrix still expanding |
-| **Build** | ✅ | ✅ | ✅ | All apps compile |
-| **OpenAPI generation** | ✅ | ✅ | ✅ | Contract artifact |
-| **Contract check** | ✅ | ✅ | ✅ | Generated client compiles |
-| **DB migration check** | ✅ | ✅ | ✅ | Migrations apply cleanly |
-| **Demo mode smoke test** | ✅ | ✅ | ✅ | Mobile/admin launch without backend |
+| Gate                     | Phase 1 | Phase 2        | Phase 3            | Notes                                                                                                               |
+| ------------------------ | ------- | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Lint**                 | ✅      | ✅             | ✅                 | Enforced in CI                                                                                                      |
+| **Typecheck**            | ✅      | ✅             | ✅                 | TypeScript strict mode                                                                                              |
+| **Unit tests (80%)**     | ✅      | ✅             | ✅                 | `vitest --coverage` currently 95.97% statements / 87.70% branches / 95.47% functions / 96.43% lines                 |
+| **Integration tests**    | ✅      | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; broader Phase 2 permission matrix still expanding |
+| **Build**                | ✅      | ✅             | ✅                 | All apps compile                                                                                                    |
+| **OpenAPI generation**   | ✅      | ✅             | ✅                 | Contract artifact                                                                                                   |
+| **Contract check**       | ✅      | ✅             | ✅                 | Generated client compiles                                                                                           |
+| **DB migration check**   | ✅      | ✅             | ✅                 | Migrations apply cleanly                                                                                            |
+| **Demo mode smoke test** | ✅      | ✅             | ✅                 | Mobile/admin launch without backend                                                                                 |
 
 ---
 
@@ -173,6 +186,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 ### What's Implemented
 
 **Phase 2 Foundation** ✅:
+
 - Shared auth/visibility helpers with tests
 - Mobile-mode resolution (guest/candidate/brother/officer detection)
 - Published-content filtering
@@ -183,6 +197,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - API/admin/mobile reject demo mode in production
 
 **Phase 3 Complete** ✅:
+
 - Unauthenticated `/api/public/home` endpoint (fallback discovery shell)
 - Mobile `PublicHome` screen with state model (ready/empty/loading/error/offline/forbidden)
 - Mobile Expo entry point
@@ -194,11 +209,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - `/api/admin/organization-units` (scoped listing + super admin CRUD)
 
 **Phase 4 In Progress** 🟡:
+
 - Public prayer library API and public event API reads
 - Public prayer/event read endpoints with visibility-filtered repositories and representative seed fixtures
 - Generated OpenAPI includes public prayer/event endpoints
-- Mobile public prayer and event list views with API-mode DTO validation, demo fallback, and loading/error/offline/empty states
-- Prayer/event detail mobile screens and admin CRUD still pending
+- Mobile public prayer and event list/detail views with API-mode DTO validation, demo fallback, and loading/error/offline/empty states
+- Admin prayer API CRUD with scoped listing, Super Admin writes, and archive-by-status
+- Admin event CRUD, admin UI, and audit workflow still pending
 - Public content visibility enforcement added for public prayer/event reads
 
 ---
@@ -225,8 +242,10 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Prayer library API
    - [x] Event API
    - [x] Public prayer/event mobile list screens
-   - [ ] Public prayer/event mobile detail screens
-   - [ ] Publish/archive workflows in admin
+   - [x] Public prayer/event mobile detail screens
+   - [x] Admin prayer list/create/patch API
+   - [ ] Admin event API
+   - [ ] Admin UI and audit workflows
 
 4. **Phase 5: Authentication**
    - [ ] Firebase provider adapter
@@ -265,6 +284,7 @@ git commit -m "Phase 3: Implement public discovery.
 ### Weekly Status Review
 
 Every week (or per phase):
+
 1. Check [docs/traceability.md](../traceability.md) for actual progress
 2. Update the tables and sections in this file
 3. Keep progress bars visually accurate
@@ -276,26 +296,26 @@ Every week (or per phase):
 
 **GOLDEN RULE**: If traceability.md changes, update this file.
 
-| Change Type | Action |
-|---|---|
+| Change Type               | Action                                              |
+| ------------------------- | --------------------------------------------------- |
 | New requirement completed | Update phase section + progress bar + exit criteria |
-| Phase finished | Mark phase as ✅ COMPLETE, set progress to 100% |
-| Phase started | Mark phase as 🟡 IN PROGRESS, set progress > 0% |
-| Quality gate changes | Update quality gate status table |
-| Milestones achieved | Update "Critical Path" section |
-| Commits added | Add to phase history/timeline |
+| Phase finished            | Mark phase as ✅ COMPLETE, set progress to 100%     |
+| Phase started             | Mark phase as 🟡 IN PROGRESS, set progress > 0%     |
+| Quality gate changes      | Update quality gate status table                    |
+| Milestones achieved       | Update "Critical Path" section                      |
+| Commits added             | Add to phase history/timeline                       |
 
 ---
 
 ## Legend
 
-| Symbol | Meaning |
-|--------|---------|
-| ✅ | Complete / Passing / Met |
-| 🟡 | In Progress / Partial |
-| ⏳ | Pending / Not Started |
-| ░░░░ | Progress bar (empty) |
-| ████ | Progress bar (filled) |
+| Symbol | Meaning                  |
+| ------ | ------------------------ |
+| ✅     | Complete / Passing / Met |
+| 🟡     | In Progress / Partial    |
+| ⏳     | Pending / Not Started    |
+| ░░░░   | Progress bar (empty)     |
+| ████   | Progress bar (filled)    |
 
 ---
 
@@ -309,6 +329,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 4, 2026  
-**Current Phase**: Phase 2 (~80%) + Phase 4 (~45%)  
-**Next Major Milestone**: Complete Phase 2 permission/visibility tests and Phase 4 public detail screens/admin CRUD
+**Last Updated**: May 4, 2026
+**Current Phase**: Phase 2 (~80%) + Phase 4 (~68%)
+**Next Major Milestone**: Complete Phase 2 permission/visibility tests and Phase 4 admin event/API UI workflows

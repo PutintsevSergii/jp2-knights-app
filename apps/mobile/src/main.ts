@@ -3,6 +3,13 @@ import type { HealthStatus } from "@jp2/shared-types";
 import { parseRuntimeMode } from "@jp2/shared-validation";
 export { fallbackPublicHome } from "./public-home.js";
 export {
+  buildPublicEventDetailUrl,
+  buildPublicPrayerDetailUrl,
+  fetchPublicEvent,
+  fetchPublicPrayer,
+  publicContentDetailLoadFailureState
+} from "./public-content-detail-api.js";
+export {
   buildPublicEventListUrl,
   buildPublicPrayerListUrl,
   fetchPublicEvents,
@@ -16,7 +23,9 @@ export {
 } from "./public-content-api.js";
 export {
   fallbackAboutOrderContentPage,
+  fallbackPublicEventDetail,
   fallbackPublicEvents,
+  fallbackPublicPrayerDetail,
   fallbackPublicPrayers
 } from "./public-content.js";
 export {
@@ -29,13 +38,16 @@ export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js"
 export { resolveMobileLaunchState } from "./navigation.js";
 export {
   buildAboutOrderScreen,
+  buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   buildPublicHomeScreen,
+  buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen
 } from "./public-screens.js";
 export type { MobileInitialRoute, MobileLaunchState, MobileScreenState } from "./navigation.js";
 export type {
   AboutOrderScreen,
+  PublicContentDetailScreen,
   PublicContentListScreen,
   PublicHomeScreen,
   PublicRoute,
