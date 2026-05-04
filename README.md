@@ -1,7 +1,7 @@
 # JP2 App
 
 This workspace contains the JP2 App product and technical documentation package plus the
-Phase 1 monorepo baseline.
+current Nx/pnpm monorepo implementation.
 
 ## Quick Mobile Launch
 
@@ -37,21 +37,19 @@ Start here:
 
 ## Current Implementation Status
 
-Phase 1 is in place with a pnpm/Nx TypeScript workspace, shared contract libraries,
-local infrastructure config, and quality-gate commands. Phase 2 is in place with
-shared role/scope/visibility helpers, mobile-mode resolution, published-content
-filtering, production rejection of demo runtime mode, matrix tests for officer
-scoping and private visibility, and a Prisma identity/organization/audit
-baseline. The API includes Phase 2 foundation routes for `/api/health`,
-`/api/auth/me`, `/api/brother/my-organization-units`, and
-`/api/admin/organization-units`, plus the first Phase 3 public discovery route
-at `/api/public/home`. Implemented routes have request/response schemas, shared
-Zod validation where applicable, and session abstractions ready for later real
-auth. The mobile app has an Expo entry point and a React Native `PublicHome`
-screen backed by the shared public-home DTO shape; it visibly marks demo mode
-and covers ready/empty/loading/error/offline and forbidden states through a
-token-backed screen model. Admin Lite remains a launchable TypeScript
-placeholder; Next.js scaffolding comes next inside the same app folder.
+Phases 0-5 are complete and Phase 6 is in progress. The API includes
+public discovery/content routes, public prayer/event routes, auth session
+routes, organization-unit routes, admin prayer/event routes with audit side
+effects, and the Phase 6 `/api/admin/dashboard` scoped count/task contract.
+Implemented routes have request/response schemas and shared Zod validation
+where applicable.
+
+The mobile app has an Expo entry point and React Native public screens backed by
+shared DTO validation, with API and demo runtime modes. Admin Lite is currently
+a launchable TypeScript web shell with framework-neutral rendered routes for the
+dashboard, prayers, and events. The shell can serve these routes over HTTP now;
+Next.js/App Router mounting remains the documented target if the owner wants
+that framework specifically.
 
 ## Prerequisites
 
@@ -96,6 +94,7 @@ The API health endpoint is available at:
 ```text
 GET /api/health
 GET /api/public/home
+GET /api/admin/dashboard
 ```
 
 ## Database Commands
@@ -107,11 +106,12 @@ pnpm db:migrate:check
 pnpm db:seed
 ```
 
-The current Prisma baseline covers the Phase 2 identity and organization
-foundation: users, roles, generic organization units, memberships, officer assignments, and audit
-logs. Local seed data includes a super admin, a scoped officer, and two organization units
-for scope checks. Run PostgreSQL through Docker Compose before applying migrations
-or seeds.
+The current Prisma schema covers the Phase 2 identity and organization
+foundation, Phase 3 content pages, Phase 4 prayers/events, and Phase 5
+identity-provider account links. Local seed data includes a super admin, a
+scoped officer, public/private content fixtures, and provider account links for
+auth replacement tests. Run PostgreSQL through Docker Compose before applying
+migrations or seeds.
 
 ## Quality Gates
 

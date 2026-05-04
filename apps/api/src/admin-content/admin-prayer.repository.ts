@@ -84,7 +84,7 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
   }
 }
 
-function adminPrayerListWhere(
+export function adminPrayerListWhere(
   scopeOrganizationUnitIds: readonly string[] | null
 ): Prisma.PrayerWhereInput {
   if (scopeOrganizationUnitIds === null) {

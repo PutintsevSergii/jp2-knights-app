@@ -70,7 +70,8 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
     if (data.description !== undefined) updateData.description = data.description;
     if (data.type !== undefined) updateData.type = data.type;
     if (data.startAt !== undefined) updateData.startAt = new Date(data.startAt);
-    if (data.endAt !== undefined) updateData.endAt = data.endAt === null ? null : new Date(data.endAt);
+    if (data.endAt !== undefined)
+      updateData.endAt = data.endAt === null ? null : new Date(data.endAt);
     if (data.locationLabel !== undefined) updateData.locationLabel = data.locationLabel;
     if (data.visibility !== undefined) updateData.visibility = data.visibility;
     if (data.targetOrganizationUnitId !== undefined) {
@@ -119,7 +120,7 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
   }
 }
 
-function adminEventListWhere(
+export function adminEventListWhere(
   scopeOrganizationUnitIds: readonly string[] | null
 ): Prisma.EventWhereInput {
   if (scopeOrganizationUnitIds === null) {
@@ -199,12 +200,7 @@ function toAdminEventVisibility(value: string): AdminEventSummary["visibility"] 
 }
 
 function toAdminEventStatus(value: string): AdminEventSummary["status"] {
-  if (
-    value === "draft" ||
-    value === "published" ||
-    value === "cancelled" ||
-    value === "archived"
-  ) {
+  if (value === "draft" || value === "published" || value === "cancelled" || value === "archived") {
     return value;
   }
 

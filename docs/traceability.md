@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 4, 2026 (Phases 0–5 complete; Phase 6 next)
+**Last Updated**: May 4, 2026 (Phases 0–5 complete; Phase 6 in progress)
 
 ---
 
@@ -17,9 +17,9 @@ Use this document to:
 
 The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
 
-### Current Phase: Phase 5 (Authentication and Modes)
+### Current Phase: Phase 6 (Admin Lite Foundation)
 
-Implementation is complete through the Phase 5 authentication/mode foundation:
+Implementation is complete through the Phase 5 authentication/mode foundation, and Phase 6 Admin Lite foundation work has started:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -104,6 +104,18 @@ Implementation is complete through the Phase 5 authentication/mode foundation:
 - `/api/auth/me` now verifies bearer tokens or provider session cookies through
   the replaceable provider adapter before loading the local user. Inactive or
   archived local users still fail closed through `CurrentUserGuard`.
+- Phase 6 now includes a guarded `/api/admin/dashboard` endpoint that returns
+  scoped counts and task links for organization units, prayers, and events.
+  Officers receive counts constrained to their assigned organization-unit scope
+  and public/family-open content; Super Admin receives global counts.
+- Admin Lite Phase 6 now exposes `/admin/dashboard` route metadata and a
+  framework-neutral rendered dashboard document with scoped navigation to the
+  implemented organization-unit, prayer, and event surfaces. Demo mode uses
+  local dashboard fixtures without backend calls.
+- Admin Lite now has a dependency-free Node HTTP web shell that mounts
+  `/admin`, `/admin/dashboard`, `/admin/prayers`, and `/admin/events` to the
+  rendered route documents, forwards bearer tokens in API mode, and keeps demo
+  mode backend-free.
 - Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
   project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
@@ -112,6 +124,7 @@ Implementation is complete through the Phase 5 authentication/mode foundation:
   `/api/public/events`, `/api/public/events/{id}`,
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
   `/api/brother/my-organization-units`,
+  `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
   `/api/admin/prayers`, `/api/admin/prayers/{id}`,
   `/api/admin/events`, and `/api/admin/events/{id}` as foundation contracts
@@ -123,8 +136,9 @@ Implementation is complete through the Phase 5 authentication/mode foundation:
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive. Full Admin Lite navigation, detail views, organization-unit
   audit side effects, and broader admin workflows remain later-phase work.
-- Production Admin Lite web hosting/Next.js mounting, plus Phases 6 through 13
-  product workflows, are not implemented yet unless explicitly listed above.
+- Full Next.js/App Router mounting, organization-unit detail/editor surfaces,
+  and Phases 7 through 13 product workflows are not implemented yet unless
+  explicitly listed above.
 
 ### How to Update This Document
 
@@ -176,7 +190,7 @@ Implementation is complete through the Phase 5 authentication/mode foundation:
 | FR-ROADMAP-004 Roadmap Approval            | `GET/PATCH /admin/roadmap-submissions/:id`                                                                               | roadmap request detail             | roadmap_submissions, audit_logs                                   | officer scope, rejection comment, audit                                                                                                             |
 | FR-PRAYER-004 Silent Brother Prayer        | brother silent prayer routes and socket events                                                                           | brother silent prayer              | silent_prayer_events, Redis presence                              | once per user, reconnect                                                                                                                            |
 | FR-NOTIF-001 Notification Preferences      | `PUT /auth/notification-preferences`, `POST /auth/device-tokens`                                                         | settings                           | notification_preferences, device_tokens                           | self only, duplicate token ownership                                                                                                                |
-| FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                   | admin dashboard                    | scoped aggregates                                                 | no unrelated scope                                                                                                                                  |
+| FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                   | admin dashboard                    | scoped aggregates                                                 | guarded scoped counts, admin dashboard route/demo fixture, no unrelated scope                                                                       |
 | FR-ADMIN-003 Brother Registry              | `/admin/brothers` routes                                                                                                 | brother list/detail/editor         | users, user_roles, memberships, audit_logs                        | officer scope, critical audit                                                                                                                       |
 | FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                       | organization unit list/detail      | organization_units, officer_assignments                           | super admin write, archive                                                                                                                          |
 | FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                  | prayer list/editor                 | prayers, audit_logs                                               | guarded list/create/patch API, admin app list/editor workflow model, visibility required, archive not delete, audit side effects                    |

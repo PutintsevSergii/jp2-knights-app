@@ -18,6 +18,7 @@ describe("admin shell", () => {
 
   it("exposes admin content shell routes", () => {
     expect(getAdminShellRoutes().map((route) => route.path)).toEqual([
+      "/admin/dashboard",
       "/admin/prayers",
       "/admin/events"
     ]);

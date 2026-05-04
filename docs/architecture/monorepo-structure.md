@@ -36,8 +36,8 @@ libs/
 
 ## V1 Apps
 
-| App | Purpose |
-| --- | --- |
-| `apps/mobile` | React Native public/candidate/brother app |
-| `apps/admin` | Next.js Admin Lite |
-| `apps/api` | NestJS API, REST endpoints, WebSocket gateway |
+| App           | Purpose                                                                                                                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mobile` | React Native public/candidate/brother app                                                                                                                                                                       |
+| `apps/admin`  | Admin Lite web app. Current implementation is a TypeScript HTTP shell with rendered route foundations; Phase 6 can still mount the Next.js/App Router target around those routes if that framework is required. |
+| `apps/api`    | NestJS API, REST endpoints, WebSocket gateway                                                                                                                                                                   |

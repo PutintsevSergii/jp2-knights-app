@@ -25,10 +25,23 @@ if (openApi.openapi !== "3.1.0") {
 const requiredPaths = [
   "/api/health",
   "/api/public/home",
+  "/api/public/content-pages/{slug}",
+  "/api/public/prayers",
+  "/api/public/prayers/{id}",
+  "/api/public/events",
+  "/api/public/events/{id}",
+  "/api/auth/session",
+  "/api/auth/logout",
+  "/api/auth/refresh",
   "/api/auth/me",
   "/api/brother/my-organization-units",
+  "/api/admin/dashboard",
   "/api/admin/organization-units",
-  "/api/admin/organization-units/{id}"
+  "/api/admin/organization-units/{id}",
+  "/api/admin/prayers",
+  "/api/admin/prayers/{id}",
+  "/api/admin/events",
+  "/api/admin/events/{id}"
 ];
 const missingPaths = requiredPaths.filter((path) => !openApi.paths?.[path]);
 
@@ -39,12 +52,23 @@ if (missingPaths.length > 0) {
 const responseSchemaChecks = [
   ["/api/health", "get", "200"],
   ["/api/public/home", "get", "200"],
+  ["/api/public/content-pages/{slug}", "get", "200"],
+  ["/api/public/prayers", "get", "200"],
+  ["/api/public/prayers/{id}", "get", "200"],
+  ["/api/public/events", "get", "200"],
+  ["/api/public/events/{id}", "get", "200"],
+  ["/api/auth/session", "post", "200"],
+  ["/api/auth/session", "post", "401"],
+  ["/api/auth/logout", "post", "200"],
+  ["/api/auth/refresh", "post", "200"],
   ["/api/auth/me", "get", "200"],
   ["/api/auth/me", "get", "401"],
   ["/api/auth/me", "get", "403"],
   ["/api/brother/my-organization-units", "get", "200"],
   ["/api/brother/my-organization-units", "get", "403"],
   ["/api/brother/my-organization-units", "get", "404"],
+  ["/api/admin/dashboard", "get", "200"],
+  ["/api/admin/dashboard", "get", "403"],
   ["/api/admin/organization-units", "get", "200"],
   ["/api/admin/organization-units", "get", "403"],
   ["/api/admin/organization-units", "post", "200"],
@@ -52,7 +76,23 @@ const responseSchemaChecks = [
   ["/api/admin/organization-units", "post", "403"],
   ["/api/admin/organization-units/{id}", "patch", "200"],
   ["/api/admin/organization-units/{id}", "patch", "400"],
-  ["/api/admin/organization-units/{id}", "patch", "403"]
+  ["/api/admin/organization-units/{id}", "patch", "403"],
+  ["/api/admin/prayers", "get", "200"],
+  ["/api/admin/prayers", "get", "403"],
+  ["/api/admin/prayers", "post", "200"],
+  ["/api/admin/prayers", "post", "400"],
+  ["/api/admin/prayers", "post", "403"],
+  ["/api/admin/prayers/{id}", "patch", "200"],
+  ["/api/admin/prayers/{id}", "patch", "400"],
+  ["/api/admin/prayers/{id}", "patch", "403"],
+  ["/api/admin/events", "get", "200"],
+  ["/api/admin/events", "get", "403"],
+  ["/api/admin/events", "post", "200"],
+  ["/api/admin/events", "post", "400"],
+  ["/api/admin/events", "post", "403"],
+  ["/api/admin/events/{id}", "patch", "200"],
+  ["/api/admin/events/{id}", "patch", "400"],
+  ["/api/admin/events/{id}", "patch", "403"]
 ];
 const missingResponseSchemas = responseSchemaChecks.filter(([path, method, status]) => {
   const response = openApi.paths?.[path]?.[method]?.responses?.[status];
@@ -68,8 +108,13 @@ if (missingResponseSchemas.length > 0) {
 }
 
 const requestSchemaChecks = [
+  ["/api/auth/session", "post"],
   ["/api/admin/organization-units", "post"],
-  ["/api/admin/organization-units/{id}", "patch"]
+  ["/api/admin/organization-units/{id}", "patch"],
+  ["/api/admin/prayers", "post"],
+  ["/api/admin/prayers/{id}", "patch"],
+  ["/api/admin/events", "post"],
+  ["/api/admin/events/{id}", "patch"]
 ];
 const missingRequestSchemas = requestSchemaChecks.filter(([path, method]) => {
   const requestBody = openApi.paths?.[path]?.[method]?.requestBody;

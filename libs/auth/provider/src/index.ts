@@ -81,7 +81,10 @@ export class FirebaseAuthProvider implements ExternalAuthProvider {
 
   constructor(private readonly verifyToken: FirebaseTokenVerifier) {}
 
-  async verifyAccessToken(token: string, options: VerifyTokenOptions = {}): Promise<ExternalIdentity> {
+  async verifyAccessToken(
+    token: string,
+    options: VerifyTokenOptions = {}
+  ): Promise<ExternalIdentity> {
     const claims = await mapProviderError(() => this.verifyToken(token, options));
     const nowSeconds = Math.floor(Date.now() / 1000);
 
@@ -164,6 +167,7 @@ export class FirebaseAdminAuthProvider extends FirebaseAuthProvider {
   }
 }
 
+/* v8 ignore start -- Firebase Admin SDK app bootstrap depends on deployment credentials. */
 export function createFirebaseAdminAuthProvider(
   options: FirebaseAdminAuthProviderOptions = {}
 ): FirebaseAdminAuthProvider {
@@ -190,11 +194,9 @@ function resolveFirebaseApp(options: FirebaseAdminAuthProviderOptions): App {
         credential
       };
 
-  return initializeApp(
-    appOptions,
-    appName === "[DEFAULT]" ? undefined : appName
-  );
+  return initializeApp(appOptions, appName === "[DEFAULT]" ? undefined : appName);
 }
+/* v8 ignore stop */
 
 export class StaticTokenAuthProvider implements ExternalAuthProvider {
   constructor(
@@ -234,7 +236,9 @@ export class StaticTokenAuthProvider implements ExternalAuthProvider {
     }
 
     if (identity.expiresAt && identity.expiresAt.getTime() <= Date.now()) {
-      return Promise.reject(new ExternalAuthError("expired-token", "Static auth token is expired."));
+      return Promise.reject(
+        new ExternalAuthError("expired-token", "Static auth token is expired.")
+      );
     }
 
     return Promise.resolve(identity);

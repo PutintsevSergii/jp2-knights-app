@@ -140,6 +140,27 @@ export const adminEventDetailResponseSchema = z.object({
   event: adminEventSummarySchema
 });
 
+export const adminDashboardTaskSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  label: z.string().trim().min(1).max(120),
+  count: z.number().int().min(0),
+  targetRoute: z.enum(["/admin/organization-units", "/admin/prayers", "/admin/events"]),
+  priority: z.enum(["normal", "attention"])
+});
+
+export const adminDashboardResponseSchema = z.object({
+  scope: z.object({
+    adminKind: z.enum(["SUPER_ADMIN", "OFFICER"]),
+    organizationUnitIds: z.array(z.uuid())
+  }),
+  counts: z.object({
+    organizationUnits: z.number().int().min(0),
+    prayers: z.number().int().min(0),
+    events: z.number().int().min(0)
+  }),
+  tasks: z.array(adminDashboardTaskSchema)
+});
+
 const adminPrayerWriteBaseSchema = z
   .object({
     categoryId: z.uuid().nullable().optional(),
@@ -397,6 +418,8 @@ export type UpdateAdminPrayerRequestDto = z.infer<typeof updateAdminPrayerReques
 export type AdminEventSummaryDto = z.infer<typeof adminEventSummarySchema>;
 export type AdminEventListResponseDto = z.infer<typeof adminEventListResponseSchema>;
 export type AdminEventDetailResponseDto = z.infer<typeof adminEventDetailResponseSchema>;
+export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
+export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;

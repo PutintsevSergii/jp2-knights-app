@@ -2185,6 +2185,165 @@
         ]
       }
     },
+    "/api/admin/dashboard": {
+      "get": {
+        "operationId": "AdminDashboardController_getDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped Admin Lite dashboard counts and task links.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "scope",
+                    "counts",
+                    "tasks"
+                  ],
+                  "properties": {
+                    "scope": {
+                      "type": "object",
+                      "required": [
+                        "adminKind",
+                        "organizationUnitIds"
+                      ],
+                      "properties": {
+                        "adminKind": {
+                          "type": "string",
+                          "enum": [
+                            "SUPER_ADMIN",
+                            "OFFICER"
+                          ]
+                        },
+                        "organizationUnitIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    },
+                    "counts": {
+                      "type": "object",
+                      "required": [
+                        "organizationUnits",
+                        "prayers",
+                        "events"
+                      ],
+                      "properties": {
+                        "organizationUnits": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "prayers": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "events": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "label",
+                          "count",
+                          "targetRoute",
+                          "priority"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "targetRoute": {
+                            "type": "string",
+                            "enum": [
+                              "/admin/organization-units",
+                              "/admin/prayers",
+                              "/admin/events"
+                            ]
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": [
+                              "normal",
+                              "attention"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/brother/my-organization-units": {
       "get": {
         "operationId": "OrganizationController_getMyOrganizationUnits",
