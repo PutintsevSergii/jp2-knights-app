@@ -33,3 +33,4 @@
 - `POST /admin/prayers` and `PATCH /admin/prayers/:id` are guarded and Super Admin-only in the current Phase 4 slice.
 - Admin create/update payloads use shared validation; `ORGANIZATION_UNIT` visibility requires `targetOrganizationUnitId`.
 - Archiving is represented by `status: "ARCHIVED"` and sets archive metadata instead of hard deletion.
+- Admin create/update/archive/publish mutations append audit log entries with actor, entity, scope, and redacted before/after summaries. Full prayer bodies are not copied into audit summaries.

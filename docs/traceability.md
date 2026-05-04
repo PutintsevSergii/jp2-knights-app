@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~74% in progress)
+**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~86% in progress)
 
 ---
 
@@ -72,6 +72,14 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
   contracts. Officers can read public/family-open and assigned
   organization-unit scoped events, and officer writes are constrained to assigned
   organization units; Super Admin can manage global and scoped events.
+- Phase 4 admin prayer/event mutations now write audit log side effects for
+  create/update/archive/publish/cancel workflows using actor, entity, scope, and
+  redacted before/after summaries that omit full prayer bodies and event descriptions.
+- Admin Lite Phase 4 now includes a tested prayer/event content workflow
+  foundation in the admin app: authenticated API clients for list/create/update,
+  DTO validation, forbidden/offline/error state mapping, and token-backed list
+  view models with create/edit/publish/cancel/archive actions for future rendered
+  admin screens.
 - Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
   project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
@@ -92,9 +100,8 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive. Full Admin Lite navigation, detail views, audit logging,
   and broader admin workflows remain later-phase work.
-- Phase 4 admin prayer/event UI and audit side-effect workflows, plus Phases 5
-  through 13 product workflows, are not implemented yet unless explicitly listed
-  above.
+- Phase 4 rendered admin prayer/event screens, plus Phases 5 through 13 product
+  workflows, are not implemented yet unless explicitly listed above.
 
 ### How to Update This Document
 
@@ -149,8 +156,8 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 | FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                   | admin dashboard                    | scoped aggregates                                                 | no unrelated scope                                                                                   |
 | FR-ADMIN-003 Brother Registry              | `/admin/brothers` routes                                                                                                 | brother list/detail/editor         | users, user_roles, memberships, audit_logs                        | officer scope, critical audit                                                                        |
 | FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                       | organization unit list/detail      | organization_units, officer_assignments                           | super admin write, archive                                                                           |
-| FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                  | prayer list/editor                 | prayers, audit_logs                                               | guarded list/create/patch API, visibility required, archive not delete                               |
-| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                   | event list/editor                  | events, audit_logs                                                | guarded list/create/patch API, officer scope, public/private explicit, archive not delete            |
+| FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                  | prayer list/editor                 | prayers, audit_logs                                               | guarded list/create/patch API, admin app list/editor workflow model, visibility required, archive not delete, audit side effects |
+| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                   | event list/editor                  | events, audit_logs                                                | guarded list/create/patch API, admin app list/editor workflow model, officer scope, public/private explicit, archive not delete, audit side effects |
 | FR-ADMIN-006 Announcement Management       | `/admin/announcements` routes                                                                                            | announcement list/editor           | announcements, audit_logs                                         | audience-safe push                                                                                   |
 | FR-ADMIN-007 Silent Prayer Management      | `/admin/silent-prayer-events` routes                                                                                     | silent prayer editor               | silent_prayer_events, audit_logs                                  | no participant list                                                                                  |
 | FR-AUDIT-001 Audit Logging                 | mutation side effects, `/admin/audit-logs`                                                                               | audit log                          | audit_logs                                                        | before/after redaction, access control                                                               |

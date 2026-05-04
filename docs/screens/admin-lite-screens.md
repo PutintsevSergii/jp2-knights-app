@@ -29,3 +29,7 @@
 ## Admin UX Rule
 
 Admin screens should be functional and compact: tables, filters, detail panels, clear forms, and explicit visibility/status controls.
+
+## Implementation Notes
+
+- Phase 4 admin prayer/event workflow foundations are implemented in the admin app as tested API clients and list view models. Rendered Admin Lite pages still need to consume those models.

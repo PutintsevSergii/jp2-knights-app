@@ -13,6 +13,7 @@ export abstract class AdminPrayerRepository {
   ): Promise<AdminPrayerSummary[]>;
   abstract createPrayer(data: CreateAdminPrayerRequest): Promise<AdminPrayerSummary>;
   abstract updatePrayer(id: string, data: UpdateAdminPrayerRequest): Promise<AdminPrayerSummary>;
+  abstract findPrayerForAudit(id: string): Promise<AdminPrayerSummary | null>;
 }
 
 @Injectable()
@@ -72,6 +73,14 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
     });
 
     return toAdminPrayerSummary(record);
+  }
+
+  async findPrayerForAudit(id: string): Promise<AdminPrayerSummary | null> {
+    const record = await this.prisma.prayer.findUnique({
+      where: { id }
+    });
+
+    return record ? toAdminPrayerSummary(record) : null;
   }
 }
 

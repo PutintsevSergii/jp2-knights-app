@@ -1,5 +1,6 @@
 import { ForbiddenException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
+import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import type { AdminPrayerRepository } from "./admin-prayer.repository.js";
 import { AdminPrayerService } from "./admin-prayer.service.js";
@@ -69,8 +70,11 @@ describe("AdminPrayerService", () => {
   });
 
   it("allows super admins to create and update prayer records", async () => {
+    const auditLog = auditLogRecorder();
+    const adminPrayerService = service(repository(), auditLog);
+
     await expect(
-      service().createAdminPrayer(superAdmin, {
+      adminPrayerService.createAdminPrayer(superAdmin, {
         title: "New Prayer",
         body: "New prayer body.",
         language: "en",
@@ -85,7 +89,7 @@ describe("AdminPrayerService", () => {
       }
     });
     await expect(
-      service().updateAdminPrayer(superAdmin, publicPrayer.id, {
+      adminPrayerService.updateAdminPrayer(superAdmin, publicPrayer.id, {
         status: "ARCHIVED"
       })
     ).resolves.toEqual({
@@ -94,6 +98,36 @@ describe("AdminPrayerService", () => {
         status: "ARCHIVED",
         archivedAt: "2026-05-04T00:00:00.000Z"
       }
+    });
+
+    expect(auditLog.records).toHaveLength(2);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.prayer.create",
+      actorUserId: superAdmin.id,
+      entityId: publicPrayer.id,
+      entityType: "prayer",
+      scopeOrganizationUnitId: null,
+      beforeSummary: null
+    });
+    expect(auditLog.records[0]?.afterSummary).toMatchObject({
+      status: "DRAFT",
+      title: "New Prayer",
+      visibility: "PUBLIC"
+    });
+    expect(auditLog.records[0]?.afterSummary).not.toHaveProperty("body");
+    expect(auditLog.records[1]).toMatchObject({
+      action: "admin.prayer.update",
+      actorUserId: superAdmin.id,
+      entityId: publicPrayer.id,
+      entityType: "prayer"
+    });
+    expect(auditLog.records[1]?.beforeSummary).toMatchObject({
+      status: "DRAFT",
+      visibility: "PUBLIC"
+    });
+    expect(auditLog.records[1]?.afterSummary).toMatchObject({
+      status: "ARCHIVED",
+      visibility: "PUBLIC"
     });
   });
 
@@ -115,8 +149,11 @@ describe("AdminPrayerService", () => {
   });
 });
 
-function service(): AdminPrayerService {
-  return new AdminPrayerService(repository());
+function service(
+  repositoryOverride: AdminPrayerRepository = repository(),
+  auditLog: TestAuditLog = auditLogRecorder()
+): AdminPrayerService {
+  return new AdminPrayerService(repositoryOverride, auditLog as unknown as AuditLogService);
 }
 
 function repository(): AdminPrayerRepository {
@@ -146,6 +183,28 @@ function repository(): AdminPrayerRepository {
       if (data.status === "ARCHIVED") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);
+    },
+    findPrayerForAudit: (id) => {
+      if (id === publicPrayer.id) {
+        return Promise.resolve(publicPrayer);
+      }
+
+      return Promise.resolve(null);
+    }
+  };
+}
+
+type TestAuditLog = Pick<AuditLogService, "record"> & { records: AuditLogInput[] };
+
+function auditLogRecorder(): TestAuditLog {
+  const records: AuditLogInput[] = [];
+
+  return {
+    records,
+    record: (input) => {
+      records.push(input);
+
+      return Promise.resolve();
     }
   };
 }

@@ -16,7 +16,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                               | —                            |
 | **2**    | 🟡 IN PROGRESS | ~80%     | ████████████████░░░░ | Prisma, auth helpers, filters                                           | Complete guards/tests        |
 | **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading | Phase 4 public content views |
-| **4**    | 🟡 IN PROGRESS | ~74%     | ███████████████░░░░░ | Public APIs, mobile views, admin prayer/event APIs                      | Admin UI + audit workflow    |
+| **4**    | 🟡 IN PROGRESS | ~86%     | █████████████████░░░ | Public APIs, mobile views, admin APIs, audit, admin workflow foundation | Render admin screens         |
 | **5**    | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Authentication, mode switching                                          | Start after Phase 4          |
 | **6–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Admin, candidate, brother, prayer, audit                                | —                            |
 
@@ -116,7 +116,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 4: Public Content: Prayers & Events 🟡
 
-**Status**: IN PROGRESS (~74%)
+**Status**: IN PROGRESS (~86%)
 
 **Completed**:
 
@@ -132,20 +132,21 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Mobile public event detail view with API-mode DTO validation, state handling, and demo fallback
 - ✅ Admin prayer list/create/patch API with guarded access, shared validation, scoped officer reads, and Super Admin writes
 - ✅ Admin event list/create/patch API with guarded access, shared validation, officer-scoped reads/writes, and Super Admin global writes
+- ✅ Admin prayer/event mutation audit side effects with actor, entity, scope, and redacted before/after summaries
+- ✅ Admin app prayer/event workflow foundation with authenticated API clients, DTO validation, state mapping, and list action view models
 
 **In Progress**:
 
-- 🟡 Admin prayer/event UI workflow
-- 🟡 Admin prayer/event audit side effects
+- 🟡 Rendered Admin Lite prayer/event screens
 
 **Not Yet**:
 
 - ⏳ Brother-visible prayer/event APIs (Phase 8/9)
 - ⏳ Participation intent (Phase 9)
 
-**Exit criteria**: 🟡 Public APIs, mobile public views, and admin prayer/event APIs are implemented; admin UI/audit surfaces still pending
+**Exit criteria**: 🟡 Public APIs, mobile public views, admin prayer/event APIs, audit side effects, and admin workflow models are implemented; rendered admin UI surfaces still pending
 
-**Next step**: Add admin prayer/event UI and audit workflows
+**Next step**: Render admin prayer/event screens from the tested workflow models
 
 ---
 
@@ -172,8 +173,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅             | ✅                 | Enforced in CI                                                                                                      |
 | **Typecheck**            | ✅      | ✅             | ✅                 | TypeScript strict mode                                                                                              |
-| **Unit tests (80%)**     | ✅      | ✅             | ✅                 | `vitest --coverage` currently 95.74% statements / 86.52% branches / 95.94% functions / 96.21% lines                 |
-| **Integration tests**    | ✅      | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; admin event scope/controller tests added; broader Phase 2 permission matrix still expanding |
+| **Unit tests (80%)**     | ✅      | ✅             | ✅                 | `vitest --coverage` currently 94.62% statements / 85.47% branches / 94.14% functions / 95.10% lines                 |
+| **Integration tests**    | ✅      | 🟡 In progress | ✅ Phase 3 covered | Public content-page and public-home API/mobile state tests added; admin event scope/controller, admin content audit, and admin workflow model tests added; broader Phase 2 permission matrix still expanding |
 | **Build**                | ✅      | ✅             | ✅                 | All apps compile                                                                                                    |
 | **OpenAPI generation**   | ✅      | ✅             | ✅                 | Contract artifact                                                                                                   |
 | **Contract check**       | ✅      | ✅             | ✅                 | Generated client compiles                                                                                           |
@@ -217,7 +218,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile public prayer and event list/detail views with API-mode DTO validation, demo fallback, and loading/error/offline/empty states
 - Admin prayer API CRUD with scoped listing, Super Admin writes, and archive-by-status
 - Admin event API CRUD with scoped listing/writes and publish/cancel/archive status handling
-- Admin UI and audit workflow still pending
+- Rendered Admin Lite prayer/event screens still pending
+- Admin prayer/event audit side effects added for create/update workflows
+- Admin app prayer/event API client and list action workflow models added
 - Public content visibility enforcement added for public prayer/event reads
 
 ---
@@ -247,7 +250,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Public prayer/event mobile detail screens
    - [x] Admin prayer list/create/patch API
    - [x] Admin event API
-   - [ ] Admin UI and audit workflows
+   - [x] Admin workflow models/API clients for prayer/event management
+   - [ ] Rendered Admin Lite prayer/event screens
+   - [x] Admin audit workflows for prayer/event mutations
 
 4. **Phase 5: Authentication**
    - [ ] Firebase provider adapter
@@ -332,5 +337,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 4, 2026
-**Current Phase**: Phase 2 (~80%) + Phase 4 (~74%)
-**Next Major Milestone**: Complete Phase 2 permission/visibility tests and Phase 4 admin UI/audit workflows
+**Current Phase**: Phase 2 (~80%) + Phase 4 (~86%)
+**Next Major Milestone**: Complete Phase 2 permission/visibility tests and render Phase 4 admin prayer/event screens

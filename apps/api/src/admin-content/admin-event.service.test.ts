@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
+import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import type { AdminEventRepository } from "./admin-event.repository.js";
 import { AdminEventService } from "./admin-event.service.js";
@@ -72,8 +73,11 @@ describe("AdminEventService", () => {
   });
 
   it("allows scoped officers and super admins to create event records", async () => {
+    const auditLog = auditLogRecorder();
+    const adminEventService = service(repository(), auditLog);
+
     await expect(
-      service().createAdminEvent(officer, {
+      adminEventService.createAdminEvent(officer, {
         title: "New Retreat",
         description: null,
         type: "retreat",
@@ -94,7 +98,7 @@ describe("AdminEventService", () => {
       }
     });
     await expect(
-      service().createAdminEvent(superAdmin, {
+      adminEventService.createAdminEvent(superAdmin, {
         title: "Global Event",
         type: "open-evening",
         startAt: "2026-05-10T18:00:00.000Z",
@@ -109,6 +113,35 @@ describe("AdminEventService", () => {
         locationLabel: null,
         visibility: "PUBLIC"
       }
+    });
+
+    expect(auditLog.records).toHaveLength(2);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.event.create",
+      actorUserId: officer.id,
+      entityId: publicEvent.id,
+      entityType: "event",
+      scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      beforeSummary: null
+    });
+    expect(auditLog.records[0]?.afterSummary).toMatchObject({
+      status: "draft",
+      title: "New Retreat",
+      visibility: "ORGANIZATION_UNIT"
+    });
+    expect(auditLog.records[0]?.afterSummary).not.toHaveProperty("description");
+    expect(auditLog.records[1]).toMatchObject({
+      action: "admin.event.create",
+      actorUserId: superAdmin.id,
+      entityId: publicEvent.id,
+      entityType: "event",
+      scopeOrganizationUnitId: null,
+      beforeSummary: null
+    });
+    expect(auditLog.records[1]?.afterSummary).toMatchObject({
+      status: "draft",
+      title: "Global Event",
+      visibility: "PUBLIC"
     });
   });
 
@@ -130,8 +163,11 @@ describe("AdminEventService", () => {
   });
 
   it("updates scoped records and hides events outside the current admin scope", async () => {
+    const auditLog = auditLogRecorder();
+    const adminEventService = service(repository(), auditLog);
+
     await expect(
-      service().updateAdminEvent(officer, scopedEvent.id, {
+      adminEventService.updateAdminEvent(officer, scopedEvent.id, {
         status: "cancelled"
       })
     ).resolves.toEqual({
@@ -141,6 +177,23 @@ describe("AdminEventService", () => {
         cancelledAt: "2026-05-04T00:00:00.000Z"
       }
     });
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.event.update",
+      actorUserId: officer.id,
+      entityId: scopedEvent.id,
+      entityType: "event",
+      scopeOrganizationUnitId: scopedEvent.targetOrganizationUnitId
+    });
+    expect(auditLog.records[0]?.beforeSummary).toMatchObject({
+      status: "draft",
+      visibility: "ORGANIZATION_UNIT"
+    });
+    expect(auditLog.records[0]?.afterSummary).toMatchObject({
+      status: "cancelled",
+      visibility: "ORGANIZATION_UNIT"
+    });
+
     await expect(
       service(repository({ updateResult: null })).updateAdminEvent(officer, publicEvent.id, {
         status: "archived"
@@ -149,8 +202,11 @@ describe("AdminEventService", () => {
   });
 });
 
-function service(repositoryOverride: AdminEventRepository = repository()): AdminEventService {
-  return new AdminEventService(repositoryOverride);
+function service(
+  repositoryOverride: AdminEventRepository = repository(),
+  auditLog: TestAuditLog = auditLogRecorder()
+): AdminEventService {
+  return new AdminEventService(repositoryOverride, auditLog as unknown as AuditLogService);
 }
 
 function repository(options: { updateResult?: AdminEventSummary | null } = {}): AdminEventRepository {
@@ -190,6 +246,31 @@ function repository(options: { updateResult?: AdminEventSummary | null } = {}): 
       if (data.status === "archived") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);
+    },
+    findEventForAudit: (id) => {
+      if (id === scopedEvent.id) {
+        return Promise.resolve(scopedEvent);
+      }
+      if (id === publicEvent.id) {
+        return Promise.resolve(publicEvent);
+      }
+
+      return Promise.resolve(null);
+    }
+  };
+}
+
+type TestAuditLog = Pick<AuditLogService, "record"> & { records: AuditLogInput[] };
+
+function auditLogRecorder(): TestAuditLog {
+  const records: AuditLogInput[] = [];
+
+  return {
+    records,
+    record: (input) => {
+      records.push(input);
+
+      return Promise.resolve();
     }
   };
 }

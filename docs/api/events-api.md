@@ -30,3 +30,11 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 - Public event list reads default to upcoming events and return only currently published `PUBLIC` or `FAMILY_OPEN` events.
 - Private, archived, draft, cancelled, future-published, and brother/candidate/scoped events are hidden from guests.
 - `GET /public/events/:id` returns 404 for any event that is missing or not publicly visible.
+
+## Implemented Admin Rules
+
+- `GET /admin/events` requires Admin Lite access.
+- Super Admin sees and writes all event records.
+- Officers see public/family-open events and events scoped to assigned organization units.
+- Officer create/update writes must stay within assigned organization units.
+- Admin create/update/publish/cancel/archive mutations append audit log entries with actor, entity, scope, and redacted before/after summaries. Full event descriptions are not copied into audit summaries.

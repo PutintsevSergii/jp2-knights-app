@@ -17,6 +17,10 @@ export abstract class AdminEventRepository {
     data: UpdateAdminEventRequest,
     scopeOrganizationUnitIds: readonly string[] | null
   ): Promise<AdminEventSummary | null>;
+  abstract findEventForAudit(
+    id: string,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ): Promise<AdminEventSummary | null>;
 }
 
 @Injectable()
@@ -98,6 +102,17 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
 
     const record = await this.prisma.event.findFirst({
       where
+    });
+
+    return record ? toAdminEventSummary(record) : null;
+  }
+
+  async findEventForAudit(
+    id: string,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ): Promise<AdminEventSummary | null> {
+    const record = await this.prisma.event.findFirst({
+      where: adminEventUpdateWhere(id, scopeOrganizationUnitIds)
     });
 
     return record ? toAdminEventSummary(record) : null;
