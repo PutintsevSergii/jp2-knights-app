@@ -8,7 +8,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~45% in progress)
+**Last Updated**: May 4, 2026 (Phase 2 ~80% complete; Phase 3 public discovery shell complete; Phase 4 ~60% in progress)
 
 ---
 
@@ -58,6 +58,10 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
   demo fallback fixtures, and React Native list views for
   `PublicPrayerCategories` and `PublicEventsList`. These validate shared DTOs,
   handle loading/empty/error/offline states, and stay on public-safe summary data.
+- Mobile public prayer and event detail screens now load
+  `/api/public/prayers/{id}` and `/api/public/events/{id}` in API mode, validate
+  shared DTOs, support demo fallback details, and keep private content hidden by
+  depending on the public API contracts.
 - Nx quality gates ignore local `.claude/worktrees` agent worktrees so copied
   project files do not create duplicate Nx project names.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
@@ -76,7 +80,7 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive. Full Admin Lite navigation, detail views, audit logging,
   and broader admin workflows remain later-phase work.
-- Phase 4 admin CRUD, mobile public prayer/event detail screens, and Phases 5 through 13
+- Phase 4 admin CRUD/publish/archive workflows and Phases 5 through 13
   product workflows are not implemented yet unless explicitly
   listed above.
 
@@ -105,8 +109,8 @@ Implementation is through the Phase 3 public discovery shell, plus the active Ph
 | NFR-DEMO-001 Demo mode                     | runtime mode config                                                                                                      | Mobile/Admin launch shells         | demo fixtures once screen flows exist                              | shared parser, mobile/admin/API production rejection tests      |
 | FR-PUBLIC-001 Public Home                  | `GET /public/home`                                                                                                       | `PublicHome`                       | prayers, events, content pages                                    | public no-auth, no private content, empty state                 |
 | FR-PUBLIC-002 About the Order              | `GET /public/content-pages/{slug}`                                                                                       | `AboutOrder`                       | content_pages                                                     | published `PUBLIC` content only, private/missing pages 404, English fallback, mobile API/demo states |
-| FR-PRAYER-001 Public Prayer Library        | `GET /public/prayers`, `GET /public/prayers/:id`                                                                         | public prayer category/list/detail | prayer_categories, prayers                                        | published public only, private id returns 404, mobile list API/demo states |
-| FR-EVENT-001 Public Events                 | `GET /public/events`, `GET /public/events/:id`                                                                           | public event list/detail           | events                                                            | public/family only, date filters, mobile list API/demo states    |
+| FR-PRAYER-001 Public Prayer Library        | `GET /public/prayers`, `GET /public/prayers/:id`                                                                         | public prayer category/list/detail | prayer_categories, prayers                                        | published public only, private id returns 404, mobile list/detail API/demo states |
+| FR-EVENT-001 Public Events                 | `GET /public/events`, `GET /public/events/:id`                                                                           | public event list/detail           | events                                                            | public/family only, date filters, mobile list/detail API/demo states |
 | FR-PRAYER-002 Public Silent Prayer         | `GET/POST /public/silent-prayer-events`                                                                                  | public silent prayer               | silent_prayer_events, silent_prayer_participation, Redis presence | anonymous aggregate only, duplicate join                        |
 | FR-CANDIDATE-REQ-001 Join Interest Request | `POST /public/candidate-requests`                                                                                        | join request form                  | candidate_requests                                                | consent required, validation, idempotency, rate limit           |
 | FR-ADMIN-001 Candidate Request Management  | `GET /admin/candidate-requests`, `GET/PATCH /admin/candidate-requests/:id`, `POST /admin/candidate-requests/:id/convert` | candidate request list/detail      | candidate_requests, audit_logs                                    | officer scope, status transitions, audit                        |

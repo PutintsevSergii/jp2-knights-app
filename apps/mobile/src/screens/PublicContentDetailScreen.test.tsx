@@ -1,34 +1,30 @@
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { fallbackPublicEvents, fallbackPublicPrayers } from "../public-content.js";
-import {
-  buildPublicEventsListScreen,
-  buildPublicPrayerCategoriesScreen
-} from "../public-screens.js";
-import { PublicContentListScreen } from "./PublicContentListScreen.js";
+import { fallbackPublicEventDetail, fallbackPublicPrayerDetail } from "../public-content.js";
+import { buildPublicEventDetailScreen, buildPublicPrayerDetailScreen } from "../public-screens.js";
+import { PublicContentDetailScreen } from "./PublicContentDetailScreen.js";
 
-describe("PublicContentListScreen", () => {
-  it("creates a React Native public prayers list element from the screen model", () => {
-    const element = PublicContentListScreen({
-      screen: buildPublicPrayerCategoriesScreen({
+describe("PublicContentDetailScreen", () => {
+  it("creates a public prayer detail element from the screen model", () => {
+    const element = PublicContentDetailScreen({
+      screen: buildPublicPrayerDetailScreen({
         state: "ready",
-        response: fallbackPublicPrayers,
+        response: fallbackPublicPrayerDetail,
         runtimeMode: "api"
       })
     }) as ReactElement<{ style?: unknown }>;
 
     expect(element).toBeTruthy();
     expect(element.props.style).toBeDefined();
-    expect(findText(element, "Public Prayers")).toBe(true);
     expect(findText(element, "Morning Offering")).toBe(true);
   });
 
-  it("creates public events list elements and invokes navigation actions", () => {
+  it("creates event detail elements and invokes navigation actions", () => {
     const onNavigate = vi.fn();
-    const element = PublicContentListScreen({
-      screen: buildPublicEventsListScreen({
+    const element = PublicContentDetailScreen({
+      screen: buildPublicEventDetailScreen({
         state: "ready",
-        response: fallbackPublicEvents,
+        response: fallbackPublicEventDetail,
         runtimeMode: "demo"
       }),
       onNavigate
@@ -38,10 +34,7 @@ describe("PublicContentListScreen", () => {
     expect(findText(element, "Demo mode")).toBe(true);
     expect(findText(element, "Open Evening")).toBe(true);
     pressable?.props.onPress?.();
-    expect(onNavigate).toHaveBeenCalledWith(
-      "PublicEventDetail",
-      "00000000-0000-0000-0000-000000000008"
-    );
+    expect(onNavigate).toHaveBeenCalledWith("PublicEventsList", undefined);
   });
 });
 

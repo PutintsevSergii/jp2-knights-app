@@ -29,7 +29,9 @@ public routes.
 Phase 4 adds React Native public prayer and event list views. `PublicPrayerCategories`
 loads `/api/public/prayers`; `PublicEventsList` loads `/api/public/events`.
 Both validate shared DTOs, support API/demo runtime modes, and expose only
-public-safe summaries. Prayer/event detail screens remain pending.
+public-safe summaries. `PublicPrayerDetail` and `PublicEventDetail` load the
+corresponding public detail endpoints, validate shared DTOs, and use demo
+fallback details when running without the backend.
 
 ## Analytics
 

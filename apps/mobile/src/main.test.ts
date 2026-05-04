@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAboutOrderScreen,
+  buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
+  fallbackPublicEventDetail,
   fallbackPublicEvents,
+  fallbackPublicPrayerDetail,
   fallbackPublicPrayers,
   buildPublicHomeScreen,
+  buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
   getMobileHealth,
   getMobileThemePreview,
@@ -89,5 +93,22 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("PublicEventsList");
+  });
+
+  it("exports public prayer and event detail screen model builders", () => {
+    expect(
+      buildPublicPrayerDetailScreen({
+        state: "ready",
+        response: fallbackPublicPrayerDetail,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("PublicPrayerDetail");
+    expect(
+      buildPublicEventDetailScreen({
+        state: "ready",
+        response: fallbackPublicEventDetail,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("PublicEventDetail");
   });
 });

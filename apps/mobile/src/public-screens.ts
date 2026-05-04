@@ -1,8 +1,10 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type {
   PublicContentPageResponseDto,
+  PublicEventDetailResponseDto,
   PublicEventListResponseDto,
   PublicHomeResponseDto,
+  PublicPrayerDetailResponseDto,
   PublicPrayerListResponseDto
 } from "@jp2/shared-validation";
 import type { MobileLaunchState, MobileScreenState } from "./navigation.js";
@@ -13,6 +15,8 @@ export type PublicRoute =
   | "AboutOrder"
   | "PublicPrayerCategories"
   | "PublicEventsList"
+  | "PublicPrayerDetail"
+  | "PublicEventDetail"
   | "JoinRequestForm"
   | "Login";
 
@@ -20,6 +24,7 @@ export interface PublicScreenAction {
   id: string;
   label: string;
   targetRoute: PublicRoute;
+  targetId?: string | undefined;
 }
 
 export interface PublicScreenSection {
@@ -73,6 +78,17 @@ export interface PublicContentListScreen {
   theme: PublicScreenTheme;
 }
 
+export interface PublicContentDetailScreen {
+  route: "PublicPrayerDetail" | "PublicEventDetail";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: PublicScreenSection[];
+  actions: PublicScreenAction[];
+  demoChromeVisible: boolean;
+  theme: PublicScreenTheme;
+}
+
 export interface BuildAboutOrderScreenOptions {
   state: MobileScreenState;
   page?: PublicContentPageResponseDto["page"] | undefined;
@@ -88,6 +104,18 @@ export interface BuildPublicPrayerCategoriesScreenOptions {
 export interface BuildPublicEventsListScreenOptions {
   state: MobileScreenState;
   response?: PublicEventListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}
+
+export interface BuildPublicPrayerDetailScreenOptions {
+  state: MobileScreenState;
+  response?: PublicPrayerDetailResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}
+
+export interface BuildPublicEventDetailScreenOptions {
+  state: MobileScreenState;
+  response?: PublicEventDetailResponseDto | undefined;
   runtimeMode: RuntimeMode;
 }
 
@@ -196,7 +224,9 @@ export function buildPublicPrayerCategoriesScreen(
         body: prayer.excerpt
       }))
     ],
-    actions: [homeAction],
+    actions: [openFirstPrayerAction(options.response.prayers[0]?.id), homeAction].filter(
+      isPublicScreenAction
+    ),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: publicScreenTheme
   };
@@ -227,7 +257,88 @@ export function buildPublicEventsListScreen(
       title: event.title,
       body: publicEventBody(event)
     })),
-    actions: [homeAction],
+    actions: [openFirstEventAction(options.response.events[0]?.id), homeAction].filter(
+      isPublicScreenAction
+    ),
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
+export function buildPublicPrayerDetailScreen(
+  options: BuildPublicPrayerDetailScreenOptions
+): PublicContentDetailScreen {
+  if (options.state !== "ready") {
+    return stateOnlyPublicContentDetail(
+      "PublicPrayerDetail",
+      options.state,
+      options.runtimeMode === "demo"
+    );
+  }
+
+  if (!options.response) {
+    return stateOnlyPublicContentDetail(
+      "PublicPrayerDetail",
+      "empty",
+      options.runtimeMode === "demo"
+    );
+  }
+
+  return {
+    route: "PublicPrayerDetail",
+    state: "ready",
+    title: options.response.prayer.title,
+    body: "Published public prayer.",
+    sections: [
+      {
+        id: "prayer-body",
+        title: options.response.prayer.category?.title ?? "Prayer",
+        body: options.response.prayer.body
+      }
+    ],
+    actions: [publicPrayersAction, homeAction],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
+export function buildPublicEventDetailScreen(
+  options: BuildPublicEventDetailScreenOptions
+): PublicContentDetailScreen {
+  if (options.state !== "ready") {
+    return stateOnlyPublicContentDetail(
+      "PublicEventDetail",
+      options.state,
+      options.runtimeMode === "demo"
+    );
+  }
+
+  if (!options.response) {
+    return stateOnlyPublicContentDetail(
+      "PublicEventDetail",
+      "empty",
+      options.runtimeMode === "demo"
+    );
+  }
+
+  return {
+    route: "PublicEventDetail",
+    state: "ready",
+    title: options.response.event.title,
+    body: "Published public event.",
+    sections: [
+      {
+        id: "event-time-location",
+        title: "When and Where",
+        body: publicEventBody(options.response.event)
+      },
+      {
+        id: "event-description",
+        title: "Details",
+        body: options.response.event.description ?? "Public event details are available."
+      }
+    ],
+    actions: [publicEventsAction, homeAction],
     demoChromeVisible: options.runtimeMode === "demo",
     theme: publicScreenTheme
   };
@@ -329,6 +440,28 @@ function stateOnlyPublicContentList(
   };
 }
 
+function stateOnlyPublicContentDetail(
+  route: PublicContentDetailScreen["route"],
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): PublicContentDetailScreen {
+  const copy =
+    route === "PublicPrayerDetail"
+      ? publicPrayerDetailStateCopy[state]
+      : publicEventDetailStateCopy[state];
+
+  return {
+    route,
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: publicScreenTheme
+  };
+}
+
 function toPublicRoute(route: string): PublicRoute {
   if (publicRoutes.includes(route as PublicRoute)) {
     return route as PublicRoute;
@@ -342,6 +475,8 @@ const publicRoutes: readonly PublicRoute[] = [
   "AboutOrder",
   "PublicPrayerCategories",
   "PublicEventsList",
+  "PublicPrayerDetail",
+  "PublicEventDetail",
   "JoinRequestForm",
   "Login"
 ];
@@ -455,10 +590,76 @@ const publicEventsListStateCopy: Record<MobileScreenState, { title: string; body
   }
 };
 
+const publicPrayerDetailStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Public Prayer",
+    body: "Published public prayer is available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Public prayer is loading."
+  },
+  empty: {
+    title: "Public Prayer",
+    body: "This public prayer is being prepared."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Public prayer could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "This public screen cannot show private content."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh this public prayer."
+  }
+};
+
+const publicEventDetailStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Public Event",
+    body: "Published public event is available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Public event is loading."
+  },
+  empty: {
+    title: "Public Event",
+    body: "This public event is being prepared."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Public event could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "This public screen cannot show private content."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh this public event."
+  }
+};
+
 const homeAction: PublicScreenAction = {
   id: "home",
   label: "Home",
   targetRoute: "PublicHome"
+};
+
+const publicPrayersAction: PublicScreenAction = {
+  id: "public-prayers",
+  label: "Prayers",
+  targetRoute: "PublicPrayerCategories"
+};
+
+const publicEventsAction: PublicScreenAction = {
+  id: "public-events",
+  label: "Events",
+  targetRoute: "PublicEventsList"
 };
 
 const publicScreenTheme: PublicScreenTheme = {
@@ -495,4 +696,32 @@ function publicEventBody(event: PublicEventListResponseDto["events"][number]) {
   }).format(date);
 
   return event.locationLabel ? `${formatted} - ${event.locationLabel}` : formatted;
+}
+
+function openFirstPrayerAction(id: string | undefined): PublicScreenAction | undefined {
+  return id
+    ? {
+        id: "open-first-prayer",
+        label: "Open First Prayer",
+        targetRoute: "PublicPrayerDetail",
+        targetId: id
+      }
+    : undefined;
+}
+
+function openFirstEventAction(id: string | undefined): PublicScreenAction | undefined {
+  return id
+    ? {
+        id: "open-first-event",
+        label: "Open First Event",
+        targetRoute: "PublicEventDetail",
+        targetId: id
+      }
+    : undefined;
+}
+
+function isPublicScreenAction(
+  action: PublicScreenAction | undefined
+): action is PublicScreenAction {
+  return Boolean(action);
 }
