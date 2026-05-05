@@ -10,6 +10,7 @@ import {
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
+  candidateDashboardResponseSchema,
   contentStatusSchema,
   convertCandidateRequestSchema,
   createAdminEventRequestSchema,
@@ -489,6 +490,59 @@ describe("shared validation", () => {
       adminDashboardResponseSchema.safeParse({
         ...response,
         tasks: [{ ...response.tasks[0], targetRoute: "/admin/brothers" }]
+      }).success
+    ).toBe(false);
+  });
+
+  it("validates candidate dashboard profile, next step, and safe event visibility", () => {
+    const response = {
+      profile: {
+        id: "11111111-1111-4111-8111-111111111111",
+        userId: "22222222-2222-4222-8222-222222222222",
+        displayName: "Demo Candidate",
+        email: "candidate@example.test",
+        preferredLanguage: "en",
+        status: "active",
+        assignedOrganizationUnit: {
+          id: "33333333-3333-4333-8333-333333333333",
+          name: "Pilot Choragiew",
+          city: "Riga",
+          country: "Latvia",
+          parish: null
+        },
+        responsibleOfficer: {
+          id: "44444444-4444-4444-8444-444444444444",
+          displayName: "Responsible Officer",
+          email: "officer@example.test",
+          phone: null
+        }
+      },
+      nextStep: {
+        id: "review-roadmap",
+        label: "Review your candidate path",
+        body: "Review upcoming candidate steps.",
+        targetRoute: "CandidateRoadmap",
+        priority: "normal"
+      },
+      upcomingEvents: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          title: "Candidate Gathering",
+          type: "formation",
+          startAt: "2026-06-01T10:00:00.000Z",
+          endAt: null,
+          locationLabel: "Riga",
+          visibility: "CANDIDATE"
+        }
+      ],
+      announcements: []
+    };
+
+    expect(candidateDashboardResponseSchema.parse(response)).toEqual(response);
+    expect(
+      candidateDashboardResponseSchema.safeParse({
+        ...response,
+        upcomingEvents: [{ ...response.upcomingEvents[0], visibility: "BROTHER" }]
       }).success
     ).toBe(false);
   });

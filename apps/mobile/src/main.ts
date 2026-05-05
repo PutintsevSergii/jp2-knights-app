@@ -27,6 +27,12 @@ export {
   submitPublicCandidateRequest
 } from "./public-candidate-request-api.js";
 export {
+  buildCandidateDashboardUrl,
+  candidateDashboardLoadFailureState,
+  fetchCandidateDashboard
+} from "./candidate-dashboard-api.js";
+export { fallbackCandidateDashboard } from "./candidate-dashboard.js";
+export {
   emptyJoinRequestFormDraft,
   fallbackPublicCandidateRequestResponse,
   submitDemoPublicCandidateRequest
@@ -47,6 +53,14 @@ export {
 } from "./public-home-api.js";
 export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js";
 export { resolveMobileLaunchState } from "./navigation.js";
+export { buildCandidateDashboardScreen } from "./candidate-screens.js";
+export type {
+  CandidateDashboardScreen,
+  CandidateRoute,
+  CandidateScreenAction,
+  CandidateScreenSection,
+  CandidateScreenTheme
+} from "./candidate-screens.js";
 export {
   buildAboutOrderScreen,
   buildJoinRequestConfirmationScreen,

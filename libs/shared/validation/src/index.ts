@@ -234,6 +234,60 @@ export const adminDashboardResponseSchema = z.object({
   tasks: z.array(adminDashboardTaskSchema)
 });
 
+const candidateDashboardOrganizationUnitSchema = z.object({
+  id: z.uuid(),
+  name: z.string().trim().min(1).max(200),
+  city: z.string().trim().min(1).max(200),
+  country: z.string().trim().min(1).max(200),
+  parish: z.string().trim().min(1).max(200).nullable()
+});
+
+const candidateDashboardOfficerSchema = z.object({
+  id: z.uuid(),
+  displayName: z.string().trim().min(1).max(200),
+  email: z.string().trim().email().max(320),
+  phone: z.string().trim().min(1).max(40).nullable()
+});
+
+export const candidateDashboardEventSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  type: z.string().trim().min(1).max(80),
+  startAt: z.iso.datetime(),
+  endAt: z.iso.datetime().nullable(),
+  locationLabel: z.string().trim().min(1).max(200).nullable(),
+  visibility: z.enum(["PUBLIC", "FAMILY_OPEN", "CANDIDATE", "ORGANIZATION_UNIT"])
+});
+
+export const candidateDashboardAnnouncementSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(2000),
+  publishedAt: z.iso.datetime()
+});
+
+export const candidateDashboardResponseSchema = z.object({
+  profile: z.object({
+    id: z.uuid(),
+    userId: z.uuid(),
+    displayName: z.string().trim().min(1).max(200),
+    email: z.string().trim().email().max(320),
+    preferredLanguage: z.string().trim().min(2).max(10).nullable(),
+    status: z.literal("active"),
+    assignedOrganizationUnit: candidateDashboardOrganizationUnitSchema.nullable(),
+    responsibleOfficer: candidateDashboardOfficerSchema.nullable()
+  }),
+  nextStep: z.object({
+    id: z.string().trim().min(1).max(80),
+    label: z.string().trim().min(1).max(120),
+    body: z.string().trim().min(1).max(1000),
+    targetRoute: z.enum(["CandidateContact", "CandidateRoadmap", "CandidateEvents"]),
+    priority: z.enum(["normal", "attention"])
+  }),
+  upcomingEvents: z.array(candidateDashboardEventSummarySchema),
+  announcements: z.array(candidateDashboardAnnouncementSummarySchema)
+});
+
 const adminPrayerWriteBaseSchema = z
   .object({
     categoryId: z.uuid().nullable().optional(),
@@ -523,11 +577,16 @@ export type AdminEventListResponseDto = z.infer<typeof adminEventListResponseSch
 export type AdminEventDetailResponseDto = z.infer<typeof adminEventDetailResponseSchema>;
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
+export type CandidateDashboardEventSummaryDto = z.infer<
+  typeof candidateDashboardEventSummarySchema
+>;
+export type CandidateDashboardAnnouncementSummaryDto = z.infer<
+  typeof candidateDashboardAnnouncementSummarySchema
+>;
+export type CandidateDashboardResponseDto = z.infer<typeof candidateDashboardResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
-export type AdminCandidateRequestSummaryDto = z.infer<
-  typeof adminCandidateRequestSummarySchema
->;
+export type AdminCandidateRequestSummaryDto = z.infer<typeof adminCandidateRequestSummarySchema>;
 export type AdminCandidateRequestDetailDto = z.infer<typeof adminCandidateRequestDetailSchema>;
 export type AdminCandidateRequestListResponseDto = z.infer<
   typeof adminCandidateRequestListResponseSchema
