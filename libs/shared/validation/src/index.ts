@@ -195,6 +195,21 @@ export const adminCandidateProfileDetailResponseSchema = z.object({
   candidateProfile: adminCandidateProfileDetailSchema
 });
 
+export const adminCandidateProfileListResponseSchema = z.object({
+  candidateProfiles: z.array(adminCandidateProfileSummarySchema)
+});
+
+export const updateAdminCandidateProfileSchema = z
+  .object({
+    status: z.enum(["active", "paused", "archived"]).optional(),
+    assignedOrganizationUnitId: z.uuid().nullable().optional(),
+    responsibleOfficerId: z.uuid().nullable().optional()
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one candidate profile field must be provided."
+  });
+
 export const convertCandidateRequestSchema = z
   .object({
     assignedOrganizationUnitId: z.uuid().optional(),
@@ -599,6 +614,10 @@ export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfil
 export type AdminCandidateProfileDetailResponseDto = z.infer<
   typeof adminCandidateProfileDetailResponseSchema
 >;
+export type AdminCandidateProfileListResponseDto = z.infer<
+  typeof adminCandidateProfileListResponseSchema
+>;
+export type UpdateAdminCandidateProfileDto = z.infer<typeof updateAdminCandidateProfileSchema>;
 export type ConvertCandidateRequestDto = z.infer<typeof convertCandidateRequestSchema>;
 export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidateRequestSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;

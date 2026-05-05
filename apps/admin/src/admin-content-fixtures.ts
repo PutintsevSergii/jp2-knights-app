@@ -2,6 +2,7 @@ import type {
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
   AdminCandidateRequestDetailDto,
+  AdminCandidateProfileDetailDto,
   AdminOrganizationUnitListResponseDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
@@ -61,6 +62,25 @@ export const fallbackAdminCandidateRequestDetails: AdminCandidateRequestDetailDt
     consentTextVersion: "candidate-request-v1",
     consentAt: "2026-05-05T08:00:00.000Z",
     officerNote: null
+  }
+];
+
+export const fallbackAdminCandidateProfiles: AdminCandidateProfileDetailDto[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777777",
+    userId: "88888888-8888-4888-8888-888888888888",
+    candidateRequestId: fallbackAdminCandidateRequestDetails[0]?.id ?? null,
+    displayName: "Jan Nowak",
+    email: "jan.nowak@example.test",
+    preferredLanguage: "en",
+    assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+    assignedOrganizationUnitName: "Pilot Organization Unit",
+    responsibleOfficerId: "99999999-9999-4999-8999-999999999999",
+    responsibleOfficerName: "Demo Officer",
+    status: "active",
+    createdAt: "2026-05-05T10:05:00.000Z",
+    updatedAt: "2026-05-05T10:05:00.000Z",
+    archivedAt: null
   }
 ];
 

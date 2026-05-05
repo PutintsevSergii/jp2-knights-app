@@ -10,17 +10,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Executive Summary
 
-| Phase    | Status         | Progress | Completeness         | Key Outputs                                                                                 | Next Step                              |
-| -------- | -------------- | -------- | -------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **0**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                                    | —                                      |
-| **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                   | —                                      |
-| **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                            | —                                      |
-| **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                     | Phase 4 public content views           |
-| **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                            | —                                      |
-| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API                       | —                                      |
-| **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell                       | —                                      |
-| **7**    | 🟡 IN PROGRESS | ~85%     | █████████████████░░░ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard | Add admin candidate profile management |
-| **8–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Brother, events/announcements, roadmap, silent prayer, hardening                            | After Phase 7                          |
+| Phase    | Status      | Progress | Completeness         | Key Outputs                                                                                                           | Next Step                    |
+| -------- | ----------- | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **0**    | ✅ COMPLETE | 100%     | ████████████████████ | Scope, roles, visibility                                                                                              | —                            |
+| **1**    | ✅ COMPLETE | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                                             | —                            |
+| **2**    | ✅ COMPLETE | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                      | —                            |
+| **3**    | ✅ COMPLETE | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                               | Phase 4 public content views |
+| **4**    | ✅ COMPLETE | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                      | —                            |
+| **5**    | ✅ COMPLETE | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API                                                 | —                            |
+| **6**    | ✅ COMPLETE | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell                                                 | —                            |
+| **7**    | ✅ COMPLETE | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | Phase 8 brother core         |
+| **8–13** | ⏳ PENDING  | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Brother, events/announcements, roadmap, silent prayer, hardening                                                      | Start Phase 8                |
 
 ---
 
@@ -190,9 +190,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Next step**: Continue Phase 7 admin candidate request UI/client workflow
 
-### Phase 7: Candidate Funnel 🟡
+### Phase 7: Candidate Funnel ✅
 
-**Status**: IN PROGRESS (~85%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 
@@ -213,14 +213,18 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Candidate request conversion creates/reuses invited local user, grants `CANDIDATE`, creates active candidate profile, marks request converted, and writes redacted audit summaries
 - ✅ Guarded `GET /api/candidate/dashboard` with active candidate profile enforcement, scoped assigned choragiew/responsible-officer contact fields, candidate-visible event summaries, and no brother-only event visibility
 - ✅ Mobile candidate dashboard API client, demo fixture, screen model, and React Native dashboard screen with ready/empty/loading/error/offline/forbidden states
+- ✅ Admin `GET /api/admin/candidates`, `GET /api/admin/candidates/:id`, and `PATCH /api/admin/candidates/:id`
+- ✅ Admin candidate profile reads are server-side scoped: Super Admin global, officers assigned-unit only
+- ✅ Admin candidate profile updates audit active/paused/archive status, assignment, and responsible-officer changes with email redaction
+- ✅ Admin Lite candidate profile API client, list/detail screen models, rendered shell routes, mounted navigation, and demo fallback fixtures
 
 **In Progress**:
 
-- 🟡 Admin candidate profile list/detail management workflow
+- ✅ None
 
-**Exit criteria**: 🟡 Candidate request API, public form, admin UI foundation, profile persistence, request conversion, and candidate dashboard exist; admin candidate profile management remains
+**Exit criteria**: ✅ Candidate request API, public form, admin UI foundation, profile persistence, request conversion, candidate dashboard, and admin candidate profile management exist
 
-**Next step**: Add admin candidate profile list/detail management foundation
+**Next step**: Start Phase 8 brother companion core
 
 ### Phases 4–13: Roadmap
 
@@ -229,8 +233,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **4**  | Public Content: Prayers & Events | ✅ Complete    | Completed May 4 |
 | **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
 | **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
-| **7**  | Candidate Funnel                 | 🟡 In progress | Started May 5   |
-| **8**  | Brother Companion Core           | ⏳ Not started | After Phase 7   |
+| **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
+| **8**  | Brother Companion Core           | ⏳ Not started | Start next      |
 | **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8   |
 | **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
@@ -241,17 +245,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Notes                                                                                                           |
-| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                           |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                           |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.23% statements / 80.28% branches / 90.60% functions / 91.09% lines                      |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public candidate request API, mobile form, admin API, Admin Lite candidate UI, and candidate dashboard coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                           |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes public/admin candidate request endpoints and candidate dashboard                    |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires public/admin candidate request endpoints and candidate dashboard                        |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate request migration baseline check passed                                                               |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile join-interest demo fallback validates and returns a no-PII response                                      |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Notes                                                                                                                                    |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.32% statements / 80.09% branches / 91.01% functions / 91.29% lines                                               |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public candidate request API, mobile form, admin API, Admin Lite candidate UI, candidate dashboard, and admin candidate profile coverage |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes public/admin candidate request endpoints, candidate dashboard, and admin candidates                          |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires public/admin candidate request endpoints, candidate dashboard, and admin candidates                              |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate request migration baseline check passed                                                                                        |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile join-interest demo fallback validates and returns a no-PII response                                                               |
 
 ---
 
@@ -318,7 +322,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mounted Admin Lite app shell wraps implemented admin routes with shared navigation, active state, runtime-mode chrome, and mounted status pages
 - Contract check expanded to require the full currently implemented OpenAPI path set
 
-**Phase 7 In Progress** 🟡:
+**Phase 7 Complete** ✅:
 
 - Shared public candidate request DTO/schema added with required consent acceptance
 - `candidate_requests` Prisma model, migration, active-email uniqueness guard, and local seed fixture added
@@ -328,6 +332,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Admin Lite candidate request API client, list/detail screen models, rendered route shell, mounted navigation, and demo fallback fixture added
 - Candidate profile persistence and `POST /admin/candidate-requests/:id/convert` added with scoped conversion, local candidate account creation/reuse, `CANDIDATE` role grant, and redacted audit summary
 - Candidate dashboard foundation added with `GET /candidate/dashboard`, active-profile enforcement, scoped assignment/contact data, candidate-visible events, mobile API/demo client, screen model, and React Native screen
+- Admin candidate profile management added with guarded list/detail/update API, scoped officer reads, audited status/assignment/responsible-officer updates, Admin Lite client/screen/shell routes, mounted navigation, and demo fallback
 
 ---
 
@@ -352,7 +357,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add admin candidate request client/screen/demo fallback
    - [x] Add candidate profile persistence and conversion foundation
    - [x] Add candidate dashboard/profile activation foundation
-   - [ ] Add admin candidate profile list/detail management foundation
+   - [x] Add admin candidate profile list/detail management foundation
 
 3. **Maintain completed Phase 3–6 foundation**
    - [x] Connect mobile PublicHome to real `/api/public/home`
@@ -459,5 +464,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 5, 2026
-**Current Phase**: Phase 7 in progress; Phases 0–6 complete
-**Next Major Milestone**: Add admin candidate profile list/detail management foundation
+**Current Phase**: Phase 8 ready to start; Phases 0–7 complete
+**Next Major Milestone**: Start brother companion core

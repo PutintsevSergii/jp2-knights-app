@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   fallbackAdminCandidateRequestDetails,
+  fallbackAdminCandidateProfiles,
   fallbackAdminDashboard,
   fallbackAdminOrganizationUnits,
   fallbackAdminPrayers
@@ -71,6 +72,7 @@ describe("admin web shell", () => {
     expect(response.body).toContain("JP2 Admin Lite");
     expect(response.body).toContain('href="/admin/prayers" aria-current="page"');
     expect(response.body).toContain('href="/admin/candidate-requests"');
+    expect(response.body).toContain('href="/admin/candidates"');
     expect(response.body).toContain('href="/admin/organization-units"');
     expect(response.body).toContain("Morning Offering");
     expect(response.body).toContain('data-action="create"');
@@ -78,6 +80,41 @@ describe("admin web shell", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+  });
+
+  it("mounts candidate profile list and detail routes", async () => {
+    const candidateProfile = fallbackAdminCandidateProfiles[0]!;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ candidateProfiles: [candidateProfile] })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ candidateProfile })
+      });
+
+    const listResponse = await renderAdminWebRequest(
+      { path: "/admin/candidates", headers: { authorization: "Bearer token_1" } },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", canWrite: true, fetchImpl }
+    );
+    const detailResponse = await renderAdminWebRequest(
+      {
+        path: `/admin/candidates/${candidateProfile.id}`,
+        headers: { authorization: "Bearer token_1" }
+      },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", canWrite: true, fetchImpl }
+    );
+
+    expect(listResponse.statusCode).toBe(200);
+    expect(listResponse.body).toContain("Jan Nowak");
+    expect(listResponse.body).toContain('href="/admin/candidates" aria-current="page"');
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body).toContain("Save Candidate");
+    expect(detailResponse.body).toContain('href="/admin/candidates" aria-current="page"');
   });
 
   it("mounts candidate request list and detail routes", async () => {
@@ -144,14 +181,10 @@ describe("admin web shell", () => {
 
     expect(listResponse.statusCode).toBe(200);
     expect(listResponse.body).toContain("Jan Nowak");
-    expect(listResponse.body).toContain(
-      'href="/admin/candidate-requests" aria-current="page"'
-    );
+    expect(listResponse.body).toContain('href="/admin/candidate-requests" aria-current="page"');
     expect(detailResponse.statusCode).toBe(200);
     expect(detailResponse.body).toContain("Save Follow-up");
-    expect(detailResponse.body).toContain(
-      'href="/admin/candidate-requests" aria-current="page"'
-    );
+    expect(detailResponse.body).toContain('href="/admin/candidate-requests" aria-current="page"');
   });
 
   it("mounts the organization-unit admin route", async () => {
@@ -226,9 +259,7 @@ describe("admin web shell", () => {
 
     expect(detailResponse.statusCode).toBe(200);
     expect(detailResponse.body).toContain("JP2 Admin Lite");
-    expect(detailResponse.body).toContain(
-      'href="/admin/organization-units" aria-current="page"'
-    );
+    expect(detailResponse.body).toContain('href="/admin/organization-units" aria-current="page"');
     expect(detailResponse.body).toContain("Organization Unit: Pilot Organization Unit");
     expect(detailResponse.body).toContain('data-action="archive"');
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/organization-units", {

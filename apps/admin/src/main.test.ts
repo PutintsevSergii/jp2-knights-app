@@ -20,6 +20,7 @@ describe("admin shell", () => {
     expect(getAdminShellRoutes().map((route) => route.path)).toEqual([
       "/admin/dashboard",
       "/admin/candidate-requests",
+      "/admin/candidates",
       "/admin/organization-units",
       "/admin/prayers",
       "/admin/events"

@@ -3,6 +3,7 @@ import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import { parseRuntimeMode } from "@jp2/shared-validation";
 import { renderAdminCandidateRequestRoute } from "./admin-candidate-requests-shell.js";
+import { renderAdminCandidateRoute } from "./admin-candidates-shell.js";
 import type { AdminContentFetch } from "./admin-content-api.js";
 import { renderAdminContentRoute } from "./admin-content-shell.js";
 import { renderAdminDashboardRoute } from "./admin-dashboard-screen.js";
@@ -89,6 +90,27 @@ export async function renderAdminWebRequest(
       headers: htmlHeaders,
       body: mountRenderedRoute(rendered.document, {
         title: "Admin Candidate Requests",
+        path,
+        runtimeMode
+      })
+    };
+  }
+
+  if (path === "/admin/candidates" || isAdminCandidateDetailRoute(path)) {
+    const rendered = await renderAdminCandidateRoute({
+      path,
+      runtimeMode,
+      canWrite: options.canWrite ?? false,
+      ...(authToken ? { authToken } : {}),
+      ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
+      ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
+    });
+
+    return {
+      statusCode: rendered.statusCode,
+      headers: htmlHeaders,
+      body: mountRenderedRoute(rendered.document, {
+        title: "Admin Candidates",
         path,
         runtimeMode
       })
@@ -223,6 +245,8 @@ function isAdminShellRoute(path: string): path is AdminShellRoute {
     path === "/admin/dashboard" ||
     path === "/admin/candidate-requests" ||
     isAdminCandidateRequestDetailRoute(path) ||
+    path === "/admin/candidates" ||
+    isAdminCandidateDetailRoute(path) ||
     path === "/admin/organization-units" ||
     isAdminOrganizationUnitDetailRoute(path) ||
     path === "/admin/prayers" ||
@@ -237,6 +261,10 @@ function isAdminCandidateRequestDetailRoute(
     path.startsWith("/admin/candidate-requests/") &&
     path.length > "/admin/candidate-requests/".length
   );
+}
+
+function isAdminCandidateDetailRoute(path: string): path is `/admin/candidates/${string}` {
+  return path.startsWith("/admin/candidates/") && path.length > "/admin/candidates/".length;
 }
 
 function isAdminOrganizationUnitDetailRoute(
@@ -327,6 +355,10 @@ function renderMountedNavLink(routePath: string, label: string, currentPath: str
 function isActiveRoute(routePath: string, currentPath: string): boolean {
   if (routePath === "/admin/candidate-requests") {
     return currentPath === routePath || currentPath.startsWith("/admin/candidate-requests/");
+  }
+
+  if (routePath === "/admin/candidates") {
+    return currentPath === routePath || currentPath.startsWith("/admin/candidates/");
   }
 
   if (routePath === "/admin/organization-units") {

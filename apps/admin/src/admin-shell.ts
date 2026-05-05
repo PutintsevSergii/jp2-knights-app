@@ -7,6 +7,10 @@ import {
   type AdminCandidateRequestShellRouteMetadata
 } from "./admin-candidate-requests-shell.js";
 import {
+  adminCandidateShellRoutes,
+  type AdminCandidateShellRouteMetadata
+} from "./admin-candidates-shell.js";
+import {
   adminOrganizationUnitShellRoutes,
   type AdminOrganizationUnitShellRouteMetadata
 } from "./admin-organization-units-shell.js";
@@ -14,6 +18,7 @@ import {
 export type AdminShellRoute =
   | "/admin/dashboard"
   | AdminCandidateRequestShellRouteMetadata["path"]
+  | AdminCandidateShellRouteMetadata["path"]
   | AdminOrganizationUnitShellRouteMetadata["path"]
   | AdminContentShellRouteMetadata["path"];
 
@@ -23,6 +28,7 @@ export interface AdminShellRouteMetadata {
   screenRoute:
     | "AdminDashboard"
     | AdminCandidateRequestShellRouteMetadata["screenRoute"]
+    | AdminCandidateShellRouteMetadata["screenRoute"]
     | AdminOrganizationUnitShellRouteMetadata["screenRoute"]
     | AdminContentShellRouteMetadata["screenRoute"];
 }
@@ -34,6 +40,7 @@ export const adminShellRoutes: readonly AdminShellRouteMetadata[] = [
     screenRoute: "AdminDashboard"
   },
   ...adminCandidateRequestShellRoutes,
+  ...adminCandidateShellRoutes,
   ...adminOrganizationUnitShellRoutes,
   ...adminContentShellRoutes
 ];

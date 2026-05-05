@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   adminCandidateProfileDetailResponseSchema,
+  adminCandidateProfileListResponseSchema,
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
   adminCandidateRequestListResponseSchema,
@@ -36,6 +37,7 @@ import {
   publicPrayerListResponseSchema,
   roleSchema,
   updateAdminEventRequestSchema,
+  updateAdminCandidateProfileSchema,
   updateAdminCandidateRequestSchema,
   updateAdminPrayerRequestSchema,
   updateOrganizationUnitRequestSchema,
@@ -436,6 +438,44 @@ describe("shared validation", () => {
     ).toEqual({
       candidateRequest
     });
+    expect(
+      adminCandidateProfileListResponseSchema.parse({
+        candidateProfiles: [
+          {
+            id: "77777777-7777-4777-8777-777777777777",
+            userId: "88888888-8888-4888-8888-888888888888",
+            candidateRequestId: candidateRequest.id,
+            displayName: "Anna Nowak",
+            email: candidateRequest.email,
+            preferredLanguage: "en",
+            assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+            assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+            responsibleOfficerId: "99999999-9999-4999-8999-999999999999",
+            responsibleOfficerName: "Demo Officer",
+            status: "active",
+            createdAt: candidateRequest.createdAt,
+            updatedAt: candidateRequest.updatedAt,
+            archivedAt: null
+          }
+        ]
+      })
+    ).toMatchObject({
+      candidateProfiles: [
+        {
+          displayName: "Anna Nowak",
+          status: "active"
+        }
+      ]
+    });
+    expect(updateAdminCandidateProfileSchema.parse({ status: "paused" })).toEqual({
+      status: "paused"
+    });
+    expect(updateAdminCandidateProfileSchema.parse({ responsibleOfficerId: null })).toEqual({
+      responsibleOfficerId: null
+    });
+    expect(() =>
+      updateAdminCandidateProfileSchema.parse({ status: "converted_to_brother" })
+    ).toThrow();
     expect(
       adminCandidateProfileDetailResponseSchema.parse({
         candidateProfile: {

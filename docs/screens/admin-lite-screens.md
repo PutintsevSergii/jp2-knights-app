@@ -38,5 +38,6 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
 - Phase 6 admin dashboard foundations now expose `/admin/dashboard` route metadata, a typed dashboard API client, demo fixture, scoped navigation, and a framework-neutral rendered dashboard document.
 - Phase 6 also includes a dependency-free HTTP web shell that mounts `/admin`, `/admin/dashboard`, `/admin/organization-units`, `/admin/organization-units/new`, `/admin/organization-units/:id`, `/admin/prayers`, and `/admin/events`.
 - Organization-unit detail rendering reuses the scoped list API response, so officers can render only assigned units while Super Admin write controls remain explicit form action metadata.
+- Phase 7 mounts `/admin/candidate-requests`, `/admin/candidate-requests/:id`, `/admin/candidates`, and `/admin/candidates/:id` with API/demo data loading, shared DTO validation, scoped read/write state, and action metadata for follow-up and candidate profile management.
 - The mounted Admin Lite shell wraps implemented routes with shared navigation, active route state, runtime-mode chrome, and mounted status pages.
 - A future Next.js/App Router scaffold can host or replace the dependency-free shell if the owner wants that framework target specifically.
