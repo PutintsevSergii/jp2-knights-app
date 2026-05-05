@@ -12,6 +12,7 @@ type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "RATE_LIMITED"
   | "BUSINESS_RULE_FAILED"
   | "INTERNAL_ERROR";
 
@@ -39,10 +40,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const response = http.getResponse<HttpResponseLike>();
     const status =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-    const body =
-      exception instanceof HttpException
-        ? normalizeBody(exception.getResponse())
-        : {};
+    const body = exception instanceof HttpException ? normalizeBody(exception.getResponse()) : {};
 
     response.status(status).json({
       error: {
@@ -73,9 +71,7 @@ function toMessage(status: number, body: ErrorResponseBody): string {
     return body.message.join("; ");
   }
 
-  return status === 500
-    ? "An unexpected error occurred."
-    : "Request failed.";
+  return status === 500 ? "An unexpected error occurred." : "Request failed.";
 }
 
 function toRequestId(value: string | string[] | undefined): string {
@@ -98,6 +94,8 @@ function toErrorCode(status: number): ApiErrorCode {
       return "NOT_FOUND";
     case 409:
       return "CONFLICT";
+    case 429:
+      return "RATE_LIMITED";
     case 422:
       return "BUSINESS_RULE_FAILED";
     default:

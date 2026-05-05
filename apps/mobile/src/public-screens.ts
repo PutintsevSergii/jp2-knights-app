@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type {
   PublicContentPageResponseDto,
+  PublicCandidateRequestResponseDto,
   PublicEventDetailResponseDto,
   PublicEventListResponseDto,
   PublicHomeResponseDto,
@@ -18,6 +19,7 @@ export type PublicRoute =
   | "PublicPrayerDetail"
   | "PublicEventDetail"
   | "JoinRequestForm"
+  | "JoinRequestConfirmation"
   | "Login";
 
 export interface PublicScreenAction {
@@ -31,6 +33,29 @@ export interface PublicScreenSection {
   id: string;
   title: string;
   body: string;
+}
+
+export type JoinRequestFieldId =
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "phone"
+  | "country"
+  | "city"
+  | "preferredLanguage"
+  | "message";
+
+export interface JoinRequestFormField {
+  id: JoinRequestFieldId;
+  label: string;
+  required: boolean;
+  keyboardType: "default" | "email-address" | "phone-pad";
+  multiline: boolean;
+}
+
+export interface JoinRequestConsent {
+  label: string;
+  textVersion: string;
 }
 
 export interface PublicScreenTheme {
@@ -89,6 +114,30 @@ export interface PublicContentDetailScreen {
   theme: PublicScreenTheme;
 }
 
+export interface JoinRequestFormScreen {
+  route: "JoinRequestForm";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  fields: JoinRequestFormField[];
+  consent: JoinRequestConsent;
+  errorMessage?: string | undefined;
+  actions: PublicScreenAction[];
+  demoChromeVisible: boolean;
+  theme: PublicScreenTheme;
+}
+
+export interface JoinRequestConfirmationScreen {
+  route: "JoinRequestConfirmation";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: PublicScreenSection[];
+  actions: PublicScreenAction[];
+  demoChromeVisible: boolean;
+  theme: PublicScreenTheme;
+}
+
 export interface BuildAboutOrderScreenOptions {
   state: MobileScreenState;
   page?: PublicContentPageResponseDto["page"] | undefined;
@@ -116,6 +165,18 @@ export interface BuildPublicPrayerDetailScreenOptions {
 export interface BuildPublicEventDetailScreenOptions {
   state: MobileScreenState;
   response?: PublicEventDetailResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}
+
+export interface BuildJoinRequestFormScreenOptions {
+  state: MobileScreenState;
+  runtimeMode: RuntimeMode;
+  errorMessage?: string | undefined;
+}
+
+export interface BuildJoinRequestConfirmationScreenOptions {
+  state: MobileScreenState;
+  response?: PublicCandidateRequestResponseDto | undefined;
   runtimeMode: RuntimeMode;
 }
 
@@ -344,6 +405,54 @@ export function buildPublicEventDetailScreen(
   };
 }
 
+export function buildJoinRequestFormScreen(
+  options: BuildJoinRequestFormScreenOptions
+): JoinRequestFormScreen {
+  const copy = joinRequestFormStateCopy[options.state];
+
+  return {
+    route: "JoinRequestForm",
+    state: options.state,
+    title: copy.title,
+    body: copy.body,
+    fields: options.state === "ready" ? joinRequestFormFields : [],
+    consent: joinRequestConsent,
+    errorMessage: options.errorMessage,
+    actions: [homeAction],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
+export function buildJoinRequestConfirmationScreen(
+  options: BuildJoinRequestConfirmationScreenOptions
+): JoinRequestConfirmationScreen {
+  if (options.state !== "ready") {
+    return stateOnlyJoinRequestConfirmation(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response) {
+    return stateOnlyJoinRequestConfirmation("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "JoinRequestConfirmation",
+    state: "ready",
+    title: "Request Received",
+    body: "Your interest request was received. A local officer will review it; this does not create an account or promise membership.",
+    sections: [
+      {
+        id: "request-reference",
+        title: "Reference",
+        body: options.response.request.id
+      }
+    ],
+    actions: [homeAction],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: publicScreenTheme
+  };
+}
+
 function buildPublicHomeSections(publicHome: PublicHomeResponseDto): PublicScreenSection[] {
   const sections: PublicScreenSection[] = [];
 
@@ -462,6 +571,24 @@ function stateOnlyPublicContentDetail(
   };
 }
 
+function stateOnlyJoinRequestConfirmation(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): JoinRequestConfirmationScreen {
+  const copy = joinRequestConfirmationStateCopy[state];
+
+  return {
+    route: "JoinRequestConfirmation",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [homeAction],
+    demoChromeVisible,
+    theme: publicScreenTheme
+  };
+}
+
 function toPublicRoute(route: string): PublicRoute {
   if (publicRoutes.includes(route as PublicRoute)) {
     return route as PublicRoute;
@@ -478,6 +605,7 @@ const publicRoutes: readonly PublicRoute[] = [
   "PublicPrayerDetail",
   "PublicEventDetail",
   "JoinRequestForm",
+  "JoinRequestConfirmation",
   "Login"
 ];
 
@@ -642,6 +770,127 @@ const publicEventDetailStateCopy: Record<MobileScreenState, { title: string; bod
     title: "Offline",
     body: "Reconnect to refresh this public event."
   }
+};
+
+const joinRequestFormStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Join Interest",
+    body: "Submit your interest so a local officer can follow up."
+  },
+  loading: {
+    title: "Submitting",
+    body: "Your request is being submitted."
+  },
+  empty: {
+    title: "Join Interest",
+    body: "The interest form is being prepared."
+  },
+  error: {
+    title: "Unable to Submit",
+    body: "Your request could not be submitted."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "This public screen cannot show private content."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to submit your request."
+  }
+};
+
+const joinRequestConfirmationStateCopy: Record<MobileScreenState, { title: string; body: string }> =
+  {
+    ready: {
+      title: "Request Received",
+      body: "Your interest request was received."
+    },
+    loading: {
+      title: "Submitting",
+      body: "Your request is being submitted."
+    },
+    empty: {
+      title: "Request",
+      body: "No submitted request is available."
+    },
+    error: {
+      title: "Unable to Submit",
+      body: "Your request could not be submitted."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "This public screen cannot show private content."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to submit your request."
+    }
+  };
+
+const joinRequestFormFields: JoinRequestFormField[] = [
+  {
+    id: "firstName",
+    label: "First name",
+    required: true,
+    keyboardType: "default",
+    multiline: false
+  },
+  {
+    id: "lastName",
+    label: "Last name",
+    required: true,
+    keyboardType: "default",
+    multiline: false
+  },
+  {
+    id: "email",
+    label: "Email",
+    required: true,
+    keyboardType: "email-address",
+    multiline: false
+  },
+  {
+    id: "phone",
+    label: "Phone",
+    required: false,
+    keyboardType: "phone-pad",
+    multiline: false
+  },
+  {
+    id: "country",
+    label: "Country",
+    required: true,
+    keyboardType: "default",
+    multiline: false
+  },
+  {
+    id: "city",
+    label: "City",
+    required: true,
+    keyboardType: "default",
+    multiline: false
+  },
+  {
+    id: "preferredLanguage",
+    label: "Preferred language",
+    required: false,
+    keyboardType: "default",
+    multiline: false
+  },
+  {
+    id: "message",
+    label: "Message",
+    required: false,
+    keyboardType: "default",
+    multiline: true
+  }
+];
+
+export const JOIN_REQUEST_CONSENT_TEXT_VERSION = "candidate-request-v1";
+
+const joinRequestConsent: JoinRequestConsent = {
+  label: "I consent to being contacted about my interest request.",
+  textVersion: JOIN_REQUEST_CONSENT_TEXT_VERSION
 };
 
 const homeAction: PublicScreenAction = {

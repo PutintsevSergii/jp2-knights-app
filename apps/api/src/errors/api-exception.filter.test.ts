@@ -104,7 +104,13 @@ describe("ApiExceptionFilter", () => {
     const cases = [
       [new UnauthorizedException("Login required."), 401, "UNAUTHORIZED", "Login required."],
       [new NotFoundException("Record was not found."), 404, "NOT_FOUND", "Record was not found."],
-      [new ConflictException("Duplicate active record."), 409, "CONFLICT", "Duplicate active record."],
+      [
+        new ConflictException("Duplicate active record."),
+        409,
+        "CONFLICT",
+        "Duplicate active record."
+      ],
+      [new HttpException("Too many requests.", 429), 429, "RATE_LIMITED", "Too many requests."],
       [
         new UnprocessableEntityException("Business rule failed."),
         422,

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   adminDashboardResponseSchema,
+  adminCandidateRequestDetailResponseSchema,
+  adminCandidateRequestListResponseSchema,
   adminEventDetailResponseSchema,
   adminEventListResponseSchema,
   adminOrganizationUnitListResponseSchema,
@@ -11,6 +13,7 @@ import {
   createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
+  createPublicCandidateRequestSchema,
   membershipStatusSchema,
   myOrganizationUnitsResponseSchema,
   organizationUnitStatusSchema,
@@ -19,6 +22,7 @@ import {
   publicContentPageQuerySchema,
   publicContentPageResponseSchema,
   publicContentPageSlugSchema,
+  publicCandidateRequestResponseSchema,
   publicEventDetailResponseSchema,
   publicEventListQuerySchema,
   publicEventListResponseSchema,
@@ -29,6 +33,7 @@ import {
   publicPrayerListResponseSchema,
   roleSchema,
   updateAdminEventRequestSchema,
+  updateAdminCandidateRequestSchema,
   updateAdminPrayerRequestSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
@@ -56,6 +61,59 @@ describe("shared validation", () => {
 
   it("validates content status values from the shared contract", () => {
     expect(contentStatusSchema.parse("PUBLISHED")).toBe("PUBLISHED");
+  });
+
+  it("validates public candidate request payloads with required consent", () => {
+    expect(
+      createPublicCandidateRequestSchema.parse({
+        firstName: " John ",
+        lastName: " Paul ",
+        email: "Candidate@Example.Test ",
+        country: "LV",
+        city: "Riga",
+        preferredLanguage: "en",
+        message: "I would like to learn more.",
+        consentAccepted: true,
+        consentTextVersion: "candidate-request-v1",
+        idempotencyKey: "join-request-1"
+      })
+    ).toEqual({
+      firstName: "John",
+      lastName: "Paul",
+      email: "candidate@example.test",
+      country: "LV",
+      city: "Riga",
+      preferredLanguage: "en",
+      message: "I would like to learn more.",
+      consentAccepted: true,
+      consentTextVersion: "candidate-request-v1",
+      idempotencyKey: "join-request-1"
+    });
+
+    expect(() =>
+      createPublicCandidateRequestSchema.parse({
+        firstName: "John",
+        lastName: "Paul",
+        email: "candidate@example.test",
+        country: "LV",
+        city: "Riga",
+        consentAccepted: false,
+        consentTextVersion: "candidate-request-v1"
+      })
+    ).toThrow();
+    expect(
+      publicCandidateRequestResponseSchema.parse({
+        request: {
+          id: "11111111-1111-4111-8111-111111111111",
+          status: "new"
+        }
+      })
+    ).toEqual({
+      request: {
+        id: "11111111-1111-4111-8111-111111111111",
+        status: "new"
+      }
+    });
   });
 
   it("validates attachment status values from the shared contract", () => {
@@ -297,6 +355,75 @@ describe("shared validation", () => {
       events: [event]
     });
     expect(adminEventDetailResponseSchema.parse({ event })).toEqual({ event });
+  });
+
+  it("validates admin candidate request management DTOs", () => {
+    const candidateRequest = {
+      id: "55555555-5555-4555-8555-555555555555",
+      firstName: "Anna",
+      lastName: "Nowak",
+      email: "anna@example.test",
+      country: "Latvia",
+      city: "Riga",
+      status: "new",
+      assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      assignedOrganizationUnitName: "Riga Choragiew",
+      createdAt: "2026-05-05T10:00:00.000Z",
+      updatedAt: "2026-05-05T10:00:00.000Z",
+      archivedAt: null,
+      phone: null,
+      preferredLanguage: "en",
+      message: "I would like to learn more.",
+      consentTextVersion: "candidate-request-v1",
+      consentAt: "2026-05-05T10:00:00.000Z",
+      officerNote: null
+    };
+
+    expect(
+      updateAdminCandidateRequestSchema.parse({
+        status: "contacted",
+        officerNote: " Followed up by email. "
+      })
+    ).toEqual({
+      status: "contacted",
+      officerNote: "Followed up by email."
+    });
+    expect(updateAdminCandidateRequestSchema.parse({ assignedOrganizationUnitId: null })).toEqual({
+      assignedOrganizationUnitId: null
+    });
+    expect(() =>
+      updateAdminCandidateRequestSchema.parse({ status: "converted_to_candidate" })
+    ).toThrow();
+    expect(() => updateAdminCandidateRequestSchema.parse({})).toThrow();
+    expect(
+      adminCandidateRequestListResponseSchema.parse({
+        candidateRequests: [candidateRequest]
+      })
+    ).toEqual({
+      candidateRequests: [
+        {
+          id: candidateRequest.id,
+          firstName: candidateRequest.firstName,
+          lastName: candidateRequest.lastName,
+          email: candidateRequest.email,
+          country: candidateRequest.country,
+          city: candidateRequest.city,
+          status: candidateRequest.status,
+          assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+          createdAt: candidateRequest.createdAt,
+          updatedAt: candidateRequest.updatedAt,
+          archivedAt: candidateRequest.archivedAt
+        }
+      ]
+    });
+    expect(
+      adminCandidateRequestDetailResponseSchema.parse({
+        candidateRequest
+      })
+    ).toEqual({
+      candidateRequest
+    });
   });
 
   it("validates admin dashboard scoped counts and task links", () => {

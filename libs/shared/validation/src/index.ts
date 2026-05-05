@@ -140,6 +140,49 @@ export const adminEventDetailResponseSchema = z.object({
   event: adminEventSummarySchema
 });
 
+export const adminCandidateRequestSummarySchema = z.object({
+  id: z.uuid(),
+  firstName: z.string().trim().min(1).max(120),
+  lastName: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(320),
+  country: z.string().trim().min(1).max(120),
+  city: z.string().trim().min(1).max(120),
+  status: candidateRequestStatusSchema,
+  assignedOrganizationUnitId: z.uuid().nullable(),
+  assignedOrganizationUnitName: z.string().trim().min(1).max(200).nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  archivedAt: z.iso.datetime().nullable()
+});
+
+export const adminCandidateRequestDetailSchema = adminCandidateRequestSummarySchema.extend({
+  phone: z.string().trim().min(1).max(40).nullable(),
+  preferredLanguage: z.string().trim().min(2).max(10).nullable(),
+  message: z.string().trim().min(1).max(2000).nullable(),
+  consentTextVersion: z.string().trim().min(1).max(120),
+  consentAt: z.iso.datetime(),
+  officerNote: z.string().trim().min(1).max(2000).nullable()
+});
+
+export const adminCandidateRequestListResponseSchema = z.object({
+  candidateRequests: z.array(adminCandidateRequestSummarySchema)
+});
+
+export const adminCandidateRequestDetailResponseSchema = z.object({
+  candidateRequest: adminCandidateRequestDetailSchema
+});
+
+export const updateAdminCandidateRequestSchema = z
+  .object({
+    status: z.enum(["new", "contacted", "invited", "rejected"]).optional(),
+    assignedOrganizationUnitId: z.uuid().nullable().optional(),
+    officerNote: z.string().trim().min(1).max(2000).nullable().optional()
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one candidate request field must be provided."
+  });
+
 export const adminDashboardTaskSchema = z.object({
   id: z.string().trim().min(1).max(80),
   label: z.string().trim().min(1).max(120),
@@ -393,6 +436,36 @@ export const publicEventDetailResponseSchema = z.object({
   })
 });
 
+const candidateRequestTextSchema = z.string().trim().min(1).max(120);
+
+export const createPublicCandidateRequestSchema = z
+  .object({
+    firstName: candidateRequestTextSchema,
+    lastName: candidateRequestTextSchema,
+    email: z
+      .string()
+      .trim()
+      .email()
+      .max(320)
+      .transform((value) => value.toLowerCase()),
+    phone: z.string().trim().min(1).max(40).nullable().optional(),
+    country: candidateRequestTextSchema,
+    city: candidateRequestTextSchema,
+    preferredLanguage: z.string().trim().min(2).max(10).nullable().optional(),
+    message: z.string().trim().min(1).max(2000).nullable().optional(),
+    consentAccepted: z.literal(true),
+    consentTextVersion: z.string().trim().min(1).max(120),
+    idempotencyKey: z.string().trim().min(1).max(120).optional()
+  })
+  .strict();
+
+export const publicCandidateRequestResponseSchema = z.object({
+  request: z.object({
+    id: z.uuid(),
+    status: z.literal("new")
+  })
+});
+
 export const authSessionRequestSchema = z
   .object({
     idToken: z.string().trim().min(1).max(8192),
@@ -422,6 +495,17 @@ export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
+export type AdminCandidateRequestSummaryDto = z.infer<
+  typeof adminCandidateRequestSummarySchema
+>;
+export type AdminCandidateRequestDetailDto = z.infer<typeof adminCandidateRequestDetailSchema>;
+export type AdminCandidateRequestListResponseDto = z.infer<
+  typeof adminCandidateRequestListResponseSchema
+>;
+export type AdminCandidateRequestDetailResponseDto = z.infer<
+  typeof adminCandidateRequestDetailResponseSchema
+>;
+export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidateRequestSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
 export type PublicContentPageQueryDto = z.infer<typeof publicContentPageQuerySchema>;
@@ -432,6 +516,10 @@ export type PublicPrayerDetailResponseDto = z.infer<typeof publicPrayerDetailRes
 export type PublicEventListQueryDto = z.infer<typeof publicEventListQuerySchema>;
 export type PublicEventListResponseDto = z.infer<typeof publicEventListResponseSchema>;
 export type PublicEventDetailResponseDto = z.infer<typeof publicEventDetailResponseSchema>;
+export type CreatePublicCandidateRequestDto = z.infer<typeof createPublicCandidateRequestSchema>;
+export type PublicCandidateRequestResponseDto = z.infer<
+  typeof publicCandidateRequestResponseSchema
+>;
 export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
 
 export interface RuntimeModeParseOptions {

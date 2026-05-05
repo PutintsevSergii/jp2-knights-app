@@ -109,6 +109,44 @@ async function main() {
     }
   });
 
+  await prisma.candidateRequest.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000012"
+    },
+    update: {
+      firstName: "Demo",
+      lastName: "Candidate",
+      email: "candidate-request@example.test",
+      phone: null,
+      country: "LV",
+      city: "Riga",
+      preferredLanguage: "en",
+      message: "Demo candidate request for local Admin Lite review flows.",
+      consentTextVersion: "candidate-request-v1",
+      consentAt: new Date("2026-01-01T00:00:00.000Z"),
+      idempotencyKey: "demo-candidate-request-1",
+      status: "new",
+      assignedOrganizationUnitId: pilotUnit.id,
+      officerNote: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000012",
+      firstName: "Demo",
+      lastName: "Candidate",
+      email: "candidate-request@example.test",
+      country: "LV",
+      city: "Riga",
+      preferredLanguage: "en",
+      message: "Demo candidate request for local Admin Lite review flows.",
+      consentTextVersion: "candidate-request-v1",
+      consentAt: new Date("2026-01-01T00:00:00.000Z"),
+      idempotencyKey: "demo-candidate-request-1",
+      status: "new",
+      assignedOrganizationUnitId: pilotUnit.id
+    }
+  });
+
   await prisma.contentPage.upsert({
     where: {
       slug_language: {

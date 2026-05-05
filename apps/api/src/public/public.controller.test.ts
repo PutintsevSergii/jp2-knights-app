@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { PublicCandidateRequestService } from "./public-candidate-request.service.js";
 import type { PublicContentService } from "./public-content.service.js";
 import { PublicController } from "./public.controller.js";
-import type { PublicContentPageQuery } from "./public.types.js";
+import type { CreatePublicCandidateRequest, PublicContentPageQuery } from "./public.types.js";
 
 describe("PublicController", () => {
   it("serves public home without an authenticated principal", () => {
@@ -77,13 +78,14 @@ describe("PublicController", () => {
       pagination: { limit: 20, offset: 0 }
     });
 
-    await expect(controller.getPublicPrayer("33333333-3333-4333-8333-333333333333")).resolves
-      .toMatchObject({
-        prayer: {
-          id: "33333333-3333-4333-8333-333333333333",
-          body: "A public morning prayer."
-        }
-      });
+    await expect(
+      controller.getPublicPrayer("33333333-3333-4333-8333-333333333333")
+    ).resolves.toMatchObject({
+      prayer: {
+        id: "33333333-3333-4333-8333-333333333333",
+        body: "A public morning prayer."
+      }
+    });
 
     await expect(controller.listPublicEvents({ limit: 20, offset: 0 })).resolves.toEqual({
       events: [
@@ -100,13 +102,35 @@ describe("PublicController", () => {
       pagination: { limit: 20, offset: 0 }
     });
 
-    await expect(controller.getPublicEvent("44444444-4444-4444-8444-444444444444")).resolves
-      .toMatchObject({
-        event: {
-          id: "44444444-4444-4444-8444-444444444444",
-          description: "Public introduction evening."
-        }
-      });
+    await expect(
+      controller.getPublicEvent("44444444-4444-4444-8444-444444444444")
+    ).resolves.toMatchObject({
+      event: {
+        id: "44444444-4444-4444-8444-444444444444",
+        description: "Public introduction evening."
+      }
+    });
+  });
+
+  it("accepts public candidate requests without returning submitted PII", async () => {
+    const controller = controllerWith();
+
+    await expect(
+      controller.createCandidateRequest({
+        firstName: "John",
+        lastName: "Paul",
+        email: "candidate@example.test",
+        country: "LV",
+        city: "Riga",
+        consentAccepted: true,
+        consentTextVersion: "candidate-request-v1"
+      })
+    ).resolves.toEqual({
+      request: {
+        id: "55555555-5555-4555-8555-555555555555",
+        status: "new"
+      }
+    });
   });
 });
 
@@ -133,7 +157,7 @@ function controllerWith(): PublicController {
         };
       }
     },
-    ({
+    {
       getContentPage: (slug: string, query: PublicContentPageQuery) => {
         expect(slug).toBe("about-order");
         expect(query).toEqual({ language: "pl" });
@@ -221,6 +245,26 @@ function controllerWith(): PublicController {
           }
         });
       }
-    } as unknown as PublicContentService)
+    } as unknown as PublicContentService,
+    {
+      createCandidateRequest: (body: CreatePublicCandidateRequest) => {
+        expect(body).toEqual({
+          firstName: "John",
+          lastName: "Paul",
+          email: "candidate@example.test",
+          country: "LV",
+          city: "Riga",
+          consentAccepted: true,
+          consentTextVersion: "candidate-request-v1"
+        });
+
+        return Promise.resolve({
+          request: {
+            id: "55555555-5555-4555-8555-555555555555",
+            status: "new"
+          }
+        });
+      }
+    } as unknown as PublicCandidateRequestService
   );
 }

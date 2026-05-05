@@ -20,25 +20,41 @@ import {
   fallbackPublicPrayers
 } from "./public-content.js";
 import {
+  emptyJoinRequestFormDraft,
+  fallbackPublicCandidateRequestResponse,
+  submitDemoPublicCandidateRequest,
+  type JoinRequestFormDraft
+} from "./public-candidate-request.js";
+import {
+  publicCandidateRequestSubmitFailureState,
+  submitPublicCandidateRequest
+} from "./public-candidate-request-api.js";
+import {
   fetchPublicHome,
   publicHomeLoadFailureState,
   readPublicApiBaseUrl
 } from "./public-home-api.js";
 import {
   buildAboutOrderScreen,
+  buildJoinRequestConfirmationScreen,
+  buildJoinRequestFormScreen,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
-  buildPublicPrayerCategoriesScreen
+  buildPublicPrayerCategoriesScreen,
+  JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
-import type { PublicRoute } from "./public-screens.js";
+import type { JoinRequestFieldId, PublicRoute } from "./public-screens.js";
 import { readMobileRuntimeMode } from "./runtime-config.js";
 import { AboutOrderScreen } from "./screens/AboutOrderScreen.js";
+import { JoinRequestConfirmationScreen } from "./screens/JoinRequestConfirmationScreen.js";
+import { JoinRequestFormScreen } from "./screens/JoinRequestFormScreen.js";
 import { PublicContentDetailScreen } from "./screens/PublicContentDetailScreen.js";
 import { PublicContentListScreen } from "./screens/PublicContentListScreen.js";
 import { PublicHomeScreen } from "./screens/PublicHomeScreen.js";
 import type {
+  PublicCandidateRequestResponseDto,
   PublicContentPageResponseDto,
   PublicEventDetailResponseDto,
   PublicEventListResponseDto,
@@ -91,6 +107,15 @@ export function App() {
   const [publicEventDetail, setPublicEventDetail] = useState<
     PublicEventDetailResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackPublicEventDetail : undefined));
+  const [joinRequestState, setJoinRequestState] = useState<MobileScreenState>("ready");
+  const [joinRequestDraft, setJoinRequestDraft] = useState<JoinRequestFormDraft>({
+    ...emptyJoinRequestFormDraft
+  });
+  const [joinRequestConsentAccepted, setJoinRequestConsentAccepted] = useState(false);
+  const [joinRequestErrorMessage, setJoinRequestErrorMessage] = useState<string | undefined>();
+  const [joinRequestResponse, setJoinRequestResponse] = useState<
+    PublicCandidateRequestResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? undefined : undefined));
 
   useEffect(() => {
     if (runtimeMode === "demo") {
@@ -268,7 +293,9 @@ export function App() {
       route === "PublicPrayerCategories" ||
       route === "PublicEventsList" ||
       route === "PublicPrayerDetail" ||
-      route === "PublicEventDetail"
+      route === "PublicEventDetail" ||
+      route === "JoinRequestForm" ||
+      route === "JoinRequestConfirmation"
     ) {
       if (route === "PublicPrayerDetail") {
         setSelectedPublicPrayerId(targetId);
@@ -287,6 +314,49 @@ export function App() {
       }
 
       setCurrentRoute(route);
+    }
+  }
+
+  function handleJoinRequestFieldChange(field: JoinRequestFieldId, value: string) {
+    setJoinRequestDraft((current) => ({
+      ...current,
+      [field]: value
+    }));
+    setJoinRequestErrorMessage(undefined);
+  }
+
+  function handleJoinRequestConsentAcceptedChange(accepted: boolean) {
+    setJoinRequestConsentAccepted(accepted);
+    setJoinRequestErrorMessage(undefined);
+  }
+
+  async function handleJoinRequestSubmit() {
+    setJoinRequestState("loading");
+    setJoinRequestErrorMessage(undefined);
+
+    try {
+      const request = buildJoinRequestPayload(
+        joinRequestDraft,
+        joinRequestConsentAccepted,
+        createJoinRequestIdempotencyKey()
+      );
+      const response =
+        runtimeMode === "demo"
+          ? await submitDemoPublicCandidateRequest(request)
+          : await submitPublicCandidateRequest({
+              baseUrl: publicApiBaseUrl,
+              request
+            });
+
+      setJoinRequestResponse(response);
+      setJoinRequestState("ready");
+      setJoinRequestDraft({ ...emptyJoinRequestFormDraft });
+      setJoinRequestConsentAccepted(false);
+      setCurrentRoute("JoinRequestConfirmation");
+    } catch (error: unknown) {
+      const failureState = publicCandidateRequestSubmitFailureState(error);
+      setJoinRequestState(failureState === "offline" ? "offline" : "ready");
+      setJoinRequestErrorMessage(joinRequestSubmitErrorMessage(error));
     }
   }
 
@@ -355,7 +425,81 @@ export function App() {
     );
   }
 
+  if (currentRoute === "JoinRequestForm") {
+    return (
+      <JoinRequestFormScreen
+        screen={buildJoinRequestFormScreen({
+          state: joinRequestState,
+          runtimeMode,
+          errorMessage: joinRequestErrorMessage
+        })}
+        draft={joinRequestDraft}
+        consentAccepted={joinRequestConsentAccepted}
+        onChangeField={handleJoinRequestFieldChange}
+        onConsentAcceptedChange={handleJoinRequestConsentAcceptedChange}
+        onSubmit={() => {
+          void handleJoinRequestSubmit();
+        }}
+        onNavigate={handlePublicRoute}
+      />
+    );
+  }
+
+  if (currentRoute === "JoinRequestConfirmation") {
+    return (
+      <JoinRequestConfirmationScreen
+        screen={buildJoinRequestConfirmationScreen({
+          state: "ready",
+          response:
+            runtimeMode === "demo" && !joinRequestResponse
+              ? fallbackPublicCandidateRequestResponse
+              : joinRequestResponse,
+          runtimeMode
+        })}
+        onNavigate={handlePublicRoute}
+      />
+    );
+  }
+
   return (
     <PublicHomeScreen screen={buildPublicHomeScreen(launchState)} onNavigate={handlePublicRoute} />
   );
+}
+
+function buildJoinRequestPayload(
+  draft: JoinRequestFormDraft,
+  consentAccepted: boolean,
+  idempotencyKey: string
+) {
+  return {
+    firstName: draft.firstName,
+    lastName: draft.lastName,
+    email: draft.email,
+    phone: optionalNullable(draft.phone),
+    country: draft.country,
+    city: draft.city,
+    preferredLanguage: optionalNullable(draft.preferredLanguage),
+    message: optionalNullable(draft.message),
+    consentAccepted,
+    consentTextVersion: JOIN_REQUEST_CONSENT_TEXT_VERSION,
+    idempotencyKey
+  };
+}
+
+function optionalNullable(value: string) {
+  const trimmed = value.trim();
+
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function createJoinRequestIdempotencyKey() {
+  return `mobile-${Date.now()}`;
+}
+
+function joinRequestSubmitErrorMessage(error: unknown) {
+  if (publicCandidateRequestSubmitFailureState(error) === "offline") {
+    return "Reconnect to submit your interest request.";
+  }
+
+  return "Check the required fields and consent, then try again.";
 }

@@ -10,11 +10,14 @@ import {
 } from "./public-content.js";
 import {
   buildAboutOrderScreen,
+  buildJoinRequestConfirmationScreen,
+  buildJoinRequestFormScreen,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
-  buildPublicPrayerCategoriesScreen
+  buildPublicPrayerCategoriesScreen,
+  JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
 
 describe("mobile public screen models", () => {
@@ -427,5 +430,94 @@ describe("mobile public screen models", () => {
       title: "Offline",
       demoChromeVisible: true
     });
+  });
+
+  it("builds a public join request form model with consent and required fields", () => {
+    const screen = buildJoinRequestFormScreen({
+      state: "ready",
+      runtimeMode: "api",
+      errorMessage: "Check the required fields and consent, then try again."
+    });
+
+    expect(screen).toMatchObject({
+      route: "JoinRequestForm",
+      state: "ready",
+      title: "Join Interest",
+      errorMessage: "Check the required fields and consent, then try again.",
+      demoChromeVisible: false
+    });
+    expect(screen.fields.map((field) => field.id)).toEqual([
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "country",
+      "city",
+      "preferredLanguage",
+      "message"
+    ]);
+    expect(screen.fields.filter((field) => field.required).map((field) => field.id)).toEqual([
+      "firstName",
+      "lastName",
+      "email",
+      "country",
+      "city"
+    ]);
+    expect(screen.consent.textVersion).toBe(JOIN_REQUEST_CONSENT_TEXT_VERSION);
+    expect(screen.actions).toEqual([
+      {
+        id: "home",
+        label: "Home",
+        targetRoute: "PublicHome"
+      }
+    ]);
+  });
+
+  it("builds join request loading and offline states without public form fields", () => {
+    expect(buildJoinRequestFormScreen({ state: "loading", runtimeMode: "api" })).toMatchObject({
+      state: "loading",
+      title: "Submitting",
+      fields: []
+    });
+    expect(buildJoinRequestFormScreen({ state: "offline", runtimeMode: "demo" })).toMatchObject({
+      state: "offline",
+      title: "Offline",
+      fields: [],
+      demoChromeVisible: true
+    });
+  });
+
+  it("builds a safe join request confirmation without account promises", () => {
+    const screen = buildJoinRequestConfirmationScreen({
+      state: "ready",
+      response: {
+        request: {
+          id: "11111111-1111-4111-8111-111111111111",
+          status: "new"
+        }
+      },
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "JoinRequestConfirmation",
+      state: "ready",
+      title: "Request Received",
+      sections: [
+        {
+          id: "request-reference",
+          title: "Reference",
+          body: "11111111-1111-4111-8111-111111111111"
+        }
+      ]
+    });
+    expect(screen.body).toContain("does not create an account or promise membership");
+    expect(screen.actions).toEqual([
+      {
+        id: "home",
+        label: "Home",
+        targetRoute: "PublicHome"
+      }
+    ]);
   });
 });

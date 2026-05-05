@@ -33,6 +33,14 @@ public-safe summaries. `PublicPrayerDetail` and `PublicEventDetail` load the
 corresponding public detail endpoints, validate shared DTOs, and use demo
 fallback details when running without the backend.
 
+Phase 7 adds the public `JoinRequestForm` and `JoinRequestConfirmation` model
+and React Native screens. The form submits to `/api/public/candidate-requests`
+in API mode through shared schema validation, includes the consent text version
+and an idempotency key, and uses a validated backend-free fallback response in
+demo mode. Confirmation copy stays deliberately limited: it confirms receipt,
+shows only the request reference id, and does not promise account creation or
+membership.
+
 ## Analytics
 
 Only basic product events are useful in V1, such as public home opened, join request submitted, and public prayer opened. Do not track prayer participation as personal spiritual analytics.

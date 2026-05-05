@@ -6,7 +6,7 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | -------------- | ------------------------------------------ | ---------------------------- | --------------------------------- | -------------------------- | ----------- | ------------------------------------------------------------- |
 | GET            | `/admin/dashboard`                         | Officer/Super Admin          | none                              | scoped counts/tasks        | 403         | No unrelated scope                                            |
 | GET/POST       | `/admin/organization-units`                | Super Admin for write        | list/create payload               | list/detail                | 403,400     | Officers read assigned units only                             |
-| GET/PATCH      | `/admin/organization-units/:id`            | Officer scoped / Super Admin | edit payload                      | detail                     | 403,404     | Archive not hard delete                                       |
+| PATCH          | `/admin/organization-units/:id`            | Super Admin                  | edit payload                      | detail                     | 403,404     | Archive not hard delete; detail read remains Phase 6 follow-up |
 | GET/POST       | `/admin/brothers`                          | Officer/Super Admin          | create/list                       | records                    | 403,400,409 | Critical changes audited                                      |
 | GET/PATCH      | `/admin/brothers/:id`                      | Officer/Super Admin          | updates                           | detail                     | 403,404     | Scope required                                                |
 | GET            | `/admin/candidate-requests`                | Officer/Super Admin          | filters/page                      | request list               | 403,400     | Scoped/unassigned policy                                      |
@@ -42,6 +42,21 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - Super Admin receives global active organization-unit counts plus global prayer/event management counts.
 - Officers receive active organization-unit counts for assigned units and prayer/event counts using the same server-side scope filters as the admin list endpoints.
 - The response contains aggregate counts and task links only; it does not expose member lists, prayer bodies, event descriptions, or cross-unit record details.
+
+## Implemented Organization-Unit Rules
+
+- `GET /admin/organization-units` requires Admin Lite access and returns active units scoped server-side: Super Admin sees all active units, officers see assigned active units only.
+- `POST /admin/organization-units` and `PATCH /admin/organization-units/:id` require Super Admin.
+- Organization-unit archive is represented as status/metadata update, not destructive delete.
+- Organization-unit create/update/archive mutations record audit log summaries with actor, entity, and organization-unit scope.
+
+## Implemented Candidate Request Rules
+
+- `GET /admin/candidate-requests` and `GET /admin/candidate-requests/:id` require Admin Lite access.
+- Super Admin sees all non-archived candidate requests. Officers see only requests assigned to one of their officer organization units; unassigned requests remain Super Admin-only until assigned.
+- `PATCH /admin/candidate-requests/:id` updates status, assigned organization unit, or officer note. Direct `converted_to_candidate` status is not accepted here; conversion remains the future `/admin/candidate-requests/:id/convert` workflow once candidate profile persistence exists.
+- Officer assignment changes must stay within assigned organization units and cannot clear assignment. Super Admin may assign or clear assignment.
+- Candidate request updates record audit log before/after summaries with the full message and email redacted.
 
 ## Canonical Admin Route Names
 

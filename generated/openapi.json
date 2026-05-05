@@ -50,6 +50,1382 @@
         ]
       }
     },
+    "/api/admin/candidate-requests": {
+      "get": {
+        "operationId": "AdminCandidateRequestController_listCandidateRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Candidate requests visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequests"
+                  ],
+                  "properties": {
+                    "candidateRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "email",
+                          "country",
+                          "city",
+                          "status",
+                          "assignedOrganizationUnitId",
+                          "assignedOrganizationUnitName",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "firstName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "lastName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "maxLength": 320
+                          },
+                          "country": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "city": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "new",
+                              "contacted",
+                              "invited",
+                              "rejected",
+                              "converted_to_candidate"
+                            ]
+                          },
+                          "assignedOrganizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "assignedOrganizationUnitName": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      }
+    },
+    "/api/admin/candidate-requests/{id}": {
+      "get": {
+        "operationId": "AdminCandidateRequestController_getCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate request detail visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequest"
+                  ],
+                  "properties": {
+                    "candidateRequest": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "country",
+                            "city",
+                            "status",
+                            "assignedOrganizationUnitId",
+                            "assignedOrganizationUnitName",
+                            "createdAt",
+                            "updatedAt",
+                            "archivedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email",
+                              "maxLength": 320
+                            },
+                            "country": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "city": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "contacted",
+                                "invited",
+                                "rejected",
+                                "converted_to_candidate"
+                              ]
+                            },
+                            "assignedOrganizationUnitId": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "uuid"
+                            },
+                            "assignedOrganizationUnitName": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "archivedAt": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "phone",
+                            "preferredLanguage",
+                            "message",
+                            "consentTextVersion",
+                            "consentAt",
+                            "officerNote"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 2,
+                              "maxLength": 10
+                            },
+                            "message": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            },
+                            "consentTextVersion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "consentAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "officerNote": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminCandidateRequestController_updateCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "contacted",
+                      "invited",
+                      "rejected"
+                    ]
+                  },
+                  "assignedOrganizationUnitId": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uuid"
+                  },
+                  "officerNote": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated candidate request status, assignment, or officer note.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequest"
+                  ],
+                  "properties": {
+                    "candidateRequest": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "country",
+                            "city",
+                            "status",
+                            "assignedOrganizationUnitId",
+                            "assignedOrganizationUnitName",
+                            "createdAt",
+                            "updatedAt",
+                            "archivedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email",
+                              "maxLength": 320
+                            },
+                            "country": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "city": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "contacted",
+                                "invited",
+                                "rejected",
+                                "converted_to_candidate"
+                              ]
+                            },
+                            "assignedOrganizationUnitId": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "uuid"
+                            },
+                            "assignedOrganizationUnitName": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "archivedAt": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "phone",
+                            "preferredLanguage",
+                            "message",
+                            "consentTextVersion",
+                            "consentAt",
+                            "officerNote"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 2,
+                              "maxLength": 10
+                            },
+                            "message": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            },
+                            "consentTextVersion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "consentAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "officerNote": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The candidate request update payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current admin cannot update candidate requests in the requested scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      }
+    },
+    "/api/auth/session": {
+      "post": {
+        "operationId": "AuthSessionController_createSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "idToken"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "idToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8192
+                  },
+                  "csrfToken": {
+                    "type": "string",
+                    "minLength": 16,
+                    "maxLength": 512
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verified provider login resolved to the local JP2 current user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "currentUser",
+                    "session"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "currentUser": {
+                      "type": "object",
+                      "required": [
+                        "user",
+                        "access"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "email",
+                            "displayName",
+                            "preferredLanguage",
+                            "status",
+                            "roles"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            },
+                            "displayName": {
+                              "type": "string"
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "active",
+                                "inactive",
+                                "invited",
+                                "archived"
+                              ]
+                            },
+                            "roles": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "CANDIDATE",
+                                  "BROTHER",
+                                  "OFFICER",
+                                  "SUPER_ADMIN"
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "access": {
+                          "type": "object",
+                          "required": [
+                            "mobileMode",
+                            "adminLite",
+                            "candidateOrganizationUnitId",
+                            "memberOrganizationUnitIds",
+                            "officerOrganizationUnitIds"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "mobileMode": {
+                              "type": "string",
+                              "enum": [
+                                "public",
+                                "candidate",
+                                "brother"
+                              ]
+                            },
+                            "adminLite": {
+                              "type": "boolean"
+                            },
+                            "candidateOrganizationUnitId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "memberOrganizationUnitIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              }
+                            },
+                            "officerOrganizationUnitIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "session": {
+                      "type": "object",
+                      "required": [
+                        "transport",
+                        "expiresAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "transport": {
+                          "type": "string",
+                          "enum": [
+                            "bearer",
+                            "cookie"
+                          ]
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The provider token is missing, invalid, expired, revoked, or disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthSessionController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Local session state was cleared.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthSessionController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current provider-backed session is still valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "currentUser",
+                    "session"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "currentUser": {
+                      "type": "object",
+                      "required": [
+                        "user",
+                        "access"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "email",
+                            "displayName",
+                            "preferredLanguage",
+                            "status",
+                            "roles"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            },
+                            "displayName": {
+                              "type": "string"
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "active",
+                                "inactive",
+                                "invited",
+                                "archived"
+                              ]
+                            },
+                            "roles": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "CANDIDATE",
+                                  "BROTHER",
+                                  "OFFICER",
+                                  "SUPER_ADMIN"
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "access": {
+                          "type": "object",
+                          "required": [
+                            "mobileMode",
+                            "adminLite",
+                            "candidateOrganizationUnitId",
+                            "memberOrganizationUnitIds",
+                            "officerOrganizationUnitIds"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "mobileMode": {
+                              "type": "string",
+                              "enum": [
+                                "public",
+                                "candidate",
+                                "brother"
+                              ]
+                            },
+                            "adminLite": {
+                              "type": "boolean"
+                            },
+                            "candidateOrganizationUnitId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "memberOrganizationUnitIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              }
+                            },
+                            "officerOrganizationUnitIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "session": {
+                      "type": "object",
+                      "required": [
+                        "transport",
+                        "expiresAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "transport": {
+                          "type": "string",
+                          "enum": [
+                            "bearer",
+                            "cookie"
+                          ]
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "CurrentUserController_getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authenticated user identity, roles, and resolved app access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "user",
+                    "access"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "email",
+                        "displayName",
+                        "preferredLanguage",
+                        "status",
+                        "roles"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        },
+                        "preferredLanguage": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "inactive",
+                            "invited",
+                            "archived"
+                          ]
+                        },
+                        "roles": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "access": {
+                      "type": "object",
+                      "required": [
+                        "mobileMode",
+                        "adminLite",
+                        "candidateOrganizationUnitId",
+                        "memberOrganizationUnitIds",
+                        "officerOrganizationUnitIds"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "mobileMode": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "candidate",
+                            "brother"
+                          ]
+                        },
+                        "adminLite": {
+                          "type": "boolean"
+                        },
+                        "candidateOrganizationUnitId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "memberOrganizationUnitIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "officerOrganizationUnitIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active authenticated user is available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The authenticated user is inactive or archived.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/admin/events": {
       "get": {
         "operationId": "AdminEventController_listAdminEvents",
@@ -1561,627 +2937,6 @@
         },
         "tags": [
           "admin-prayers"
-        ]
-      }
-    },
-    "/api/auth/session": {
-      "post": {
-        "operationId": "AuthSessionController_createSession",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "idToken"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "idToken": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 8192
-                  },
-                  "csrfToken": {
-                    "type": "string",
-                    "minLength": 16,
-                    "maxLength": 512
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Verified provider login resolved to the local JP2 current user.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "currentUser",
-                    "session"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "currentUser": {
-                      "type": "object",
-                      "required": [
-                        "user",
-                        "access"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "user": {
-                          "type": "object",
-                          "required": [
-                            "id",
-                            "email",
-                            "displayName",
-                            "preferredLanguage",
-                            "status",
-                            "roles"
-                          ],
-                          "additionalProperties": false,
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email"
-                            },
-                            "displayName": {
-                              "type": "string"
-                            },
-                            "preferredLanguage": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "status": {
-                              "type": "string",
-                              "enum": [
-                                "active",
-                                "inactive",
-                                "invited",
-                                "archived"
-                              ]
-                            },
-                            "roles": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": [
-                                  "CANDIDATE",
-                                  "BROTHER",
-                                  "OFFICER",
-                                  "SUPER_ADMIN"
-                                ]
-                              }
-                            }
-                          }
-                        },
-                        "access": {
-                          "type": "object",
-                          "required": [
-                            "mobileMode",
-                            "adminLite",
-                            "candidateOrganizationUnitId",
-                            "memberOrganizationUnitIds",
-                            "officerOrganizationUnitIds"
-                          ],
-                          "additionalProperties": false,
-                          "properties": {
-                            "mobileMode": {
-                              "type": "string",
-                              "enum": [
-                                "public",
-                                "candidate",
-                                "brother"
-                              ]
-                            },
-                            "adminLite": {
-                              "type": "boolean"
-                            },
-                            "candidateOrganizationUnitId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "nullable": true
-                            },
-                            "memberOrganizationUnitIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "format": "uuid"
-                              }
-                            },
-                            "officerOrganizationUnitIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "format": "uuid"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "session": {
-                      "type": "object",
-                      "required": [
-                        "transport",
-                        "expiresAt"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "transport": {
-                          "type": "string",
-                          "enum": [
-                            "bearer",
-                            "cookie"
-                          ]
-                        },
-                        "expiresAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "The provider token is missing, invalid, expired, revoked, or disabled.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/auth/logout": {
-      "post": {
-        "operationId": "AuthSessionController_logout",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Local session state was cleared.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/auth/refresh": {
-      "post": {
-        "operationId": "AuthSessionController_refresh",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "The current provider-backed session is still valid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "currentUser",
-                    "session"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "currentUser": {
-                      "type": "object",
-                      "required": [
-                        "user",
-                        "access"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "user": {
-                          "type": "object",
-                          "required": [
-                            "id",
-                            "email",
-                            "displayName",
-                            "preferredLanguage",
-                            "status",
-                            "roles"
-                          ],
-                          "additionalProperties": false,
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email"
-                            },
-                            "displayName": {
-                              "type": "string"
-                            },
-                            "preferredLanguage": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "status": {
-                              "type": "string",
-                              "enum": [
-                                "active",
-                                "inactive",
-                                "invited",
-                                "archived"
-                              ]
-                            },
-                            "roles": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": [
-                                  "CANDIDATE",
-                                  "BROTHER",
-                                  "OFFICER",
-                                  "SUPER_ADMIN"
-                                ]
-                              }
-                            }
-                          }
-                        },
-                        "access": {
-                          "type": "object",
-                          "required": [
-                            "mobileMode",
-                            "adminLite",
-                            "candidateOrganizationUnitId",
-                            "memberOrganizationUnitIds",
-                            "officerOrganizationUnitIds"
-                          ],
-                          "additionalProperties": false,
-                          "properties": {
-                            "mobileMode": {
-                              "type": "string",
-                              "enum": [
-                                "public",
-                                "candidate",
-                                "brother"
-                              ]
-                            },
-                            "adminLite": {
-                              "type": "boolean"
-                            },
-                            "candidateOrganizationUnitId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "nullable": true
-                            },
-                            "memberOrganizationUnitIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "format": "uuid"
-                              }
-                            },
-                            "officerOrganizationUnitIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "format": "uuid"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "session": {
-                      "type": "object",
-                      "required": [
-                        "transport",
-                        "expiresAt"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "transport": {
-                          "type": "string",
-                          "enum": [
-                            "bearer",
-                            "cookie"
-                          ]
-                        },
-                        "expiresAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/auth/me": {
-      "get": {
-        "operationId": "CurrentUserController_getCurrentUser",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Current authenticated user identity, roles, and resolved app access.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "user",
-                    "access"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "user": {
-                      "type": "object",
-                      "required": [
-                        "id",
-                        "email",
-                        "displayName",
-                        "preferredLanguage",
-                        "status",
-                        "roles"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string",
-                          "format": "email"
-                        },
-                        "displayName": {
-                          "type": "string"
-                        },
-                        "preferredLanguage": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "inactive",
-                            "invited",
-                            "archived"
-                          ]
-                        },
-                        "roles": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "enum": [
-                              "CANDIDATE",
-                              "BROTHER",
-                              "OFFICER",
-                              "SUPER_ADMIN"
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    "access": {
-                      "type": "object",
-                      "required": [
-                        "mobileMode",
-                        "adminLite",
-                        "candidateOrganizationUnitId",
-                        "memberOrganizationUnitIds",
-                        "officerOrganizationUnitIds"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "mobileMode": {
-                          "type": "string",
-                          "enum": [
-                            "public",
-                            "candidate",
-                            "brother"
-                          ]
-                        },
-                        "adminLite": {
-                          "type": "boolean"
-                        },
-                        "candidateOrganizationUnitId": {
-                          "type": "string",
-                          "format": "uuid",
-                          "nullable": true
-                        },
-                        "memberOrganizationUnitIds": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "format": "uuid"
-                          }
-                        },
-                        "officerOrganizationUnitIds": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "format": "uuid"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No active authenticated user is available.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The authenticated user is inactive or archived.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "auth"
         ]
       }
     },
@@ -4005,6 +4760,270 @@
           },
           "404": {
             "description": "No published public or family-open event matched the id."
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/public/candidate-requests": {
+      "post": {
+        "operationId": "PublicController_createCandidateRequest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "country",
+                  "city",
+                  "consentAccepted",
+                  "consentTextVersion"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 320
+                  },
+                  "phone": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "city": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "preferredLanguage": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 10
+                  },
+                  "message": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "consentAccepted": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "consentTextVersion": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created public candidate interest request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "request"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "request": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "status"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "new"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Candidate request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "An active candidate request already exists for this email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many public candidate request attempts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [

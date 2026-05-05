@@ -1,6 +1,7 @@
 import type {
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
+  AdminOrganizationUnitListResponseDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
 
@@ -52,6 +53,22 @@ export const fallbackAdminPrayers: AdminPrayerListResponseDto = {
       status: "DRAFT",
       publishedAt: null,
       archivedAt: null
+    }
+  ]
+};
+
+export const fallbackAdminOrganizationUnits: AdminOrganizationUnitListResponseDto = {
+  organizationUnits: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      type: "CHORAGIEW",
+      parentUnitId: null,
+      name: "Pilot Organization Unit",
+      city: "Riga",
+      country: "LV",
+      parish: null,
+      publicDescription: "Demo officer scope for local Admin Lite review.",
+      status: "active"
     }
   ]
 };

@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAboutOrderScreen,
+  buildJoinRequestConfirmationScreen,
+  buildJoinRequestFormScreen,
+  buildPublicCandidateRequestUrl,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
+  fallbackPublicCandidateRequestResponse,
   fallbackPublicEventDetail,
   fallbackPublicEvents,
   fallbackPublicPrayerDetail,
@@ -110,5 +114,21 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("PublicEventDetail");
+  });
+
+  it("exports public candidate request helpers and screen model builders", () => {
+    expect(buildPublicCandidateRequestUrl("https://api.example.test")).toBe(
+      "https://api.example.test/public/candidate-requests"
+    );
+    expect(buildJoinRequestFormScreen({ state: "ready", runtimeMode: "demo" }).route).toBe(
+      "JoinRequestForm"
+    );
+    expect(
+      buildJoinRequestConfirmationScreen({
+        state: "ready",
+        response: fallbackPublicCandidateRequestResponse,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("JoinRequestConfirmation");
   });
 });

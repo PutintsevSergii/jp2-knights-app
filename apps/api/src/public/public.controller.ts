@@ -1,6 +1,15 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
-import { ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from "@nestjs/common";
 import {
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags
+} from "@nestjs/swagger";
+import {
+  createPublicCandidateRequestSchema,
   publicEventIdSchema,
   publicEventListQuerySchema,
   publicContentPageQuerySchema,
@@ -9,8 +18,11 @@ import {
   publicPrayerIdSchema,
   publicPrayerListQuerySchema
 } from "@jp2/shared-validation";
+import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
+  createPublicCandidateRequestOpenApiSchema,
+  publicCandidateRequestResponseOpenApiSchema,
   publicEventDetailResponseOpenApiSchema,
   publicEventListResponseOpenApiSchema,
   publicContentPageResponseOpenApiSchema,
@@ -18,9 +30,12 @@ import {
   publicPrayerDetailResponseOpenApiSchema,
   publicPrayerListResponseOpenApiSchema
 } from "./public.openapi.js";
+import { PublicCandidateRequestService } from "./public-candidate-request.service.js";
 import { PublicContentService } from "./public-content.service.js";
 import { PublicHomeService } from "./public-home.service.js";
 import type {
+  CreatePublicCandidateRequest,
+  PublicCandidateRequestResponse,
   PublicContentPageQuery,
   PublicContentPageResponse,
   PublicEventDetailResponse,
@@ -38,7 +53,8 @@ import type {
 export class PublicController {
   constructor(
     private readonly publicHomeService: PublicHomeService,
-    private readonly publicContentService: PublicContentService
+    private readonly publicContentService: PublicContentService,
+    private readonly publicCandidateRequestService: PublicCandidateRequestService
   ) {}
 
   @Get("home")
@@ -187,5 +203,34 @@ export class PublicController {
     @Param("id", new ZodValidationPipe(publicEventIdSchema)) id: string
   ): Promise<PublicEventDetailResponse> {
     return this.publicContentService.getEvent(id);
+  }
+
+  @Post("candidate-requests")
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: "Created public candidate interest request.",
+    schema: publicCandidateRequestResponseOpenApiSchema
+  })
+  @ApiBody({ schema: createPublicCandidateRequestOpenApiSchema })
+  @ApiResponse({
+    status: 400,
+    description: "Candidate request validation failed.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 409,
+    description: "An active candidate request already exists for this email.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 429,
+    description: "Too many public candidate request attempts.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  createCandidateRequest(
+    @Body(new ZodValidationPipe(createPublicCandidateRequestSchema))
+    body: CreatePublicCandidateRequest
+  ): Promise<PublicCandidateRequestResponse> {
+    return this.publicCandidateRequestService.createCandidateRequest(body);
   }
 }

@@ -129,6 +129,20 @@ describe("PrismaOrganizationRepository", () => {
     });
   });
 
+  it("loads organizationUnit audit snapshots by id", async () => {
+    const { organizationUnitFindUnique, prisma } = prismaMock({
+      membershipResults: [],
+      organizationUnitResults: [organizationUnitRecord]
+    });
+
+    await expect(
+      new PrismaOrganizationRepository(prisma).findOrganizationUnitForAudit(organizationUnitRecord.id)
+    ).resolves.toEqual(organizationUnitRecord);
+    expect(organizationUnitFindUnique).toHaveBeenCalledWith({
+      where: { id: organizationUnitRecord.id }
+    });
+  });
+
   it("archives organizationUnit records through update metadata instead of hard delete", async () => {
     const { organizationUnitUpdate, prisma } = prismaMock({
       membershipResults: [],
@@ -189,6 +203,7 @@ function prismaMock(options: {
   organizationUnitResults: Array<typeof organizationUnitRecord>;
 }): {
   organizationUnitFindMany: ReturnType<typeof vi.fn>;
+  organizationUnitFindUnique: ReturnType<typeof vi.fn>;
   organizationUnitCreate: ReturnType<typeof vi.fn>;
   organizationUnitUpdate: ReturnType<typeof vi.fn>;
   membershipFindMany: ReturnType<typeof vi.fn>;
@@ -196,12 +211,16 @@ function prismaMock(options: {
 } {
   const membershipFindMany = vi.fn(() => Promise.resolve(options.membershipResults));
   const organizationUnitFindMany = vi.fn(() => Promise.resolve(options.organizationUnitResults));
+  const organizationUnitFindUnique = vi.fn(() =>
+    Promise.resolve(options.organizationUnitResults[0] ?? null)
+  );
   const organizationUnitCreate = vi.fn(() => Promise.resolve(organizationUnitRecord));
   const organizationUnitUpdate = vi.fn(() => Promise.resolve(organizationUnitRecord));
 
   return {
     organizationUnitCreate,
     organizationUnitFindMany,
+    organizationUnitFindUnique,
     organizationUnitUpdate,
     membershipFindMany,
     prisma: {
@@ -211,6 +230,7 @@ function prismaMock(options: {
       organizationUnit: {
         create: organizationUnitCreate,
         findMany: organizationUnitFindMany,
+        findUnique: organizationUnitFindUnique,
         update: organizationUnitUpdate
       }
     } as unknown as PrismaService

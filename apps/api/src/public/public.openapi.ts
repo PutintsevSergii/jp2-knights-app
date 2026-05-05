@@ -220,3 +220,47 @@ export const publicEventDetailResponseOpenApiSchema = {
     }
   }
 };
+
+export const createPublicCandidateRequestOpenApiSchema = {
+  type: "object",
+  required: [
+    "firstName",
+    "lastName",
+    "email",
+    "country",
+    "city",
+    "consentAccepted",
+    "consentTextVersion"
+  ],
+  additionalProperties: false,
+  properties: {
+    firstName: { type: "string", minLength: 1, maxLength: 120 },
+    lastName: { type: "string", minLength: 1, maxLength: 120 },
+    email: { type: "string", format: "email", maxLength: 320 },
+    phone: { type: "string", nullable: true, minLength: 1, maxLength: 40 },
+    country: { type: "string", minLength: 1, maxLength: 120 },
+    city: { type: "string", minLength: 1, maxLength: 120 },
+    preferredLanguage: { type: "string", nullable: true, minLength: 2, maxLength: 10 },
+    message: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
+    consentAccepted: { type: "boolean", const: true },
+    consentTextVersion: { type: "string", minLength: 1, maxLength: 120 },
+    idempotencyKey: { type: "string", minLength: 1, maxLength: 120 }
+  }
+};
+
+export const publicCandidateRequestResponseOpenApiSchema = {
+  type: "object",
+  required: ["request"],
+  additionalProperties: false,
+  properties: {
+    request: {
+      type: "object",
+      required: ["id", "status"],
+      additionalProperties: false,
+      properties: {
+        id: { type: "string", format: "uuid" },
+        status: { type: "string", enum: ["new"] }
+      }
+    }
+  }
+};

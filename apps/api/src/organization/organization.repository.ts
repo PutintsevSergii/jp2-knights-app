@@ -16,6 +16,7 @@ export abstract class OrganizationRepository {
   abstract createOrganizationUnit(
     data: CreateOrganizationUnitRequest
   ): Promise<OrganizationUnitSummary>;
+  abstract findOrganizationUnitForAudit(id: string): Promise<OrganizationUnitSummary | null>;
   abstract updateOrganizationUnit(
     id: string,
     data: UpdateOrganizationUnitRequest
@@ -93,6 +94,14 @@ export class PrismaOrganizationRepository implements OrganizationRepository {
     });
 
     return toOrganizationUnitSummary(record);
+  }
+
+  async findOrganizationUnitForAudit(id: string): Promise<OrganizationUnitSummary | null> {
+    const record = await this.prisma.organizationUnit.findUnique({
+      where: { id }
+    });
+
+    return record ? toOrganizationUnitSummary(record) : null;
   }
 
   async updateOrganizationUnit(

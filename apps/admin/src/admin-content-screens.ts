@@ -12,7 +12,9 @@ export type AdminContentRoute =
   | "AdminPrayerList"
   | "AdminPrayerEditor"
   | "AdminEventList"
-  | "AdminEventEditor";
+  | "AdminEventEditor"
+  | "AdminOrganizationUnitList"
+  | "AdminOrganizationUnitEditor";
 
 export type AdminContentActionId =
   | "create"
@@ -55,7 +57,7 @@ export interface AdminContentTheme {
 }
 
 export interface AdminContentListScreen {
-  route: "AdminPrayerList" | "AdminEventList";
+  route: "AdminPrayerList" | "AdminEventList" | "AdminOrganizationUnitList";
   state: AdminContentScreenState;
   title: string;
   body: string;
@@ -226,7 +228,7 @@ function buildRowActions(
 }
 
 function stateOnlyAdminContentList(
-  route: AdminContentListScreen["route"],
+  route: "AdminPrayerList" | "AdminEventList",
   state: AdminContentScreenState,
   runtimeMode: RuntimeMode
 ): AdminContentListScreen {
@@ -245,7 +247,7 @@ function stateOnlyAdminContentList(
 }
 
 function editorRouteFor(
-  route: AdminContentListScreen["route"]
+  route: "AdminPrayerList" | "AdminEventList"
 ): "AdminPrayerEditor" | "AdminEventEditor" {
   return route === "AdminPrayerList" ? "AdminPrayerEditor" : "AdminEventEditor";
 }

@@ -71,24 +71,34 @@ enum EventStatus {
   @@map("event_status")
 }
 
-model User {
-  id                String              @id @default(uuid()) @db.Uuid
-  email             String              @db.Citext
-  phone             String?
-  displayName       String              @map("display_name")
-  status            UserStatus          @default(invited)
-  preferredLanguage String?             @map("preferred_language")
-  lastLoginAt       DateTime?           @map("last_login_at") @db.Timestamptz(6)
-  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
-  archivedAt        DateTime?           @map("archived_at") @db.Timestamptz(6)
+enum CandidateRequestStatus {
+  new
+  contacted
+  invited
+  rejected
+  converted_to_candidate
 
-  roles                  UserRole[]           @relation("UserRoles")
-  rolesCreated           UserRole[]           @relation("RoleCreator")
-  memberships            Membership[]
-  officerAssignments     OfficerAssignment[]  @relation("OfficerUser")
-  officerAssignmentsMade OfficerAssignment[]  @relation("OfficerAssignmentCreator")
-  auditLogs              AuditLog[]           @relation("AuditActor")
+  @@map("candidate_request_status")
+}
+
+model User {
+  id                String     @id @default(uuid()) @db.Uuid
+  email             String     @db.Citext
+  phone             String?
+  displayName       String     @map("display_name")
+  status            UserStatus @default(invited)
+  preferredLanguage String?    @map("preferred_language")
+  lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt        DateTime?  @map("archived_at") @db.Timestamptz(6)
+
+  roles                    UserRole[]                @relation("UserRoles")
+  rolesCreated             UserRole[]                @relation("RoleCreator")
+  memberships              Membership[]
+  officerAssignments       OfficerAssignment[]       @relation("OfficerUser")
+  officerAssignmentsMade   OfficerAssignment[]       @relation("OfficerAssignmentCreator")
+  auditLogs                AuditLog[]                @relation("AuditActor")
   identityProviderAccounts IdentityProviderAccount[]
 
   @@index([status])
@@ -104,7 +114,7 @@ model IdentityProviderAccount {
   emailVerified   Boolean?  @map("email_verified")
   phone           String?
   displayName     String?   @map("display_name")
-  photoUrl         String?   @map("photo_url")
+  photoUrl        String?   @map("photo_url")
   lastSignInAt    DateTime? @map("last_sign_in_at") @db.Timestamptz(6)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -135,23 +145,24 @@ model UserRole {
 }
 
 model OrganizationUnit {
-  id                String           @id @default(uuid()) @db.Uuid
-  type              OrganizationUnitType @default(CHORAGIEW)
-  parentUnitId      String?          @map("parent_unit_id") @db.Uuid
+  id                String                 @id @default(uuid()) @db.Uuid
+  type              OrganizationUnitType   @default(CHORAGIEW)
+  parentUnitId      String?                @map("parent_unit_id") @db.Uuid
   name              String
   city              String
   country           String
   parish            String?
-  status            OrganizationUnitStatus  @default(active)
-  publicDescription String?          @map("public_description")
-  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
-  archivedAt        DateTime?        @map("archived_at") @db.Timestamptz(6)
+  status            OrganizationUnitStatus @default(active)
+  publicDescription String?                @map("public_description")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt        DateTime?              @map("archived_at") @db.Timestamptz(6)
 
-  parent             OrganizationUnit?  @relation("OrganizationUnitHierarchy", fields: [parentUnitId], references: [id], onDelete: Restrict)
-  children           OrganizationUnit[] @relation("OrganizationUnitHierarchy")
+  parent             OrganizationUnit?   @relation("OrganizationUnitHierarchy", fields: [parentUnitId], references: [id], onDelete: Restrict)
+  children           OrganizationUnit[]  @relation("OrganizationUnitHierarchy")
   memberships        Membership[]
   officerAssignments OfficerAssignment[]
+  candidateRequests  CandidateRequest[]
 
   @@index([parentUnitId])
   @@index([type, status])
@@ -160,17 +171,17 @@ model OrganizationUnit {
 }
 
 model Membership {
-  id             String           @id @default(uuid()) @db.Uuid
-  userId         String           @map("user_id") @db.Uuid
-  organizationUnitId String       @map("organization_unit_id") @db.Uuid
-  status         MembershipStatus @default(active)
-  currentDegree  String?          @map("current_degree")
-  joinedAt       DateTime?        @map("joined_at") @db.Date
-  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
-  archivedAt     DateTime?        @map("archived_at") @db.Timestamptz(6)
+  id                 String           @id @default(uuid()) @db.Uuid
+  userId             String           @map("user_id") @db.Uuid
+  organizationUnitId String           @map("organization_unit_id") @db.Uuid
+  status             MembershipStatus @default(active)
+  currentDegree      String?          @map("current_degree")
+  joinedAt           DateTime?        @map("joined_at") @db.Date
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt         DateTime?        @map("archived_at") @db.Timestamptz(6)
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   organizationUnit OrganizationUnit @relation(fields: [organizationUnitId], references: [id], onDelete: Restrict)
 
   @@index([organizationUnitId, status])
@@ -179,18 +190,18 @@ model Membership {
 }
 
 model OfficerAssignment {
-  id          String    @id @default(uuid()) @db.Uuid
-  userId      String    @map("user_id") @db.Uuid
-  organizationUnitId String @map("organization_unit_id") @db.Uuid
-  title       String?
-  startsAt    DateTime  @map("starts_at") @db.Date
-  endsAt      DateTime? @map("ends_at") @db.Date
-  createdBy   String?   @map("created_by") @db.Uuid
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  organizationUnitId String    @map("organization_unit_id") @db.Uuid
+  title              String?
+  startsAt           DateTime  @map("starts_at") @db.Date
+  endsAt             DateTime? @map("ends_at") @db.Date
+  createdBy          String?   @map("created_by") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  user      User      @relation("OfficerUser", fields: [userId], references: [id], onDelete: Restrict)
+  user             User             @relation("OfficerUser", fields: [userId], references: [id], onDelete: Restrict)
   organizationUnit OrganizationUnit @relation(fields: [organizationUnitId], references: [id], onDelete: Restrict)
-  creator   User?     @relation("OfficerAssignmentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  creator          User?            @relation("OfficerAssignmentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([organizationUnitId])
@@ -198,17 +209,17 @@ model OfficerAssignment {
 }
 
 model AuditLog {
-  id                String   @id @default(uuid()) @db.Uuid
-  actorUserId       String?  @map("actor_user_id") @db.Uuid
-  action            String
-  entityType        String   @map("entity_type")
-  entityId          String   @map("entity_id") @db.Uuid
+  id                      String   @id @default(uuid()) @db.Uuid
+  actorUserId             String?  @map("actor_user_id") @db.Uuid
+  action                  String
+  entityType              String   @map("entity_type")
+  entityId                String   @map("entity_id") @db.Uuid
   scopeOrganizationUnitId String?  @map("scope_organization_unit_id") @db.Uuid
-  beforeSummary     Json?    @map("before_summary")
-  afterSummary      Json?    @map("after_summary")
-  requestId         String?  @map("request_id")
-  ipAddress         String?  @map("ip_address") @db.Inet
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  beforeSummary           Json?    @map("before_summary")
+  afterSummary            Json?    @map("after_summary")
+  requestId               String?  @map("request_id")
+  ipAddress               String?  @map("ip_address") @db.Inet
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   actor User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
@@ -316,4 +327,33 @@ model Event {
   @@index([status, publishedAt])
   @@index([targetOrganizationUnitId])
   @@map("events")
+}
+
+model CandidateRequest {
+  id                         String                 @id @default(uuid()) @db.Uuid
+  firstName                  String                 @map("first_name")
+  lastName                   String                 @map("last_name")
+  email                      String                 @db.Citext
+  phone                      String?
+  country                    String
+  city                       String
+  preferredLanguage          String?                @map("preferred_language")
+  message                    String?
+  consentTextVersion         String                 @map("consent_text_version")
+  consentAt                  DateTime               @map("consent_at") @db.Timestamptz(6)
+  idempotencyKey             String?                @map("idempotency_key")
+  status                     CandidateRequestStatus @default(new)
+  assignedOrganizationUnitId String?                @map("assigned_organization_unit_id") @db.Uuid
+  officerNote                String?                @map("officer_note")
+  createdAt                  DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt                 DateTime?              @map("archived_at") @db.Timestamptz(6)
+
+  assignedOrganizationUnit OrganizationUnit? @relation(fields: [assignedOrganizationUnitId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([assignedOrganizationUnitId])
+  @@index([email])
+  @@index([idempotencyKey])
+  @@map("candidate_requests")
 }

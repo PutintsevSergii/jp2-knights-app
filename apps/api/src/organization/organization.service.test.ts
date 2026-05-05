@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
+import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import type { OrganizationRepository } from "./organization.repository.js";
 import { OrganizationService } from "./organization.service.js";
@@ -62,9 +63,7 @@ describe("OrganizationService", () => {
 
   it("fails closed when a brother has no active membership organization unit", async () => {
     await expect(
-      new OrganizationService(repository({ membershipOrganizationUnits: [] })).getMyOrganizationUnits(
-        brother
-      )
+      service(repository({ membershipOrganizationUnits: [] })).getMyOrganizationUnits(brother)
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -95,8 +94,14 @@ describe("OrganizationService", () => {
   });
 
   it("allows super admins to create organization unit records", async () => {
+    const auditLog = auditLogRecorder();
+    const organizationService = service(
+      repository({ membershipOrganizationUnits: [organizationUnitA] }),
+      auditLog
+    );
+
     await expect(
-      service().createAdminOrganizationUnit(
+      organizationService.createAdminOrganizationUnit(
         {
           id: "admin_1",
           email: "admin@example.test",
@@ -120,6 +125,25 @@ describe("OrganizationService", () => {
         publicDescription: null
       }
     });
+    expect(auditLog.records).toEqual([
+      {
+        action: "admin.organizationUnit.create",
+        actorUserId: "admin_1",
+        entityType: "organization_unit",
+        entityId: organizationUnitA.id,
+        scopeOrganizationUnitId: organizationUnitA.id,
+        beforeSummary: null,
+        afterSummary: {
+          type: "CHORAGIEW",
+          parentUnitId: null,
+          name: "New Organization Unit",
+          city: "Vilnius",
+          country: "LT",
+          parish: null,
+          status: "active"
+        }
+      }
+    ]);
   });
 
   it("blocks officers from creating or updating organization unit records", async () => {
@@ -139,8 +163,14 @@ describe("OrganizationService", () => {
   });
 
   it("allows super admins to update and archive organization unit records", async () => {
+    const auditLog = auditLogRecorder();
+    const organizationService = service(
+      repository({ membershipOrganizationUnits: [organizationUnitA] }),
+      auditLog
+    );
+
     await expect(
-      service().updateAdminOrganizationUnit(
+      organizationService.updateAdminOrganizationUnit(
         {
           id: "admin_1",
           email: "admin@example.test",
@@ -159,11 +189,43 @@ describe("OrganizationService", () => {
         status: "archived"
       }
     });
+    expect(auditLog.records).toEqual([
+      {
+        action: "admin.organizationUnit.update",
+        actorUserId: "admin_1",
+        entityType: "organization_unit",
+        entityId: organizationUnitA.id,
+        scopeOrganizationUnitId: organizationUnitA.id,
+        beforeSummary: {
+          type: "CHORAGIEW",
+          parentUnitId: null,
+          name: "Pilot Organization Unit",
+          city: "Riga",
+          country: "LV",
+          parish: null,
+          status: "active"
+        },
+        afterSummary: {
+          type: "CHORAGIEW",
+          parentUnitId: null,
+          name: "Pilot Organization Unit",
+          city: "Riga",
+          country: "LV",
+          parish: null,
+          status: "archived"
+        }
+      }
+    ]);
   });
 });
 
-function service(): OrganizationService {
-  return new OrganizationService(repository({ membershipOrganizationUnits: [organizationUnitA] }));
+function service(
+  repositoryOverride: OrganizationRepository = repository({
+    membershipOrganizationUnits: [organizationUnitA]
+  }),
+  auditLog: TestAuditLog = auditLogRecorder()
+): OrganizationService {
+  return new OrganizationService(repositoryOverride, auditLog as unknown as AuditLogService);
 }
 
 function repository(options: {
@@ -188,6 +250,8 @@ function repository(options: {
         publicDescription: data.publicDescription ?? null,
         status: "active"
       }),
+    findOrganizationUnitForAudit: (id) =>
+      Promise.resolve(id === organizationUnitA.id ? organizationUnitA : null),
     updateOrganizationUnit: (_id, data) => {
       const updated: OrganizationUnitSummary = { ...organizationUnitA };
 
@@ -201,6 +265,23 @@ function repository(options: {
       if (data.status !== undefined) updated.status = data.status;
 
       return Promise.resolve(updated);
+    }
+  };
+}
+
+interface TestAuditLog {
+  records: AuditLogInput[];
+  record: (input: AuditLogInput) => Promise<void>;
+}
+
+function auditLogRecorder(): TestAuditLog {
+  const records: AuditLogInput[] = [];
+
+  return {
+    records,
+    record: (input) => {
+      records.push(input);
+      return Promise.resolve();
     }
   };
 }

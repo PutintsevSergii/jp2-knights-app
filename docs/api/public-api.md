@@ -1,21 +1,22 @@
 # Public API
 
-| Method | Path | Auth | Request | Response | Validation | Errors | Visibility | Acceptance |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| GET | `/public/home` | No | Query `language?` | intro, prayerOfDay, nextEvents, CTAs | language optional | 500 | `PUBLIC`, `FAMILY_OPEN` published only | No private content |
-| GET | `/public/content-pages/:slug` | No | path slug, query `language?` | approved page detail | visible slug only | 404 | `PUBLIC` published only | Official content fallback if missing |
-| GET | `/public/prayers` | No | `categoryId?`, `q?`, `language?`, pagination | prayer summary list | safe pagination | 400 | `PUBLIC` published | Brother prayers hidden |
-| GET | `/public/prayers/:id` | No | path id | prayer detail | visible id only | 404 | `PUBLIC` published | Private id returns 404 |
-| GET | `/public/events` | No | `from?`, `type?`, pagination | event summaries | valid date | 400 | `PUBLIC`, `FAMILY_OPEN` published | Private events hidden |
-| GET | `/public/events/:id` | No | path id | event detail | visible id only | 404 | `PUBLIC`, `FAMILY_OPEN` | Private id returns 404 |
-| POST | `/public/candidate-requests` | No | name, email, optional phone, city/country, language, message, consent | created request id/status | required consent/email/name | 400,409 | create only | Stored with consent |
-| GET | `/public/silent-prayer-events` | No | `activeOnly?` | public sessions | none | 500 | `PUBLIC`, `FAMILY_OPEN` | Aggregate only |
-| POST | `/public/silent-prayer-events/:id/join` | No | anonymous session token or generated id | join token, counter, socket room info | visible active session | 404,422 | public sessions only | No user record created |
+| Method | Path                                    | Auth | Request                                                                                         | Response                              | Validation                  | Errors      | Visibility                             | Acceptance                           |
+| ------ | --------------------------------------- | ---- | ----------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------- | ----------- | -------------------------------------- | ------------------------------------ |
+| GET    | `/public/home`                          | No   | Query `language?`                                                                               | intro, prayerOfDay, nextEvents, CTAs  | language optional           | 500         | `PUBLIC`, `FAMILY_OPEN` published only | No private content                   |
+| GET    | `/public/content-pages/:slug`           | No   | path slug, query `language?`                                                                    | approved page detail                  | visible slug only           | 404         | `PUBLIC` published only                | Official content fallback if missing |
+| GET    | `/public/prayers`                       | No   | `categoryId?`, `q?`, `language?`, pagination                                                    | prayer summary list                   | safe pagination             | 400         | `PUBLIC` published                     | Brother prayers hidden               |
+| GET    | `/public/prayers/:id`                   | No   | path id                                                                                         | prayer detail                         | visible id only             | 404         | `PUBLIC` published                     | Private id returns 404               |
+| GET    | `/public/events`                        | No   | `from?`, `type?`, pagination                                                                    | event summaries                       | valid date                  | 400         | `PUBLIC`, `FAMILY_OPEN` published      | Private events hidden                |
+| GET    | `/public/events/:id`                    | No   | path id                                                                                         | event detail                          | visible id only             | 404         | `PUBLIC`, `FAMILY_OPEN`                | Private id returns 404               |
+| POST   | `/public/candidate-requests`            | No   | name, email, optional phone, city/country, language, message, consent, optional idempotency key | created request id/status             | required consent/email/name | 400,409,429 | create only                            | Stored with consent                  |
+| GET    | `/public/silent-prayer-events`          | No   | `activeOnly?`                                                                                   | public sessions                       | none                        | 500         | `PUBLIC`, `FAMILY_OPEN`                | Aggregate only                       |
+| POST   | `/public/silent-prayer-events/:id/join` | No   | anonymous session token or generated id                                                         | join token, counter, socket room info | visible active session      | 404,422     | public sessions only                   | No user record created               |
 
 ## Public API Business Rules
 
 - Public APIs never return users, memberships, candidate profiles, roadmap records, brother-only announcements, or private chorągiew content.
 - Public candidate request creation must store consent timestamp and consent text/version.
+- The implemented public candidate request creation path accepts validated contact fields only, stores consent metadata, supports optional idempotency keys for safe retries, rate-limits repeated attempts, rejects duplicate active request emails, and returns only request id/status.
 - Public content pages are for approved About/FAQ/candidate-path content only. Draft or unapproved official wording is never returned.
 - The implemented public content-page read path returns only `PUBLISHED` + `PUBLIC` rows, excludes archived or future-published pages, and falls back to English when a requested language is unavailable.
 - The implemented public prayer read paths return only `PUBLISHED` + `PUBLIC` prayers, exclude archived or future-published prayers, and return 404 for hidden detail IDs.

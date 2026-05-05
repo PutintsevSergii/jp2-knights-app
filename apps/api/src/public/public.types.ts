@@ -1,4 +1,6 @@
 import type {
+  CreatePublicCandidateRequestDto,
+  PublicCandidateRequestResponseDto,
   PublicContentPageQueryDto,
   PublicContentPageResponseDto,
   PublicEventDetailResponseDto,
@@ -27,3 +29,6 @@ export type PublicEventListResponse = PublicEventListResponseDto;
 export type PublicEventDetailResponse = PublicEventDetailResponseDto;
 export type PublicEventSummary = PublicEventListResponse["events"][number];
 export type PublicEventDetail = PublicEventDetailResponse["event"];
+export type CreatePublicCandidateRequest = CreatePublicCandidateRequestDto;
+export type PublicCandidateRequestResponse = PublicCandidateRequestResponseDto;
+export type PublicCandidateRequestSummary = PublicCandidateRequestResponse["request"];

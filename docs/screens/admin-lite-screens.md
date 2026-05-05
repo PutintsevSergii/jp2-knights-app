@@ -36,4 +36,7 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
 - Phase 4 admin prayer/event list renderers produce framework-neutral HTML templates from those models with action metadata for create/edit/publish/cancel/archive workflows.
 - Phase 4 admin shell routes now expose `/admin/prayers` and `/admin/events`, resolving API/demo data into rendered documents.
 - Phase 6 admin dashboard foundations now expose `/admin/dashboard` route metadata, a typed dashboard API client, demo fixture, scoped navigation, and a framework-neutral rendered dashboard document.
-- Phase 6 also includes a dependency-free HTTP web shell that mounts `/admin`, `/admin/dashboard`, `/admin/prayers`, and `/admin/events`. Full Next.js/App Router UI mounting remains a later Phase 6 task if the owner wants that framework specifically.
+- Phase 6 also includes a dependency-free HTTP web shell that mounts `/admin`, `/admin/dashboard`, `/admin/organization-units`, `/admin/organization-units/new`, `/admin/organization-units/:id`, `/admin/prayers`, and `/admin/events`.
+- Organization-unit detail rendering reuses the scoped list API response, so officers can render only assigned units while Super Admin write controls remain explicit form action metadata.
+- The mounted Admin Lite shell wraps implemented routes with shared navigation, active route state, runtime-mode chrome, and mounted status pages.
+- A future Next.js/App Router scaffold can host or replace the dependency-free shell if the owner wants that framework target specifically.
