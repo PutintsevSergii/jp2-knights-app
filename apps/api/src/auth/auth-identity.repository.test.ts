@@ -11,6 +11,7 @@ const activeUser = {
   preferredLanguage: "en",
   status: "active" as const,
   roles: [{ role: "BROTHER" as const, revokedAt: null }],
+  candidateProfiles: [],
   memberships: [
     {
       organizationUnitId: "organizationUnit-a",
@@ -20,6 +21,24 @@ const activeUser = {
   ],
   officerAssignments: []
 };
+
+const activeCandidateUser = {
+  ...activeUser,
+  id: "candidate-user-1",
+  email: "candidate@example.test",
+  displayName: "Demo Candidate",
+  roles: [{ role: "CANDIDATE" as const, revokedAt: null }],
+  candidateProfiles: [
+    {
+      assignedOrganizationUnitId: "organizationUnit-candidate",
+      status: "active" as const,
+      archivedAt: null
+    }
+  ],
+  memberships: []
+};
+
+type FakePrincipalUser = typeof activeUser | typeof activeCandidateUser;
 
 describe("PrismaAuthIdentityRepository", () => {
   it("loads an existing provider link into a local principal and mirrors safe profile fields", async () => {
@@ -67,6 +86,23 @@ describe("PrismaAuthIdentityRepository", () => {
     });
   });
 
+  it("loads active candidate profile scope into the local principal", async () => {
+    const { prisma } = fakePrisma({
+      linkedAccount: {
+        id: "account-2",
+        userId: "candidate-user-1",
+        user: activeCandidateUser
+      }
+    });
+    const repository = new PrismaAuthIdentityRepository(prisma);
+
+    await expect(repository.resolvePrincipal(identity())).resolves.toMatchObject({
+      id: "candidate-user-1",
+      roles: ["CANDIDATE"],
+      candidateOrganizationUnitId: "organizationUnit-candidate"
+    });
+  });
+
   it("rejects first login linking without a verified provider email", async () => {
     const repository = new PrismaAuthIdentityRepository(fakePrisma({}).prisma);
 
@@ -83,9 +119,9 @@ interface FakePrismaOptions {
   linkedAccount?: {
     id: string;
     userId: string;
-    user: typeof activeUser;
+    user: FakePrincipalUser;
   };
-  userByEmail?: typeof activeUser;
+  userByEmail?: FakePrincipalUser;
 }
 
 interface IdentityProviderAccountCreateInput {

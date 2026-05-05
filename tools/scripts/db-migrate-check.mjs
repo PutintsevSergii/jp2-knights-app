@@ -10,6 +10,7 @@ const requiredInputs = [
   "prisma/migrations/000003_public_prayers_events/migration.sql",
   "prisma/migrations/000004_identity_provider_accounts/migration.sql",
   "prisma/migrations/000005_candidate_requests/migration.sql",
+  "prisma/migrations/000006_candidate_profiles/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -154,6 +155,33 @@ if (missingCandidateRequestsMigrationSnippets.length > 0) {
   );
 }
 
+const candidateProfilesMigrationSql = readFileSync(
+  "prisma/migrations/000006_candidate_profiles/migration.sql",
+  "utf8"
+);
+
+const requiredCandidateProfilesMigrationSnippets = [
+  'CREATE TYPE "candidate_profile_status" AS ENUM',
+  'CREATE TABLE "candidate_profiles"',
+  "candidate_request_id",
+  "responsible_officer_id",
+  'CREATE UNIQUE INDEX "candidate_profiles_user_active_unique_idx"',
+  "WHERE \"archived_at\" IS NULL AND \"status\" IN ('active', 'paused')",
+  'CREATE UNIQUE INDEX "candidate_profiles_candidate_request_active_unique_idx"'
+];
+
+const missingCandidateProfilesMigrationSnippets = requiredCandidateProfilesMigrationSnippets.filter(
+  (snippet) => !candidateProfilesMigrationSql.includes(snippet)
+);
+
+if (missingCandidateProfilesMigrationSnippets.length > 0) {
+  throw new Error(
+    `Candidate profiles migration is missing required SQL: ${missingCandidateProfilesMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -170,6 +198,9 @@ const requiredSeedSnippets = [
   "identityProviderAccount",
   "demo-admin",
   "demo-officer",
+  "demo-candidate",
+  "candidateProfile",
+  "candidate@example.test",
   "candidateRequest",
   "candidate-request@example.test",
   "candidate-request-v1",
@@ -184,5 +215,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, and Phase 7 candidate request fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, and Phase 7 candidate request/profile fixtures."
 );

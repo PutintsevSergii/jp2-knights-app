@@ -19,7 +19,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes        | —                            |
 | **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API   | —                            |
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell   | —                            |
-| **7**    | 🟡 IN PROGRESS | ~60%     | ████████████░░░░░░░░ | Candidate request API, mobile form, admin API/UI workflow               | Add candidate profiles       |
+| **7**    | 🟡 IN PROGRESS | ~70%     | ██████████████░░░░░░ | Candidate request API, mobile form, admin workflow, profile conversion  | Add candidate dashboard      |
 | **8–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Brother, events/announcements, roadmap, silent prayer, hardening        | After Phase 7                |
 
 ---
@@ -192,7 +192,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 7: Candidate Funnel 🟡
 
-**Status**: IN PROGRESS (~60%)
+**Status**: IN PROGRESS (~70%)
 
 **Completed**:
 
@@ -209,15 +209,16 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Admin candidate request reads are server-side scoped: Super Admin global, officers assigned-unit only
 - ✅ Admin candidate request updates audit status/assignment/note changes with email/message redaction
 - ✅ Admin Lite candidate request API client, list/detail screen models, rendered shell routes, mounted navigation, and demo fallback fixtures
+- ✅ Candidate profile persistence foundation with `candidate_profiles` migration, demo fixture, conversion DTO/contract, and guarded `POST /api/admin/candidate-requests/:id/convert`
+- ✅ Candidate request conversion creates/reuses invited local user, grants `CANDIDATE`, creates active candidate profile, marks request converted, and writes redacted audit summaries
 
 **In Progress**:
 
-- 🟡 Candidate request conversion workflow after candidate profile persistence exists
 - 🟡 Candidate dashboard/profile activation workflow
 
-**Exit criteria**: 🟡 Candidate request API, public form, and admin UI foundation exist; profile activation and conversion remain
+**Exit criteria**: 🟡 Candidate request API, public form, admin UI foundation, profile persistence, and request conversion exist; candidate dashboard/profile activation remains
 
-**Next step**: Add candidate profile persistence and conversion foundation
+**Next step**: Add candidate dashboard/profile activation foundation
 
 ### Phases 4–13: Roadmap
 
@@ -323,6 +324,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile join-interest form model/client/demo fallback and safe confirmation screen added
 - Admin candidate request list/detail/update API added with officer scope filtering and redacted audit summaries
 - Admin Lite candidate request API client, list/detail screen models, rendered route shell, mounted navigation, and demo fallback fixture added
+- Candidate profile persistence and `POST /admin/candidate-requests/:id/convert` added with scoped conversion, local candidate account creation/reuse, `CANDIDATE` role grant, and redacted audit summary
 
 ---
 
@@ -345,7 +347,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add public join-interest form model/client/demo fallback
    - [x] Add admin candidate request management API
    - [x] Add admin candidate request client/screen/demo fallback
-   - [ ] Add candidate profile persistence and conversion foundation
+   - [x] Add candidate profile persistence and conversion foundation
+   - [ ] Add candidate dashboard/profile activation foundation
 
 3. **Maintain completed Phase 3–6 foundation**
    - [x] Connect mobile PublicHome to real `/api/public/home`
@@ -453,4 +456,4 @@ Every week (or per phase):
 
 **Last Updated**: May 5, 2026
 **Current Phase**: Phase 7 in progress; Phases 0–6 complete
-**Next Major Milestone**: Add candidate profile persistence and conversion foundation
+**Next Major Milestone**: Add candidate dashboard/profile activation foundation

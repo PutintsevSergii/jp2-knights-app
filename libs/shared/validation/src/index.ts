@@ -172,6 +172,36 @@ export const adminCandidateRequestDetailResponseSchema = z.object({
   candidateRequest: adminCandidateRequestDetailSchema
 });
 
+export const adminCandidateProfileSummarySchema = z.object({
+  id: z.uuid(),
+  userId: z.uuid(),
+  candidateRequestId: z.uuid().nullable(),
+  displayName: z.string().trim().min(1).max(200),
+  email: z.string().trim().email().max(320),
+  preferredLanguage: z.string().trim().min(2).max(10).nullable(),
+  assignedOrganizationUnitId: z.uuid().nullable(),
+  assignedOrganizationUnitName: z.string().trim().min(1).max(200).nullable(),
+  responsibleOfficerId: z.uuid().nullable(),
+  responsibleOfficerName: z.string().trim().min(1).max(200).nullable(),
+  status: candidateProfileStatusSchema,
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  archivedAt: z.iso.datetime().nullable()
+});
+
+export const adminCandidateProfileDetailSchema = adminCandidateProfileSummarySchema;
+
+export const adminCandidateProfileDetailResponseSchema = z.object({
+  candidateProfile: adminCandidateProfileDetailSchema
+});
+
+export const convertCandidateRequestSchema = z
+  .object({
+    assignedOrganizationUnitId: z.uuid().optional(),
+    responsibleOfficerId: z.uuid().nullable().optional()
+  })
+  .strict();
+
 export const updateAdminCandidateRequestSchema = z
   .object({
     status: z.enum(["new", "contacted", "invited", "rejected"]).optional(),
@@ -505,6 +535,12 @@ export type AdminCandidateRequestListResponseDto = z.infer<
 export type AdminCandidateRequestDetailResponseDto = z.infer<
   typeof adminCandidateRequestDetailResponseSchema
 >;
+export type AdminCandidateProfileSummaryDto = z.infer<typeof adminCandidateProfileSummarySchema>;
+export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfileDetailSchema>;
+export type AdminCandidateProfileDetailResponseDto = z.infer<
+  typeof adminCandidateProfileDetailResponseSchema
+>;
+export type ConvertCandidateRequestDto = z.infer<typeof convertCandidateRequestSchema>;
 export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidateRequestSchema>;
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;

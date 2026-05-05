@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiOkResponse, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { updateAdminCandidateRequestSchema } from "@jp2/shared-validation";
+import {
+  convertCandidateRequestSchema,
+  updateAdminCandidateRequestSchema
+} from "@jp2/shared-validation";
 import { CurrentUserGuard } from "../auth/current-user.guard.js";
 import type { RequestWithPrincipal } from "../auth/current-user.types.js";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
@@ -8,12 +11,16 @@ import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   adminCandidateRequestDetailResponseOpenApiSchema,
   adminCandidateRequestListResponseOpenApiSchema,
+  adminCandidateProfileDetailResponseOpenApiSchema,
+  convertCandidateRequestOpenApiSchema,
   updateAdminCandidateRequestOpenApiSchema
 } from "./admin-candidate-request.openapi.js";
 import { AdminCandidateRequestService } from "./admin-candidate-request.service.js";
 import type {
   AdminCandidateRequestDetailResponse,
   AdminCandidateRequestListResponse,
+  AdminCandidateProfileDetailResponse,
+  ConvertCandidateRequest,
   UpdateAdminCandidateRequest
 } from "./admin-candidate-request.types.js";
 
@@ -99,6 +106,50 @@ export class AdminCandidateRequestController {
     body: UpdateAdminCandidateRequest
   ): Promise<AdminCandidateRequestDetailResponse> {
     return this.candidateRequestService.updateCandidateRequest(
+      requirePrincipal(request),
+      id,
+      body
+    );
+  }
+
+  @Post(":id/convert")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Converted candidate request with newly created candidate profile.",
+    schema: adminCandidateProfileDetailResponseOpenApiSchema
+  })
+  @ApiParam({
+    name: "id",
+    schema: { type: "string", format: "uuid" }
+  })
+  @ApiBody({ schema: convertCandidateRequestOpenApiSchema })
+  @ApiResponse({
+    status: 400,
+    description: "The conversion payload failed validation.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "The current admin cannot convert the request in the requested scope.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate request is not visible in the current admin scope.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 409,
+    description: "The candidate request cannot be converted from its current state.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  convertCandidateRequest(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body(new ZodValidationPipe(convertCandidateRequestSchema))
+    body: ConvertCandidateRequest
+  ): Promise<AdminCandidateProfileDetailResponse> {
+    return this.candidateRequestService.convertCandidateRequest(
       requirePrincipal(request),
       id,
       body

@@ -99,6 +99,7 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
 const principalRelationsInclude = {
   roles: true,
   memberships: true,
+  candidateProfiles: true,
   officerAssignments: true
 } as const;
 
@@ -123,6 +124,11 @@ interface PrincipalUserRecord {
     status: "active" | "inactive" | "archived";
     archivedAt: Date | null;
   }[];
+  candidateProfiles: readonly {
+    assignedOrganizationUnitId: string | null;
+    status: "active" | "paused" | "converted_to_brother" | "archived";
+    archivedAt: Date | null;
+  }[];
   officerAssignments: readonly {
     organizationUnitId: string;
     endsAt: Date | null;
@@ -139,7 +145,10 @@ function toPrincipal(user: PrincipalUserRecord): CurrentUserPrincipal {
     preferredLanguage: user.preferredLanguage,
     status: user.status,
     roles: user.roles.filter((role) => !role.revokedAt).map((role) => role.role),
-    candidateOrganizationUnitId: null,
+    candidateOrganizationUnitId:
+      user.candidateProfiles.find(
+        (profile) => profile.status === "active" && !profile.archivedAt
+      )?.assignedOrganizationUnitId ?? null,
     memberOrganizationUnitIds: user.memberships
       .filter((membership) => membership.status === "active" && !membership.archivedAt)
       .map((membership) => membership.organizationUnitId),

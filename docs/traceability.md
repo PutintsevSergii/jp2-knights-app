@@ -149,14 +149,21 @@ Candidate Funnel is now in progress:
   `PATCH /api/admin/candidate-requests/{id}` endpoints. Super Admin sees all
   non-archived requests; officers see only assigned requests in their officer
   organization-unit scope. Updates can change status, assignment, and officer
-  note with audit summaries that redact the full message and email. Direct
-  conversion remains pending until candidate profile persistence exists.
+  note with audit summaries that redact the full message and email.
 - Admin Lite Phase 7 now mounts `/admin/candidate-requests` and
   `/admin/candidate-requests/{id}` in the dependency-free web shell. API mode
   loads the guarded backend list/detail contracts through typed clients with
   shared DTO validation; demo mode uses local candidate-request fixtures without
   backend calls; rendered list/detail documents expose review, follow-up status,
-  assignment, and officer-note action metadata while keeping conversion pending.
+  assignment, and officer-note action metadata.
+- Phase 7 now includes the candidate profile persistence and request conversion
+  foundation: `candidate_profile_status` enum, `candidate_profiles` table,
+  demo candidate profile fixture, shared candidate-profile response DTOs, and
+  guarded `POST /api/admin/candidate-requests/{id}/convert`. Conversion creates
+  or reuses the local invited user, grants `CANDIDATE`, creates an active
+  candidate profile, marks the request `converted_to_candidate`, keeps officer
+  scope server-side constrained, and writes redacted audit summaries. Candidate
+  profile list/detail screens and candidate dashboard remain pending.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
   `/api/public/content-pages/{slug}`,
   `/api/public/prayers`, `/api/public/prayers/{id}`,
@@ -167,6 +174,7 @@ Candidate Funnel is now in progress:
   `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
   `/api/admin/candidate-requests`, `/api/admin/candidate-requests/{id}`,
+  `/api/admin/candidate-requests/{id}/convert`,
   `/api/admin/prayers`, `/api/admin/prayers/{id}`,
   `/api/admin/events`, and `/api/admin/events/{id}` as foundation contracts
   with request/response schemas.

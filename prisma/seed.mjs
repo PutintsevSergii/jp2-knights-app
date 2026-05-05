@@ -109,6 +109,64 @@ async function main() {
     }
   });
 
+  const existingCandidate = await prisma.user.findFirst({
+    where: { email: "candidate@example.test", archivedAt: null }
+  });
+
+  const candidate =
+    existingCandidate ??
+    (await prisma.user.create({
+      data: {
+        email: "candidate@example.test",
+        displayName: "Demo Candidate",
+        status: "active",
+        preferredLanguage: "en"
+      }
+    }));
+
+  await prisma.userRole.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000013"
+    },
+    update: {},
+    create: {
+      id: "00000000-0000-0000-0000-000000000013",
+      userId: candidate.id,
+      role: "CANDIDATE",
+      createdBy: superAdmin.id
+    }
+  });
+
+  await linkExternalIdentity({
+    id: "00000000-0000-0000-0000-000000000014",
+    userId: candidate.id,
+    provider: "firebase",
+    providerSubject: "demo-candidate",
+    email: "candidate@example.test",
+    emailVerified: true,
+    displayName: "Demo Candidate"
+  });
+
+  await prisma.candidateProfile.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000015"
+    },
+    update: {
+      userId: candidate.id,
+      assignedOrganizationUnitId: pilotUnit.id,
+      responsibleOfficerId: officer.id,
+      status: "active",
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000015",
+      userId: candidate.id,
+      assignedOrganizationUnitId: pilotUnit.id,
+      responsibleOfficerId: officer.id,
+      status: "active"
+    }
+  });
+
   await prisma.candidateRequest.upsert({
     where: {
       id: "00000000-0000-0000-0000-000000000012"

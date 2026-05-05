@@ -1,10 +1,13 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import type { AdminCandidateRequestRepository } from "./admin-candidate-request.repository.js";
 import { AdminCandidateRequestService } from "./admin-candidate-request.service.js";
-import type { AdminCandidateRequestDetail } from "./admin-candidate-request.types.js";
+import type {
+  AdminCandidateProfileDetail,
+  AdminCandidateRequestDetail
+} from "./admin-candidate-request.types.js";
 
 const request: AdminCandidateRequestDetail = {
   id: "55555555-5555-4555-8555-555555555555",
@@ -42,6 +45,23 @@ const officer: CurrentUserPrincipal = {
   status: "active",
   roles: ["OFFICER"],
   officerOrganizationUnitIds: ["11111111-1111-4111-8111-111111111111"]
+};
+
+const candidateProfile: AdminCandidateProfileDetail = {
+  id: "77777777-7777-4777-8777-777777777777",
+  userId: "88888888-8888-4888-8888-888888888888",
+  candidateRequestId: request.id,
+  displayName: "Anna Nowak",
+  email: request.email,
+  preferredLanguage: request.preferredLanguage,
+  assignedOrganizationUnitId: request.assignedOrganizationUnitId,
+  assignedOrganizationUnitName: request.assignedOrganizationUnitName,
+  responsibleOfficerId: officer.id,
+  responsibleOfficerName: officer.displayName,
+  status: "active",
+  createdAt: "2026-05-05T10:05:00.000Z",
+  updatedAt: "2026-05-05T10:05:00.000Z",
+  archivedAt: null
 };
 
 describe("AdminCandidateRequestService", () => {
@@ -97,6 +117,42 @@ describe("AdminCandidateRequestService", () => {
     expect(JSON.stringify(auditLog.records[0])).not.toContain("I would like to learn more.");
   });
 
+  it("converts an assigned request into a candidate profile and writes redacted audit", async () => {
+    const repository = new FakeRepository();
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateRequestService(
+      repository,
+      auditLog as unknown as AuditLogService
+    );
+
+    await expect(
+      service.convertCandidateRequest(officer, request.id, {
+        responsibleOfficerId: officer.id
+      })
+    ).resolves.toEqual({
+      candidateProfile
+    });
+    expect(repository.lastConverted).toEqual({
+      id: request.id,
+      data: {
+        assignedOrganizationUnitId: request.assignedOrganizationUnitId,
+        responsibleOfficerId: officer.id
+      },
+      actorUserId: officer.id,
+      scopeOrganizationUnitIds: officer.officerOrganizationUnitIds
+    });
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateRequest.convert",
+      actorUserId: officer.id,
+      entityType: "candidate_profile",
+      entityId: candidateProfile.id,
+      scopeOrganizationUnitId: request.assignedOrganizationUnitId
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("I would like to learn more.");
+  });
+
   it("rejects candidate request access without Admin Lite access", async () => {
     const service = new AdminCandidateRequestService(new FakeRepository(), auditLog());
 
@@ -124,6 +180,48 @@ describe("AdminCandidateRequestService", () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it("rejects conversion without assignment or from terminal request states", async () => {
+    const unassignedRepository = new FakeRepository();
+    unassignedRepository.record = {
+      ...request,
+      assignedOrganizationUnitId: null,
+      assignedOrganizationUnitName: null
+    };
+    const service = new AdminCandidateRequestService(unassignedRepository, auditLog());
+
+    await expect(
+      service.convertCandidateRequest(superAdmin, request.id, {})
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    const rejectedRepository = new FakeRepository();
+    rejectedRepository.record = {
+      ...request,
+      status: "rejected"
+    };
+    await expect(
+      new AdminCandidateRequestService(rejectedRepository, auditLog()).convertCandidateRequest(
+        officer,
+        request.id,
+        {}
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it("rejects officer conversion outside assigned scope or responsible officer self-assignment", async () => {
+    const service = new AdminCandidateRequestService(new FakeRepository(), auditLog());
+
+    await expect(
+      service.convertCandidateRequest(officer, request.id, {
+        assignedOrganizationUnitId: "22222222-2222-4222-8222-222222222222"
+      })
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      service.convertCandidateRequest(officer, request.id, {
+        responsibleOfficerId: "99999999-9999-4999-8999-999999999999"
+      })
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it("returns not found for candidate requests outside current scope", async () => {
     const repository = new FakeRepository();
     repository.visible = false;
@@ -140,16 +238,28 @@ describe("AdminCandidateRequestService", () => {
 
 class FakeRepository implements AdminCandidateRequestRepository {
   visible = true;
+  record = request;
   lastScope: readonly string[] | null | undefined;
+  lastConverted:
+    | {
+        id: string;
+        data: {
+          assignedOrganizationUnitId: string;
+          responsibleOfficerId?: string | null | undefined;
+        };
+        actorUserId: string;
+        scopeOrganizationUnitIds: readonly string[] | null;
+      }
+    | undefined;
 
   listCandidateRequests(scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
-    return Promise.resolve(this.visible ? [toSummary(request)] : []);
+    return Promise.resolve(this.visible ? [toSummary(this.record)] : []);
   }
 
   findCandidateRequest(_id: string, scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
-    return Promise.resolve(this.visible ? request : null);
+    return Promise.resolve(this.visible ? this.record : null);
   }
 
   updateCandidateRequest(
@@ -158,7 +268,23 @@ class FakeRepository implements AdminCandidateRequestRepository {
     scopeOrganizationUnitIds: readonly string[] | null
   ) {
     this.lastScope = scopeOrganizationUnitIds;
-    return Promise.resolve(this.visible ? { ...request, ...data } : null);
+    return Promise.resolve(this.visible ? { ...this.record, ...data } : null);
+  }
+
+  convertCandidateRequest(
+    id: string,
+    data: { assignedOrganizationUnitId: string; responsibleOfficerId?: string | null },
+    actorUserId: string,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ) {
+    this.lastConverted = {
+      id,
+      data,
+      actorUserId,
+      scopeOrganizationUnitIds
+    };
+
+    return Promise.resolve(this.visible ? candidateProfile : null);
   }
 }
 

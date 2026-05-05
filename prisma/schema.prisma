@@ -81,6 +81,15 @@ enum CandidateRequestStatus {
   @@map("candidate_request_status")
 }
 
+enum CandidateProfileStatus {
+  active
+  paused
+  converted_to_brother
+  archived
+
+  @@map("candidate_profile_status")
+}
+
 model User {
   id                String     @id @default(uuid()) @db.Uuid
   email             String     @db.Citext
@@ -98,6 +107,8 @@ model User {
   memberships              Membership[]
   officerAssignments       OfficerAssignment[]       @relation("OfficerUser")
   officerAssignmentsMade   OfficerAssignment[]       @relation("OfficerAssignmentCreator")
+  candidateProfiles        CandidateProfile[]        @relation("CandidateProfileUser")
+  responsibleCandidates    CandidateProfile[]        @relation("ResponsibleOfficer")
   auditLogs                AuditLog[]                @relation("AuditActor")
   identityProviderAccounts IdentityProviderAccount[]
 
@@ -163,6 +174,7 @@ model OrganizationUnit {
   memberships        Membership[]
   officerAssignments OfficerAssignment[]
   candidateRequests  CandidateRequest[]
+  candidateProfiles  CandidateProfile[]
 
   @@index([parentUnitId])
   @@index([type, status])
@@ -350,10 +362,35 @@ model CandidateRequest {
   archivedAt                 DateTime?              @map("archived_at") @db.Timestamptz(6)
 
   assignedOrganizationUnit OrganizationUnit? @relation(fields: [assignedOrganizationUnitId], references: [id], onDelete: SetNull)
+  candidateProfiles        CandidateProfile[]
 
   @@index([status])
   @@index([assignedOrganizationUnitId])
   @@index([email])
   @@index([idempotencyKey])
   @@map("candidate_requests")
+}
+
+model CandidateProfile {
+  id                         String                 @id @default(uuid()) @db.Uuid
+  userId                     String                 @map("user_id") @db.Uuid
+  candidateRequestId         String?                @map("candidate_request_id") @db.Uuid
+  assignedOrganizationUnitId String?                @map("assigned_organization_unit_id") @db.Uuid
+  responsibleOfficerId       String?                @map("responsible_officer_id") @db.Uuid
+  status                     CandidateProfileStatus @default(active)
+  createdAt                  DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt                 DateTime?              @map("archived_at") @db.Timestamptz(6)
+
+  user                     User              @relation("CandidateProfileUser", fields: [userId], references: [id], onDelete: Restrict)
+  candidateRequest         CandidateRequest? @relation(fields: [candidateRequestId], references: [id], onDelete: SetNull)
+  assignedOrganizationUnit OrganizationUnit? @relation(fields: [assignedOrganizationUnitId], references: [id], onDelete: SetNull)
+  responsibleOfficer       User?             @relation("ResponsibleOfficer", fields: [responsibleOfficerId], references: [id], onDelete: SetNull)
+
+  @@index([candidateRequestId])
+  @@index([assignedOrganizationUnitId, status])
+  @@index([responsibleOfficerId])
+  @@index([userId])
+  @@index([status])
+  @@map("candidate_profiles")
 }

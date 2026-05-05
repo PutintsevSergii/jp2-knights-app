@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminCandidateProfileDetailResponseSchema,
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
   adminCandidateRequestListResponseSchema,
@@ -10,6 +11,7 @@ import {
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
   contentStatusSchema,
+  convertCandidateRequestSchema,
   createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
@@ -394,6 +396,15 @@ describe("shared validation", () => {
     expect(() =>
       updateAdminCandidateRequestSchema.parse({ status: "converted_to_candidate" })
     ).toThrow();
+    expect(
+      convertCandidateRequestSchema.parse({
+        assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+        responsibleOfficerId: null
+      })
+    ).toEqual({
+      assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      responsibleOfficerId: null
+    });
     expect(() => updateAdminCandidateRequestSchema.parse({})).toThrow();
     expect(
       adminCandidateRequestListResponseSchema.parse({
@@ -423,6 +434,31 @@ describe("shared validation", () => {
       })
     ).toEqual({
       candidateRequest
+    });
+    expect(
+      adminCandidateProfileDetailResponseSchema.parse({
+        candidateProfile: {
+          id: "77777777-7777-4777-8777-777777777777",
+          userId: "88888888-8888-4888-8888-888888888888",
+          candidateRequestId: candidateRequest.id,
+          displayName: "Anna Nowak",
+          email: candidateRequest.email,
+          preferredLanguage: "en",
+          assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+          responsibleOfficerId: "99999999-9999-4999-8999-999999999999",
+          responsibleOfficerName: "Demo Officer",
+          status: "active",
+          createdAt: candidateRequest.createdAt,
+          updatedAt: candidateRequest.updatedAt,
+          archivedAt: null
+        }
+      })
+    ).toMatchObject({
+      candidateProfile: {
+        displayName: "Anna Nowak",
+        status: "active"
+      }
     });
   });
 

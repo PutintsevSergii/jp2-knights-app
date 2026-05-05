@@ -3,7 +3,9 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AdminCandidateRequestController } from "./admin-candidate-request.controller.js";
 import type { AdminCandidateRequestService } from "./admin-candidate-request.service.js";
 import type {
+  AdminCandidateProfileDetail,
   AdminCandidateRequestDetail,
+  ConvertCandidateRequest,
   UpdateAdminCandidateRequest
 } from "./admin-candidate-request.types.js";
 
@@ -36,6 +38,23 @@ const principal: CurrentUserPrincipal = {
   roles: ["SUPER_ADMIN"]
 };
 
+const candidateProfile: AdminCandidateProfileDetail = {
+  id: "77777777-7777-4777-8777-777777777777",
+  userId: "88888888-8888-4888-8888-888888888888",
+  candidateRequestId: candidateRequest.id,
+  displayName: "Anna Nowak",
+  email: candidateRequest.email,
+  preferredLanguage: candidateRequest.preferredLanguage,
+  assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+  assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+  responsibleOfficerId: principal.id,
+  responsibleOfficerName: principal.displayName,
+  status: "active",
+  createdAt: "2026-05-05T10:05:00.000Z",
+  updatedAt: "2026-05-05T10:05:00.000Z",
+  archivedAt: null
+};
+
 describe("AdminCandidateRequestController", () => {
   it("delegates candidate request list/detail/update using the guard-attached principal", async () => {
     const controller = new AdminCandidateRequestController({
@@ -66,6 +85,20 @@ describe("AdminCandidateRequestController", () => {
             officerNote: "Followed up by email."
           }
         });
+      },
+      convertCandidateRequest: (
+        receivedPrincipal: CurrentUserPrincipal,
+        id: string,
+        body: ConvertCandidateRequest
+      ) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(id).toBe(candidateRequest.id);
+        expect(body).toEqual({
+          responsibleOfficerId: principal.id
+        });
+        return Promise.resolve({
+          candidateProfile
+        });
       }
     } as unknown as AdminCandidateRequestService);
 
@@ -89,6 +122,13 @@ describe("AdminCandidateRequestController", () => {
         officerNote: "Followed up by email."
       }
     });
+    await expect(
+      controller.convertCandidateRequest({ principal }, candidateRequest.id, {
+        responsibleOfficerId: principal.id
+      })
+    ).resolves.toEqual({
+      candidateProfile
+    });
   });
 
   it("fails closed when invoked without the guard-attached principal", () => {
@@ -101,5 +141,8 @@ describe("AdminCandidateRequestController", () => {
     expect(() =>
       controller.updateCandidateRequest({}, candidateRequest.id, { status: "contacted" })
     ).toThrow("CurrentUserGuard");
+    expect(() => controller.convertCandidateRequest({}, candidateRequest.id, {})).toThrow(
+      "CurrentUserGuard"
+    );
   });
 });
