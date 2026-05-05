@@ -3,6 +3,7 @@ import { AdminCandidateRequestModule } from "./admin-candidate-requests/admin-ca
 import { AdminCandidateModule } from "./admin-candidates/admin-candidate.module.js";
 import { AdminContentModule } from "./admin-content/admin-content.module.js";
 import { AdminDashboardModule } from "./admin-dashboard/admin-dashboard.module.js";
+import { AdminIdentityAccessModule } from "./admin-identity-access/admin-identity-access.module.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { AuthModule } from "./auth/auth.module.js";
@@ -17,6 +18,7 @@ import { PublicModule } from "./public/public.module.js";
     AdminCandidateModule,
     AdminContentModule,
     AdminDashboardModule,
+    AdminIdentityAccessModule,
     AuthModule,
     BrotherCompanionModule,
     CandidateDashboardModule,

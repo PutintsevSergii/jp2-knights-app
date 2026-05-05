@@ -4,12 +4,15 @@
 
 Seed data grows with the implementation phase. The committed seed currently
 covers the identity and organization foundation needed for scope checks plus the
-Phase 3 public About content fallback, Phase 4 public content fixtures, and the
-first Phase 7 candidate request/profile fixtures:
+Phase 3 public About content fallback, Phase 4 public content fixtures, the
+Phase 5/6 Idle access review fixture, and the first Phase 7 candidate
+request/profile fixtures:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
 - local Firebase-provider identity links for `demo-admin`, `demo-officer`, and `demo-candidate`;
+- one scoped identity access approver assignment for the demo officer;
+- one pending `identity_access_reviews` fixture for `idle-review@example.test`;
 - two active organization units.
 - one published `PUBLIC` `about-order` content page for local development.
 - one published `PUBLIC` prayer category and prayer.
@@ -26,6 +29,7 @@ The full V1 local-development target is:
 | Super Admin       | 1 active user with `SUPER_ADMIN`                        |
 | Organization unit | 2 units once Phase 2 officer scope tests exist          |
 | Officer           | 1 user with `OFFICER` scoped to pilot organization unit |
+| Identity review   | 1 pending Idle review and 1 scoped approver assignment  |
 | Brothers          | 2-5 sample brothers                                     |
 | Candidate         | 1 candidate profile and 1 candidate request             |
 | Prayers           | Public prayer, candidate prayer, brother prayer         |

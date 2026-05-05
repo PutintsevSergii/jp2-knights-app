@@ -6,7 +6,7 @@ import { adminDashboardFailureState, fetchAdminDashboard } from "./admin-dashboa
 import { fallbackAdminDashboard } from "./admin-content-fixtures.js";
 
 export interface AdminDashboardMetric {
-  id: "organizationUnits" | "prayers" | "events";
+  id: "identityAccessReviews" | "organizationUnits" | "prayers" | "events";
   label: string;
   value: number;
   targetRoute: AdminDashboardTaskDto["targetRoute"];
@@ -21,7 +21,11 @@ export interface AdminDashboardScreen {
   tasks: AdminDashboardTaskDto[];
   navigation: Array<{
     label: string;
-    path: "/admin/dashboard" | "/admin/candidate-requests" | AdminDashboardTaskDto["targetRoute"];
+    path:
+      | "/admin/dashboard"
+      | "/admin/candidate-requests"
+      | "/admin/identity-access-reviews"
+      | AdminDashboardTaskDto["targetRoute"];
   }>;
   demoChromeVisible: boolean;
   theme: {
@@ -94,6 +98,12 @@ export function buildAdminDashboardScreen(
         ? "Global V1 operations overview."
         : "Scoped V1 operations overview.",
     metrics: [
+      {
+        id: "identityAccessReviews",
+        label: "Sign-In Reviews",
+        value: response.counts.identityAccessReviews,
+        targetRoute: "/admin/identity-access-reviews"
+      },
       {
         id: "organizationUnits",
         label: "Organization Units",
@@ -314,6 +324,7 @@ function escapeAttribute(value: string): string {
 
 const adminDashboardNavigation: AdminDashboardScreen["navigation"] = [
   { label: "Dashboard", path: "/admin/dashboard" },
+  { label: "Sign-In Reviews", path: "/admin/identity-access-reviews" },
   { label: "Candidate Requests", path: "/admin/candidate-requests" },
   { label: "Organization Units", path: "/admin/organization-units" },
   { label: "Prayers", path: "/admin/prayers" },

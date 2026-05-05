@@ -3,6 +3,7 @@ import {
   fallbackAdminCandidateRequestDetails,
   fallbackAdminCandidateProfiles,
   fallbackAdminDashboard,
+  fallbackAdminIdentityAccessReviews,
   fallbackAdminOrganizationUnits,
   fallbackAdminPrayers
 } from "./admin-content-fixtures.js";
@@ -42,6 +43,43 @@ describe("admin web shell", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+  });
+
+  it("mounts the identity access review route", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminIdentityAccessReviews)
+      })
+    );
+
+    const response = await renderAdminWebRequest(
+      {
+        path: "/admin/identity-access-reviews",
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        canWrite: true,
+        fetchImpl
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain("Piotr Kowalski");
+    expect(response.body).toContain('href="/admin/identity-access-reviews" aria-current="page"');
+    expect(response.body).toContain('data-action="confirm"');
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/identity-access-reviews",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("mounts content routes and forwards write capability as render-only state", async () => {

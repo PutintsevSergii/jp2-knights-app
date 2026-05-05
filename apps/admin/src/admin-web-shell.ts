@@ -7,6 +7,7 @@ import { renderAdminCandidateRoute } from "./admin-candidates-shell.js";
 import type { AdminContentFetch } from "./admin-content-api.js";
 import { renderAdminContentRoute } from "./admin-content-shell.js";
 import { renderAdminDashboardRoute } from "./admin-dashboard-screen.js";
+import { renderAdminIdentityAccessShellRoute } from "./admin-identity-access-shell.js";
 import { renderAdminOrganizationUnitRoute } from "./admin-organization-units-shell.js";
 import { adminShellRoutes, type AdminShellRoute } from "./admin-shell.js";
 
@@ -69,6 +70,26 @@ export async function renderAdminWebRequest(
       headers: htmlHeaders,
       body: mountRenderedRoute(rendered.document, {
         title: "Admin Dashboard",
+        path,
+        runtimeMode
+      })
+    };
+  }
+
+  if (path === "/admin/identity-access-reviews") {
+    const rendered = await renderAdminIdentityAccessShellRoute({
+      runtimeMode,
+      canWrite: options.canWrite ?? false,
+      ...(authToken ? { authToken } : {}),
+      ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
+      ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
+    });
+
+    return {
+      statusCode: rendered.statusCode,
+      headers: htmlHeaders,
+      body: mountRenderedRoute(rendered.document, {
+        title: "Admin Identity Access Reviews",
         path,
         runtimeMode
       })
@@ -243,6 +264,7 @@ function normalizeAdminPath(path: string): string {
 function isAdminShellRoute(path: string): path is AdminShellRoute {
   return (
     path === "/admin/dashboard" ||
+    path === "/admin/identity-access-reviews" ||
     path === "/admin/candidate-requests" ||
     isAdminCandidateRequestDetailRoute(path) ||
     path === "/admin/candidates" ||
@@ -353,6 +375,10 @@ function renderMountedNavLink(routePath: string, label: string, currentPath: str
 }
 
 function isActiveRoute(routePath: string, currentPath: string): boolean {
+  if (routePath === "/admin/identity-access-reviews") {
+    return currentPath === routePath;
+  }
+
   if (routePath === "/admin/candidate-requests") {
     return currentPath === routePath || currentPath.startsWith("/admin/candidate-requests/");
   }

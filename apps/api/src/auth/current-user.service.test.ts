@@ -29,7 +29,8 @@ describe("CurrentUserService", () => {
         adminLite: false,
         candidateOrganizationUnitId: "organizationUnit-a",
         memberOrganizationUnitIds: ["organizationUnit-a"],
-        officerOrganizationUnitIds: []
+        officerOrganizationUnitIds: [],
+        approval: null
       }
     });
   });
@@ -49,7 +50,36 @@ describe("CurrentUserService", () => {
       adminLite: true,
       candidateOrganizationUnitId: null,
       memberOrganizationUnitIds: [],
-      officerOrganizationUnitIds: ["organizationUnit-a"]
+      officerOrganizationUnitIds: ["organizationUnit-a"],
+      approval: null
+    });
+  });
+
+  it("returns idle approval state without private app access", () => {
+    expect(
+      new CurrentUserService().toResponse({
+        id: "idle_1",
+        email: "idle@example.test",
+        displayName: "Idle User",
+        status: "invited",
+        roles: [],
+        approval: {
+          state: "pending",
+          expiresAt: "2026-06-04T08:00:00.000Z",
+          scopeOrganizationUnitId: null
+        }
+      }).access
+    ).toEqual({
+      mobileMode: "public",
+      adminLite: false,
+      candidateOrganizationUnitId: null,
+      memberOrganizationUnitIds: [],
+      officerOrganizationUnitIds: [],
+      approval: {
+        state: "pending",
+        expiresAt: "2026-06-04T08:00:00.000Z",
+        scopeOrganizationUnitId: null
+      }
     });
   });
 });

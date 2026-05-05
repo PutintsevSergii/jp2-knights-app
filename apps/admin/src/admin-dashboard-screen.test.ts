@@ -18,12 +18,14 @@ describe("admin dashboard screen", () => {
       demoChromeVisible: false
     });
     expect(screen.metrics.map((metric) => metric.targetRoute)).toEqual([
+      "/admin/identity-access-reviews",
       "/admin/organization-units",
       "/admin/prayers",
       "/admin/events"
     ]);
     expect(screen.navigation.map((item) => item.path)).toEqual([
       "/admin/dashboard",
+      "/admin/identity-access-reviews",
       "/admin/candidate-requests",
       "/admin/organization-units",
       "/admin/prayers",

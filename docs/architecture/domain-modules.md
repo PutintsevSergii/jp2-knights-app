@@ -2,7 +2,7 @@
 
 | Module | Responsibilities | Entities | APIs | Dependencies | V1 scope | V2 extension points |
 | --- | --- | --- | --- | --- | --- | --- |
-| Identity | Users, roles, status, external auth provider links, sessions | users, user_roles, identity_provider_accounts, device_tokens | Auth API, current user | Audit, Auth Provider Adapter | Required | SSO/invitations refinements, provider replacement |
+| Identity | Users, roles, status, external auth provider links, Idle access reviews, sessions | users, user_roles, identity_provider_accounts, identity_access_reviews, identity_access_approver_assignments, device_tokens | Auth API, current user, Admin Lite sign-in reviews | Audit, Auth Provider Adapter | Required | SSO/invitations refinements, provider replacement |
 | Organization | Organization units, hierarchy, memberships, officer assignments | organization_units, memberships, officer_assignments | My organization units, admin organization units | Identity | Generic unit model; `CHORAGIEW` is one unit type | Hierarchy-derived permissions, broader rollups |
 | Content | Shared publish/approval metadata | content status fields, approval metadata | Admin content lifecycle | Identity, Audit | Shared rules | Advanced editorial workflow |
 | Prayers | Prayer categories and texts | prayers, prayer_categories | Public/brother/admin prayers | Content | Required | Offline document library |

@@ -5,6 +5,7 @@
 | User                          | Identity       | Candidate, Brother, Officer, Super Admin | Local application identity and authorization anchor; not public                                          |
 | Identity Provider Account     | Identity       | System                                   | Links Firebase or replacement provider subject to a local user; stores profile mirror only, never tokens |
 | Identity Access Review        | Identity/Admin | Country/Region Approver, Super Admin     | Tracks 30-day Idle Firebase sign-in approval, rejection, or expiry before private access is granted      |
+| Identity Access Approver Assignment | Identity/Admin | Super Admin, Country/Region Approver | Scoped, revocable privilege for confirming/rejecting Idle Firebase sign-ins                              |
 | Role Assignment               | Identity       | Admin                                    | Allows multiple roles; revoke rather than delete                                                         |
 | Organization Unit             | Organization   | Brother, Officer, Super Admin            | Generic Order part; `CHORAGIEW` is a unit type, not a table                                              |
 | Membership                    | Organization   | Brother, Officer                         | User-to-organization-unit relationship; users may have multiple active units                             |

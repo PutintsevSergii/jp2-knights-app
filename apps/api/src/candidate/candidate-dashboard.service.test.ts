@@ -1,6 +1,7 @@
 import { ForbiddenException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import { CandidateDashboardService } from "./candidate-dashboard.service.js";
 import type { CandidateDashboardProfile } from "./candidate-dashboard.types.js";
@@ -20,6 +21,19 @@ const brother: CurrentUserPrincipal = {
   displayName: "Demo Brother",
   status: "active",
   roles: ["BROTHER"]
+};
+
+const idleUser: CurrentUserPrincipal = {
+  id: "77777777-7777-4777-8777-777777777777",
+  email: "idle@example.test",
+  displayName: "Idle User",
+  status: "active",
+  roles: [],
+  approval: {
+    state: "pending",
+    expiresAt: "2026-06-04T08:00:00.000Z",
+    scopeOrganizationUnitId: "22222222-2222-4222-8222-222222222222"
+  }
 };
 
 const profile: CandidateDashboardProfile = {
@@ -98,6 +112,23 @@ describe("CandidateDashboardService", () => {
     await expect(
       new CandidateDashboardService(dashboardRepository(profile)).getDashboard(brother)
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("blocks idle users with the approval-required code before loading private data", async () => {
+    const repository = dashboardRepository(profile);
+
+    await expect(
+      new CandidateDashboardService(repository).getDashboard(idleUser)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      new CandidateDashboardService(repository).getDashboard(idleUser)
+    ).rejects.toMatchObject({
+      response: {
+        code: IDLE_APPROVAL_REQUIRED_CODE
+      }
+    });
+    expect(repository.profileLookups).toEqual([]);
+    expect(repository.eventScopes).toEqual([]);
   });
 
   it("blocks candidate users without an active profile", async () => {

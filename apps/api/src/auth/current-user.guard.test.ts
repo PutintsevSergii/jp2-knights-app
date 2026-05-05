@@ -1,5 +1,5 @@
 import type { ExecutionContext } from "@nestjs/common";
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuthSessionService } from "./auth-session.service.js";
 import { CurrentUserGuard } from "./current-user.guard.js";
@@ -26,7 +26,7 @@ describe("CurrentUserGuard", () => {
   it("rejects missing authentication", async () => {
     const guard = new CurrentUserGuard(sessionProvider(null));
 
-    await expect(guard.canActivate(httpContext({}))).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(guard.canActivate(httpContext({}))).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it("rejects inactive principals from protected routes", async () => {
@@ -38,6 +38,25 @@ describe("CurrentUserGuard", () => {
     );
 
     await expect(guard.canActivate(httpContext({}))).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("allows invited idle principals so /auth/me can return pending approval state", async () => {
+    const request: RequestWithPrincipal = {};
+    const guard = new CurrentUserGuard(
+      sessionProvider({
+        ...activePrincipal,
+        status: "invited",
+        roles: [],
+        approval: {
+          state: "pending",
+          expiresAt: "2026-06-04T08:00:00.000Z",
+          scopeOrganizationUnitId: null
+        }
+      })
+    );
+
+    await expect(guard.canActivate(httpContext(request))).resolves.toBe(true);
+    expect(request.principal?.approval?.state).toBe("pending");
   });
 });
 

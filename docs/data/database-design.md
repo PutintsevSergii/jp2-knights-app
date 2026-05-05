@@ -13,8 +13,10 @@
 
 | Table                         | Purpose                                       | Key columns                                                                                                                                                                                                               | Keys/indexes                                                                           | Deletion/archive                   | Privacy notes                                                 |
 | ----------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------- |
-| `users`                       | Local application identity                    | `id`, `email`, `phone`, `display_name`, `status`, `preferred_language`, `last_login_at`, idle approval metadata                                                                                                           | PK `id`, unique `email`, index `status`                                                | deactivate via status              | PII, never public; authorization source                       |
+| `users`                       | Local application identity                    | `id`, `email`, `phone`, `display_name`, `status`, `preferred_language`, `last_login_at`                                                                                                                                   | PK `id`, unique `email`, index `status`                                                | deactivate via status              | PII, never public; authorization source                       |
 | `identity_provider_accounts`  | External auth account links                   | `id`, `user_id`, `provider`, `provider_subject`, `email`, `email_verified`, `phone`, `display_name`, `photo_url`, `last_sign_in_at`, `revoked_at`                                                                         | FK user, unique active `(provider, provider_subject)`, index `user_id`                 | revoke/unlink                      | Provider profile mirror only; never store tokens              |
+| `identity_access_reviews`     | Idle external sign-in approval                | `id`, `user_id`, `provider_account_id`, `status`, `scope_organization_unit_id`, `requested_role`, `assigned_role`, `expires_at`, decision metadata                                                                        | indexes user/provider/status/scope/expires; unique pending provider account            | keep decision record               | Admin restricted; no private access until confirmed           |
+| `identity_access_approver_assignments` | Scoped approver privilege           | `id`, `user_id`, `organization_unit_id`, `created_by`, `created_at`, `revoked_at`                                                                                                                                         | unique active `(user_id, organization_unit_id)`                                        | revoke                             | Critical audit; grants confirmation privilege only            |
 | `user_roles`                  | Role assignments                              | `id`, `user_id`, `role`, `created_by`, `created_at`, `revoked_at`                                                                                                                                                         | FK user, unique active `(user_id, role)`                                               | revoke                             | Critical audit                                                |
 | `organization_units`          | Generic part of the Order                     | `id`, `type`, `parent_unit_id`, `name`, `city`, `country`, `parish`, `status`, `public_description`                                                                                                                       | unique active `(type, name, city)`, indexes parent/type/status                         | archive                            | Public description only                                       |
 | `memberships`                 | User-to-unit brother membership               | `id`, `user_id`, `organization_unit_id`, `status`, `current_degree`, `joined_at`, `archived_at`                                                                                                                           | unique active `(user_id, organization_unit_id)`, indexes `organization_unit_id,status` | archive                            | Sensitive                                                     |
@@ -37,14 +39,14 @@
 | `silent_prayer_participation` | Optional technical presence/aggregate summary | `id`, `silent_prayer_event_id`, `user_id`, `anonymous_session_hash`, `joined_at`, `left_at`, `anonymized_at`                                                                                                              | indexes event/user                                                                     | short retention/anonymize          | Not a personal prayer log; do not expose lists                |
 | `notification_preferences`    | User preferences                              | `id`, `user_id`, `category`, `enabled`                                                                                                                                                                                    | unique `(user_id,category)`                                                            | delete on user erasure if required | Self only                                                     |
 | `device_tokens`               | Push tokens                                   | `id`, `user_id`, `platform`, `token_hash`, `last_seen_at`, `revoked_at`                                                                                                                                                   | unique token hash                                                                      | revoke                             | Sensitive                                                     |
-| `identity_access_reviews`     | Idle external sign-in approval                | `id`, `user_id`, `provider_account_id`, `status`, `scope_organization_unit_id`, `reviewed_by`, `reviewed_at`, `expires_at`, `note`                                                                                        | indexes user/status/scope/expires                                                      | archive                            | Admin restricted; no private access until confirmed           |
 | `audit_logs`                  | Critical action trace                         | see audit doc                                                                                                                                                                                                             | indexes actor/entity/time/scope                                                        | append-only                        | Admin restricted                                              |
 
 ## Enum Values
 
 | Enum                        | Values                                                                                   |
 | --------------------------- | ---------------------------------------------------------------------------------------- |
-| `user_status`               | `idle`, `active`, `inactive`, `invited`, `archived`                                      |
+| `user_status`               | `active`, `inactive`, `invited`, `archived`                                              |
+| `identity_access_review_status` | `pending`, `confirmed`, `rejected`, `expired`                                        |
 | `role`                      | `CANDIDATE`, `BROTHER`, `OFFICER`, `SUPER_ADMIN`                                         |
 | `organization_unit_type`    | `ORDER`, `PROVINCE`, `COMMANDERY`, `CHORAGIEW`, `OTHER`                                  |
 | `visibility`                | `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, `BROTHER`, `ORGANIZATION_UNIT`, `OFFICER`, `ADMIN` |
@@ -68,11 +70,9 @@ This section is the migration starting point. Exact ORM syntax may vary, but fie
 | `email`                                      | citext/text      | Yes        | Unique active login identifier                                                       |
 | `phone`                                      | text             | No         | Optional contact                                                                     |
 | `display_name`                               | text             | Yes        | App/admin display                                                                    |
-| `status`                                     | user_status      | Yes        | Indexed; `idle` means external sign-in exists but private app access is not approved |
+| `status`                                     | user_status      | Yes        | Indexed; `invited` plus pending access review represents public-only Idle state      |
 | `preferred_language`                         | text             | No         | e.g. `en`, `pl`, `lv`                                                                |
 | `last_login_at`                              | timestamptz      | No         | Auth metadata                                                                        |
-| `idle_expires_at`                            | timestamptz      | No         | Required for Idle Firebase sign-ins; 30 days from first idle sign-in                 |
-| `access_confirmed_at`, `access_confirmed_by` | timestamptz/uuid | No         | Set when country/region approver or Super Admin confirms access                      |
 | `created_at`, `updated_at`, `archived_at`    | timestamptz      | Yes/Yes/No | Archive instead of delete                                                            |
 
 ### `identity_provider_accounts`
@@ -103,18 +103,29 @@ reviewed.
 | Column                       | Type        | Required | Notes                                              |
 | ---------------------------- | ----------- | -------- | -------------------------------------------------- |
 | `id`                         | uuid        | Yes      | Primary key                                        |
-| `user_id`                    | uuid        | Yes      | FK `users.id`; user remains `idle` until confirmed |
+| `user_id`                    | uuid        | Yes      | FK `users.id`; user remains public-only until confirmed |
 | `provider_account_id`        | uuid        | Yes      | FK `identity_provider_accounts.id`                 |
-| `status`                     | text enum   | Yes      | `idle`, `confirmed`, `rejected`, `expired`         |
+| `status`                     | text enum   | Yes      | `pending`, `confirmed`, `rejected`, `expired`      |
 | `scope_organization_unit_id` | uuid        | No       | Country/region scope for the approver decision     |
-| `reviewed_by`                | uuid        | No       | FK `users.id` admin actor                          |
-| `reviewed_at`                | timestamptz | No       | Confirmation/rejection timestamp                   |
+| `requested_role`, `assigned_role` | role enum | No    | Requested/assigned app role                         |
+| `decided_by`                 | uuid        | No       | FK `users.id` admin actor                          |
+| `decided_at`                 | timestamptz | No       | Confirmation/rejection/expiry timestamp            |
 | `expires_at`                 | timestamptz | Yes      | 30 days after first idle Firebase sign-in          |
-| `note`                       | text        | No       | Optional admin note; never public                  |
+| `decision_note`              | text        | No       | Optional admin note; never public                  |
 | `created_at`, `updated_at`   | timestamptz | Yes      | Audit-friendly timestamps                          |
 
 Confirmation must be paired with explicit role/scope assignment and audit logs.
 Expiry or rejection must leave the user without private app roles or memberships.
+
+### `identity_access_approver_assignments`
+
+| Column                         | Type        | Required | Notes                                                       |
+| ------------------------------ | ----------- | -------- | ----------------------------------------------------------- |
+| `id`                           | uuid        | Yes      | Primary key                                                 |
+| `user_id`                      | uuid        | Yes      | FK `users.id`; approver user                                |
+| `organization_unit_id`         | uuid        | Yes      | FK `organization_units.id`; country/region review scope     |
+| `created_by`                   | uuid        | No       | FK `users.id` admin actor                                   |
+| `created_at`, `revoked_at`     | timestamptz | Yes/No   | Unique active `(user_id, organization_unit_id)` privilege   |
 
 ### `user_roles`
 

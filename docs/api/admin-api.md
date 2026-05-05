@@ -5,6 +5,11 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | Method         | Path                                       | Role                     | Request                           | Response                   | Errors      | Rules                                                          |
 | -------------- | ------------------------------------------ | ------------------------ | --------------------------------- | -------------------------- | ----------- | -------------------------------------------------------------- |
 | GET            | `/admin/dashboard`                         | Officer/Super Admin      | none                              | scoped counts/tasks        | 403         | No unrelated scope                                             |
+| GET            | `/admin/identity-access-reviews`           | Approver/Super Admin     | none                              | scoped review list         | 403         | Pending Firebase sign-ins only within approver scope           |
+| GET            | `/admin/identity-access-reviews/:id`       | Approver/Super Admin     | none                              | review detail              | 403,404     | Scoped server-side                                             |
+| POST           | `/admin/identity-access-reviews/:id/confirm` | Approver/Super Admin   | role/scope/note                   | review detail              | 400,403,409 | Assigns explicit local role/scope; audited                     |
+| POST           | `/admin/identity-access-reviews/:id/reject` | Approver/Super Admin    | note                              | review detail              | 400,403,409 | Keeps user public-only; audited                                |
+| POST           | `/admin/identity-access-reviews/expire`    | Super Admin              | none                              | expired count              | 403         | Expires pending reviews past 30 days                           |
 | GET/POST       | `/admin/organization-units`                | Super Admin for write    | list/create payload               | list/detail                | 403,400     | Officers read assigned units only                              |
 | PATCH          | `/admin/organization-units/:id`            | Super Admin              | edit payload                      | detail                     | 403,404     | Archive not hard delete; detail read remains Phase 6 follow-up |
 | GET/POST       | `/admin/brothers`                          | Officer/Super Admin      | create/list                       | records                    | 403,400,409 | Critical changes audited                                       |
@@ -42,6 +47,15 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - Super Admin receives global active organization-unit counts plus global prayer/event management counts.
 - Officers receive active organization-unit counts for assigned units and prayer/event counts using the same server-side scope filters as the admin list endpoints.
 - The response contains aggregate counts and task links only; it does not expose member lists, prayer bodies, event descriptions, or cross-unit record details.
+- Pending identity access review count is scoped the same way as the review list.
+
+## Implemented Identity Access Review Rules
+
+- First Firebase sign-in creates or links a local identity in public-only Idle state and creates a pending `identity_access_reviews` row that expires after 30 days.
+- `GET /admin/identity-access-reviews` requires Admin Lite access. Super Admin sees all reviews; officers see only reviews whose `scopeOrganizationUnitId` is in their officer scope.
+- Officer confirmation/rejection also requires an active `identity_access_approver_assignments` row for the target organization unit. Super Admin can confirm or reject globally.
+- Confirmation requires explicit `assignedRole` (`CANDIDATE`, `BROTHER`, or `OFFICER`) and `organizationUnitId`; it activates the local user, grants the role, creates or reuses the matching scoped candidate profile, membership, or officer assignment, and marks the review `confirmed`.
+- Rejection and expiry keep the user public-only. Decisions record audit log summaries without provider tokens or private profile content.
 
 ## Implemented Organization-Unit Rules
 

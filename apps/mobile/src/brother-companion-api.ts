@@ -13,6 +13,8 @@ export interface BrotherCompanionFetchResponse {
   json: () => Promise<unknown>;
 }
 
+type MobilePrivateAccessErrorCode = "IDLE_APPROVAL_REQUIRED";
+
 export interface BrotherCompanionFetchInit {
   method?: "GET";
   headers?: Record<string, string>;
@@ -60,6 +62,13 @@ export function brotherCompanionLoadFailureState(error: unknown): MobileScreenSt
 
   if (
     error instanceof BrotherCompanionHttpError &&
+    error.code === "IDLE_APPROVAL_REQUIRED"
+  ) {
+    return "idleApproval";
+  }
+
+  if (
+    error instanceof BrotherCompanionHttpError &&
     (error.status === 401 || error.status === 403)
   ) {
     return "forbidden";
@@ -73,7 +82,10 @@ export function brotherCompanionLoadFailureState(error: unknown): MobileScreenSt
 }
 
 export class BrotherCompanionHttpError extends Error {
-  constructor(readonly status: number) {
+  constructor(
+    readonly status: number,
+    readonly code: MobilePrivateAccessErrorCode | null = null
+  ) {
     super(`Brother companion request failed with HTTP ${status}.`);
   }
 }
@@ -95,10 +107,39 @@ async function fetchBrotherCompanion(
   });
 
   if (!response.ok) {
-    throw new BrotherCompanionHttpError(response.status);
+    throw new BrotherCompanionHttpError(response.status, await readPrivateAccessErrorCode(response));
   }
 
   return response;
+}
+
+async function readPrivateAccessErrorCode(
+  response: BrotherCompanionFetchResponse
+): Promise<MobilePrivateAccessErrorCode | null> {
+  try {
+    const value = await response.json();
+    return parsePrivateAccessErrorCode(value);
+  } catch {
+    return null;
+  }
+}
+
+function parsePrivateAccessErrorCode(value: unknown): MobilePrivateAccessErrorCode | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const error = value.error;
+
+  if (!isRecord(error)) {
+    return null;
+  }
+
+  return error.code === "IDLE_APPROVAL_REQUIRED" ? "IDLE_APPROVAL_REQUIRED" : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 function normalizeBaseUrl(baseUrl: string): string {

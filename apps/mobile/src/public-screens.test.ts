@@ -216,6 +216,32 @@ describe("mobile public screen models", () => {
     ).toMatchObject({ state: "forbidden", title: "Access Denied" });
   });
 
+  it("renders idle approval info while keeping public home content usable", () => {
+    const screen = buildPublicHomeScreen(
+      resolveMobileLaunchState({
+        id: "idle_1",
+        roles: [],
+        status: "active",
+        approval: {
+          state: "pending",
+          expiresAt: "2026-06-04T08:00:00.000Z",
+          scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+        }
+      })
+    );
+
+    expect(screen).toMatchObject({
+      state: "idleApproval",
+      title: "JP2 App"
+    });
+    expect(screen.actions.map((action) => action.targetRoute)).toContain("AboutOrder");
+    expect(screen.sections.at(0)).toEqual({
+      id: "identity-approval",
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval. Public content remains available."
+    });
+  });
+
   it("builds an AboutOrder screen from a published public content page", () => {
     const screen = buildAboutOrderScreen({
       state: "ready",

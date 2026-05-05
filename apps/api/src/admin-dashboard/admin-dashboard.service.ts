@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminDashboardRepository } from "./admin-dashboard.repository.js";
 import type { AdminDashboardCounts, AdminDashboardResponse } from "./admin-dashboard.types.js";
 
@@ -10,6 +11,7 @@ export class AdminDashboardService {
 
   async getDashboard(principal: CurrentUserPrincipal): Promise<AdminDashboardResponse> {
     if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -33,6 +35,13 @@ function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
 
 function buildTasks(counts: AdminDashboardCounts): AdminDashboardResponse["tasks"] {
   return [
+    {
+      id: "review-identity-access",
+      label: "Confirm sign-in requests",
+      count: counts.identityAccessReviews,
+      targetRoute: "/admin/identity-access-reviews",
+      priority: counts.identityAccessReviews > 0 ? "attention" : "normal"
+    },
     {
       id: "manage-organization-units",
       label: "Review organization units",

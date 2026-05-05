@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { canAccessBrotherMode } from "@jp2/shared-auth";
 import type { OrganizationUnitSummaryDto } from "@jp2/shared-validation";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import type {
   BrotherProfile,
@@ -41,6 +42,7 @@ export class BrotherCompanionService {
 
   private async loadProfile(principal: CurrentUserPrincipal): Promise<BrotherProfile> {
     if (!canAccessBrotherMode(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Brother access is required.");
     }
 

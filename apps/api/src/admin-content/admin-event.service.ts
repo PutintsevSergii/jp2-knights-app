@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminEventRepository } from "./admin-event.repository.js";
 import type {
   AdminEventDetailResponse,
@@ -19,6 +20,7 @@ export class AdminEventService {
 
   async listAdminEvents(principal: CurrentUserPrincipal): Promise<AdminEventListResponse> {
     if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -57,6 +59,7 @@ export class AdminEventService {
     if (data.targetOrganizationUnitId !== undefined) {
       assertCanWriteEvent(principal, data.targetOrganizationUnitId);
     } else if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -94,6 +97,7 @@ function assertCanWriteEvent(
   targetOrganizationUnitId: string | null
 ): void {
   if (!canAccessAdminLite(principal)) {
+    assertNotIdleApprovalPrincipal(principal);
     throw new ForbiddenException("Admin Lite access is required.");
   }
 

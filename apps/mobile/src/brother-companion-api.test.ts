@@ -69,4 +69,29 @@ describe("brother companion api", () => {
     expect(brotherCompanionLoadFailureState(new TypeError("offline"))).toBe("offline");
     expect(brotherCompanionLoadFailureState(new Error("boom"))).toBe("error");
   });
+
+  it("maps idle approval API errors into an idle approval state", async () => {
+    await expect(
+      fetchBrotherToday({
+        fetchImpl: () =>
+          Promise.resolve({
+            ok: false,
+            status: 403,
+            json: () =>
+              Promise.resolve({
+                error: {
+                  code: "IDLE_APPROVAL_REQUIRED"
+                }
+              })
+          })
+      })
+    ).rejects.toMatchObject({
+      code: "IDLE_APPROVAL_REQUIRED"
+    });
+    expect(
+      brotherCompanionLoadFailureState(
+        new BrotherCompanionHttpError(403, "IDLE_APPROVAL_REQUIRED")
+      )
+    ).toBe("idleApproval");
+  });
 });

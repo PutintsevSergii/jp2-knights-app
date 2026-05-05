@@ -185,7 +185,7 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
     return stateOnlyPublicHome("forbidden", launchState.demoChromeVisible);
   }
 
-  if (launchState.state !== "ready") {
+  if (launchState.state !== "ready" && launchState.state !== "idleApproval") {
     return stateOnlyPublicHome(launchState.state, launchState.demoChromeVisible);
   }
 
@@ -197,10 +197,13 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
 
   return {
     route: "PublicHome",
-    state: "ready",
+    state: launchState.state,
     title: publicHome.intro.title,
     body: publicHome.intro.body,
-    sections: buildPublicHomeSections(publicHome),
+    sections: [
+      ...(launchState.idleApproval ? [buildIdleApprovalSection(launchState)] : []),
+      ...buildPublicHomeSections(publicHome)
+    ],
     actions: publicHome.ctas.map((cta) => ({
       id: cta.id,
       label: cta.label,
@@ -209,6 +212,28 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
     demoChromeVisible: launchState.demoChromeVisible,
     theme: publicScreenTheme
   };
+}
+
+function buildIdleApprovalSection(launchState: MobileLaunchState): PublicScreenSection {
+  return {
+    id: "identity-approval",
+    title: "Account Approval Pending",
+    body: idleApprovalBody(launchState)
+  };
+}
+
+function idleApprovalBody(launchState: MobileLaunchState): string {
+  const approval = launchState.idleApproval;
+
+  if (!approval || approval.state === "pending") {
+    return "Your sign-in is waiting for officer approval. Public content remains available.";
+  }
+
+  if (approval.state === "rejected") {
+    return "Your sign-in was not approved for private app access. Public content remains available.";
+  }
+
+  return "Your sign-in approval request expired. Public content remains available.";
 }
 
 export function buildAboutOrderScreen(options: BuildAboutOrderScreenOptions): AboutOrderScreen {
@@ -630,6 +655,10 @@ const publicHomeStateCopy: Record<MobileScreenState, { title: string; body: stri
     title: "Access Denied",
     body: "This public screen cannot show private content."
   },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public content remains available while your private app access is reviewed."
+  },
   offline: {
     title: "Offline",
     body: "Reconnect to refresh public content."
@@ -656,6 +685,10 @@ const aboutOrderStateCopy: Record<MobileScreenState, { title: string; body: stri
   forbidden: {
     title: "Access Denied",
     body: "This public screen cannot show private content."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public about content remains available while your private app access is reviewed."
   },
   offline: {
     title: "Offline",
@@ -685,6 +718,10 @@ const publicPrayerCategoriesStateCopy: Record<MobileScreenState, { title: string
       title: "Access Denied",
       body: "This public screen cannot show private content."
     },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Public prayers remain available while your private app access is reviewed."
+    },
     offline: {
       title: "Offline",
       body: "Reconnect to refresh public prayers."
@@ -711,6 +748,10 @@ const publicEventsListStateCopy: Record<MobileScreenState, { title: string; body
   forbidden: {
     title: "Access Denied",
     body: "This public screen cannot show private content."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public events remain available while your private app access is reviewed."
   },
   offline: {
     title: "Offline",
@@ -739,6 +780,10 @@ const publicPrayerDetailStateCopy: Record<MobileScreenState, { title: string; bo
     title: "Access Denied",
     body: "This public screen cannot show private content."
   },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public prayers remain available while your private app access is reviewed."
+  },
   offline: {
     title: "Offline",
     body: "Reconnect to refresh this public prayer."
@@ -765,6 +810,10 @@ const publicEventDetailStateCopy: Record<MobileScreenState, { title: string; bod
   forbidden: {
     title: "Access Denied",
     body: "This public screen cannot show private content."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public events remain available while your private app access is reviewed."
   },
   offline: {
     title: "Offline",
@@ -793,6 +842,10 @@ const joinRequestFormStateCopy: Record<MobileScreenState, { title: string; body:
     title: "Access Denied",
     body: "This public screen cannot show private content."
   },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Public join requests remain available while your private app access is reviewed."
+  },
   offline: {
     title: "Offline",
     body: "Reconnect to submit your request."
@@ -820,6 +873,10 @@ const joinRequestConfirmationStateCopy: Record<MobileScreenState, { title: strin
     forbidden: {
       title: "Access Denied",
       body: "This public screen cannot show private content."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Public confirmation remains available while your private app access is reviewed."
     },
     offline: {
       title: "Offline",

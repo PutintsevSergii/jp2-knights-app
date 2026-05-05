@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { canAccessAdminLite, canAccessBrotherMode, hasRole } from "@jp2/shared-auth";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { OrganizationRepository } from "./organization.repository.js";
 import type {
   AdminOrganizationUnitListResponse,
@@ -22,6 +23,7 @@ export class OrganizationService {
     principal: CurrentUserPrincipal
   ): Promise<MyOrganizationUnitsResponse> {
     if (!canAccessBrotherMode(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Brother role is required.");
     }
 
@@ -39,6 +41,7 @@ export class OrganizationService {
     principal: CurrentUserPrincipal
   ): Promise<AdminOrganizationUnitListResponse> {
     if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -102,6 +105,7 @@ export class OrganizationService {
 
 function requireSuperAdmin(principal: CurrentUserPrincipal): void {
   if (!hasRole(principal, "SUPER_ADMIN")) {
+    assertNotIdleApprovalPrincipal(principal);
     throw new ForbiddenException("Super Admin access is required.");
   }
 }

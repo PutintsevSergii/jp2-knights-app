@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import type { ExternalIdentity } from "@jp2/auth-provider";
 import { PrismaService } from "../database/prisma.service.js";
-import type { CurrentUserPrincipal } from "./current-user.types.js";
+import type { CurrentUserApproval, CurrentUserPrincipal } from "./current-user.types.js";
 
 export abstract class AuthIdentityRepository {
   abstract resolvePrincipal(identity: ExternalIdentity): Promise<CurrentUserPrincipal>;
@@ -18,7 +18,7 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
       return linkedPrincipal;
     }
 
-    return this.linkVerifiedEmailPrincipal(identity);
+    return this.createOrLinkIdlePrincipal(identity);
   }
 
   private async resolveLinkedPrincipal(
@@ -47,12 +47,27 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
       data: { lastLoginAt: new Date() }
     });
 
+    const approval = await this.loadProviderApproval(account.id);
+
+    if (approval) {
+      return toPublicOnlyPrincipal(account.user, approval);
+    }
+
+    if (!hasApprovedAppAccess(account.user)) {
+      const pendingApproval = await this.ensurePendingReview({
+        providerAccountId: account.id,
+        user: account.user
+      });
+
+      return toPublicOnlyPrincipal(account.user, pendingApproval);
+    }
+
     return toPrincipal(account.user);
   }
 
-  private async linkVerifiedEmailPrincipal(identity: ExternalIdentity): Promise<CurrentUserPrincipal> {
+  private async createOrLinkIdlePrincipal(identity: ExternalIdentity): Promise<CurrentUserPrincipal> {
     if (!identity.email || identity.emailVerified !== true) {
-      throw new ForbiddenException("Verified provider email is required for first login linking.");
+      throw new ForbiddenException("Verified provider email is required for first login.");
     }
 
     const existingAccount = await this.prisma.identityProviderAccount.findFirst({
@@ -66,7 +81,7 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
       throw new ForbiddenException("The provider account link is revoked.");
     }
 
-    const user = await this.prisma.user.findFirst({
+    const existingUser = await this.prisma.user.findFirst({
       where: {
         email: identity.email,
         archivedAt: null
@@ -74,11 +89,20 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
       include: principalRelationsInclude
     });
 
-    if (!user) {
-      throw new ForbiddenException("No local account is eligible for this provider identity.");
-    }
+    const user =
+      existingUser ??
+      (await this.prisma.user.create({
+        data: {
+          email: identity.email,
+          displayName: identity.displayName ?? identity.email,
+          phone: identity.phoneNumber ?? null,
+          status: "invited",
+          preferredLanguage: null
+        },
+        include: principalRelationsInclude
+      }));
 
-    await this.prisma.identityProviderAccount.create({
+    const account = await this.prisma.identityProviderAccount.create({
       data: {
         userId: user.id,
         provider: identity.provider,
@@ -92,7 +116,88 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
       data: { lastLoginAt: new Date() }
     });
 
-    return toPrincipal(user);
+    const approval = await this.ensurePendingReview({
+      providerAccountId: account.id,
+      user
+    });
+
+    return toPublicOnlyPrincipal(user, approval);
+  }
+
+  private async loadProviderApproval(
+    providerAccountId: string
+  ): Promise<CurrentUserApproval | null> {
+    const review = await this.prisma.identityAccessReview.findFirst({
+      where: {
+        providerAccountId,
+        status: {
+          in: ["pending", "rejected", "expired"]
+        }
+      },
+      orderBy: [{ createdAt: "desc" }]
+    });
+
+    if (!review) {
+      return null;
+    }
+
+    if (review.status === "pending" && review.expiresAt <= new Date()) {
+      const expired = await this.prisma.identityAccessReview.update({
+        where: { id: review.id },
+        data: {
+          status: "expired",
+          decidedAt: new Date(),
+          decisionNote: review.decisionNote ?? "Expired after 30 days without approval."
+        }
+      });
+
+      return toApproval(expired);
+    }
+
+    return toApproval(review);
+  }
+
+  private async ensurePendingReview(input: {
+    providerAccountId: string;
+    user: PrincipalUserRecord;
+  }): Promise<CurrentUserApproval> {
+    const existing = await this.prisma.identityAccessReview.findFirst({
+      where: {
+        providerAccountId: input.providerAccountId,
+        status: "pending"
+      },
+      orderBy: [{ createdAt: "desc" }]
+    });
+
+    if (existing) {
+      if (existing.expiresAt <= new Date()) {
+        const expired = await this.prisma.identityAccessReview.update({
+          where: { id: existing.id },
+          data: {
+            status: "expired",
+            decidedAt: new Date(),
+            decisionNote: existing.decisionNote ?? "Expired after 30 days without approval."
+          }
+        });
+
+        return toApproval(expired);
+      }
+
+      return toApproval(existing);
+    }
+
+    const created = await this.prisma.identityAccessReview.create({
+      data: {
+        providerAccountId: input.providerAccountId,
+        userId: input.user.id,
+        status: "pending",
+        scopeOrganizationUnitId: inferredScopeOrganizationUnitId(input.user),
+        requestedRole: inferredRequestedRole(input.user),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      }
+    });
+
+    return toApproval(created);
   }
 }
 
@@ -155,6 +260,66 @@ function toPrincipal(user: PrincipalUserRecord): CurrentUserPrincipal {
     officerOrganizationUnitIds: user.officerAssignments
       .filter((assignment) => !assignment.endsAt || assignment.endsAt >= now)
       .map((assignment) => assignment.organizationUnitId)
+  };
+}
+
+function toPublicOnlyPrincipal(
+  user: PrincipalUserRecord,
+  approval: CurrentUserApproval
+): CurrentUserPrincipal {
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    preferredLanguage: user.preferredLanguage,
+    status: user.status,
+    roles: [],
+    candidateOrganizationUnitId: null,
+    memberOrganizationUnitIds: [],
+    officerOrganizationUnitIds: [],
+    approval
+  };
+}
+
+function hasApprovedAppAccess(user: PrincipalUserRecord): boolean {
+  return (
+    user.status === "active" &&
+    user.roles.some((role) => !role.revokedAt) &&
+    user.roles.some((role) => role.role !== "SUPER_ADMIN" || !role.revokedAt)
+  );
+}
+
+function inferredScopeOrganizationUnitId(user: PrincipalUserRecord): string | null {
+  return (
+    user.candidateProfiles.find((profile) => profile.status === "active" && !profile.archivedAt)
+      ?.assignedOrganizationUnitId ??
+    user.memberships.find((membership) => membership.status === "active" && !membership.archivedAt)
+      ?.organizationUnitId ??
+    user.officerAssignments.find((assignment) => !assignment.endsAt || assignment.endsAt >= new Date())
+      ?.organizationUnitId ??
+    null
+  );
+}
+
+function inferredRequestedRole(user: PrincipalUserRecord) {
+  return user.roles.find((role) => !role.revokedAt)?.role ?? null;
+}
+
+interface IdentityAccessReviewRecord {
+  status: "pending" | "confirmed" | "rejected" | "expired";
+  expiresAt: Date;
+  scopeOrganizationUnitId: string | null;
+}
+
+function toApproval(review: IdentityAccessReviewRecord): CurrentUserApproval {
+  if (review.status === "confirmed") {
+    throw new Error("Confirmed identity access reviews do not produce idle approval state.");
+  }
+
+  return {
+    state: review.status,
+    expiresAt: review.expiresAt.toISOString(),
+    scopeOrganizationUnitId: review.scopeOrganizationUnitId
   };
 }
 

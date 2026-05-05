@@ -19,8 +19,9 @@
 | HTTP | Code                   | Use                                     |
 | ---- | ---------------------- | --------------------------------------- |
 | 400  | `VALIDATION_ERROR`     | Invalid request body/query              |
-| 401  | `UNAUTHORIZED`         | Missing/expired session                 |
-| 403  | `FORBIDDEN`            | Role/scope/visibility denied            |
+| 401  | `UNAUTHORIZED`         | Invalid/expired provider credential     |
+| 403  | `FORBIDDEN`            | Missing session or role/scope/visibility denied |
+| 403  | `IDLE_APPROVAL_REQUIRED` | Firebase-authenticated identity is awaiting, rejected, or expired for local access approval |
 | 404  | `NOT_FOUND`            | Resource missing or not visible to user |
 | 409  | `CONFLICT`             | Duplicate or invalid state transition   |
 | 429  | `RATE_LIMITED`         | Public write or retry limit exceeded    |
@@ -30,3 +31,8 @@
 ## Rule
 
 For private resources, the API may return 404 instead of 403 when revealing existence would leak data.
+
+Idle Firebase identities remain public-only. Protected Candidate, Brother, and
+Admin Lite APIs return `IDLE_APPROVAL_REQUIRED` without returning protected
+payloads so clients can show approval guidance while public content remains
+available.

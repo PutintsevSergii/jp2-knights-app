@@ -4,13 +4,31 @@ import type { PublicHomeResponseDto } from "@jp2/shared-validation";
 import { fallbackPublicHome } from "./public-home.js";
 
 export type MobileInitialRoute = "PublicHome" | "CandidateDashboard" | "BrotherToday";
-export type MobileScreenState = "ready" | "loading" | "empty" | "error" | "forbidden" | "offline";
+export type MobileScreenState =
+  | "ready"
+  | "loading"
+  | "empty"
+  | "error"
+  | "forbidden"
+  | "idleApproval"
+  | "offline";
+
+export interface MobileIdleApprovalState {
+  state: "pending" | "rejected" | "expired";
+  expiresAt: string | null;
+  scopeOrganizationUnitId: string | null;
+}
+
+export type MobilePrincipal = Principal & {
+  approval?: MobileIdleApprovalState | null;
+};
 
 export interface MobileLaunchState {
   mode: MobileMode;
   initialRoute: MobileInitialRoute;
   state: MobileScreenState;
   publicHome?: PublicHomeResponseDto;
+  idleApproval?: MobileIdleApprovalState;
   runtimeMode: RuntimeMode;
   demoChromeVisible: boolean;
 }
@@ -23,11 +41,12 @@ export interface ResolveMobileLaunchStateOptions {
 }
 
 export function resolveMobileLaunchState(
-  principal: Principal | null | undefined,
+  principal: MobilePrincipal | null | undefined,
   options: ResolveMobileLaunchStateOptions = {}
 ): MobileLaunchState {
   const runtimeMode = options.runtimeMode ?? "api";
-  const state = options.state ?? "ready";
+  const idleApproval = principal?.approval ?? undefined;
+  const state = options.state ?? (idleApproval ? "idleApproval" : "ready");
   const mode = resolveMobileMode(principal);
 
   if (mode === "brother") {
@@ -44,7 +63,8 @@ export function resolveMobileLaunchState(
 
   return {
     ...baseState("public", "PublicHome", runtimeMode, state),
-    ...(publicHome ? { publicHome } : {})
+    ...(publicHome ? { publicHome } : {}),
+    ...(idleApproval ? { idleApproval } : {})
   };
 }
 

@@ -10,6 +10,7 @@ type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
+  | "IDLE_APPROVAL_REQUIRED"
   | "NOT_FOUND"
   | "CONFLICT"
   | "RATE_LIMITED"
@@ -27,6 +28,7 @@ interface HttpResponseLike {
 }
 
 interface ErrorResponseBody {
+  code?: unknown;
   message?: string | string[];
   issues?: unknown[];
   details?: unknown[];
@@ -44,7 +46,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       error: {
-        code: toErrorCode(status),
+        code: toErrorCode(status, body),
         message: toMessage(status, body),
         details: body.issues ?? body.details ?? [],
         requestId: toRequestId(request.headers?.["x-request-id"]),
@@ -54,7 +56,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
   }
 }
 
-function normalizeBody(value: string | ErrorResponseBody): ErrorResponseBody {
+function normalizeBody(value: string | object): ErrorResponseBody {
   if (typeof value === "string") {
     return { message: value };
   }
@@ -82,7 +84,11 @@ function toRequestId(value: string | string[] | undefined): string {
   return value ?? "unknown";
 }
 
-function toErrorCode(status: number): ApiErrorCode {
+function toErrorCode(status: number, body: ErrorResponseBody): ApiErrorCode {
+  if (isApiErrorCode(body.code)) {
+    return body.code;
+  }
+
   switch (status) {
     case 400:
       return "VALIDATION_ERROR";
@@ -101,4 +107,18 @@ function toErrorCode(status: number): ApiErrorCode {
     default:
       return "INTERNAL_ERROR";
   }
+}
+
+function isApiErrorCode(value: unknown): value is ApiErrorCode {
+  return (
+    value === "VALIDATION_ERROR" ||
+    value === "UNAUTHORIZED" ||
+    value === "FORBIDDEN" ||
+    value === "IDLE_APPROVAL_REQUIRED" ||
+    value === "NOT_FOUND" ||
+    value === "CONFLICT" ||
+    value === "RATE_LIMITED" ||
+    value === "BUSINESS_RULE_FAILED" ||
+    value === "INTERNAL_ERROR"
+  );
 }

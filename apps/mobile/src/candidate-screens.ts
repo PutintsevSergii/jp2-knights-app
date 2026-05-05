@@ -241,6 +241,10 @@ const candidateDashboardStateCopy: Record<MobileScreenState, { title: string; bo
     title: "Access Denied",
     body: "An active candidate profile is required."
   },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before candidate content is available."
+  },
   offline: {
     title: "Offline",
     body: "Reconnect to refresh candidate dashboard."

@@ -50,5 +50,5 @@ Authenticated app behavior is role-aware. A user may have multiple roles, but th
 
 - Expired session: return user to public mode and preserve intended route only for allowed authenticated destinations.
 - Forbidden route: show access denied, not hidden data.
-- Idle or unapproved Firebase user: show pending/approval guidance and keep the user in public mode.
+- Idle or unapproved Firebase user: protected APIs return `IDLE_APPROVAL_REQUIRED`; show pending/approval guidance and keep the user in public mode with public content usable.
 - Inactive user: block private access and show support/contact guidance.

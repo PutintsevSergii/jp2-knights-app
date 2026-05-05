@@ -7,7 +7,12 @@ export const adminDashboardTaskOpenApiSchema = {
     count: { type: "integer", minimum: 0 },
     targetRoute: {
       type: "string",
-      enum: ["/admin/organization-units", "/admin/prayers", "/admin/events"]
+      enum: [
+        "/admin/identity-access-reviews",
+        "/admin/organization-units",
+        "/admin/prayers",
+        "/admin/events"
+      ]
     },
     priority: {
       type: "string",
@@ -36,8 +41,9 @@ export const adminDashboardResponseOpenApiSchema = {
     },
     counts: {
       type: "object",
-      required: ["organizationUnits", "prayers", "events"],
+      required: ["identityAccessReviews", "organizationUnits", "prayers", "events"],
       properties: {
+        identityAccessReviews: { type: "integer", minimum: 0 },
         organizationUnits: { type: "integer", minimum: 0 },
         prayers: { type: "integer", minimum: 0 },
         events: { type: "integer", minimum: 0 }

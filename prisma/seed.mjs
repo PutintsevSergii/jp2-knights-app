@@ -109,6 +109,24 @@ async function main() {
     }
   });
 
+  await prisma.identityAccessApproverAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000016"
+    },
+    update: {
+      userId: officer.id,
+      organizationUnitId: pilotUnit.id,
+      createdBy: superAdmin.id,
+      revokedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000016",
+      userId: officer.id,
+      organizationUnitId: pilotUnit.id,
+      createdBy: superAdmin.id
+    }
+  });
+
   const existingCandidate = await prisma.user.findFirst({
     where: { email: "candidate@example.test", archivedAt: null }
   });
@@ -202,6 +220,56 @@ async function main() {
       idempotencyKey: "demo-candidate-request-1",
       status: "new",
       assignedOrganizationUnitId: pilotUnit.id
+    }
+  });
+
+  const idleUser =
+    (await prisma.user.findFirst({
+      where: { email: "idle-review@example.test", archivedAt: null }
+    })) ??
+    (await prisma.user.create({
+      data: {
+        email: "idle-review@example.test",
+        displayName: "Demo Idle Review",
+        status: "invited",
+        preferredLanguage: "en"
+      }
+    }));
+
+  await linkExternalIdentity({
+    id: "00000000-0000-0000-0000-000000000017",
+    userId: idleUser.id,
+    provider: "firebase",
+    providerSubject: "demo-idle-review",
+    email: "idle-review@example.test",
+    emailVerified: true,
+    displayName: "Demo Idle Review"
+  });
+
+  await prisma.identityAccessReview.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000018"
+    },
+    update: {
+      userId: idleUser.id,
+      providerAccountId: "00000000-0000-0000-0000-000000000017",
+      status: "pending",
+      scopeOrganizationUnitId: pilotUnit.id,
+      requestedRole: "BROTHER",
+      assignedRole: null,
+      expiresAt: new Date("2026-06-04T00:00:00.000Z"),
+      decidedBy: null,
+      decidedAt: null,
+      decisionNote: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000018",
+      userId: idleUser.id,
+      providerAccountId: "00000000-0000-0000-0000-000000000017",
+      status: "pending",
+      scopeOrganizationUnitId: pilotUnit.id,
+      requestedRole: "BROTHER",
+      expiresAt: new Date("2026-06-04T00:00:00.000Z")
     }
   });
 

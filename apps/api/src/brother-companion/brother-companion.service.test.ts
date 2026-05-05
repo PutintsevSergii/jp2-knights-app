@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
 import type { BrotherProfile, BrotherTodayEventSummary } from "./brother-companion.types.js";
@@ -52,6 +53,19 @@ const brother: CurrentUserPrincipal = {
   status: "active",
   roles: ["BROTHER"],
   memberOrganizationUnitIds: [organizationUnit.id]
+};
+
+const idleUser: CurrentUserPrincipal = {
+  id: "77777777-7777-4777-8777-777777777777",
+  email: "idle@example.test",
+  displayName: "Idle User",
+  status: "active",
+  roles: [],
+  approval: {
+    state: "pending",
+    expiresAt: "2026-06-04T08:00:00.000Z",
+    scopeOrganizationUnitId: organizationUnit.id
+  }
 };
 
 describe("BrotherCompanionService", () => {
@@ -151,6 +165,18 @@ describe("BrotherCompanionService", () => {
       NotFoundException
     );
   });
+
+  it("blocks idle users with the approval-required code before loading memberships", async () => {
+    const repository = repositoryWith(profile, [event]);
+
+    await expect(service(repository).getToday(idleUser)).rejects.toMatchObject({
+      response: {
+        code: IDLE_APPROVAL_REQUIRED_CODE
+      }
+    });
+    expect(repository.profileLookups).toEqual([]);
+    expect(repository.eventScopes).toEqual([]);
+  });
 });
 
 function service(
@@ -162,10 +188,14 @@ function service(
 function repositoryWith(
   profileRecord: BrotherProfile | null,
   events: BrotherTodayEventSummary[]
-): BrotherCompanionRepository & { eventScopes: string[][] } {
+): BrotherCompanionRepository & { eventScopes: string[][]; profileLookups: string[] } {
   return {
     eventScopes: [],
-    findActiveBrotherProfile: () => Promise.resolve(profileRecord),
+    profileLookups: [],
+    findActiveBrotherProfile(userId) {
+      this.profileLookups.push(userId);
+      return Promise.resolve(profileRecord);
+    },
     findUpcomingEvents(organizationUnitIds) {
       this.eventScopes.push([...organizationUnitIds]);
       return Promise.resolve(events);

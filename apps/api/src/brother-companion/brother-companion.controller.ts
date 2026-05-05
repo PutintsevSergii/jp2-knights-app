@@ -22,17 +22,8 @@ export class BrotherCompanionController {
     schema: brotherProfileResponseOpenApiSchema
   })
   @ApiResponse({
-    status: 401,
-    description: "Authentication is required.",
-    content: {
-      "application/json": {
-        schema: apiErrorOpenApiSchema
-      }
-    }
-  })
-  @ApiResponse({
     status: 403,
-    description: "The current user does not have brother access.",
+    description: "Authentication, approval, or active brother access is required.",
     content: {
       "application/json": {
         schema: apiErrorOpenApiSchema
@@ -59,17 +50,8 @@ export class BrotherCompanionController {
     schema: brotherTodayResponseOpenApiSchema
   })
   @ApiResponse({
-    status: 401,
-    description: "Authentication is required.",
-    content: {
-      "application/json": {
-        schema: apiErrorOpenApiSchema
-      }
-    }
-  })
-  @ApiResponse({
     status: 403,
-    description: "The current user does not have brother access.",
+    description: "Authentication, approval, or active brother access is required.",
     content: {
       "application/json": {
         schema: apiErrorOpenApiSchema

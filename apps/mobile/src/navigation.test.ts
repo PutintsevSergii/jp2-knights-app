@@ -62,4 +62,31 @@ describe("mobile public launch state", () => {
       initialRoute: "PublicHome"
     });
   });
+
+  it("keeps idle approval users on public home with approval state visible", () => {
+    expect(
+      resolveMobileLaunchState({
+        id: "idle_1",
+        roles: [],
+        status: "active",
+        approval: {
+          state: "pending",
+          expiresAt: "2026-06-04T08:00:00.000Z",
+          scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+        }
+      })
+    ).toMatchObject({
+      mode: "public",
+      initialRoute: "PublicHome",
+      state: "idleApproval",
+      idleApproval: {
+        state: "pending"
+      },
+      publicHome: {
+        intro: {
+          title: "JP2 App"
+        }
+      }
+    });
+  });
 });

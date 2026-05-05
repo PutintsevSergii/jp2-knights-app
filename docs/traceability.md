@@ -93,11 +93,19 @@ Companion Core is in progress:
 - Phase 5 adds reusable `@jp2/auth-provider` with the stable
   `ExternalAuthProvider` contract, a Firebase Admin SDK-backed provider, and a
   static fake provider used only for local/test replacement coverage.
-- New Phase 5/6 follow-up requirement captured: Firebase sign-in must create or
-  link only an Idle local identity for 30 days and must not grant private access
-  until a scoped country/region approver or Super Admin confirms the user and
-  assigns roles/scopes. The approver privilege is admin-assigned, scoped,
-  audited, and revocable.
+- Phase 5/6 Firebase Idle approval is implemented: first-time verified
+  Firebase sign-in now creates or links only a public-only local identity,
+  creates a pending `identity_access_reviews` row with a 30-day expiry, and
+  exposes safe `/api/auth/me` approval state without private roles or scopes.
+  Pending, rejected, and expired Idle identities remain `public` mobile mode
+  and cannot enter Admin Lite, candidate, or brother surfaces. Private API
+  denials for Idle users now return stable `IDLE_APPROVAL_REQUIRED` errors
+  without loading protected data, and mobile maps that code to approval guidance
+  while keeping public content usable.
+- Protected routes without any authenticated session now fail closed with `403`
+  and no protected payload; invalid/expired provider credentials still use
+  `401`. Public consent-backed candidate requests remain unauthenticated and
+  require explicit accepted consent in the shared DTO before persistence.
 - Phase 5 adds `identity_provider_accounts` with active provider-subject
   uniqueness, local seed links for demo admin/officer users, and API-side local
   account resolution from provider identity to JP2 roles, status, memberships,
@@ -109,19 +117,33 @@ Companion Core is in progress:
   guarded principal.
 - `/api/auth/me` now verifies bearer tokens or provider session cookies through
   the replaceable provider adapter before loading the local user. Inactive or
-  archived local users still fail closed through `CurrentUserGuard`.
+  archived local users still fail closed through `CurrentUserGuard`; invited
+  Idle users are allowed only far enough for `/auth/me` and `/auth/session` to
+  return public-only pending/rejected/expired approval state.
+- Phase 6 now includes guarded Admin Lite identity access review endpoints:
+  `/api/admin/identity-access-reviews`,
+  `/api/admin/identity-access-reviews/{id}`,
+  `/api/admin/identity-access-reviews/{id}/confirm`,
+  `/api/admin/identity-access-reviews/{id}/reject`, and
+  `/api/admin/identity-access-reviews/expire`. Super Admin can decide globally;
+  officers must be in scope and hold an active
+  `identity_access_approver_assignments` privilege for the review scope.
+  Confirmation assigns explicit local role/scope, creates or reuses the
+  matching candidate profile, membership, or officer assignment, and writes an
+  audit log. Rejection and expiry keep the user public-only.
 - Phase 6 now includes a guarded `/api/admin/dashboard` endpoint that returns
-  scoped counts and task links for organization units, prayers, and events.
-  Officers receive counts constrained to their assigned organization-unit scope
-  and public/family-open content; Super Admin receives global counts.
+  scoped counts and task links for identity access reviews, organization units,
+  prayers, and events. Officers receive counts constrained to their assigned
+  organization-unit scope and public/family-open content; Super Admin receives
+  global counts.
 - Admin Lite Phase 6 now exposes `/admin/dashboard` route metadata and a
   framework-neutral rendered dashboard document with scoped navigation to the
-  implemented organization-unit, prayer, and event surfaces. Demo mode uses
-  local dashboard fixtures without backend calls.
+  implemented sign-in review, organization-unit, prayer, and event surfaces.
+  Demo mode uses local dashboard fixtures without backend calls.
 - Admin Lite now has a dependency-free Node HTTP web shell that mounts
-  `/admin`, `/admin/dashboard`, `/admin/prayers`, and `/admin/events` to the
-  rendered route documents, forwards bearer tokens in API mode, and keeps demo
-  mode backend-free.
+  `/admin`, `/admin/dashboard`, `/admin/identity-access-reviews`,
+  `/admin/prayers`, and `/admin/events` to the rendered route documents,
+  forwards bearer tokens in API mode, and keeps demo mode backend-free.
 - Admin Lite Phase 6 now mounts `/admin/organization-units` through the Node
   HTTP shell with API/demo loading, shared DTO validation, read-only officer
   state, Super Admin create/edit/archive action metadata, and demo fixtures.
@@ -249,7 +271,7 @@ Companion Core is in progress:
 | Requirement                                | APIs                                                                                                                                  | Screens                                      | Data                                                                                     | Key tests                                                                                                                                                                   |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | NFR-SEC-001 Authentication                 | `/auth/session`, `/auth/logout`, `/auth/refresh`, `GET /auth/me`                                                                      | Login, Admin Login                           | users, identity_provider_accounts, user_roles, memberships                               | Firebase adapter verification, fake-provider replacement, inactive-user blocking, provider-linking                                                                          |
-| FR-AUTH-001 Firebase Idle Approval         | `/auth/session`, `GET /auth/me`; Admin Lite idle approval routes pending                                                              | login pending approval, admin idle approvals | users, identity_provider_accounts, identity_access_reviews, user_roles, audit_logs       | Firebase sign-in stays idle/public-only, 30-day expiry, scoped country/region approval, audited role/scope assignment                                                       |
+| FR-AUTH-001 Firebase Idle Approval         | `/auth/session`, `GET /auth/me`; `/admin/identity-access-reviews`, `/admin/identity-access-reviews/{id}`, `/admin/identity-access-reviews/{id}/confirm`, `/admin/identity-access-reviews/{id}/reject`, `/admin/identity-access-reviews/expire` | login pending approval, admin idle approvals | users, identity_provider_accounts, identity_access_reviews, identity_access_approver_assignments, user_roles, memberships, candidate_profiles, officer_assignments, audit_logs | Firebase sign-in stays idle/public-only, 30-day expiry, scoped country/region approval privilege, audited role/scope assignment, rejection/expiry public-only state |
 | NFR-DEMO-001 Demo mode                     | runtime mode config                                                                                                                   | Mobile/Admin launch shells                   | demo fixtures once screen flows exist                                                    | shared parser, mobile/admin/API production rejection tests                                                                                                                  |
 | FR-PUBLIC-001 Public Home                  | `GET /public/home`                                                                                                                    | `PublicHome`                                 | prayers, events, content pages                                                           | public no-auth, no private content, empty state                                                                                                                             |
 | FR-PUBLIC-002 About the Order              | `GET /public/content-pages/{slug}`                                                                                                    | `AboutOrder`                                 | content_pages                                                                            | published `PUBLIC` content only, private/missing pages 404, English fallback, mobile API/demo states                                                                        |

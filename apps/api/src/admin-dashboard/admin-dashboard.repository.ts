@@ -18,7 +18,10 @@ export class PrismaAdminDashboardRepository implements AdminDashboardRepository 
   async loadCounts(
     scopeOrganizationUnitIds: readonly string[] | null
   ): Promise<AdminDashboardCounts> {
-    const [organizationUnits, prayers, events] = await Promise.all([
+    const [identityAccessReviews, organizationUnits, prayers, events] = await Promise.all([
+      this.prisma.identityAccessReview.count({
+        where: adminDashboardIdentityAccessReviewWhere(scopeOrganizationUnitIds)
+      }),
       this.prisma.organizationUnit.count({
         where: adminDashboardOrganizationUnitWhere(scopeOrganizationUnitIds)
       }),
@@ -31,11 +34,31 @@ export class PrismaAdminDashboardRepository implements AdminDashboardRepository 
     ]);
 
     return {
+      identityAccessReviews,
       organizationUnits,
       prayers,
       events
     };
   }
+}
+
+export function adminDashboardIdentityAccessReviewWhere(
+  scopeOrganizationUnitIds: readonly string[] | null
+): Prisma.IdentityAccessReviewWhereInput {
+  const pendingWhere: Prisma.IdentityAccessReviewWhereInput = {
+    status: "pending"
+  };
+
+  if (scopeOrganizationUnitIds === null) {
+    return pendingWhere;
+  }
+
+  return {
+    ...pendingWhere,
+    scopeOrganizationUnitId: {
+      in: [...scopeOrganizationUnitIds]
+    }
+  };
 }
 
 export function adminDashboardOrganizationUnitWhere(

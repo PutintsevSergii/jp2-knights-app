@@ -206,11 +206,14 @@ must keep the user public-only.
 
 ## Data Model Addition
 
-Phase 5 should add a provider-link table instead of placing provider-specific columns directly on `users`:
+Phase 5 stores provider-specific identity outside `users`, and the Phase 5/6
+Idle gate stores the local review workflow separately:
 
-| Table                        | Purpose                                           | Key columns                                                                                                                                                                   |
-| ---------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `identity_provider_accounts` | Links verified external identities to local users | `id`, `user_id`, `provider`, `provider_subject`, `email`, `email_verified`, `phone`, `display_name`, `photo_url`, `last_sign_in_at`, `created_at`, `updated_at`, `revoked_at` |
+| Table                                  | Purpose                                           | Key columns                                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `identity_provider_accounts`           | Links verified external identities to local users | `id`, `user_id`, `provider`, `provider_subject`, `email`, `email_verified`, `phone`, `display_name`, `photo_url`, `last_sign_in_at`, `created_at`, `updated_at`, `revoked_at` |
+| `identity_access_reviews`              | Tracks 30-day Idle access decisions              | `id`, `user_id`, `provider_account_id`, `status`, `scope_organization_unit_id`, `requested_role`, `assigned_role`, `expires_at`, `decided_by`, `decided_at`, `decision_note` |
+| `identity_access_approver_assignments` | Scoped approver privilege                        | `id`, `user_id`, `organization_unit_id`, `created_by`, `created_at`, `revoked_at`                                                                                             |
 
 Constraints:
 

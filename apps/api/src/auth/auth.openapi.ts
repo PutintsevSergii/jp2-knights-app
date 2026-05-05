@@ -32,7 +32,8 @@ export const currentUserResponseOpenApiSchema = {
         "adminLite",
         "candidateOrganizationUnitId",
         "memberOrganizationUnitIds",
-        "officerOrganizationUnitIds"
+        "officerOrganizationUnitIds",
+        "approval"
       ],
       additionalProperties: false,
       properties: {
@@ -53,6 +54,28 @@ export const currentUserResponseOpenApiSchema = {
         officerOrganizationUnitIds: {
           type: "array",
           items: { type: "string", format: "uuid" }
+        },
+        approval: {
+          type: "object",
+          nullable: true,
+          required: ["state", "expiresAt", "scopeOrganizationUnitId"],
+          additionalProperties: false,
+          properties: {
+            state: {
+              type: "string",
+              enum: ["pending", "rejected", "expired"]
+            },
+            expiresAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true
+            },
+            scopeOrganizationUnitId: {
+              type: "string",
+              format: "uuid",
+              nullable: true
+            }
+          }
         }
       }
     }

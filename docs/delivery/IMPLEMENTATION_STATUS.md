@@ -17,8 +17,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                      | —                            |
 | **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                               | Phase 4 public content views |
 | **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                      | —                            |
-| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API                                                 | —                            |
-| **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell                                                 | —                            |
+| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                            | —                            |
+| **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | 🟡 IN PROGRESS | ~35%     | ███████░░░░░░░░░░░░░ | Brother profile, Brother Today API, mobile brother API/demo/screen models                                             | Add My Chorągiew mobile view |
 | **9–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | After Phase 8                |
@@ -151,19 +151,21 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ `identity_provider_accounts` migration, Prisma model, and local seed links
 - ✅ Provider identity to local JP2 user linking by active provider link or verified email
 - ✅ `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, and `/api/auth/me`
+- ✅ Firebase sign-in Idle approval gate: first-time verified identities stay public-only with 30-day pending review state
+- ✅ Protected Candidate, Brother, and Admin Lite APIs return `IDLE_APPROVAL_REQUIRED` for Idle identities before loading private data
+- ✅ Missing-session protected access fails closed with `403`, while public consent-backed candidate requests remain unauthenticated
+- ✅ Mobile maps Idle approval errors to pending-approval copy while public content stays usable
 - ✅ Session cookie creation path with CSRF validation when the provider supports cookies
 - ✅ Local inactive/archived user blocking remains enforced by `CurrentUserGuard`
-- ✅ Current-user response includes mobile mode, Admin Lite access, membership scope, and officer scope
+- ✅ Current-user response includes mobile mode, Admin Lite access, membership scope, officer scope, and safe approval state
 
 **Not Yet**:
 
-- ⏳ Firebase sign-in Idle approval gate (new Phase 5/6 follow-up requirement): verified Firebase-authenticated users must remain public-only for 30 days until confirmed by scoped country/region approver or Super Admin
 - ⏳ Auth device tokens and notification preferences (Phase 9 with push)
-- ⏳ Candidate funnel workflows (Phase 7)
 
-**Exit criteria**: ✅ Original Phase 5 provider verification, local linking, session/logout/refresh handling, inactive-user blocking, and fake-provider replacement tests are implemented; 🟡 newly added Firebase sign-in Idle approval gate remains a Phase 5/6 follow-up before pilot
+**Exit criteria**: ✅ Provider verification, local linking, session/logout/refresh handling, inactive-user blocking, fake-provider replacement tests, Firebase Idle approval gate, protected-route Idle denial code, and mobile Idle guidance are implemented
 
-**Next step**: Implement Firebase sign-in Idle approval gate and Admin Lite scoped confirmation workflow before pilot
+**Next step**: Phase 9 auth device tokens and notification preferences
 
 ### Phase 6: Admin Lite Foundation ✅
 
@@ -171,11 +173,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Completed**:
 
-- ✅ Guarded `/api/admin/dashboard` endpoint with scoped organization-unit, prayer, and event counts
+- ✅ Guarded `/api/admin/dashboard` endpoint with scoped identity review, organization-unit, prayer, and event counts
 - ✅ Officer dashboard counts reuse server-side admin scope filters; Super Admin gets global counts
+- ✅ Guarded `/api/admin/identity-access-reviews` list/detail/confirm/reject/expire endpoints
+- ✅ Scoped country/region approver privilege enforced through `identity_access_approver_assignments`; Super Admin can decide globally
+- ✅ Identity review confirmation assigns explicit local role/scope and writes audit side effects
+- ✅ Admin Lite `/admin/identity-access-reviews` route with API/demo loading, shared DTO validation, and confirm/reject action metadata
 - ✅ Admin Lite `/admin/dashboard` route metadata
-- ✅ Framework-neutral rendered dashboard document with navigation to organization units, prayers, and events
-- ✅ Dependency-free HTTP web shell mounts `/admin`, `/admin/dashboard`, `/admin/prayers`, and `/admin/events`
+- ✅ Framework-neutral rendered dashboard document with navigation to sign-in reviews, organization units, prayers, and events
+- ✅ Dependency-free HTTP web shell mounts `/admin`, `/admin/dashboard`, `/admin/identity-access-reviews`, `/admin/prayers`, and `/admin/events`
 - ✅ Admin dashboard API client, demo fixture, state handling, and route tests
 - ✅ Admin Lite `/admin/organization-units` route with API/demo loading, shared DTO validation, demo fixture, and write-action metadata
 - ✅ Admin Lite organization-unit create and scoped detail/edit form routes at `/admin/organization-units/new` and `/admin/organization-units/{id}`
@@ -185,10 +191,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Candidate funnel workflows (Phase 7)
 - ⏳ Brother/admin registry workflows beyond implemented Phase 6 foundation (later phases)
 
-**Exit criteria**: ✅ Scoped dashboard, organization-unit list/detail/form routes, audit side effects, and mounted Admin Lite UI shell exist
+**Exit criteria**: ✅ Scoped dashboard, identity review workflow, organization-unit list/detail/form routes, audit side effects, and mounted Admin Lite UI shell exist
 
 **Next step**: Continue Phase 7 admin candidate request UI/client workflow
 
@@ -272,12 +277,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.68% statements / 80.34% branches / 91.33% functions / 91.64% lines  |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother profile/today service/repository/controller and mobile API/screen-model tests added |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.48% statements / 80.16% branches / 91.64% functions / 91.36% lines  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review auth/repository/service/controller/admin shell tests added            |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes brother profile/today                                           |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires brother profile/today                                               |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | No Phase 8 migration; `pnpm quality` migration validation passed                            |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes identity access review endpoints                                |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires identity access review endpoints                                    |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review migration and seed fixtures included                                 |
 | **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile brother demo fixtures validate through shared DTOs                                   |
 
 ---
@@ -332,12 +337,18 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - `identity_provider_accounts` migration and demo seed links
 - API-side provider-account linking and local user resolution
 - `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`
+- Firebase sign-in Idle approval gate keeps new provider identities public-only with 30-day review state
+- Protected Candidate/Brother/Admin Lite routes reject Idle identities with `IDLE_APPROVAL_REQUIRED` before private repository reads
+- Missing-session protected routes return `403`; public consent-backed candidate requests stay unauthenticated and validation-gated
+- Mobile public launch and private content clients render Idle approval guidance while preserving public content access
 - Session-cookie creation with CSRF validation and logout cookie clearing
-- Current-user response includes mode, Admin Lite access, membership scope, and officer scope
+- Current-user response includes mode, Admin Lite access, membership scope, officer scope, and approval state
 
 **Phase 6 Complete** ✅:
 
-- Guarded `/api/admin/dashboard` endpoint added for scoped admin counts and task links
+- Guarded `/api/admin/dashboard` endpoint added for scoped admin counts and task links, including pending identity reviews
+- Guarded `/api/admin/identity-access-reviews` list/detail/confirm/reject/expire endpoints added
+- Admin Identity Access Review DTOs, OpenAPI schema, API client, demo fixture, rendered HTML document, route metadata, and web-shell mount added
 - Dashboard counts reuse existing admin prayer/event scope filters
 - Admin dashboard DTO, OpenAPI schema, API client, demo fixture, screen model, rendered HTML document, and route metadata added
 - Admin web shell mounts implemented dashboard/content routes over HTTP and keeps API/demo mode separation
@@ -414,7 +425,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Firebase provider adapter
    - [x] Login/logout/session API flow
    - [x] Mode switching based on role
-   - [ ] Firebase sign-in Idle approval gate with 30-day expiry and country/region admin confirmation
+   - [x] Firebase sign-in Idle approval gate with 30-day expiry and country/region admin confirmation
 
 ---
 

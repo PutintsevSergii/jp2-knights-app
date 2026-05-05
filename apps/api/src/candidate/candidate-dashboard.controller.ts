@@ -19,17 +19,8 @@ export class CandidateDashboardController {
     schema: candidateDashboardResponseOpenApiSchema
   })
   @ApiResponse({
-    status: 401,
-    description: "Authentication is required.",
-    content: {
-      "application/json": {
-        schema: apiErrorOpenApiSchema
-      }
-    }
-  })
-  @ApiResponse({
     status: 403,
-    description: "The current user does not have an active candidate profile.",
+    description: "Authentication, approval, or an active candidate profile is required.",
     content: {
       "application/json": {
         schema: apiErrorOpenApiSchema

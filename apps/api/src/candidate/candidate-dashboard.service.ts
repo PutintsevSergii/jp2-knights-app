@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { canAccessCandidateMode } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import type { CandidateDashboardResponse } from "./candidate-dashboard.types.js";
 
@@ -10,6 +11,7 @@ export class CandidateDashboardService {
 
   async getDashboard(principal: CurrentUserPrincipal): Promise<CandidateDashboardResponse> {
     if (!canAccessCandidateMode(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Candidate access is required.");
     }
 

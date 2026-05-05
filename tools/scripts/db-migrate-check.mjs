@@ -11,6 +11,7 @@ const requiredInputs = [
   "prisma/migrations/000004_identity_provider_accounts/migration.sql",
   "prisma/migrations/000005_candidate_requests/migration.sql",
   "prisma/migrations/000006_candidate_profiles/migration.sql",
+  "prisma/migrations/000007_identity_access_reviews/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -182,6 +183,34 @@ if (missingCandidateProfilesMigrationSnippets.length > 0) {
   );
 }
 
+const identityAccessReviewsMigrationSql = readFileSync(
+  "prisma/migrations/000007_identity_access_reviews/migration.sql",
+  "utf8"
+);
+
+const requiredIdentityAccessReviewsMigrationSnippets = [
+  "CREATE TYPE identity_access_review_status AS ENUM",
+  "CREATE TABLE identity_access_reviews",
+  "CREATE TABLE identity_access_approver_assignments",
+  "identity_access_reviews_provider_account_pending_unique",
+  "identity_access_approver_assignments_active_unique",
+  "WHERE status = 'pending'",
+  "WHERE revoked_at IS NULL"
+];
+
+const missingIdentityAccessReviewsMigrationSnippets =
+  requiredIdentityAccessReviewsMigrationSnippets.filter(
+    (snippet) => !identityAccessReviewsMigrationSql.includes(snippet)
+  );
+
+if (missingIdentityAccessReviewsMigrationSnippets.length > 0) {
+  throw new Error(
+    `Identity access review migration is missing required SQL: ${missingIdentityAccessReviewsMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -204,7 +233,11 @@ const requiredSeedSnippets = [
   "candidateRequest",
   "candidate-request@example.test",
   "candidate-request-v1",
-  "demo-candidate-request-1"
+  "demo-candidate-request-1",
+  "identityAccessApproverAssignment",
+  "idle-review@example.test",
+  "demo-idle-review",
+  "identityAccessReview"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -215,5 +248,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, and Phase 7 candidate request/profile fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, and Phase 7 candidate request/profile fixtures."
 );

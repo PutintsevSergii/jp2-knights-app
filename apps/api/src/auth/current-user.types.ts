@@ -5,6 +5,13 @@ export interface CurrentUserPrincipal extends Principal {
   email: string;
   displayName: string;
   preferredLanguage?: string | null;
+  approval?: CurrentUserApproval | null;
+}
+
+export interface CurrentUserApproval {
+  state: "pending" | "rejected" | "expired";
+  expiresAt: string | null;
+  scopeOrganizationUnitId: string | null;
 }
 
 export interface RequestWithPrincipal {
@@ -29,6 +36,7 @@ export interface CurrentUserResponse {
     candidateOrganizationUnitId: string | null;
     memberOrganizationUnitIds: readonly string[];
     officerOrganizationUnitIds: readonly string[];
+    approval: CurrentUserApproval | null;
   };
 }
 

@@ -68,6 +68,19 @@ describe("brother screen models", () => {
         actions: []
       })
     );
+    expect(
+      buildBrotherTodayScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherToday",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
   });
 
   it("builds empty and fallback detail copy for missing brother response fields", () => {

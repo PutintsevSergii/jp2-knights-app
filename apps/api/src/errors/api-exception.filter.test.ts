@@ -56,6 +56,42 @@ describe("ApiExceptionFilter", () => {
     });
   });
 
+  it("preserves stable domain error codes from HTTP exception bodies", () => {
+    const { host, json, status } = httpHost({ headers: {} });
+
+    new ApiExceptionFilter().catch(
+      new ForbiddenException({
+        code: "IDLE_APPROVAL_REQUIRED",
+        message: "Your account is waiting for approval before private app access is available.",
+        details: [
+          {
+            state: "pending",
+            expiresAt: "2026-06-04T08:00:00.000Z",
+            scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+          }
+        ]
+      }),
+      host
+    );
+
+    expect(status).toHaveBeenCalledWith(403);
+    expect(json).toHaveBeenCalledWith({
+      error: {
+        code: "IDLE_APPROVAL_REQUIRED",
+        message: "Your account is waiting for approval before private app access is available.",
+        details: [
+          {
+            state: "pending",
+            expiresAt: "2026-06-04T08:00:00.000Z",
+            scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        requestId: "unknown",
+        timestamp: expect.any(String) as string
+      }
+    });
+  });
+
   it("hides unexpected exception details behind a generic internal error", () => {
     const { host, json, status } = httpHost({ headers: {} });
 

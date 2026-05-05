@@ -1248,7 +1248,8 @@
                             "adminLite",
                             "candidateOrganizationUnitId",
                             "memberOrganizationUnitIds",
-                            "officerOrganizationUnitIds"
+                            "officerOrganizationUnitIds",
+                            "approval"
                           ],
                           "additionalProperties": false,
                           "properties": {
@@ -1280,6 +1281,36 @@
                               "items": {
                                 "type": "string",
                                 "format": "uuid"
+                              }
+                            },
+                            "approval": {
+                              "type": "object",
+                              "nullable": true,
+                              "required": [
+                                "state",
+                                "expiresAt",
+                                "scopeOrganizationUnitId"
+                              ],
+                              "additionalProperties": false,
+                              "properties": {
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "rejected",
+                                    "expired"
+                                  ]
+                                },
+                                "expiresAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "nullable": true
+                                },
+                                "scopeOrganizationUnitId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "nullable": true
+                                }
                               }
                             }
                           }
@@ -1479,7 +1510,8 @@
                             "adminLite",
                             "candidateOrganizationUnitId",
                             "memberOrganizationUnitIds",
-                            "officerOrganizationUnitIds"
+                            "officerOrganizationUnitIds",
+                            "approval"
                           ],
                           "additionalProperties": false,
                           "properties": {
@@ -1511,6 +1543,36 @@
                               "items": {
                                 "type": "string",
                                 "format": "uuid"
+                              }
+                            },
+                            "approval": {
+                              "type": "object",
+                              "nullable": true,
+                              "required": [
+                                "state",
+                                "expiresAt",
+                                "scopeOrganizationUnitId"
+                              ],
+                              "additionalProperties": false,
+                              "properties": {
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "rejected",
+                                    "expired"
+                                  ]
+                                },
+                                "expiresAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "nullable": true
+                                },
+                                "scopeOrganizationUnitId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "nullable": true
+                                }
                               }
                             }
                           }
@@ -1623,7 +1685,8 @@
                         "adminLite",
                         "candidateOrganizationUnitId",
                         "memberOrganizationUnitIds",
-                        "officerOrganizationUnitIds"
+                        "officerOrganizationUnitIds",
+                        "approval"
                       ],
                       "additionalProperties": false,
                       "properties": {
@@ -1656,52 +1719,36 @@
                             "type": "string",
                             "format": "uuid"
                           }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No active authenticated user is available.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
                         },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
+                        "approval": {
+                          "type": "object",
+                          "nullable": true,
+                          "required": [
+                            "state",
+                            "expiresAt",
+                            "scopeOrganizationUnitId"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "pending",
+                                "rejected",
+                                "expired"
+                              ]
+                            },
+                            "expiresAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true
+                            },
+                            "scopeOrganizationUnitId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            }
+                          }
                         }
                       }
                     }
@@ -1711,7 +1758,7 @@
             }
           },
           "403": {
-            "description": "The authenticated user is inactive or archived.",
+            "description": "Authentication is missing or the authenticated user is inactive/archived.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4008,11 +4055,16 @@
                     "counts": {
                       "type": "object",
                       "required": [
+                        "identityAccessReviews",
                         "organizationUnits",
                         "prayers",
                         "events"
                       ],
                       "properties": {
+                        "identityAccessReviews": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
                         "organizationUnits": {
                           "type": "integer",
                           "minimum": 0
@@ -4052,6 +4104,7 @@
                           "targetRoute": {
                             "type": "string",
                             "enum": [
+                              "/admin/identity-access-reviews",
                               "/admin/organization-units",
                               "/admin/prayers",
                               "/admin/events"
@@ -4121,6 +4174,1220 @@
         },
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/admin/identity-access-reviews": {
+      "get": {
+        "operationId": "AdminIdentityAccessController_listReviews",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Identity access reviews visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identityAccessReviews"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "identityAccessReviews": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "userId",
+                          "displayName",
+                          "email",
+                          "provider",
+                          "providerSubject",
+                          "status",
+                          "scopeOrganizationUnitId",
+                          "scopeOrganizationUnitName",
+                          "requestedRole",
+                          "assignedRole",
+                          "expiresAt",
+                          "decidedBy",
+                          "decidedAt",
+                          "decisionNote",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "userId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "providerSubject": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "rejected",
+                              "expired"
+                            ]
+                          },
+                          "scopeOrganizationUnitId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "scopeOrganizationUnitName": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "requestedRole": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ],
+                            "nullable": true
+                          },
+                          "assignedRole": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ],
+                            "nullable": true
+                          },
+                          "expiresAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "decidedBy": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "decidedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          },
+                          "decisionNote": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-identity-access"
+        ]
+      }
+    },
+    "/api/admin/identity-access-reviews/{id}": {
+      "get": {
+        "operationId": "AdminIdentityAccessController_getReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Identity access review detail visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identityAccessReview"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "identityAccessReview": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "userId",
+                        "displayName",
+                        "email",
+                        "provider",
+                        "providerSubject",
+                        "status",
+                        "scopeOrganizationUnitId",
+                        "scopeOrganizationUnitName",
+                        "requestedRole",
+                        "assignedRole",
+                        "expiresAt",
+                        "decidedBy",
+                        "decidedAt",
+                        "decisionNote",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "providerSubject": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected",
+                            "expired"
+                          ]
+                        },
+                        "scopeOrganizationUnitId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "scopeOrganizationUnitName": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "requestedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "assignedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "decidedBy": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "decidedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "decisionNote": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have permission to view this review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The identity access review is not visible in the current scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-identity-access"
+        ]
+      }
+    },
+    "/api/admin/identity-access-reviews/{id}/confirm": {
+      "post": {
+        "operationId": "AdminIdentityAccessController_confirmReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "assignedRole",
+                  "organizationUnitId"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "assignedRole": {
+                    "type": "string",
+                    "enum": [
+                      "CANDIDATE",
+                      "BROTHER",
+                      "OFFICER"
+                    ]
+                  },
+                  "organizationUnitId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmed identity access review with explicitly assigned local access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identityAccessReview"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "identityAccessReview": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "userId",
+                        "displayName",
+                        "email",
+                        "provider",
+                        "providerSubject",
+                        "status",
+                        "scopeOrganizationUnitId",
+                        "scopeOrganizationUnitName",
+                        "requestedRole",
+                        "assignedRole",
+                        "expiresAt",
+                        "decidedBy",
+                        "decidedAt",
+                        "decisionNote",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "providerSubject": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected",
+                            "expired"
+                          ]
+                        },
+                        "scopeOrganizationUnitId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "scopeOrganizationUnitName": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "requestedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "assignedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "decidedBy": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "decidedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "decisionNote": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The confirmation payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Country/region approver privilege is required for this scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The identity access review is not visible in the current scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The identity access review is no longer pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-identity-access"
+        ]
+      }
+    },
+    "/api/admin/identity-access-reviews/{id}/reject": {
+      "post": {
+        "operationId": "AdminIdentityAccessController_rejectReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected identity access review; the user remains public-only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identityAccessReview"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "identityAccessReview": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "userId",
+                        "displayName",
+                        "email",
+                        "provider",
+                        "providerSubject",
+                        "status",
+                        "scopeOrganizationUnitId",
+                        "scopeOrganizationUnitName",
+                        "requestedRole",
+                        "assignedRole",
+                        "expiresAt",
+                        "decidedBy",
+                        "decidedAt",
+                        "decisionNote",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "providerSubject": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected",
+                            "expired"
+                          ]
+                        },
+                        "scopeOrganizationUnitId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "scopeOrganizationUnitName": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "requestedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "assignedRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER",
+                            "OFFICER",
+                            "SUPER_ADMIN"
+                          ],
+                          "nullable": true
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "decidedBy": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "decidedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "decisionNote": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The rejection payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Country/region approver privilege is required for this scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The identity access review is not visible in the current scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The identity access review is no longer pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-identity-access"
+        ]
+      }
+    },
+    "/api/admin/identity-access-reviews/expire": {
+      "post": {
+        "operationId": "AdminIdentityAccessController_expirePendingReviews",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Expired pending identity access reviews past their 30-day window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "expired"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "expired": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only Super Admin can run global identity review expiry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-identity-access"
         ]
       }
     },
@@ -4306,54 +5573,8 @@
               }
             }
           },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
           "403": {
-            "description": "The current user does not have brother access.",
+            "description": "Authentication, approval, or active brother access is required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4681,54 +5902,8 @@
               }
             }
           },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
           "403": {
-            "description": "The current user does not have brother access.",
+            "description": "Authentication, approval, or active brother access is required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5107,54 +6282,8 @@
               }
             }
           },
-          "401": {
-            "description": "Authentication is required.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
           "403": {
-            "description": "The current user does not have an active candidate profile.",
+            "description": "Authentication, approval, or an active candidate profile is required.",
             "content": {
               "application/json": {
                 "schema": {

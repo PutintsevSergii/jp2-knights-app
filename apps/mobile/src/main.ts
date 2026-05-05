@@ -89,7 +89,13 @@ export {
   buildPublicPrayerCategoriesScreen,
   JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
-export type { MobileInitialRoute, MobileLaunchState, MobileScreenState } from "./navigation.js";
+export type {
+  MobileIdleApprovalState,
+  MobileInitialRoute,
+  MobileLaunchState,
+  MobilePrincipal,
+  MobileScreenState
+} from "./navigation.js";
 export type {
   AboutOrderScreen,
   JoinRequestConfirmationScreen,

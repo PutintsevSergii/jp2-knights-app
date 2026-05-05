@@ -254,6 +254,10 @@ const brotherTodayStateCopy: Record<MobileScreenState, { title: string; body: st
     title: "Access Denied",
     body: "An active brother profile is required."
   },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before brother content is available."
+  },
   offline: {
     title: "Offline",
     body: "Reconnect to refresh Brother Today."
@@ -280,6 +284,10 @@ const brotherProfileStateCopy: Record<MobileScreenState, { title: string; body: 
   forbidden: {
     title: "Access Denied",
     body: "An active brother profile is required."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before brother profile content is available."
   },
   offline: {
     title: "Offline",

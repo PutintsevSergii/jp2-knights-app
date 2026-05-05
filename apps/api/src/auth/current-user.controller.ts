@@ -22,17 +22,8 @@ export class CurrentUserController {
     schema: currentUserResponseOpenApiSchema
   })
   @ApiResponse({
-    status: 401,
-    description: "No active authenticated user is available.",
-    content: {
-      "application/json": {
-        schema: apiErrorOpenApiSchema
-      }
-    }
-  })
-  @ApiResponse({
     status: 403,
-    description: "The authenticated user is inactive or archived.",
+    description: "Authentication is missing or the authenticated user is inactive/archived.",
     content: {
       "application/json": {
         schema: apiErrorOpenApiSchema

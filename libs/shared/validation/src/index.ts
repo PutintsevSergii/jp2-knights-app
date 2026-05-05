@@ -232,7 +232,12 @@ export const adminDashboardTaskSchema = z.object({
   id: z.string().trim().min(1).max(80),
   label: z.string().trim().min(1).max(120),
   count: z.number().int().min(0),
-  targetRoute: z.enum(["/admin/organization-units", "/admin/prayers", "/admin/events"]),
+  targetRoute: z.enum([
+    "/admin/identity-access-reviews",
+    "/admin/organization-units",
+    "/admin/prayers",
+    "/admin/events"
+  ]),
   priority: z.enum(["normal", "attention"])
 });
 
@@ -242,12 +247,62 @@ export const adminDashboardResponseSchema = z.object({
     organizationUnitIds: z.array(z.uuid())
   }),
   counts: z.object({
+    identityAccessReviews: z.number().int().min(0),
     organizationUnits: z.number().int().min(0),
     prayers: z.number().int().min(0),
     events: z.number().int().min(0)
   }),
   tasks: z.array(adminDashboardTaskSchema)
 });
+
+export const identityAccessReviewStatusSchema = z.enum([
+  "pending",
+  "confirmed",
+  "rejected",
+  "expired"
+]);
+
+export const adminIdentityAccessReviewSummarySchema = z.object({
+  id: z.uuid(),
+  userId: z.uuid(),
+  displayName: z.string().trim().min(1).max(200),
+  email: z.string().trim().email().max(320),
+  provider: z.string().trim().min(1).max(80),
+  providerSubject: z.string().trim().min(1).max(200),
+  status: identityAccessReviewStatusSchema,
+  scopeOrganizationUnitId: z.uuid().nullable(),
+  scopeOrganizationUnitName: z.string().trim().min(1).max(200).nullable(),
+  requestedRole: roleSchema.nullable(),
+  assignedRole: roleSchema.nullable(),
+  expiresAt: z.iso.datetime(),
+  decidedBy: z.uuid().nullable(),
+  decidedAt: z.iso.datetime().nullable(),
+  decisionNote: z.string().trim().min(1).max(2000).nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+});
+
+export const adminIdentityAccessReviewListResponseSchema = z.object({
+  identityAccessReviews: z.array(adminIdentityAccessReviewSummarySchema)
+});
+
+export const adminIdentityAccessReviewDetailResponseSchema = z.object({
+  identityAccessReview: adminIdentityAccessReviewSummarySchema
+});
+
+export const confirmIdentityAccessReviewSchema = z
+  .object({
+    assignedRole: z.enum(["CANDIDATE", "BROTHER", "OFFICER"]),
+    organizationUnitId: z.uuid(),
+    note: z.string().trim().min(1).max(2000).nullable().optional()
+  })
+  .strict();
+
+export const rejectIdentityAccessReviewSchema = z
+  .object({
+    note: z.string().trim().min(1).max(2000).nullable().optional()
+  })
+  .strict();
 
 const candidateDashboardOrganizationUnitSchema = z.object({
   id: z.uuid(),
@@ -647,6 +702,17 @@ export type AdminEventListResponseDto = z.infer<typeof adminEventListResponseSch
 export type AdminEventDetailResponseDto = z.infer<typeof adminEventDetailResponseSchema>;
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
+export type AdminIdentityAccessReviewSummaryDto = z.infer<
+  typeof adminIdentityAccessReviewSummarySchema
+>;
+export type AdminIdentityAccessReviewListResponseDto = z.infer<
+  typeof adminIdentityAccessReviewListResponseSchema
+>;
+export type AdminIdentityAccessReviewDetailResponseDto = z.infer<
+  typeof adminIdentityAccessReviewDetailResponseSchema
+>;
+export type ConfirmIdentityAccessReviewDto = z.infer<typeof confirmIdentityAccessReviewSchema>;
+export type RejectIdentityAccessReviewDto = z.infer<typeof rejectIdentityAccessReviewSchema>;
 export type CandidateDashboardEventSummaryDto = z.infer<
   typeof candidateDashboardEventSummarySchema
 >;

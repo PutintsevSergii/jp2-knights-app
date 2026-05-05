@@ -512,6 +512,7 @@ describe("shared validation", () => {
         organizationUnitIds: ["11111111-1111-4111-8111-111111111111"]
       },
       counts: {
+        identityAccessReviews: 1,
         organizationUnits: 1,
         prayers: 2,
         events: 3

@@ -1,6 +1,7 @@
 import type {
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
+  AdminIdentityAccessReviewListResponseDto,
   AdminCandidateRequestDetailDto,
   AdminCandidateProfileDetailDto,
   AdminOrganizationUnitListResponseDto,
@@ -13,11 +14,19 @@ export const fallbackAdminDashboard: AdminDashboardResponseDto = {
     organizationUnitIds: ["11111111-1111-4111-8111-111111111111"]
   },
   counts: {
+    identityAccessReviews: 1,
     organizationUnits: 1,
     prayers: 1,
     events: 1
   },
   tasks: [
+    {
+      id: "review-identity-access",
+      label: "Confirm sign-in requests",
+      count: 1,
+      targetRoute: "/admin/identity-access-reviews",
+      priority: "attention"
+    },
     {
       id: "manage-organization-units",
       label: "Review organization units",
@@ -38,6 +47,30 @@ export const fallbackAdminDashboard: AdminDashboardResponseDto = {
       count: 1,
       targetRoute: "/admin/events",
       priority: "normal"
+    }
+  ]
+};
+
+export const fallbackAdminIdentityAccessReviews: AdminIdentityAccessReviewListResponseDto = {
+  identityAccessReviews: [
+    {
+      id: "22222222-2222-4222-8222-222222222222",
+      userId: "12121212-1212-4121-8121-121212121212",
+      displayName: "Piotr Kowalski",
+      email: "piotr.kowalski@example.test",
+      provider: "firebase",
+      providerSubject: "firebase-demo-subject",
+      status: "pending",
+      scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      scopeOrganizationUnitName: "Pilot Organization Unit",
+      requestedRole: "BROTHER",
+      assignedRole: null,
+      expiresAt: "2026-06-04T08:00:00.000Z",
+      decidedBy: null,
+      decidedAt: null,
+      decisionNote: null,
+      createdAt: "2026-05-05T08:00:00.000Z",
+      updatedAt: "2026-05-05T08:00:00.000Z"
     }
   ]
 };

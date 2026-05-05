@@ -58,5 +58,13 @@ describe("mobile candidate screen models", () => {
       state: "empty",
       demoChromeVisible: true
     });
+    expect(
+      buildCandidateDashboardScreen({ state: "idleApproval", runtimeMode: "api" })
+    ).toMatchObject({
+      state: "idleApproval",
+      title: "Account Approval Pending",
+      sections: [],
+      actions: []
+    });
   });
 });

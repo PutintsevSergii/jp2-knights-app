@@ -19,7 +19,8 @@ export class CurrentUserService {
         adminLite: canAccessAdminLite(principal),
         candidateOrganizationUnitId: principal.candidateOrganizationUnitId ?? null,
         memberOrganizationUnitIds: principal.memberOrganizationUnitIds ?? [],
-        officerOrganizationUnitIds: principal.officerOrganizationUnitIds ?? []
+        officerOrganizationUnitIds: principal.officerOrganizationUnitIds ?? [],
+        approval: principal.approval ?? null
       }
     };
   }

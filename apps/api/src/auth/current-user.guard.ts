@@ -3,9 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
-  UnauthorizedException
 } from "@nestjs/common";
-import { isActive } from "@jp2/shared-auth";
 import { AuthSessionService } from "./auth-session.service.js";
 import type { RequestWithPrincipal } from "./current-user.types.js";
 
@@ -18,10 +16,10 @@ export class CurrentUserGuard implements CanActivate {
     const principal = await this.authSessionService.resolveCurrentUser(request);
 
     if (!principal) {
-      throw new UnauthorizedException("Authentication is required.");
+      throw new ForbiddenException("Authentication is required.");
     }
 
-    if (!isActive(principal)) {
+    if (principal.status === "inactive" || principal.status === "archived") {
       throw new ForbiddenException("Inactive principals cannot access protected app modes.");
     }
 

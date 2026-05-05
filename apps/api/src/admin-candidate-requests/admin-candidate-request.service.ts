@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminCandidateRequestRepository } from "./admin-candidate-request.repository.js";
 import type {
   AdminCandidateRequestDetail,
@@ -23,6 +24,7 @@ export class AdminCandidateRequestService {
     principal: CurrentUserPrincipal
   ): Promise<AdminCandidateRequestListResponse> {
     if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -38,6 +40,7 @@ export class AdminCandidateRequestService {
     id: string
   ): Promise<AdminCandidateRequestDetailResponse> {
     if (!canAccessAdminLite(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
       throw new ForbiddenException("Admin Lite access is required.");
     }
 
@@ -171,6 +174,7 @@ function assertCanUpdateCandidateRequest(
   data: UpdateAdminCandidateRequest
 ): void {
   if (!canAccessAdminLite(principal)) {
+    assertNotIdleApprovalPrincipal(principal);
     throw new ForbiddenException("Admin Lite access is required.");
   }
 
@@ -199,6 +203,7 @@ function assertCanConvertCandidateRequest(
   data: ConvertCandidateRequest
 ): void {
   if (!canAccessAdminLite(principal)) {
+    assertNotIdleApprovalPrincipal(principal);
     throw new ForbiddenException("Admin Lite access is required.");
   }
 

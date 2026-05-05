@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminCandidateRepository } from "./admin-candidate.repository.js";
 import type {
   AdminCandidateProfileDetail,
@@ -88,6 +89,7 @@ function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
 
 function assertCanReadCandidates(principal: CurrentUserPrincipal): void {
   if (!canAccessAdminLite(principal)) {
+    assertNotIdleApprovalPrincipal(principal);
     throw new ForbiddenException("Admin Lite access is required.");
   }
 }

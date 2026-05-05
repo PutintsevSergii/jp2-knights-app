@@ -10,7 +10,9 @@ describe("PrismaAdminDashboardRepository", () => {
     const organizationUnitCount = vi.fn(() => Promise.resolve(1));
     const prayerCount = vi.fn(() => Promise.resolve(2));
     const eventCount = vi.fn(() => Promise.resolve(3));
+    const identityAccessReviewCount = vi.fn(() => Promise.resolve(4));
     const prisma = {
+      identityAccessReview: { count: identityAccessReviewCount },
       organizationUnit: { count: organizationUnitCount },
       prayer: { count: prayerCount },
       event: { count: eventCount }
@@ -21,9 +23,18 @@ describe("PrismaAdminDashboardRepository", () => {
         "11111111-1111-4111-8111-111111111111"
       ])
     ).resolves.toEqual({
+      identityAccessReviews: 4,
       organizationUnits: 1,
       prayers: 2,
       events: 3
+    });
+    expect(identityAccessReviewCount).toHaveBeenCalledWith({
+      where: {
+        status: "pending",
+        scopeOrganizationUnitId: {
+          in: ["11111111-1111-4111-8111-111111111111"]
+        }
+      }
     });
     expect(organizationUnitCount).toHaveBeenCalledWith({
       where: {

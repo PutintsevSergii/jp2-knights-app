@@ -81,4 +81,28 @@ describe("mobile candidate dashboard API client", () => {
       "offline"
     );
   });
+
+  it("maps idle approval API errors into an idle approval state", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 403,
+        json: () =>
+          Promise.resolve({
+            error: {
+              code: "IDLE_APPROVAL_REQUIRED"
+            }
+          })
+      })
+    );
+
+    await expect(fetchCandidateDashboard({ fetchImpl })).rejects.toMatchObject({
+      code: "IDLE_APPROVAL_REQUIRED"
+    });
+    expect(
+      candidateDashboardLoadFailureState(
+        new CandidateDashboardHttpError(403, "IDLE_APPROVAL_REQUIRED")
+      )
+    ).toBe("idleApproval");
+  });
 });
