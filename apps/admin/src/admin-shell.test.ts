@@ -10,6 +10,11 @@ describe("admin shell routes", () => {
         screenRoute: "AdminDashboard"
       },
       {
+        path: "/admin/candidate-requests",
+        label: "Candidate Requests",
+        screenRoute: "AdminCandidateRequestList"
+      },
+      {
         path: "/admin/organization-units",
         label: "Organization Units",
         screenRoute: "AdminOrganizationUnitList"

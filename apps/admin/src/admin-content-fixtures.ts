@@ -1,6 +1,7 @@
 import type {
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
+  AdminCandidateRequestDetailDto,
   AdminOrganizationUnitListResponseDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
@@ -39,6 +40,29 @@ export const fallbackAdminDashboard: AdminDashboardResponseDto = {
     }
   ]
 };
+
+export const fallbackAdminCandidateRequestDetails: AdminCandidateRequestDetailDto[] = [
+  {
+    id: "66666666-6666-4666-8666-666666666666",
+    firstName: "Jan",
+    lastName: "Nowak",
+    email: "jan.nowak@example.test",
+    phone: "+371 2000 0000",
+    country: "LV",
+    city: "Riga",
+    status: "new",
+    assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+    assignedOrganizationUnitName: "Pilot Organization Unit",
+    createdAt: "2026-05-05T08:00:00.000Z",
+    updatedAt: "2026-05-05T08:00:00.000Z",
+    archivedAt: null,
+    preferredLanguage: "en",
+    message: "I would like to learn more about the Order.",
+    consentTextVersion: "candidate-request-v1",
+    consentAt: "2026-05-05T08:00:00.000Z",
+    officerNote: null
+  }
+];
 
 export const fallbackAdminPrayers: AdminPrayerListResponseDto = {
   prayers: [

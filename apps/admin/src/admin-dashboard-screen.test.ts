@@ -24,6 +24,7 @@ describe("admin dashboard screen", () => {
     ]);
     expect(screen.navigation.map((item) => item.path)).toEqual([
       "/admin/dashboard",
+      "/admin/candidate-requests",
       "/admin/organization-units",
       "/admin/prayers",
       "/admin/events"

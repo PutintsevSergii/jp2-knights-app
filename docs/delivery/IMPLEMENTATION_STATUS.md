@@ -19,7 +19,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes        | —                            |
 | **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API   | —                            |
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell   | —                            |
-| **7**    | 🟡 IN PROGRESS | ~45%     | █████████░░░░░░░░░░░ | Candidate request API, mobile form, admin scoped management API         | Add admin candidate UI       |
+| **7**    | 🟡 IN PROGRESS | ~60%     | ████████████░░░░░░░░ | Candidate request API, mobile form, admin API/UI workflow               | Add candidate profiles       |
 | **8–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Brother, events/announcements, roadmap, silent prayer, hardening        | After Phase 7                |
 
 ---
@@ -192,7 +192,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 7: Candidate Funnel 🟡
 
-**Status**: IN PROGRESS (~45%)
+**Status**: IN PROGRESS (~60%)
 
 **Completed**:
 
@@ -208,16 +208,16 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Admin `GET /api/admin/candidate-requests` and `GET/PATCH /api/admin/candidate-requests/:id`
 - ✅ Admin candidate request reads are server-side scoped: Super Admin global, officers assigned-unit only
 - ✅ Admin candidate request updates audit status/assignment/note changes with email/message redaction
+- ✅ Admin Lite candidate request API client, list/detail screen models, rendered shell routes, mounted navigation, and demo fallback fixtures
 
 **In Progress**:
 
-- 🟡 Admin candidate request client/screen/demo fallback
 - 🟡 Candidate request conversion workflow after candidate profile persistence exists
 - 🟡 Candidate dashboard/profile activation workflow
 
-**Exit criteria**: 🟡 Candidate request API and public form foundation exist; admin UI and conversion remain
+**Exit criteria**: 🟡 Candidate request API, public form, and admin UI foundation exist; profile activation and conversion remain
 
-**Next step**: Add admin candidate request client/screen/demo fallback
+**Next step**: Add candidate profile persistence and conversion foundation
 
 ### Phases 4–13: Roadmap
 
@@ -243,7 +243,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                      |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                      |
 | **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.12% statements / 81.70% branches / 90.94% functions / 91.87% lines |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public candidate request API, mobile form, and admin candidate request API coverage added  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public candidate request API, mobile form, admin API, and Admin Lite candidate UI coverage |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                      |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes public and admin candidate request endpoints                   |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires public and admin candidate request endpoints                       |
@@ -322,6 +322,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - `POST /api/public/candidate-requests` added with no-auth access, consent metadata persistence, idempotency keys, repeated-attempt rate limiting, duplicate active email conflict, and no-PII response
 - Mobile join-interest form model/client/demo fallback and safe confirmation screen added
 - Admin candidate request list/detail/update API added with officer scope filtering and redacted audit summaries
+- Admin Lite candidate request API client, list/detail screen models, rendered route shell, mounted navigation, and demo fallback fixture added
 
 ---
 
@@ -343,7 +344,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add `candidate_requests` persistence and seed/test fixtures
    - [x] Add public join-interest form model/client/demo fallback
    - [x] Add admin candidate request management API
-   - [ ] Add admin candidate request client/screen/demo fallback
+   - [x] Add admin candidate request client/screen/demo fallback
+   - [ ] Add candidate profile persistence and conversion foundation
 
 3. **Maintain completed Phase 3–6 foundation**
    - [x] Connect mobile PublicHome to real `/api/public/home`
@@ -451,4 +453,4 @@ Every week (or per phase):
 
 **Last Updated**: May 5, 2026
 **Current Phase**: Phase 7 in progress; Phases 0–6 complete
-**Next Major Milestone**: Add admin candidate request client/screen/demo fallback
+**Next Major Milestone**: Add candidate profile persistence and conversion foundation

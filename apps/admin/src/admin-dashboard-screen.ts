@@ -21,7 +21,7 @@ export interface AdminDashboardScreen {
   tasks: AdminDashboardTaskDto[];
   navigation: Array<{
     label: string;
-    path: "/admin/dashboard" | AdminDashboardTaskDto["targetRoute"];
+    path: "/admin/dashboard" | "/admin/candidate-requests" | AdminDashboardTaskDto["targetRoute"];
   }>;
   demoChromeVisible: boolean;
   theme: {
@@ -314,6 +314,7 @@ function escapeAttribute(value: string): string {
 
 const adminDashboardNavigation: AdminDashboardScreen["navigation"] = [
   { label: "Dashboard", path: "/admin/dashboard" },
+  { label: "Candidate Requests", path: "/admin/candidate-requests" },
   { label: "Organization Units", path: "/admin/organization-units" },
   { label: "Prayers", path: "/admin/prayers" },
   { label: "Events", path: "/admin/events" }
