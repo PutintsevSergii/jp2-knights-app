@@ -11,6 +11,8 @@ import {
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
+  brotherProfileResponseSchema,
+  brotherTodayResponseSchema,
   candidateDashboardResponseSchema,
   contentStatusSchema,
   convertCandidateRequestSchema,
@@ -583,6 +585,76 @@ describe("shared validation", () => {
       candidateDashboardResponseSchema.safeParse({
         ...response,
         upcomingEvents: [{ ...response.upcomingEvents[0], visibility: "BROTHER" }]
+      }).success
+    ).toBe(false);
+  });
+
+  it("validates brother profile and today DTOs with brother-safe event visibility", () => {
+    const organizationUnit = {
+      id: "11111111-1111-4111-8111-111111111111",
+      type: "CHORAGIEW",
+      parentUnitId: null,
+      name: "Pilot Choragiew",
+      city: "Riga",
+      country: "Latvia",
+      parish: null,
+      publicDescription: "Pilot community",
+      status: "active"
+    };
+    const profileResponse = {
+      profile: {
+        id: "22222222-2222-4222-8222-222222222222",
+        displayName: "Demo Brother",
+        email: "brother@example.test",
+        phone: null,
+        preferredLanguage: "en",
+        status: "active",
+        roles: ["BROTHER"],
+        memberships: [
+          {
+            id: "33333333-3333-4333-8333-333333333333",
+            currentDegree: "First Degree",
+            joinedAt: "2026-01-15",
+            organizationUnit
+          }
+        ]
+      }
+    };
+    const todayResponse = {
+      profileSummary: {
+        displayName: "Demo Brother",
+        currentDegree: "First Degree",
+        organizationUnitName: "Pilot Choragiew"
+      },
+      cards: [
+        {
+          id: "profile",
+          label: "Review profile",
+          body: "Your brother profile and choragiew assignment are available.",
+          targetRoute: "BrotherProfile",
+          priority: "normal"
+        }
+      ],
+      upcomingEvents: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          title: "Brother Gathering",
+          type: "formation",
+          startAt: "2026-06-01T10:00:00.000Z",
+          endAt: null,
+          locationLabel: "Riga",
+          visibility: "ORGANIZATION_UNIT"
+        }
+      ],
+      organizationUnits: [organizationUnit]
+    };
+
+    expect(brotherProfileResponseSchema.parse(profileResponse)).toEqual(profileResponse);
+    expect(brotherTodayResponseSchema.parse(todayResponse)).toEqual(todayResponse);
+    expect(
+      brotherTodayResponseSchema.safeParse({
+        ...todayResponse,
+        upcomingEvents: [{ ...todayResponse.upcomingEvents[0], visibility: "CANDIDATE" }]
       }).success
     ).toBe(false);
   });

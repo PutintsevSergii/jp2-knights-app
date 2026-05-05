@@ -10,6 +10,7 @@ The backend must support:
 - secure Admin Lite session cookies when deployment topology supports same-site cookies;
 - logout and session invalidation;
 - provider identity to local user linking/sync;
+- Firebase Authentication sign-in providers as external identity options with a local Idle approval gate;
 - get current user;
 - inactive-user blocking;
 - role and scope checks on every protected endpoint.
@@ -18,15 +19,36 @@ Firebase proves who the person is. The JP2 database decides what that person may
 Roles, status, memberships, candidate profiles, and officer scope are loaded from local
 tables after provider token verification.
 
+## Firebase Sign-In Idle Approval
+
+Firebase Authentication provider sign-in must authenticate identity only. It must never grant
+Candidate, Brother, Officer, Admin Lite, or Super Admin access by itself.
+
+When a person signs in with an enabled Firebase provider, such as Google/Gmail,
+email, or another Firebase-supported provider, and no already-approved local
+access exists:
+
+1. The API creates or links a local identity-provider account.
+2. The local user is placed in Idle mode for 30 days.
+3. `/auth/me` and mode resolution keep the user public-only and return pending
+   approval guidance instead of private roles.
+4. A country/region approver or Super Admin reviews the idle user in Admin Lite.
+5. Confirmation assigns the appropriate local roles and scopes; rejection or
+   expiry keeps the user public-only.
+
+Country/region approver is an admin-assigned privilege. Any participant of the
+Order can receive it if assigned by an authorized admin. The privilege must be
+scoped, audited, and revocable. Super Admin can approve globally.
+
 ## Roles
 
-| Role        | App surface                                             |
-| ----------- | ------------------------------------------------------- |
-| Guest       | Public mobile only                                      |
-| Candidate   | Candidate mobile                                        |
-| Brother     | Brother mobile                                          |
+| Role        | App surface                                                           |
+| ----------- | --------------------------------------------------------------------- |
+| Guest       | Public mobile only                                                    |
+| Candidate   | Candidate mobile                                                      |
+| Brother     | Brother mobile                                                        |
 | Officer     | Admin Lite scoped to assigned organization units; may also be brother |
-| Super Admin | Admin Lite global                                       |
+| Super Admin | Admin Lite global                                                     |
 
 ## Authorization Layers
 

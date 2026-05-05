@@ -3,12 +3,18 @@ import {
   buildAboutOrderScreen,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
+  buildBrotherProfileScreen,
+  buildBrotherProfileUrl,
+  buildBrotherTodayScreen,
+  buildBrotherTodayUrl,
   buildJoinRequestConfirmationScreen,
   buildJoinRequestFormScreen,
   buildPublicCandidateRequestUrl,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
+  fallbackBrotherProfile,
+  fallbackBrotherToday,
   fallbackCandidateDashboard,
   fallbackPublicCandidateRequestResponse,
   fallbackPublicEventDetail,
@@ -146,5 +152,28 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("CandidateDashboard");
+  });
+
+  it("exports brother companion helpers and screen model builders", () => {
+    expect(buildBrotherTodayUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/today"
+    );
+    expect(buildBrotherProfileUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/profile"
+    );
+    expect(
+      buildBrotherTodayScreen({
+        state: "ready",
+        response: fallbackBrotherToday,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherToday");
+    expect(
+      buildBrotherProfileScreen({
+        state: "ready",
+        response: fallbackBrotherProfile,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherProfile");
   });
 });

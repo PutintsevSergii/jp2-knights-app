@@ -10,17 +10,18 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Executive Summary
 
-| Phase    | Status      | Progress | Completeness         | Key Outputs                                                                                                           | Next Step                    |
-| -------- | ----------- | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **0**    | ✅ COMPLETE | 100%     | ████████████████████ | Scope, roles, visibility                                                                                              | —                            |
-| **1**    | ✅ COMPLETE | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                                             | —                            |
-| **2**    | ✅ COMPLETE | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                      | —                            |
-| **3**    | ✅ COMPLETE | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                               | Phase 4 public content views |
-| **4**    | ✅ COMPLETE | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                      | —                            |
-| **5**    | ✅ COMPLETE | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API                                                 | —                            |
-| **6**    | ✅ COMPLETE | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell                                                 | —                            |
-| **7**    | ✅ COMPLETE | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | Phase 8 brother core         |
-| **8–13** | ⏳ PENDING  | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Brother, events/announcements, roadmap, silent prayer, hardening                                                      | Start Phase 8                |
+| Phase    | Status         | Progress | Completeness         | Key Outputs                                                                                                           | Next Step                    |
+| -------- | -------------- | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **0**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                                                              | —                            |
+| **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                                             | —                            |
+| **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                      | —                            |
+| **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                               | Phase 4 public content views |
+| **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                      | —                            |
+| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API                                                 | —                            |
+| **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, org-unit routes/audit, mounted Admin Lite shell                                                 | —                            |
+| **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
+| **8**    | 🟡 IN PROGRESS | ~35%     | ███████░░░░░░░░░░░░░ | Brother profile, Brother Today API, mobile brother API/demo/screen models                                             | Add My Chorągiew mobile view |
+| **9–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | After Phase 8                |
 
 ---
 
@@ -156,12 +157,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
+- ⏳ Firebase sign-in Idle approval gate (new Phase 5/6 follow-up requirement): verified Firebase-authenticated users must remain public-only for 30 days until confirmed by scoped country/region approver or Super Admin
 - ⏳ Auth device tokens and notification preferences (Phase 9 with push)
 - ⏳ Candidate funnel workflows (Phase 7)
 
-**Exit criteria**: ✅ Provider verification, local linking, session/logout/refresh handling, inactive-user blocking, and fake-provider replacement tests are implemented
+**Exit criteria**: ✅ Original Phase 5 provider verification, local linking, session/logout/refresh handling, inactive-user blocking, and fake-provider replacement tests are implemented; 🟡 newly added Firebase sign-in Idle approval gate remains a Phase 5/6 follow-up before pilot
 
-**Next step**: Start Phase 7 candidate funnel
+**Next step**: Implement Firebase sign-in Idle approval gate and Admin Lite scoped confirmation workflow before pilot
 
 ### Phase 6: Admin Lite Foundation ✅
 
@@ -226,6 +228,27 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Next step**: Start Phase 8 brother companion core
 
+### Phase 8: Brother Companion Core 🟡
+
+**Status**: IN PROGRESS (~35%)
+
+**Completed**:
+
+- ✅ Guarded `GET /api/brother/profile` endpoint with active brother membership enforcement
+- ✅ Guarded `GET /api/brother/today` endpoint with personalized cards, active organization units, and brother-safe upcoming event visibility
+- ✅ Shared brother profile/today DTO validation and generated OpenAPI schemas
+- ✅ Mobile brother profile/today API clients with auth headers, DTO validation, and failure-state mapping
+- ✅ Mobile brother demo fixtures and `BrotherToday`/`BrotherProfile` screen models with ready/empty/loading/error/offline/forbidden states
+
+**In Progress**:
+
+- 🟡 Mobile My Chorągiew view over `/api/brother/my-organization-units`
+- 🟡 Brother event/prayer list APIs remain separate Phase 8 follow-up slices
+
+**Exit criteria**: 🟡 Brother Today/profile foundation works; assigned organization-unit mobile view still pending
+
+**Next step**: Add My Chorągiew mobile API/demo/screen model and then complete Phase 8 event/prayer reads
+
 ### Phases 4–13: Roadmap
 
 | Phase  | Name                             | Status         | Timeline        |
@@ -234,7 +257,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
 | **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
 | **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
-| **8**  | Brother Companion Core           | ⏳ Not started | Start next      |
+| **8**  | Brother Companion Core           | 🟡 In progress | Started May 5   |
 | **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8   |
 | **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
@@ -245,17 +268,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Notes                                                                                                                                    |
-| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.32% statements / 80.09% branches / 91.01% functions / 91.29% lines                                               |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Public candidate request API, mobile form, admin API, Admin Lite candidate UI, candidate dashboard, and admin candidate profile coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                                                                    |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes public/admin candidate request endpoints, candidate dashboard, and admin candidates                          |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires public/admin candidate request endpoints, candidate dashboard, and admin candidates                              |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate request migration baseline check passed                                                                                        |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile join-interest demo fallback validates and returns a no-PII response                                                               |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Notes                                                                                       |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.68% statements / 80.34% branches / 91.33% functions / 91.64% lines  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother profile/today service/repository/controller and mobile API/screen-model tests added |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes brother profile/today                                           |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires brother profile/today                                               |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | No Phase 8 migration; `pnpm quality` migration validation passed                            |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile brother demo fixtures validate through shared DTOs                                   |
 
 ---
 
@@ -334,6 +357,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Candidate dashboard foundation added with `GET /candidate/dashboard`, active-profile enforcement, scoped assignment/contact data, candidate-visible events, mobile API/demo client, screen model, and React Native screen
 - Admin candidate profile management added with guarded list/detail/update API, scoped officer reads, audited status/assignment/responsible-officer updates, Admin Lite client/screen/shell routes, mounted navigation, and demo fallback
 
+**Phase 8 In Progress** 🟡:
+
+- Brother profile API added with own active profile, active memberships, roles, current degree, join date, and read-only critical data
+- Brother Today API added with personalized cards, active organization units, and upcoming events filtered to public/family/brother/own-organization-unit visibility
+- Mobile brother profile/today API clients, demo fixtures, and screen models added with shared DTO validation and state handling
+
 ---
 
 ## Critical Path & Milestones
@@ -385,6 +414,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Firebase provider adapter
    - [x] Login/logout/session API flow
    - [x] Mode switching based on role
+   - [ ] Firebase sign-in Idle approval gate with 30-day expiry and country/region admin confirmation
 
 ---
 
@@ -464,5 +494,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 5, 2026
-**Current Phase**: Phase 8 ready to start; Phases 0–7 complete
-**Next Major Milestone**: Start brother companion core
+**Current Phase**: Phase 8 in progress; Phases 0–7 complete
+**Next Major Milestone**: Complete brother companion core

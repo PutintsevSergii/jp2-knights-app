@@ -33,6 +33,14 @@ export {
 } from "./candidate-dashboard-api.js";
 export { fallbackCandidateDashboard } from "./candidate-dashboard.js";
 export {
+  brotherCompanionLoadFailureState,
+  buildBrotherProfileUrl,
+  buildBrotherTodayUrl,
+  fetchBrotherProfile,
+  fetchBrotherToday
+} from "./brother-companion-api.js";
+export { fallbackBrotherProfile, fallbackBrotherToday } from "./brother-companion.js";
+export {
   emptyJoinRequestFormDraft,
   fallbackPublicCandidateRequestResponse,
   submitDemoPublicCandidateRequest
@@ -54,6 +62,15 @@ export {
 export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js";
 export { resolveMobileLaunchState } from "./navigation.js";
 export { buildCandidateDashboardScreen } from "./candidate-screens.js";
+export { buildBrotherProfileScreen, buildBrotherTodayScreen } from "./brother-screens.js";
+export type {
+  BrotherProfileScreen,
+  BrotherRoute,
+  BrotherScreenAction,
+  BrotherScreenSection,
+  BrotherScreenTheme,
+  BrotherTodayScreen
+} from "./brother-screens.js";
 export type {
   CandidateDashboardScreen,
   CandidateRoute,

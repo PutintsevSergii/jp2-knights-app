@@ -50,6 +50,18 @@ An unauthenticated user who has not logged in. Guests can discover the Order, re
 
 **In the app**: No role; represented by unauthenticated session state. `APP_MODE=public` routing.
 
+### Idle User
+
+A person who has authenticated with Firebase, through Google/Gmail, email, or another enabled Firebase provider, but has not been approved for app access. Idle users remain public-only for up to 30 days.
+
+**In the app**: Not a role. Local authorization must not grant Candidate, Brother, Officer, or Admin access until a scoped country/region approver or Super Admin confirms the person and assigns roles/scopes.
+
+### Country/Region Approver
+
+An admin-assigned privilege for reviewing Idle Firebase sign-ins within a country or region scope. Any participant of the Order may receive this privilege if assigned by an authorized admin.
+
+**In the app**: A scoped Admin Lite capability, audited and revocable. It does not come automatically from Firebase sign-in.
+
 ## Organizational Structure
 
 ### Organization Unit

@@ -2,22 +2,22 @@
 
 This roadmap mirrors `JP2_APP_IMPLEMENTATION_ROADMAP.md` and must be followed unless the human owner approves a change.
 
-| Phase | Name | Goal | Primary outputs |
-| --- | --- | --- | --- |
-| 0 | Product and technical baseline | Confirm V1 scope and rules | Docs, role matrix, visibility model |
-| 1 | Repository/infrastructure baseline | Runnable launchable monorepo | Nx, pnpm, apps, launch commands, demo mode, DB/Redis local setup, CI, OpenAPI generation target |
-| 2 | Core domain/API foundation | Identity, organization, content base | Users, roles, generic organization units, Prisma migrations, visibility tests |
-| 3 | Public discovery mode | App opens without login | Public shell, home, about, join/login links |
-| 4 | Public content | Useful prayers/events before login | Prayer/event APIs, admin CRUD, mobile views |
-| 5 | Authentication and modes | Firebase-backed login through replaceable provider adapter and candidate/brother/admin routing | Auth provider adapter, Firebase verifier, provider-account linking, Auth API/session, local user sync, mode resolution |
-| 6 | Admin Lite foundation | Operate V1 safely | Admin shell, scoped dashboard |
-| 7 | Candidate funnel | Convert interest into candidate journey | Requests, candidates, candidate dashboard |
-| 8 | Brother companion core | Daily brother utility | Today, profile, assigned organization units |
-| 9 | Events/announcements/push | Community coordination | Participation intent, announcements, push prefs |
-| 10 | Formation roadmap | Human-reviewed formation | Definitions, assignments, submissions, review |
-| 11 | Silent online prayer | Aggregate real-time prayer | Sessions, sockets, Redis presence |
-| 12 | Privacy/security/audit/content approval | Pilot safety | privacy controls, audit logs, approval, retention/export/erasure support |
-| 13 | Release hardening/pilot | Real pilot readiness | seed data, launch-readiness wrap-up, restore test, support runbook, scenario validation |
+| Phase | Name                                    | Goal                                                                                                                                 | Primary outputs                                                                                                                            |
+| ----- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Product and technical baseline          | Confirm V1 scope and rules                                                                                                           | Docs, role matrix, visibility model                                                                                                        |
+| 1     | Repository/infrastructure baseline      | Runnable launchable monorepo                                                                                                         | Nx, pnpm, apps, launch commands, demo mode, DB/Redis local setup, CI, OpenAPI generation target                                            |
+| 2     | Core domain/API foundation              | Identity, organization, content base                                                                                                 | Users, roles, generic organization units, Prisma migrations, visibility tests                                                              |
+| 3     | Public discovery mode                   | App opens without login                                                                                                              | Public shell, home, about, join/login links                                                                                                |
+| 4     | Public content                          | Useful prayers/events before login                                                                                                   | Prayer/event APIs, admin CRUD, mobile views                                                                                                |
+| 5     | Authentication and modes                | Firebase-backed login through replaceable provider adapter, Firebase sign-in idle approval gate, and candidate/brother/admin routing | Auth provider adapter, Firebase verifier, provider-account linking, Firebase Idle mode, Auth API/session, local user sync, mode resolution |
+| 6     | Admin Lite foundation                   | Operate V1 safely                                                                                                                    | Admin shell, scoped dashboard, scoped country/region approval workflow for Idle Firebase sign-ins                                          |
+| 7     | Candidate funnel                        | Convert interest into candidate journey                                                                                              | Requests, candidates, candidate dashboard                                                                                                  |
+| 8     | Brother companion core                  | Daily brother utility                                                                                                                | Today, profile, assigned organization units                                                                                                |
+| 9     | Events/announcements/push               | Community coordination                                                                                                               | Participation intent, announcements, push prefs                                                                                            |
+| 10    | Formation roadmap                       | Human-reviewed formation                                                                                                             | Definitions, assignments, submissions, review                                                                                              |
+| 11    | Silent online prayer                    | Aggregate real-time prayer                                                                                                           | Sessions, sockets, Redis presence                                                                                                          |
+| 12    | Privacy/security/audit/content approval | Pilot safety                                                                                                                         | privacy controls, audit logs, approval, retention/export/erasure support                                                                   |
+| 13    | Release hardening/pilot                 | Real pilot readiness                                                                                                                 | seed data, launch-readiness wrap-up, restore test, support runbook, scenario validation                                                    |
 
 ## Rule
 

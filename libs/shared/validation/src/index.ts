@@ -303,6 +303,61 @@ export const candidateDashboardResponseSchema = z.object({
   announcements: z.array(candidateDashboardAnnouncementSummarySchema)
 });
 
+export const brotherMembershipSummarySchema = z.object({
+  id: z.uuid(),
+  currentDegree: z.string().trim().min(1).max(120).nullable(),
+  joinedAt: z.iso.date().nullable(),
+  organizationUnit: organizationUnitSummarySchema
+});
+
+export const brotherProfileResponseSchema = z.object({
+  profile: z.object({
+    id: z.uuid(),
+    displayName: z.string().trim().min(1).max(200),
+    email: z.string().trim().email().max(320),
+    phone: z.string().trim().min(1).max(40).nullable(),
+    preferredLanguage: z.string().trim().min(2).max(10).nullable(),
+    status: z.literal("active"),
+    roles: z.array(roleSchema),
+    memberships: z.array(brotherMembershipSummarySchema).min(1)
+  })
+});
+
+export const brotherTodayEventSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  type: z.string().trim().min(1).max(80),
+  startAt: z.iso.datetime(),
+  endAt: z.iso.datetime().nullable(),
+  locationLabel: z.string().trim().min(1).max(200).nullable(),
+  visibility: z.enum(["PUBLIC", "FAMILY_OPEN", "BROTHER", "ORGANIZATION_UNIT"])
+});
+
+export const brotherTodayCardSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  label: z.string().trim().min(1).max(120),
+  body: z.string().trim().min(1).max(1000),
+  targetRoute: z.enum([
+    "BrotherProfile",
+    "MyOrganizationUnits",
+    "BrotherEvents",
+    "BrotherPrayers",
+    "SilentPrayer"
+  ]),
+  priority: z.enum(["normal", "attention"])
+});
+
+export const brotherTodayResponseSchema = z.object({
+  profileSummary: z.object({
+    displayName: z.string().trim().min(1).max(200),
+    currentDegree: z.string().trim().min(1).max(120).nullable(),
+    organizationUnitName: z.string().trim().min(1).max(200).nullable()
+  }),
+  cards: z.array(brotherTodayCardSchema).min(1),
+  upcomingEvents: z.array(brotherTodayEventSummarySchema),
+  organizationUnits: z.array(organizationUnitSummarySchema).min(1)
+});
+
 const adminPrayerWriteBaseSchema = z
   .object({
     categoryId: z.uuid().nullable().optional(),
@@ -599,6 +654,11 @@ export type CandidateDashboardAnnouncementSummaryDto = z.infer<
   typeof candidateDashboardAnnouncementSummarySchema
 >;
 export type CandidateDashboardResponseDto = z.infer<typeof candidateDashboardResponseSchema>;
+export type BrotherMembershipSummaryDto = z.infer<typeof brotherMembershipSummarySchema>;
+export type BrotherProfileResponseDto = z.infer<typeof brotherProfileResponseSchema>;
+export type BrotherTodayEventSummaryDto = z.infer<typeof brotherTodayEventSummarySchema>;
+export type BrotherTodayCardDto = z.infer<typeof brotherTodayCardSchema>;
+export type BrotherTodayResponseDto = z.infer<typeof brotherTodayResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
 export type AdminCandidateRequestSummaryDto = z.infer<typeof adminCandidateRequestSummarySchema>;

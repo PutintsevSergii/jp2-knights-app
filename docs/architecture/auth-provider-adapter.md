@@ -7,6 +7,7 @@ V1 authentication should use Firebase Authentication first, but the application 
 - Use a proven managed identity provider for sign-in, credential recovery, MFA/provider options, and token issuance.
 - Verify provider-issued tokens on the API before serving any private route.
 - Create or update the local `users` row from verified provider identity data.
+- Support Firebase Authentication sign-in providers while keeping app access behind local approval.
 - Keep authorization provider-agnostic so Firebase can be replaced later by another OIDC/JWT provider or an internal auth service.
 - Package provider verification behind a reusable module that can be used by other projects without JP2 domain concepts.
 
@@ -115,16 +116,16 @@ verification.
 
 The stable contract between the auth provider module and the JP2 API is:
 
-| Contract | Stable meaning |
-| --- | --- |
-| `providerId` | Lowercase provider identifier stored in `identity_provider_accounts.provider`, initially `firebase`; custom providers use their own stable id |
-| `ExternalIdentity.subject` | Provider-local immutable user id; for Firebase this is `uid`; for custom providers this should be the OIDC `sub` or equivalent immutable account id |
-| `ExternalIdentity.email` / `phoneNumber` | Verified profile/contact data used only for local account linking and safe profile sync |
-| `ExternalIdentity.claims` | Raw provider claims for logging-safe diagnostics and migration support; never source-of-truth JP2 authorization |
-| `verifyAccessToken` | Verifies bearer tokens from mobile/admin/API clients and returns normalized identity |
-| `verifySessionCookie` | Verifies secure web session cookies when the provider supports cookie sessions |
-| `createSessionCookie` | Optional web session exchange for Admin Lite; if unsupported, Admin uses bearer tokens |
-| `revokeUserSessions` | Optional provider-side session revocation for security events; if unsupported, local deactivation still blocks access |
+| Contract                                 | Stable meaning                                                                                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `providerId`                             | Lowercase provider identifier stored in `identity_provider_accounts.provider`, initially `firebase`; custom providers use their own stable id       |
+| `ExternalIdentity.subject`               | Provider-local immutable user id; for Firebase this is `uid`; for custom providers this should be the OIDC `sub` or equivalent immutable account id |
+| `ExternalIdentity.email` / `phoneNumber` | Verified profile/contact data used only for local account linking and safe profile sync                                                             |
+| `ExternalIdentity.claims`                | Raw provider claims for logging-safe diagnostics and migration support; never source-of-truth JP2 authorization                                     |
+| `verifyAccessToken`                      | Verifies bearer tokens from mobile/admin/API clients and returns normalized identity                                                                |
+| `verifySessionCookie`                    | Verifies secure web session cookies when the provider supports cookie sessions                                                                      |
+| `createSessionCookie`                    | Optional web session exchange for Admin Lite; if unsupported, Admin uses bearer tokens                                                              |
+| `revokeUserSessions`                     | Optional provider-side session revocation for security events; if unsupported, local deactivation still blocks access                               |
 
 The stable contract between the JP2 API and local authorization remains `CurrentUserPrincipal` plus `@jp2/shared-auth`. That contract must not include Firebase classes or Firebase-specific claims.
 
@@ -181,12 +182,34 @@ After token verification, the JP2 API maps the external identity to a local user
 
 Application authorization comes from local tables, not Firebase custom claims. Firebase custom claims may be used only for coarse provider-side hints or future migration support. They must not become the source of truth for JP2 roles or officer scope.
 
+## Firebase Sign-In Idle Gate
+
+Firebase sign-in must use the configured Firebase Authentication providers, such
+as Google/Gmail, email, or any other provider enabled for the project. A future
+adapter may emit the same normalized `ExternalIdentity`. The provider choice does
+not change the access rule: a verified Firebase ID token proves identity only.
+
+If a Firebase-authenticated identity has no already-approved local access:
+
+- create or link a local user in Idle mode;
+- record an Idle expiry 30 days after first Firebase sign-in;
+- return public/idle mode from `/auth/me`;
+- do not assign `CANDIDATE`, `BROTHER`, `OFFICER`, or `SUPER_ADMIN`;
+- do not create memberships, candidate profiles, or officer assignments;
+- expose the idle user to the scoped country/region approval workflow.
+
+Only an authorized country/region approver or Super Admin may confirm the user.
+Country/region approver privilege is assigned by admin to a participant of the
+Order, scoped to approved regions/countries, audited, and revocable. Confirmation
+must explicitly assign the resulting role and scope. Rejection or 30-day expiry
+must keep the user public-only.
+
 ## Data Model Addition
 
 Phase 5 should add a provider-link table instead of placing provider-specific columns directly on `users`:
 
-| Table | Purpose | Key columns |
-| --- | --- | --- |
+| Table                        | Purpose                                           | Key columns                                                                                                                                                                   |
+| ---------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `identity_provider_accounts` | Links verified external identities to local users | `id`, `user_id`, `provider`, `provider_subject`, `email`, `email_verified`, `phone`, `display_name`, `photo_url`, `last_sign_in_at`, `created_at`, `updated_at`, `revoked_at` |
 
 Constraints:

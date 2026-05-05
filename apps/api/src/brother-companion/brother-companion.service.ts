@@ -1,0 +1,93 @@
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { canAccessBrotherMode } from "@jp2/shared-auth";
+import type { OrganizationUnitSummaryDto } from "@jp2/shared-validation";
+import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { BrotherCompanionRepository } from "./brother-companion.repository.js";
+import type {
+  BrotherProfile,
+  BrotherProfileResponse,
+  BrotherTodayResponse
+} from "./brother-companion.types.js";
+
+@Injectable()
+export class BrotherCompanionService {
+  constructor(private readonly brotherCompanionRepository: BrotherCompanionRepository) {}
+
+  async getProfile(principal: CurrentUserPrincipal): Promise<BrotherProfileResponse> {
+    const profile = await this.loadProfile(principal);
+
+    return { profile };
+  }
+
+  async getToday(principal: CurrentUserPrincipal): Promise<BrotherTodayResponse> {
+    const profile = await this.loadProfile(principal);
+    const organizationUnits = profile.memberships.map((membership) => membership.organizationUnit);
+    const upcomingEvents = await this.brotherCompanionRepository.findUpcomingEvents(
+      organizationUnits.map((organizationUnit) => organizationUnit.id)
+    );
+    const primaryMembership = profile.memberships[0];
+
+    return {
+      profileSummary: {
+        displayName: profile.displayName,
+        currentDegree: primaryMembership?.currentDegree ?? null,
+        organizationUnitName: primaryMembership?.organizationUnit.name ?? null
+      },
+      cards: buildTodayCards(profile, organizationUnits),
+      upcomingEvents,
+      organizationUnits
+    };
+  }
+
+  private async loadProfile(principal: CurrentUserPrincipal): Promise<BrotherProfile> {
+    if (!canAccessBrotherMode(principal)) {
+      throw new ForbiddenException("Brother access is required.");
+    }
+
+    const profile = await this.brotherCompanionRepository.findActiveBrotherProfile(principal.id);
+
+    if (!profile) {
+      throw new NotFoundException("Active brother membership profile was not found.");
+    }
+
+    return profile;
+  }
+}
+
+function buildTodayCards(
+  profile: BrotherProfile,
+  organizationUnits: OrganizationUnitSummaryDto[]
+): BrotherTodayResponse["cards"] {
+  const primaryMembership = profile.memberships[0];
+  const cards: BrotherTodayResponse["cards"] = [
+    {
+      id: "profile",
+      label: "Review profile",
+      body: primaryMembership?.currentDegree
+        ? `Your current degree is ${primaryMembership.currentDegree}.`
+        : "Your profile is active. Current degree details are not recorded yet.",
+      targetRoute: "BrotherProfile",
+      priority: "normal"
+    },
+    {
+      id: "organization-units",
+      label: "My choragiew",
+      body:
+        organizationUnits.length === 1
+          ? `You are assigned to ${organizationUnits[0]?.name ?? "your choragiew"}.`
+          : `You have ${organizationUnits.length} active organization-unit assignments.`,
+      targetRoute: "MyOrganizationUnits",
+      priority: "normal"
+    }
+  ];
+
+  cards.push({
+    id: "events",
+    label: "Upcoming events",
+    body: "Review public, brother, and own choragiew events visible to you.",
+    targetRoute: "BrotherEvents",
+    priority: "normal"
+  });
+
+  return cards;
+}
