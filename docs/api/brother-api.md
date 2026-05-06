@@ -38,6 +38,17 @@
 - Missing active brother membership resolves as `404`; non-brother access
   resolves as `403`.
 
+## Implemented Phase 9 Brother Announcements
+
+- `GET /brother/announcements` requires the same active brother profile and
+  supports `limit` and `offset` pagination.
+- Brother announcement reads return only currently published, non-archived
+  `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own `ORGANIZATION_UNIT`
+  announcements. Candidate-only, officer/admin-only, unpublished,
+  future-published, and unrelated organization-unit announcements are hidden
+  server-side.
+- Pinned announcements sort first, followed by newest published announcements.
+
 ## Implemented Phase 9 Event Participation
 
 - `GET /brother/events/:id` requires the same active brother profile and returns

@@ -23,6 +23,17 @@ events, memberships, degrees, brother profiles, or admin notes.
 
 Candidate roadmap screens are read-only in default V1. A candidate response may include administrative step status or officer-provided notes when scoped to the candidate, but candidate-authored roadmap submissions are out of scope unless explicitly approved and documented.
 
+## Implemented Phase 9 Candidate Announcements
+
+- `GET /candidate/announcements` requires an active candidate profile and
+  supports `limit` and `offset` pagination.
+- Candidate announcement reads return only currently published, non-archived
+  `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or assigned `ORGANIZATION_UNIT`
+  announcements. Brother-only, officer/admin-only, unpublished,
+  future-published, and unrelated organization-unit announcements are hidden
+  server-side.
+- Pinned announcements sort first, followed by newest published announcements.
+
 ## Implemented Phase 9 Candidate Events and Participation
 
 - `GET /candidate/events` requires an active candidate profile and supports

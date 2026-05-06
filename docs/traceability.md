@@ -294,6 +294,16 @@ started with event participation intent:
   `POST/DELETE /api/candidate/events/{id}/participation`. The models render
   candidate-visible event summaries, own intent state, and plan/cancel action
   metadata without exposing participant lists or brother-only terminology.
+- Phase 9 now includes the announcement read foundation:
+  `announcements` table/migration, local candidate/brother seed fixtures, shared
+  DTO/OpenAPI schemas, guarded `GET /api/candidate/announcements`, and guarded
+  `GET /api/brother/announcements`. Candidate reads require an active candidate
+  profile and return only currently published, non-archived `PUBLIC`,
+  `FAMILY_OPEN`, `CANDIDATE`, or assigned organization-unit announcements.
+  Brother reads require an active brother profile and return only currently
+  published, non-archived `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own
+  organization-unit announcements. Pinned items sort first, and neither endpoint
+  exposes comments, read receipts, push delivery state, or unrelated scopes.
 - Delivery-risk review recommendations are now resolved or explicitly deferred
   without expanding V1 scope:
   - Implementation maturity: Admin Lite's dependency-free HTTP shell remains
@@ -328,10 +338,12 @@ started with event participation intent:
   `/api/candidate/dashboard`,
   `/api/candidate/events`, `/api/candidate/events/{id}`,
   `/api/candidate/events/{id}/participation`,
+  `/api/candidate/announcements`,
   `/api/brother/profile`, `/api/brother/today`, `/api/brother/prayers`,
   `/api/brother/events`,
   `/api/brother/events/{id}`,
   `/api/brother/events/{id}/participation`,
+  `/api/brother/announcements`,
   `/api/brother/my-organization-units`,
   `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
@@ -345,8 +357,8 @@ started with event participation intent:
   with push/notification preferences.
 - `/api/brother/my-organization-units` currently returns the active brother's
   organization-unit summaries only, and mobile renders those scoped summaries
-  without brother rosters. Officer summaries and announcements remain Phase 9+
-  work.
+  without brother rosters. Officer summaries and mobile/admin announcement
+  surfaces remain Phase 9+ work.
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive with audit side effects. The Admin Lite HTTP shell mounts
   organization-unit list, create, and scoped detail/edit form documents over the
@@ -355,8 +367,8 @@ started with event participation intent:
   implemented route surface. The dependency-free HTTP shell remains available as
   a compatibility fallback while future route and React Server Component
   hardening steps are handled incrementally.
-- Remaining Phase 9 announcement/push work and Phase 10 through 13 product
-  workflows are not implemented yet unless
+- Remaining Phase 9 admin/mobile announcement and push work plus Phase 10
+  through 13 product workflows are not implemented yet unless
   explicitly listed above.
 
 ### How to Update This Document
@@ -397,14 +409,14 @@ started with event participation intent:
 | FR-CANDIDATE-001 Candidate Dashboard       | `GET /candidate/dashboard`                                                                                                            | candidate dashboard                          | candidate_profiles, events; roadmap_assignments/announcements pending later phases       | active profile required, scoped event visibility, mobile API/client state mapping, no brother content                                                                       |
 | FR-ROADMAP-001 Candidate Roadmap           | `GET /candidate/roadmap`                                                                                                              | candidate roadmap                            | roadmap_definitions, assignments                                                         | assigned candidate only                                                                                                                                                     |
 | FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`, `GET /candidate/events/:id`                                                                                  | CandidateEvents and CandidateEventDetail screen models | events, event_participation                                                              | active candidate profile required, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only on detail, mobile API/demo model tests, no participant lists |
-| FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | candidate announcements                      | announcements                                                                            | pinned sort, no brother announcements                                                                                                                                       |
+| FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | candidate announcements                      | announcements                                                                            | active profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/candidate/own organization-unit filtering, no brother/officer/admin/unrelated-scope announcements |
 | FR-BROTHER-001 Brother Today               | `GET /brother/today`                                                                                                                  | brother today                                | users, memberships, organization_units, events; announcements/roadmap pending later      | personalized profile cards, own organization units, brother-safe event visibility, mobile API/demo states                                                                   |
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |
 | FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list, mobile API/demo/screen states                                                                                                                   |
 | FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | published public/family/brother/own organization-unit filtering, no candidate/officer/admin/unrelated-scope prayers                                                        |
 | FR-EVENT-002 Brother Events                | `GET /brother/events`, `GET /brother/events/:id`                                                                                      | BrotherEvents and BrotherEventDetail screen models | events, event_participation                                                              | guarded active-brother read APIs, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only, mobile API/demo model tests |
 | FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | BrotherEventDetail screen model              | event_participation                                                                      | active candidate/brother profile required, visible open event only for creation, duplicate active intent returns existing record, cancellation limited to own active intent, mobile plan/cancel action metadata, no participant lists |
-| FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | no chat/comments, relevant only                                                                                                                                             |
+| FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | active brother profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/brother/own organization-unit filtering, no chat/comments/read receipts, no candidate/officer/admin/unrelated-scope announcements |
 | FR-ROADMAP-002 Formation Roadmap           | `GET /brother/roadmap`                                                                                                                | formation roadmap                            | roadmap\_\*                                                                              | own roadmap, no auto degree                                                                                                                                                 |
 | FR-ROADMAP-003 Roadmap Step Submission     | `POST /brother/roadmap/steps/:stepId/submissions`                                                                                     | step detail                                  | roadmap_submissions, file_attachments optional                                           | pending duplicate, attachment policy                                                                                                                                        |
 | FR-ROADMAP-004 Roadmap Approval            | `GET/PATCH /admin/roadmap-submissions/:id`                                                                                            | roadmap request detail                       | roadmap_submissions, audit_logs                                                          | officer scope, rejection comment, audit                                                                                                                                     |

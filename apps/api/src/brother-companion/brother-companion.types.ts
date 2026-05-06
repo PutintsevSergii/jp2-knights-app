@@ -1,4 +1,7 @@
 import type {
+  BrotherAnnouncementListQueryDto,
+  BrotherAnnouncementListResponseDto,
+  BrotherAnnouncementSummaryDto,
   BrotherEventListQueryDto,
   BrotherEventListResponseDto,
   BrotherEventDetailResponseDto,
@@ -22,6 +25,9 @@ export type BrotherEventSummary = BrotherEventSummaryDto;
 export type BrotherEventListResponse = BrotherEventListResponseDto;
 export type BrotherEventDetail = BrotherEventDetailResponseDto["event"];
 export type BrotherEventDetailResponse = BrotherEventDetailResponseDto;
+export type BrotherAnnouncementListQuery = BrotherAnnouncementListQueryDto;
+export type BrotherAnnouncementSummary = BrotherAnnouncementSummaryDto;
+export type BrotherAnnouncementListResponse = BrotherAnnouncementListResponseDto;
 export type BrotherPrayerListQuery = BrotherPrayerListQueryDto;
 export type BrotherPrayerSummary = BrotherPrayerSummaryDto;
 export type BrotherPrayerCategorySummary = BrotherPrayerListResponseDto["categories"][number];

@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
+  BrotherAnnouncementListQuery,
+  BrotherAnnouncementSummary,
   BrotherEventDetail,
   BrotherEventListQuery,
   BrotherEventSummary,
@@ -29,6 +31,11 @@ export abstract class BrotherCompanionRepository {
     userId: string,
     now?: Date
   ): Promise<BrotherEventDetail | null>;
+  abstract findVisibleBrotherAnnouncements(
+    query: BrotherAnnouncementListQuery,
+    organizationUnitIds: readonly string[],
+    now?: Date
+  ): Promise<BrotherAnnouncementSummary[]>;
   abstract findPublishedBrotherPrayerCategories(
     language: string | undefined,
     now?: Date
@@ -118,6 +125,21 @@ export class PrismaBrotherCompanionRepository extends BrotherCompanionRepository
     });
 
     return record ? toBrotherEventDetail(record) : null;
+  }
+
+  findVisibleBrotherAnnouncements(
+    query: BrotherAnnouncementListQuery,
+    organizationUnitIds: readonly string[],
+    now = new Date()
+  ): Promise<BrotherAnnouncementSummary[]> {
+    return this.prisma.announcement
+      .findMany({
+        where: brotherAnnouncementWhere(organizationUnitIds, now),
+        orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }, { title: "asc" }],
+        take: query.limit,
+        skip: query.offset
+      })
+      .then((records) => records.map(toBrotherAnnouncementSummary));
   }
 
   findPublishedBrotherPrayerCategories(
@@ -227,6 +249,16 @@ interface OwnEventParticipationRecord {
   cancelledAt: Date | null;
 }
 
+interface BrotherAnnouncementRecord {
+  id: string;
+  title: string;
+  body: string;
+  visibility: string;
+  targetOrganizationUnitId: string | null;
+  pinned: boolean;
+  publishedAt: Date | null;
+}
+
 const brotherPrayerCategoryInclude = {
   category: {
     select: {
@@ -323,6 +355,51 @@ export function brotherEventDetailWhere(
         OR: visibilityWhere
       }
     ]
+  };
+}
+
+export function brotherAnnouncementWhere(
+  organizationUnitIds: readonly string[],
+  now: Date
+): Prisma.AnnouncementWhereInput {
+  const visibilityWhere: Prisma.AnnouncementWhereInput[] = [
+    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
+  ];
+
+  if (organizationUnitIds.length > 0) {
+    visibilityWhere.push({
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: {
+        in: [...organizationUnitIds]
+      }
+    });
+  }
+
+  return {
+    status: "PUBLISHED",
+    archivedAt: null,
+    publishedAt: { lte: now },
+    AND: [
+      {
+        OR: visibilityWhere
+      }
+    ]
+  };
+}
+
+function toBrotherAnnouncementSummary(record: BrotherAnnouncementRecord): BrotherAnnouncementSummary {
+  if (!record.publishedAt) {
+    throw new Error("Repository returned an unpublished brother announcement.");
+  }
+
+  return {
+    id: record.id,
+    title: record.title,
+    body: record.body,
+    visibility: toBrotherAnnouncementVisibility(record.visibility),
+    targetOrganizationUnitId: record.targetOrganizationUnitId,
+    pinned: record.pinned,
+    publishedAt: record.publishedAt.toISOString()
   };
 }
 
@@ -495,6 +572,21 @@ function toBrotherPrayerVisibility(visibility: string): BrotherPrayerSummary["vi
   }
 
   throw new Error("Repository returned a prayer visibility hidden from brothers.");
+}
+
+function toBrotherAnnouncementVisibility(
+  visibility: string
+): BrotherAnnouncementSummary["visibility"] {
+  if (
+    visibility === "PUBLIC" ||
+    visibility === "FAMILY_OPEN" ||
+    visibility === "BROTHER" ||
+    visibility === "ORGANIZATION_UNIT"
+  ) {
+    return visibility;
+  }
+
+  throw new Error("Repository returned an announcement visibility hidden from brothers.");
 }
 
 function excerpt(value: string): string {

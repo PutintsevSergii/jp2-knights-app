@@ -4,6 +4,8 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import type {
+  CandidateAnnouncementListQuery,
+  CandidateAnnouncementListResponse,
   CandidateDashboardProfile,
   CandidateDashboardResponse,
   CandidateEventDetailResponse,
@@ -65,6 +67,26 @@ export class CandidateDashboardService {
     }
 
     return { event };
+  }
+
+  async listAnnouncements(
+    principal: CurrentUserPrincipal,
+    query: CandidateAnnouncementListQuery
+  ): Promise<CandidateAnnouncementListResponse> {
+    const profile = await this.loadProfile(principal);
+    const announcements =
+      await this.candidateDashboardRepository.findVisibleCandidateAnnouncements(
+        query,
+        profile.assignedOrganizationUnit?.id ?? null
+      );
+
+    return {
+      announcements,
+      pagination: {
+        limit: query.limit,
+        offset: query.offset
+      }
+    };
   }
 
   private async loadProfile(principal: CurrentUserPrincipal): Promise<CandidateDashboardProfile> {

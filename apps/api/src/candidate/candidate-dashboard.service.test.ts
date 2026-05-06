@@ -5,6 +5,7 @@ import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js"
 import type { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import { CandidateDashboardService } from "./candidate-dashboard.service.js";
 import type {
+  CandidateAnnouncementSummary,
   CandidateDashboardProfile,
   CandidateEventDetail,
   CandidateEventSummary
@@ -82,6 +83,16 @@ const eventDetail: CandidateEventDetail = {
     createdAt: "2026-05-06T12:00:00.000Z",
     cancelledAt: null
   }
+};
+
+const announcement: CandidateAnnouncementSummary = {
+  id: "99999999-9999-4999-8999-999999999999",
+  title: "Candidate Update",
+  body: "A candidate-visible announcement.",
+  visibility: "CANDIDATE",
+  targetOrganizationUnitId: null,
+  pinned: true,
+  publishedAt: "2026-05-06T09:00:00.000Z"
 };
 
 describe("CandidateDashboardService", () => {
@@ -167,6 +178,24 @@ describe("CandidateDashboardService", () => {
     ]);
   });
 
+  it("lists candidate-visible announcements using the active profile assignment", async () => {
+    const repository = dashboardRepository(profile);
+
+    await expect(
+      new CandidateDashboardService(repository).listAnnouncements(candidate, {
+        limit: 10,
+        offset: 5
+      })
+    ).resolves.toEqual({
+      announcements: [announcement],
+      pagination: {
+        limit: 10,
+        offset: 5
+      }
+    });
+    expect(repository.announcementScopes).toEqual([profile.assignedOrganizationUnit?.id]);
+  });
+
   it("returns not found for event details hidden from the active candidate", async () => {
     await expect(
       new CandidateDashboardService(dashboardRepository(profile, null)).getEvent(
@@ -193,6 +222,7 @@ describe("CandidateDashboardService", () => {
     expect(repository.eventScopes).toEqual([]);
     expect(repository.eventListScopes).toEqual([]);
     expect(repository.eventDetailScopes).toEqual([]);
+    expect(repository.announcementScopes).toEqual([]);
   });
 
   it("blocks candidate users without an active profile", async () => {
@@ -209,6 +239,7 @@ function dashboardRepository(
   profileLookups: string[];
   eventScopes: Array<string | null>;
   eventListScopes: Array<string | null>;
+  announcementScopes: Array<string | null>;
   eventDetailScopes: Array<{
     eventId: string;
     assignedOrganizationUnitId: string | null;
@@ -219,6 +250,7 @@ function dashboardRepository(
     profileLookups: [],
     eventScopes: [],
     eventListScopes: [],
+    announcementScopes: [],
     eventDetailScopes: [],
     findActiveProfile(userId) {
       this.profileLookups.push(userId);
@@ -239,6 +271,10 @@ function dashboardRepository(
         userId
       });
       return Promise.resolve(detail);
+    },
+    findVisibleCandidateAnnouncements(_query, assignedOrganizationUnitId) {
+      this.announcementScopes.push(assignedOrganizationUnitId);
+      return Promise.resolve([announcement]);
     }
   };
 }

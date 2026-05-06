@@ -381,6 +381,37 @@ export const candidateEventListResponseSchema = z
   })
   .strict();
 
+export const candidateAnnouncementListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    offset: z.coerce.number().int().min(0).max(1000).default(0)
+  })
+  .strict();
+
+export const candidateAnnouncementSummarySchema = z
+  .object({
+    id: z.uuid(),
+    title: z.string().trim().min(1).max(200),
+    body: z.string().trim().min(1).max(2000),
+    visibility: z.enum(["PUBLIC", "FAMILY_OPEN", "CANDIDATE", "ORGANIZATION_UNIT"]),
+    targetOrganizationUnitId: z.uuid().nullable(),
+    pinned: z.boolean(),
+    publishedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const candidateAnnouncementListResponseSchema = z
+  .object({
+    announcements: z.array(candidateAnnouncementSummarySchema),
+    pagination: z
+      .object({
+        limit: z.number().int().min(1).max(50),
+        offset: z.number().int().min(0).max(1000)
+      })
+      .strict()
+  })
+  .strict();
+
 export const brotherMembershipSummarySchema = z.object({
   id: z.uuid(),
   currentDegree: z.string().trim().min(1).max(120).nullable(),
@@ -449,6 +480,33 @@ export const brotherEventSummarySchema = brotherTodayEventSummarySchema;
 
 export const brotherEventListResponseSchema = z.object({
   events: z.array(brotherEventSummarySchema),
+  pagination: z.object({
+    limit: z.number().int().min(1).max(50),
+    offset: z.number().int().min(0).max(1000)
+  })
+});
+
+export const brotherAnnouncementListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    offset: z.coerce.number().int().min(0).max(1000).default(0)
+  })
+  .strict();
+
+export const brotherAnnouncementSummarySchema = z
+  .object({
+    id: z.uuid(),
+    title: z.string().trim().min(1).max(200),
+    body: z.string().trim().min(1).max(2000),
+    visibility: z.enum(["PUBLIC", "FAMILY_OPEN", "BROTHER", "ORGANIZATION_UNIT"]),
+    targetOrganizationUnitId: z.uuid().nullable(),
+    pinned: z.boolean(),
+    publishedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const brotherAnnouncementListResponseSchema = z.object({
+  announcements: z.array(brotherAnnouncementSummarySchema),
   pagination: z.object({
     limit: z.number().int().min(1).max(50),
     offset: z.number().int().min(0).max(1000)
@@ -816,6 +874,15 @@ export type CandidateEventListQueryDto = z.infer<typeof candidateEventListQueryS
 export type CandidateEventSummaryDto = z.infer<typeof candidateEventSummarySchema>;
 export type CandidateEventListResponseDto = z.infer<typeof candidateEventListResponseSchema>;
 export type CandidateEventDetailResponseDto = z.infer<typeof candidateEventDetailResponseSchema>;
+export type CandidateAnnouncementListQueryDto = z.infer<
+  typeof candidateAnnouncementListQuerySchema
+>;
+export type CandidateAnnouncementSummaryDto = z.infer<
+  typeof candidateAnnouncementSummarySchema
+>;
+export type CandidateAnnouncementListResponseDto = z.infer<
+  typeof candidateAnnouncementListResponseSchema
+>;
 export type BrotherMembershipSummaryDto = z.infer<typeof brotherMembershipSummarySchema>;
 export type BrotherProfileResponseDto = z.infer<typeof brotherProfileResponseSchema>;
 export type BrotherTodayEventSummaryDto = z.infer<typeof brotherTodayEventSummarySchema>;
@@ -826,6 +893,11 @@ export type BrotherEventSummaryDto = z.infer<typeof brotherEventSummarySchema>;
 export type BrotherEventListResponseDto = z.infer<typeof brotherEventListResponseSchema>;
 export type EventParticipationResponseDto = z.infer<typeof eventParticipationResponseSchema>;
 export type BrotherEventDetailResponseDto = z.infer<typeof brotherEventDetailResponseSchema>;
+export type BrotherAnnouncementListQueryDto = z.infer<typeof brotherAnnouncementListQuerySchema>;
+export type BrotherAnnouncementSummaryDto = z.infer<typeof brotherAnnouncementSummarySchema>;
+export type BrotherAnnouncementListResponseDto = z.infer<
+  typeof brotherAnnouncementListResponseSchema
+>;
 export type BrotherPrayerListQueryDto = z.infer<typeof brotherPrayerListQuerySchema>;
 export type BrotherPrayerSummaryDto = z.infer<typeof brotherPrayerSummarySchema>;
 export type BrotherPrayerListResponseDto = z.infer<typeof brotherPrayerListResponseSchema>;

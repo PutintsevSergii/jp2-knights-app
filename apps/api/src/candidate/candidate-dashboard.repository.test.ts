@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaService } from "../database/prisma.service.js";
 import {
+  candidateAnnouncementWhere,
   candidateEventDetailWhere,
   candidateEventWhere,
   candidateDashboardEventWhere,
@@ -109,6 +110,41 @@ describe("candidateEventDetailWhere", () => {
               targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
             }
           ]
+        }
+      ]
+    });
+  });
+});
+
+describe("candidateAnnouncementWhere", () => {
+  it("limits announcements to published candidate-visible and assigned organization-unit messages", () => {
+    const now = new Date("2026-05-05T00:00:00.000Z");
+
+    expect(
+      candidateAnnouncementWhere("11111111-1111-4111-8111-111111111111", now)
+    ).toEqual({
+      status: "PUBLISHED",
+      archivedAt: null,
+      publishedAt: { lte: now },
+      AND: [
+        {
+          OR: [
+            { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } },
+            {
+              visibility: "ORGANIZATION_UNIT",
+              targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+            }
+          ]
+        }
+      ]
+    });
+    expect(candidateAnnouncementWhere(null, now)).toEqual({
+      status: "PUBLISHED",
+      archivedAt: null,
+      publishedAt: { lte: now },
+      AND: [
+        {
+          OR: [{ visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }]
         }
       ]
     });
@@ -381,22 +417,89 @@ describe("PrismaCandidateDashboardRepository", () => {
       )
     ).rejects.toThrow("Repository returned an unknown event participation status.");
   });
+
+  it("maps candidate-visible announcements and rejects hidden visibility leaks", async () => {
+    const { announcementFindMany, prisma } = prismaMock();
+    announcementFindMany.mockResolvedValueOnce([
+      {
+        id: "99999999-9999-4999-8999-999999999999",
+        title: "Candidate Update",
+        body: "A candidate-visible announcement.",
+        visibility: "CANDIDATE",
+        targetOrganizationUnitId: null,
+        pinned: true,
+        publishedAt: new Date("2026-05-06T09:00:00.000Z")
+      }
+    ]);
+
+    await expect(
+      new PrismaCandidateDashboardRepository(prisma).findVisibleCandidateAnnouncements(
+        {
+          limit: 10,
+          offset: 5
+        },
+        "33333333-3333-4333-8333-333333333333",
+        new Date("2026-05-06T10:00:00.000Z")
+      )
+    ).resolves.toEqual([
+      {
+        id: "99999999-9999-4999-8999-999999999999",
+        title: "Candidate Update",
+        body: "A candidate-visible announcement.",
+        visibility: "CANDIDATE",
+        targetOrganizationUnitId: null,
+        pinned: true,
+        publishedAt: "2026-05-06T09:00:00.000Z"
+      }
+    ]);
+    expect(announcementFindMany).toHaveBeenCalledWith({
+      where: candidateAnnouncementWhere(
+        "33333333-3333-4333-8333-333333333333",
+        new Date("2026-05-06T10:00:00.000Z")
+      ),
+      orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }, { title: "asc" }],
+      take: 10,
+      skip: 5
+    });
+
+    announcementFindMany.mockResolvedValueOnce([
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        title: "Brother Update",
+        body: "Hidden from candidates.",
+        visibility: "BROTHER",
+        targetOrganizationUnitId: null,
+        pinned: false,
+        publishedAt: new Date("2026-05-06T09:00:00.000Z")
+      }
+    ]);
+
+    await expect(
+      new PrismaCandidateDashboardRepository(prisma).findVisibleCandidateAnnouncements(
+        { limit: 20, offset: 0 },
+        null
+      )
+    ).rejects.toThrow("Repository returned an announcement visibility hidden from candidates.");
+  });
 });
 
 function prismaMock(): {
   candidateProfileFindFirst: ReturnType<typeof vi.fn>;
   eventFindMany: ReturnType<typeof vi.fn>;
   eventFindFirst: ReturnType<typeof vi.fn>;
+  announcementFindMany: ReturnType<typeof vi.fn>;
   prisma: PrismaService;
 } {
   const candidateProfileFindFirst = vi.fn(() => Promise.resolve(null));
   const eventFindMany = vi.fn(() => Promise.resolve([]));
   const eventFindFirst = vi.fn(() => Promise.resolve(null));
+  const announcementFindMany = vi.fn(() => Promise.resolve([]));
 
   return {
     candidateProfileFindFirst,
     eventFindMany,
     eventFindFirst,
+    announcementFindMany,
     prisma: {
       candidateProfile: {
         findFirst: candidateProfileFindFirst
@@ -404,6 +507,9 @@ function prismaMock(): {
       event: {
         findMany: eventFindMany,
         findFirst: eventFindFirst
+      },
+      announcement: {
+        findMany: announcementFindMany
       }
     } as unknown as PrismaService
   };

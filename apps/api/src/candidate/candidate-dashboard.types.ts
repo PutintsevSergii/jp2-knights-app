@@ -1,4 +1,7 @@
 import type {
+  CandidateAnnouncementListQueryDto,
+  CandidateAnnouncementListResponseDto,
+  CandidateAnnouncementSummaryDto,
   CandidateEventDetailResponseDto,
   CandidateEventListQueryDto,
   CandidateEventListResponseDto,
@@ -15,3 +18,6 @@ export type CandidateEventSummary = CandidateEventSummaryDto;
 export type CandidateEventListResponse = CandidateEventListResponseDto;
 export type CandidateEventDetail = CandidateEventDetailResponseDto["event"];
 export type CandidateEventDetailResponse = CandidateEventDetailResponseDto;
+export type CandidateAnnouncementListQuery = CandidateAnnouncementListQueryDto;
+export type CandidateAnnouncementSummary = CandidateAnnouncementSummaryDto;
+export type CandidateAnnouncementListResponse = CandidateAnnouncementListResponseDto;

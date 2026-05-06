@@ -5,6 +5,8 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import type {
+  BrotherAnnouncementListQuery,
+  BrotherAnnouncementListResponse,
   BrotherEventDetailResponse,
   BrotherEventListQuery,
   BrotherEventListResponse,
@@ -106,6 +108,29 @@ export class BrotherCompanionService {
     }
 
     return { event };
+  }
+
+  async listAnnouncements(
+    principal: CurrentUserPrincipal,
+    query: BrotherAnnouncementListQuery
+  ): Promise<BrotherAnnouncementListResponse> {
+    const profile = await this.loadProfile(principal);
+    const organizationUnitIds = profile.memberships.map(
+      (membership) => membership.organizationUnit.id
+    );
+    const announcements =
+      await this.brotherCompanionRepository.findVisibleBrotherAnnouncements(
+        query,
+        organizationUnitIds
+      );
+
+    return {
+      announcements,
+      pagination: {
+        limit: query.limit,
+        offset: query.offset
+      }
+    };
   }
 
   private async loadProfile(principal: CurrentUserPrincipal): Promise<BrotherProfile> {

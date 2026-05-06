@@ -12,6 +12,8 @@ const requiredInputs = [
   "prisma/migrations/000005_candidate_requests/migration.sql",
   "prisma/migrations/000006_candidate_profiles/migration.sql",
   "prisma/migrations/000007_identity_access_reviews/migration.sql",
+  "prisma/migrations/000008_event_participation/migration.sql",
+  "prisma/migrations/000009_announcements/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -211,6 +213,56 @@ if (missingIdentityAccessReviewsMigrationSnippets.length > 0) {
   );
 }
 
+const eventParticipationMigrationSql = readFileSync(
+  "prisma/migrations/000008_event_participation/migration.sql",
+  "utf8"
+);
+
+const requiredEventParticipationMigrationSnippets = [
+  "CREATE TYPE participation_status AS ENUM",
+  "CREATE TABLE event_participation",
+  "CREATE UNIQUE INDEX event_participation_active_event_user_unique",
+  "WHERE cancelled_at IS NULL"
+];
+
+const missingEventParticipationMigrationSnippets =
+  requiredEventParticipationMigrationSnippets.filter(
+    (snippet) => !eventParticipationMigrationSql.includes(snippet)
+  );
+
+if (missingEventParticipationMigrationSnippets.length > 0) {
+  throw new Error(
+    `Event participation migration is missing required SQL: ${missingEventParticipationMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
+const announcementsMigrationSql = readFileSync(
+  "prisma/migrations/000009_announcements/migration.sql",
+  "utf8"
+);
+
+const requiredAnnouncementsMigrationSnippets = [
+  "CREATE TABLE announcements",
+  "target_organization_unit_id",
+  "pinned boolean NOT NULL DEFAULT false",
+  "CREATE INDEX announcements_visibility_status_pinned_idx",
+  "CREATE INDEX announcements_status_published_at_idx"
+];
+
+const missingAnnouncementsMigrationSnippets = requiredAnnouncementsMigrationSnippets.filter(
+  (snippet) => !announcementsMigrationSql.includes(snippet)
+);
+
+if (missingAnnouncementsMigrationSnippets.length > 0) {
+  throw new Error(
+    `Announcements migration is missing required SQL: ${missingAnnouncementsMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -237,7 +289,10 @@ const requiredSeedSnippets = [
   "identityAccessApproverAssignment",
   "idle-review@example.test",
   "demo-idle-review",
-  "identityAccessReview"
+  "identityAccessReview",
+  "announcement",
+  "Candidate Welcome",
+  "Brother Update"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -248,5 +303,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, and Phase 7 candidate request/profile fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, and Phase 9 announcement fixtures."
 );

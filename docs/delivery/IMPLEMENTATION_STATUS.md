@@ -21,7 +21,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
-| **9**    | 🟡 IN PROGRESS | ~40%    | ████████░░░░░░░░░░░░ | Candidate/brother event reads, mobile event models, event participation intent API and persistence                   | Announcements and push       |
+| **9**    | 🟡 IN PROGRESS | ~50%    | ██████████░░░░░░░░░░ | Candidate/brother event reads, mobile event models, event participation intent API, announcement read APIs, persistence | Admin announcements and push |
 | **10–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Formation roadmap, silent prayer, privacy/security hardening, pilot                                                   | After Phase 9                |
 
 ---
@@ -276,7 +276,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 9: Events, Announcements & Push 🟡
 
-**Status**: IN PROGRESS (~40%)
+**Status**: IN PROGRESS (~50%)
 
 **Completed**:
 
@@ -291,6 +291,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Focused service/repository/controller/shared DTO tests added for event-detail visibility, own-participation exposure, duplicate, cancellation, and idle/profile denial paths
 - ✅ Guarded `GET /api/candidate/events` and `GET /api/candidate/events/:id` with active-profile checks, shared DTO/OpenAPI schemas, server-side candidate visibility filtering, and own active participation intent only on detail
 - ✅ Mobile `CandidateEvents` and `CandidateEventDetail` API/demo screen models with authenticated list/detail clients, candidate plan/cancel participation clients, own intent copy, and action metadata
+- ✅ `announcements` persistence, migration, and local candidate/brother seed fixtures
+- ✅ Guarded `GET /api/candidate/announcements` and `GET /api/brother/announcements` with active-profile checks, shared DTO/OpenAPI schemas, pinned ordering, and server-side candidate/brother visibility filtering
 
 **In Progress**:
 
@@ -298,13 +300,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Announcements read APIs and mobile surfaces
+- ⏳ Mobile announcement surfaces
 - ⏳ Admin announcement management
 - ⏳ Device tokens, notification preferences, and push dispatch adapter
 
-**Exit criteria**: 🟡 Candidate/brother event read, participation, and mobile model foundation is in place; announcements and push remain
+**Exit criteria**: 🟡 Candidate/brother event read, participation, and announcement read foundation is in place; admin/mobile announcement surfaces and push remain
 
-**Next step**: Add announcements read/management contracts
+**Next step**: Add admin announcement management contracts
 
 ### Phases 4–13: Roadmap
 
@@ -330,11 +332,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm lint`                                                     |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm typecheck`                                                |
 | **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.03% statements / 81.56% branches / 93.16% functions / 91.74% lines   |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, and mobile client/screen-model coverage            |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, and mobile client/screen-model coverage |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm build`                                                    |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads and participation endpoints         |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads and participation endpoints             |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation migration validates                                                       |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, and announcement reads |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, and announcement reads |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation and announcement migrations validate                                      |
 | **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Existing Phase 8 smoke passed after localhost bind escalation                                 |
 
 ---
@@ -439,6 +441,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Event participation intent persistence and candidate/brother mutation APIs added with active-profile checks, server-side event visibility, duplicate active intent handling, own-intent cancellation, and no participant list exposure
 - Candidate event list/detail API added with active-profile checks, server-side candidate visibility, shared DTO/OpenAPI schemas, and own active participation intent only on detail
 - Mobile CandidateEvents/CandidateEventDetail screen models and authenticated API clients added for candidate event list/detail plus candidate plan/cancel participation actions
+- Candidate and brother announcement read APIs added with `announcements` persistence, shared DTO/OpenAPI schemas, active-profile checks, pinned ordering, server-side audience/scope filtering, and no comments/read receipts/push delivery details
 
 ---
 

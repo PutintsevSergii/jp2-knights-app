@@ -111,6 +111,45 @@ export const candidateEventDetailResponseOpenApiSchema = {
   }
 };
 
+const candidateAnnouncementSummaryOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "title",
+    "body",
+    "visibility",
+    "targetOrganizationUnitId",
+    "pinned",
+    "publishedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    body: { type: "string", minLength: 1, maxLength: 2000 },
+    visibility: {
+      type: "string",
+      enum: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE", "ORGANIZATION_UNIT"]
+    },
+    targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
+    pinned: { type: "boolean" },
+    publishedAt: { type: "string", format: "date-time" }
+  }
+};
+
+export const candidateAnnouncementListResponseOpenApiSchema = {
+  type: "object",
+  required: ["announcements", "pagination"],
+  additionalProperties: false,
+  properties: {
+    announcements: {
+      type: "array",
+      items: candidateAnnouncementSummaryOpenApiSchema
+    },
+    pagination: candidatePaginationOpenApiSchema
+  }
+};
+
 const candidateDashboardAnnouncementSummaryOpenApiSchema = {
   type: "object",
   required: ["id", "title", "body", "publishedAt"],

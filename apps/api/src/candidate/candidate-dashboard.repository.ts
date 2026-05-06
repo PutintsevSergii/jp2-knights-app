@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
+  CandidateAnnouncementListQuery,
+  CandidateAnnouncementSummary,
   CandidateEventDetail,
   CandidateEventListQuery,
   CandidateEventSummary,
@@ -26,6 +28,11 @@ export abstract class CandidateDashboardRepository {
     userId: string,
     now?: Date
   ): Promise<CandidateEventDetail | null>;
+  abstract findVisibleCandidateAnnouncements(
+    query: CandidateAnnouncementListQuery,
+    assignedOrganizationUnitId: string | null,
+    now?: Date
+  ): Promise<CandidateAnnouncementSummary[]>;
 }
 
 @Injectable()
@@ -97,6 +104,21 @@ export class PrismaCandidateDashboardRepository implements CandidateDashboardRep
 
     return record ? toCandidateEventDetail(record) : null;
   }
+
+  findVisibleCandidateAnnouncements(
+    query: CandidateAnnouncementListQuery,
+    assignedOrganizationUnitId: string | null,
+    now = new Date()
+  ): Promise<CandidateAnnouncementSummary[]> {
+    return this.prisma.announcement
+      .findMany({
+        where: candidateAnnouncementWhere(assignedOrganizationUnitId, now),
+        orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }, { title: "asc" }],
+        take: query.limit,
+        skip: query.offset
+      })
+      .then((records) => records.map(toCandidateAnnouncementSummary));
+  }
 }
 
 const candidateProfileDashboardInclude = {
@@ -152,6 +174,16 @@ interface OwnEventParticipationRecord {
   intentStatus: string;
   createdAt: Date;
   cancelledAt: Date | null;
+}
+
+interface CandidateAnnouncementRecord {
+  id: string;
+  title: string;
+  body: string;
+  visibility: string;
+  targetOrganizationUnitId: string | null;
+  pinned: boolean;
+  publishedAt: Date | null;
 }
 
 export function candidateDashboardEventWhere(
@@ -214,6 +246,33 @@ export function candidateEventDetailWhere(
     archivedAt: null,
     cancelledAt: null,
     OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    AND: [
+      {
+        OR: visibilityWhere
+      }
+    ]
+  };
+}
+
+export function candidateAnnouncementWhere(
+  assignedOrganizationUnitId: string | null,
+  now: Date
+): Prisma.AnnouncementWhereInput {
+  const visibilityWhere: Prisma.AnnouncementWhereInput[] = [
+    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
+  ];
+
+  if (assignedOrganizationUnitId) {
+    visibilityWhere.push({
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: assignedOrganizationUnitId
+    });
+  }
+
+  return {
+    status: "PUBLISHED",
+    archivedAt: null,
+    publishedAt: { lte: now },
     AND: [
       {
         OR: visibilityWhere
@@ -286,6 +345,24 @@ function toOwnEventParticipation(
   };
 }
 
+function toCandidateAnnouncementSummary(
+  record: CandidateAnnouncementRecord
+): CandidateAnnouncementSummary {
+  if (!record.publishedAt) {
+    throw new Error("Repository returned an unpublished candidate announcement.");
+  }
+
+  return {
+    id: record.id,
+    title: record.title,
+    body: record.body,
+    visibility: toCandidateAnnouncementVisibility(record.visibility),
+    targetOrganizationUnitId: record.targetOrganizationUnitId,
+    pinned: record.pinned,
+    publishedAt: record.publishedAt.toISOString()
+  };
+}
+
 function toParticipationStatus(
   value: string
 ): NonNullable<CandidateEventDetail["currentUserParticipation"]>["intentStatus"] {
@@ -309,4 +386,19 @@ function toCandidateEventVisibility(
   }
 
   throw new Error("Repository returned an event visibility hidden from candidates.");
+}
+
+function toCandidateAnnouncementVisibility(
+  visibility: string
+): CandidateAnnouncementSummary["visibility"] {
+  if (
+    visibility === "PUBLIC" ||
+    visibility === "FAMILY_OPEN" ||
+    visibility === "CANDIDATE" ||
+    visibility === "ORGANIZATION_UNIT"
+  ) {
+    return visibility;
+  }
+
+  throw new Error("Repository returned an announcement visibility hidden from candidates.");
 }

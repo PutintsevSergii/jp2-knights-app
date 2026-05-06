@@ -6,7 +6,7 @@ Seed data grows with the implementation phase. The committed seed currently
 covers the identity and organization foundation needed for scope checks plus the
 Phase 3 public About content fallback, Phase 4 public content fixtures, the
 Phase 5/6 Idle access review fixture, and the first Phase 7 candidate
-request/profile fixtures:
+request/profile fixtures, plus Phase 9 announcement fixtures:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
@@ -19,6 +19,8 @@ request/profile fixtures:
 - one published `BROTHER` prayer fixture that must remain hidden from public reads.
 - one published `PUBLIC` event fixture.
 - one published `BROTHER` event fixture that must remain hidden from public reads.
+- one published `CANDIDATE` announcement fixture.
+- one published `BROTHER` announcement fixture that must remain hidden from candidates.
 - one active candidate profile assigned to the pilot organization unit.
 - one `new` candidate request assigned to the pilot organization unit with consent metadata and an idempotency key.
 

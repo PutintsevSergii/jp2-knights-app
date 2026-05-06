@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaService } from "../database/prisma.service.js";
 import {
+  brotherAnnouncementWhere,
   brotherEventDetailWhere,
   brotherEventWhere,
   brotherPrayerWhere,
@@ -204,6 +205,41 @@ describe("brotherPrayerWhere", () => {
             { title: { contains: "brother", mode: "insensitive" } },
             { body: { contains: "brother", mode: "insensitive" } }
           ]
+        }
+      ]
+    });
+  });
+});
+
+describe("brotherAnnouncementWhere", () => {
+  it("limits announcements to published brother-visible and own organization-unit messages", () => {
+    const now = new Date("2026-05-05T00:00:00.000Z");
+
+    expect(brotherAnnouncementWhere([organizationUnitRecord.id], now)).toEqual({
+      status: "PUBLISHED",
+      archivedAt: null,
+      publishedAt: { lte: now },
+      AND: [
+        {
+          OR: [
+            { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } },
+            {
+              visibility: "ORGANIZATION_UNIT",
+              targetOrganizationUnitId: {
+                in: [organizationUnitRecord.id]
+              }
+            }
+          ]
+        }
+      ]
+    });
+    expect(brotherAnnouncementWhere([], now)).toEqual({
+      status: "PUBLISHED",
+      archivedAt: null,
+      publishedAt: { lte: now },
+      AND: [
+        {
+          OR: [{ visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }]
         }
       ]
     });
@@ -417,6 +453,70 @@ describe("PrismaBrotherCompanionRepository", () => {
     });
   });
 
+  it("maps brother-visible announcements and rejects hidden visibility leaks", async () => {
+    const { announcementFindMany, prisma } = prismaMock();
+    announcementFindMany.mockResolvedValueOnce([
+      {
+        id: "99999999-9999-4999-8999-999999999999",
+        title: "Brother Update",
+        body: "A brother-visible announcement.",
+        visibility: "BROTHER",
+        targetOrganizationUnitId: null,
+        pinned: true,
+        publishedAt: new Date("2026-05-06T09:00:00.000Z")
+      }
+    ]);
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherAnnouncements(
+        {
+          limit: 10,
+          offset: 5
+        },
+        [organizationUnitRecord.id],
+        new Date("2026-05-06T10:00:00.000Z")
+      )
+    ).resolves.toEqual([
+      {
+        id: "99999999-9999-4999-8999-999999999999",
+        title: "Brother Update",
+        body: "A brother-visible announcement.",
+        visibility: "BROTHER",
+        targetOrganizationUnitId: null,
+        pinned: true,
+        publishedAt: "2026-05-06T09:00:00.000Z"
+      }
+    ]);
+    expect(announcementFindMany).toHaveBeenCalledWith({
+      where: brotherAnnouncementWhere(
+        [organizationUnitRecord.id],
+        new Date("2026-05-06T10:00:00.000Z")
+      ),
+      orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }, { title: "asc" }],
+      take: 10,
+      skip: 5
+    });
+
+    announcementFindMany.mockResolvedValueOnce([
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        title: "Candidate Update",
+        body: "Hidden from brothers.",
+        visibility: "CANDIDATE",
+        targetOrganizationUnitId: null,
+        pinned: false,
+        publishedAt: new Date("2026-05-06T09:00:00.000Z")
+      }
+    ]);
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherAnnouncements(
+        { limit: 20, offset: 0 },
+        []
+      )
+    ).rejects.toThrow("Repository returned an announcement visibility hidden from brothers.");
+  });
+
   it("returns null for hidden event detail ids and rejects invalid participation status leaks", async () => {
     const { eventFindFirst, prisma } = prismaMock();
     eventFindFirst.mockResolvedValueOnce(null);
@@ -511,6 +611,7 @@ describe("PrismaBrotherCompanionRepository", () => {
 function prismaMock(): {
   eventFindMany: ReturnType<typeof vi.fn>;
   eventFindFirst: ReturnType<typeof vi.fn>;
+  announcementFindMany: ReturnType<typeof vi.fn>;
   prayerCategoryFindMany: ReturnType<typeof vi.fn>;
   prayerFindMany: ReturnType<typeof vi.fn>;
   userFindFirst: ReturnType<typeof vi.fn>;
@@ -518,6 +619,7 @@ function prismaMock(): {
 } {
   const eventFindMany = vi.fn(() => Promise.resolve([]));
   const eventFindFirst = vi.fn(() => Promise.resolve(null));
+  const announcementFindMany = vi.fn(() => Promise.resolve([]));
   const prayerCategoryFindMany = vi.fn(() => Promise.resolve([]));
   const prayerFindMany = vi.fn(() => Promise.resolve([]));
   const userFindFirst = vi.fn(() => Promise.resolve(null));
@@ -525,6 +627,7 @@ function prismaMock(): {
   return {
     eventFindMany,
     eventFindFirst,
+    announcementFindMany,
     prayerCategoryFindMany,
     prayerFindMany,
     userFindFirst,
@@ -532,6 +635,9 @@ function prismaMock(): {
       event: {
         findMany: eventFindMany,
         findFirst: eventFindFirst
+      },
+      announcement: {
+        findMany: announcementFindMany
       },
       prayerCategory: {
         findMany: prayerCategoryFindMany

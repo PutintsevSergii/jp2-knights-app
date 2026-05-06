@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
 import { PrismaService } from "../database/prisma.service.js";
+import { CandidateAnnouncementController } from "./candidate-announcement.controller.js";
 import { CandidateDashboardController } from "./candidate-dashboard.controller.js";
 import { CandidateEventController } from "./candidate-event.controller.js";
 import {
@@ -11,7 +12,11 @@ import { CandidateDashboardService } from "./candidate-dashboard.service.js";
 
 @Module({
   imports: [AuthModule],
-  controllers: [CandidateDashboardController, CandidateEventController],
+  controllers: [
+    CandidateAnnouncementController,
+    CandidateDashboardController,
+    CandidateEventController
+  ],
   providers: [
     PrismaService,
     CandidateDashboardService,

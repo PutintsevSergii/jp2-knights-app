@@ -480,6 +480,75 @@ async function main() {
       publishedAt: new Date("2026-01-01T00:00:00.000Z")
     }
   });
+
+  await prisma.announcement.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000019"
+    },
+    update: {
+      title: "Candidate Welcome",
+      body: "A candidate-visible local fixture for announcement reads.",
+      visibility: "CANDIDATE",
+      targetOrganizationUnitId: pilotUnit.id,
+      pinned: true,
+      status: "PUBLISHED",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000019",
+      title: "Candidate Welcome",
+      body: "A candidate-visible local fixture for announcement reads.",
+      visibility: "CANDIDATE",
+      targetOrganizationUnitId: pilotUnit.id,
+      pinned: true,
+      status: "PUBLISHED",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.announcement.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000020"
+    },
+    update: {
+      title: "Brother Update",
+      body: "A brother-visible local fixture for announcement reads.",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      pinned: false,
+      status: "PUBLISHED",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000020",
+      title: "Brother Update",
+      body: "A brother-visible local fixture for announcement reads.",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "PUBLISHED",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-01-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-01-01T00:00:00.000Z")
+    }
+  });
 }
 
 async function findOrCreateOrganizationUnit(data) {
