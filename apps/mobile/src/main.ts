@@ -34,16 +34,22 @@ export {
 export { fallbackCandidateDashboard } from "./candidate-dashboard.js";
 export {
   brotherCompanionLoadFailureState,
+  buildBrotherEventDetailUrl,
+  buildBrotherEventParticipationUrl,
   buildBrotherEventsUrl,
   buildMyOrganizationUnitsUrl,
   buildBrotherProfileUrl,
   buildBrotherTodayUrl,
+  cancelBrotherEventParticipation,
   fetchMyOrganizationUnits,
+  fetchBrotherEvent,
   fetchBrotherEvents,
   fetchBrotherProfile,
-  fetchBrotherToday
+  fetchBrotherToday,
+  markBrotherEventParticipation
 } from "./brother-companion-api.js";
 export {
+  fallbackBrotherEventDetail,
   fallbackBrotherProfile,
   fallbackBrotherEvents,
   fallbackBrotherToday,
@@ -72,6 +78,7 @@ export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js"
 export { resolveMobileLaunchState } from "./navigation.js";
 export { buildCandidateDashboardScreen } from "./candidate-screens.js";
 export {
+  buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
   buildBrotherTodayScreen,
@@ -79,6 +86,7 @@ export {
 } from "./brother-screens.js";
 export type {
   BrotherProfileScreen,
+  BrotherEventDetailScreen,
   BrotherEventsScreen,
   BrotherRoute,
   BrotherScreenAction,

@@ -21,7 +21,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
-| **9–13** | ⏳ PENDING     | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | Start Phase 9                |
+| **9**    | 🟡 IN PROGRESS | ~25%    | █████░░░░░░░░░░░░░░░ | Brother event detail mobile model, event participation intent API and persistence                                     | Announcements and push       |
+| **10–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Formation roadmap, silent prayer, privacy/security hardening, pilot                                                   | After Phase 9                |
 
 ---
 
@@ -130,7 +131,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Brother event detail and participation intent (Phase 9)
+- ✅ Mobile brother event detail and participation intent screen model (Phase 9)
 - ⏳ Brother announcements and push surfaces (Phase 9)
 
 **Exit criteria**: ✅ Public APIs, mobile public views, admin prayer/event APIs, audit side effects, admin workflow models, rendered templates, and shell routes are implemented
@@ -273,6 +274,36 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Next step**: Start Phase 9 events/announcements/push
 
+### Phase 9: Events, Announcements & Push 🟡
+
+**Status**: IN PROGRESS (~25%)
+
+**Completed**:
+
+- ✅ `event_participation` persistence with partial unique active `(event_id, user_id)` index
+- ✅ Guarded `GET /api/brother/events/:id` event detail with description and only the current user's own active participation intent
+- ✅ Guarded `POST /api/candidate/events/:id/participation` and `DELETE /api/candidate/events/:id/participation`
+- ✅ Guarded `POST /api/brother/events/:id/participation` and `DELETE /api/brother/events/:id/participation`
+- ✅ Mobile `BrotherEventDetail` API/demo screen model with authenticated detail client, plan/cancel participation clients, current-user intent copy, and action metadata
+- ✅ Participation creation verifies active candidate/brother profile and server-side event visibility before writing
+- ✅ Duplicate active participation intents return the existing planning intent; cancellation is limited to the current user's active intent
+- ✅ Shared participation response DTO/OpenAPI schema returns no participant lists
+- ✅ Focused service/repository/controller/shared DTO tests added for event-detail visibility, own-participation exposure, duplicate, cancellation, and idle/profile denial paths
+
+**In Progress**:
+
+- 🟡 Candidate event list endpoint beyond dashboard summaries
+
+**Not Yet**:
+
+- ⏳ Announcements read APIs and mobile surfaces
+- ⏳ Admin announcement management
+- ⏳ Device tokens, notification preferences, and push dispatch adapter
+
+**Exit criteria**: 🟡 Brother event detail and participation foundation are in place; candidate event list/detail, announcements, and push remain
+
+**Next step**: Add announcements read/management contracts or candidate event list/detail
+
 ### Phases 4–13: Roadmap
 
 | Phase  | Name                             | Status         | Timeline        |
@@ -282,7 +313,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
 | **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
 | **8**  | Brother Companion Core           | ✅ Complete    | Completed May 6 |
-| **9**  | Events/Announcements/Push        | ⏳ Not started | Next            |
+| **9**  | Events/Announcements/Push        | 🟡 In progress | Current         |
 | **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
 | **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
@@ -292,17 +323,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Notes                                                                                       |
-| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.89% statements / 81.56% branches / 93.08% functions / 91.63% lines  |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer/event visibility tests, Admin Lite Next route smoke/cookie tests, request-id middleware, and candidate lifecycle tests added |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed; admin build now runs `next build`                                    |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes identity access review endpoints                                |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires identity access review endpoints                                    |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review migration and seed fixtures included                                 |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm smoke:phase8` covers API boot, Admin Next dev/start, mobile demo launch, and production demo rejection |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                       |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm lint`                                                     |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm typecheck`                                                |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.8% statements / 81.4% branches / 92.86% functions / 91.53% lines     |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation and brother event detail service/repository/controller/client coverage    |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm build`                                                    |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes brother event detail and candidate/brother participation endpoints |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires brother event detail and candidate/brother participation endpoints    |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation migration validates                                                       |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Existing Phase 8 smoke passed after localhost bind escalation                                 |
 
 ---
 
@@ -398,6 +429,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Admin Lite now has a real Next.js App Router runtime for the current implemented route surface, preserving current API/client/DTO/model/fixture behavior through the shared route adapter
 - API request-id generation/propagation, candidate request lifecycle enforcement, App Router cookie forwarding, launch smoke checks, V1 organization constraints, and candidate follow-up expectations are complete
 - Deferred hardening remains scoped to later phases: realistic seed/load expansion, Phase 11 Redis realtime tests, pilot logging/metrics destination, and optional Admin Lite renderer cleanup
+
+**Phase 9 In Progress** 🟡:
+
+- Brother event detail API added with active-profile checks, server-side event visibility, and own active participation intent only
+- Mobile BrotherEventDetail screen model and authenticated API clients added for event detail plus brother plan/cancel participation actions
+- Event participation intent persistence and candidate/brother mutation APIs added with active-profile checks, server-side event visibility, duplicate active intent handling, own-intent cancellation, and no participant list exposure
 
 ---
 
@@ -544,5 +581,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 6, 2026
-**Current Phase**: Phase 9 pending; Phases 0–8 complete
-**Next Major Milestone**: Start events/announcements/push
+**Current Phase**: Phase 9 in progress; Phases 0–8 complete
+**Next Major Milestone**: Complete events/announcements/push

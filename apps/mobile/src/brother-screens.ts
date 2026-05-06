@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
+  BrotherEventDetailResponseDto,
   BrotherEventListResponseDto,
   BrotherProfileResponseDto,
   BrotherTodayResponseDto,
@@ -14,6 +15,7 @@ export type BrotherRoute =
   | "BrotherProfile"
   | "MyOrganizationUnits"
   | "BrotherEvents"
+  | "BrotherEventDetail"
   | "BrotherPrayers"
   | "SilentPrayer";
 
@@ -77,6 +79,17 @@ export interface MyOrganizationUnitsScreen {
 
 export interface BrotherEventsScreen {
   route: "BrotherEvents";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: BrotherScreenSection[];
+  actions: BrotherScreenAction[];
+  demoChromeVisible: boolean;
+  theme: BrotherScreenTheme;
+}
+
+export interface BrotherEventDetailScreen {
+  route: "BrotherEventDetail";
   state: MobileScreenState;
   title: string;
   body: string;
@@ -208,6 +221,7 @@ export function buildBrotherEventsScreen(options: {
       body: brotherEventBody(event)
     })),
     actions: [
+      openFirstBrotherEventAction(options.response.events[0]?.id),
       {
         id: "today",
         label: "Brother Today",
@@ -217,6 +231,43 @@ export function buildBrotherEventsScreen(options: {
         id: "organization-units",
         label: "My choragiew",
         targetRoute: "MyOrganizationUnits"
+      }
+    ].filter((action): action is BrotherScreenAction => Boolean(action)),
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: brotherScreenTheme
+  };
+}
+
+export function buildBrotherEventDetailScreen(options: {
+  state: MobileScreenState;
+  response?: BrotherEventDetailResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}): BrotherEventDetailScreen {
+  if (options.state !== "ready") {
+    return stateOnlyBrotherEventDetail(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response) {
+    return stateOnlyBrotherEventDetail("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "BrotherEventDetail",
+    state: "ready",
+    title: options.response.event.title,
+    body: brotherEventDetailBody(options.response.event),
+    sections: buildBrotherEventDetailSections(options.response),
+    actions: [
+      participationAction(options.response),
+      {
+        id: "events",
+        label: "Brother Events",
+        targetRoute: "BrotherEvents"
+      },
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
       }
     ],
     demoChromeVisible: options.runtimeMode === "demo",
@@ -350,6 +401,24 @@ function stateOnlyBrotherEvents(
   };
 }
 
+function stateOnlyBrotherEventDetail(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): BrotherEventDetailScreen {
+  const copy = brotherEventDetailStateCopy[state];
+
+  return {
+    route: "BrotherEventDetail",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: brotherScreenTheme
+  };
+}
+
 function buildOrganizationUnitSection(
   organizationUnit: OrganizationUnitSummaryDto
 ): BrotherScreenSection {
@@ -372,6 +441,66 @@ function organizationUnitCountBody(count: number): string {
 
 function eventCountBody(count: number): string {
   return count === 1 ? "1 brother-visible event" : `${count} brother-visible events`;
+}
+
+function buildBrotherEventDetailSections(
+  response: BrotherEventDetailResponseDto
+): BrotherScreenSection[] {
+  const participation = response.event.currentUserParticipation;
+
+  return [
+    {
+      id: "event-detail",
+      title: response.event.type,
+      body: response.event.description ?? "No event description is recorded yet."
+    },
+    {
+      id: "participation",
+      title: "Participation",
+      body:
+        participation?.intentStatus === "planning_to_attend"
+          ? "You are planning to attend."
+          : "You have not marked an attendance intent."
+    }
+  ];
+}
+
+function brotherEventDetailBody(event: BrotherEventDetailResponseDto["event"]) {
+  const base = brotherEventBody(event);
+  return event.currentUserParticipation?.intentStatus === "planning_to_attend"
+    ? `${base} - planning to attend`
+    : base;
+}
+
+function participationAction(response: BrotherEventDetailResponseDto): BrotherScreenAction {
+  if (response.event.currentUserParticipation?.intentStatus === "planning_to_attend") {
+    return {
+      id: "cancel-participation",
+      label: "Cancel intent",
+      targetRoute: "BrotherEventDetail",
+      targetId: response.event.id
+    };
+  }
+
+  return {
+    id: "plan-to-attend",
+    label: "Plan to attend",
+    targetRoute: "BrotherEventDetail",
+    targetId: response.event.id
+  };
+}
+
+function openFirstBrotherEventAction(
+  id: string | undefined
+): BrotherScreenAction | undefined {
+  return id
+    ? {
+        id: "open-first-event",
+        label: "Open first event",
+        targetRoute: "BrotherEventDetail",
+        targetId: id
+      }
+    : undefined;
 }
 
 function brotherTodayBody(response: BrotherTodayResponseDto): string {
@@ -516,6 +645,37 @@ const brotherEventsStateCopy: Record<MobileScreenState, { title: string; body: s
   offline: {
     title: "Offline",
     body: "Reconnect to refresh brother events."
+  }
+};
+
+const brotherEventDetailStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Brother Event",
+    body: "Brother event detail is available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Brother event detail is loading."
+  },
+  empty: {
+    title: "Brother Event",
+    body: "This brother-visible event is not available."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Brother event detail could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "An active brother profile is required."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before brother event detail is available."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh brother event detail."
   }
 };
 

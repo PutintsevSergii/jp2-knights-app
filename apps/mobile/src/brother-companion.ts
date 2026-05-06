@@ -1,8 +1,10 @@
 import {
+  brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
@@ -91,6 +93,20 @@ export const fallbackBrotherEvents = brotherEventListResponseSchema.parse({
     offset: 0
   }
 }) satisfies BrotherEventListResponseDto;
+
+export const fallbackBrotherEventDetail = brotherEventDetailResponseSchema.parse({
+  event: {
+    ...fallbackBrotherToday.upcomingEvents[0],
+    description: "Private formation gathering for brothers assigned to the pilot choragiew.",
+    currentUserParticipation: {
+      id: "88888888-8888-4888-8888-888888888888",
+      eventId: fallbackBrotherToday.upcomingEvents[0]!.id,
+      intentStatus: "planning_to_attend",
+      createdAt: "2026-05-06T12:00:00.000Z",
+      cancelledAt: null
+    }
+  }
+}) satisfies BrotherEventDetailResponseDto;
 
 export const fallbackMyOrganizationUnits = myOrganizationUnitsResponseSchema.parse({
   organizationUnits: [fallbackOrganizationUnit]

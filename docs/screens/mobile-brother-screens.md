@@ -36,3 +36,9 @@
   `/api/brother/events`; it renders brother-visible event summaries with
   ready/empty/loading/error/offline/forbidden states and no participation
   mutation flow.
+- `BrotherEventDetail` now has an API/demo-backed mobile screen model over
+  `/api/brother/events/{id}` plus participation mutation clients for
+  `POST/DELETE /api/brother/events/{id}/participation`. It renders event detail,
+  current-user participation intent, plan/cancel action metadata, and
+  ready/empty/loading/error/offline/forbidden/idle-approval states without
+  participant lists.

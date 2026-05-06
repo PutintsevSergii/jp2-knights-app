@@ -11,6 +11,7 @@ import {
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
+  brotherEventDetailResponseSchema,
   brotherPrayerListQuerySchema,
   brotherPrayerListResponseSchema,
   brotherProfileResponseSchema,
@@ -22,6 +23,7 @@ import {
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   createPublicCandidateRequestSchema,
+  eventParticipationResponseSchema,
   membershipStatusSchema,
   myOrganizationUnitsResponseSchema,
   organizationUnitStatusSchema,
@@ -735,6 +737,63 @@ describe("shared validation", () => {
       publicEventListResponseSchema.safeParse({
         events: [{ ...event, visibility: "BROTHER" }],
         pagination: { limit: 5, offset: 0 }
+      }).success
+    ).toBe(false);
+  });
+
+  it("validates event participation intent responses without exposing participant lists", () => {
+    const response = {
+      participation: {
+        id: "55555555-5555-4555-8555-555555555555",
+        eventId: "44444444-4444-4444-8444-444444444444",
+        intentStatus: "planning_to_attend",
+        createdAt: "2026-05-06T12:00:00.000Z",
+        cancelledAt: null
+      }
+    };
+
+    expect(eventParticipationResponseSchema.parse(response)).toEqual(response);
+    expect(
+      eventParticipationResponseSchema.safeParse({
+        participation: {
+          ...response.participation,
+          participants: ["22222222-2222-4222-8222-222222222222"]
+        }
+      }).success
+    ).toBe(false);
+  });
+
+  it("validates brother event detail with only the current user's participation intent", () => {
+    const response = {
+      event: {
+        id: "44444444-4444-4444-8444-444444444444",
+        title: "Brother Gathering",
+        type: "formation",
+        startAt: "2026-06-01T10:00:00.000Z",
+        endAt: null,
+        locationLabel: "Riga",
+        visibility: "BROTHER",
+        description: "Private formation gathering.",
+        currentUserParticipation: {
+          id: "55555555-5555-4555-8555-555555555555",
+          eventId: "44444444-4444-4444-8444-444444444444",
+          intentStatus: "planning_to_attend",
+          createdAt: "2026-05-06T12:00:00.000Z",
+          cancelledAt: null
+        }
+      }
+    };
+
+    expect(brotherEventDetailResponseSchema.parse(response)).toEqual(response);
+    expect(
+      brotherEventDetailResponseSchema.safeParse({
+        event: {
+          ...response.event,
+          currentUserParticipation: {
+            ...response.event.currentUserParticipation,
+            userId: "22222222-2222-4222-8222-222222222222"
+          }
+        }
       }).success
     ).toBe(false);
   });

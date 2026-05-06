@@ -9,6 +9,7 @@ import { AppService } from "./app.service.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { BrotherCompanionModule } from "./brother-companion/brother-companion.module.js";
 import { CandidateDashboardModule } from "./candidate/candidate-dashboard.module.js";
+import { EventParticipationModule } from "./event-participation/event-participation.module.js";
 import { OrganizationModule } from "./organization/organization.module.js";
 import { RequestIdMiddleware } from "./observability/request-id.middleware.js";
 import { PublicModule } from "./public/public.module.js";
@@ -23,6 +24,7 @@ import { PublicModule } from "./public/public.module.js";
     AuthModule,
     BrotherCompanionModule,
     CandidateDashboardModule,
+    EventParticipationModule,
     OrganizationModule,
     PublicModule
   ],

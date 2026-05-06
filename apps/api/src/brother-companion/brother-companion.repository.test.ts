@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaService } from "../database/prisma.service.js";
 import {
+  brotherEventDetailWhere,
   brotherEventWhere,
   brotherPrayerWhere,
   brotherUpcomingEventWhere,
@@ -111,6 +112,39 @@ describe("brotherEventWhere", () => {
       archivedAt: null,
       startAt: { gte: new Date("2026-06-01T00:00:00.000Z") },
       type: "formation",
+      OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+      AND: [
+        {
+          OR: [
+            { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } },
+            {
+              visibility: "ORGANIZATION_UNIT",
+              targetOrganizationUnitId: {
+                in: [organizationUnitRecord.id]
+              }
+            }
+          ]
+        }
+      ]
+    });
+  });
+});
+
+describe("brotherEventDetailWhere", () => {
+  it("limits detail reads to published non-cancelled brother-visible events", () => {
+    const now = new Date("2026-05-05T00:00:00.000Z");
+
+    expect(
+      brotherEventDetailWhere(
+        "44444444-4444-4444-8444-444444444444",
+        [organizationUnitRecord.id],
+        now
+      )
+    ).toEqual({
+      id: "44444444-4444-4444-8444-444444444444",
+      status: "published",
+      archivedAt: null,
+      cancelledAt: null,
       OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
       AND: [
         {
@@ -320,6 +354,110 @@ describe("PrismaBrotherCompanionRepository", () => {
     });
   });
 
+  it("maps brother-visible event detail with current-user participation only", async () => {
+    const { eventFindFirst, prisma } = prismaMock();
+    eventFindFirst.mockResolvedValueOnce({
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Brother Gathering",
+      description: "Private formation gathering.",
+      type: "formation",
+      startAt: new Date("2026-06-01T10:00:00.000Z"),
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "BROTHER",
+      participations: [
+        {
+          id: "88888888-8888-4888-8888-888888888888",
+          eventId: "44444444-4444-4444-8444-444444444444",
+          intentStatus: "planning_to_attend",
+          createdAt: new Date("2026-05-06T12:00:00.000Z"),
+          cancelledAt: null
+        }
+      ]
+    });
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherEvent(
+        "44444444-4444-4444-8444-444444444444",
+        [organizationUnitRecord.id],
+        profileRecord.id,
+        new Date("2026-05-05T00:00:00.000Z")
+      )
+    ).resolves.toEqual({
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Brother Gathering",
+      description: "Private formation gathering.",
+      type: "formation",
+      startAt: "2026-06-01T10:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "BROTHER",
+      currentUserParticipation: {
+        id: "88888888-8888-4888-8888-888888888888",
+        eventId: "44444444-4444-4444-8444-444444444444",
+        intentStatus: "planning_to_attend",
+        createdAt: "2026-05-06T12:00:00.000Z",
+        cancelledAt: null
+      }
+    });
+    expect(eventFindFirst).toHaveBeenCalledWith({
+      where: expect.any(Object) as unknown,
+      include: {
+        participations: {
+          where: {
+            userId: profileRecord.id,
+            cancelledAt: null
+          },
+          take: 1,
+          orderBy: {
+            createdAt: "desc"
+          }
+        }
+      }
+    });
+  });
+
+  it("returns null for hidden event detail ids and rejects invalid participation status leaks", async () => {
+    const { eventFindFirst, prisma } = prismaMock();
+    eventFindFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherEvent(
+        "44444444-4444-4444-8444-444444444444",
+        [organizationUnitRecord.id],
+        profileRecord.id
+      )
+    ).resolves.toBeNull();
+
+    eventFindFirst.mockResolvedValueOnce({
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Brother Gathering",
+      description: null,
+      type: "formation",
+      startAt: new Date("2026-06-01T10:00:00.000Z"),
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "BROTHER",
+      participations: [
+        {
+          id: "88888888-8888-4888-8888-888888888888",
+          eventId: "44444444-4444-4444-8444-444444444444",
+          intentStatus: "unknown",
+          createdAt: new Date("2026-05-06T12:00:00.000Z"),
+          cancelledAt: null
+        }
+      ]
+    });
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherEvent(
+        "44444444-4444-4444-8444-444444444444",
+        [organizationUnitRecord.id],
+        profileRecord.id
+      )
+    ).rejects.toThrow("Repository returned an unknown event participation status.");
+  });
+
 
   it("maps brother-visible prayer categories and prayers", async () => {
     const { prayerCategoryFindMany, prayerFindMany, prisma } = prismaMock();
@@ -372,24 +510,28 @@ describe("PrismaBrotherCompanionRepository", () => {
 
 function prismaMock(): {
   eventFindMany: ReturnType<typeof vi.fn>;
+  eventFindFirst: ReturnType<typeof vi.fn>;
   prayerCategoryFindMany: ReturnType<typeof vi.fn>;
   prayerFindMany: ReturnType<typeof vi.fn>;
   userFindFirst: ReturnType<typeof vi.fn>;
   prisma: PrismaService;
 } {
   const eventFindMany = vi.fn(() => Promise.resolve([]));
+  const eventFindFirst = vi.fn(() => Promise.resolve(null));
   const prayerCategoryFindMany = vi.fn(() => Promise.resolve([]));
   const prayerFindMany = vi.fn(() => Promise.resolve([]));
   const userFindFirst = vi.fn(() => Promise.resolve(null));
 
   return {
     eventFindMany,
+    eventFindFirst,
     prayerCategoryFindMany,
     prayerFindMany,
     userFindFirst,
     prisma: {
       event: {
-        findMany: eventFindMany
+        findMany: eventFindMany,
+        findFirst: eventFindFirst
       },
       prayerCategory: {
         findMany: prayerCategoryFindMany

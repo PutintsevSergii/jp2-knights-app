@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 6, 2026 (Phases 0–8 complete; Phase 9 pending)
+**Last Updated**: May 6, 2026 (Phases 0–8 complete; Phase 9 in progress)
 
 ---
 
@@ -17,10 +17,10 @@ Use this document to:
 
 The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
 
-### Current Phase: Phase 9 (Events, Announcements, and Push) — Pending
+### Current Phase: Phase 9 (Events, Announcements, and Push) — In Progress
 
 Implementation is complete through Phase 8 Brother Companion Core. Phase 9 has
-not started yet:
+started with event participation intent:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -263,6 +263,24 @@ not started yet:
   App Router session-cookie forwarding to backend API clients, checks mobile
   demo launch, and validates production demo-mode rejection for API, admin, and
   mobile paths. `pnpm quality` now runs this smoke target after build.
+- Phase 9 first slice now includes event participation intent persistence and
+  guarded candidate/brother mutations: `event_participation` table with a
+  partial unique active `(event_id, user_id)` index,
+  `POST/DELETE /api/candidate/events/{id}/participation`, and
+  `POST/DELETE /api/brother/events/{id}/participation`. The endpoints require
+  active candidate/brother profiles, verify event visibility server-side before
+  creating an intent, update duplicate active intents instead of creating
+  duplicates, cancel only the current user's active intent, and return no
+  participant lists.
+- Phase 9 now also includes guarded `GET /api/brother/events/{id}` event detail
+  reads. The endpoint reuses active-brother profile enforcement and
+  brother-visible event filtering, returns event description and timing, and
+  exposes only the current user's own active participation intent.
+- Mobile Phase 9 now includes a `BrotherEventDetail` API/demo screen model and
+  authenticated mobile clients for `GET /api/brother/events/{id}` plus
+  `POST/DELETE /api/brother/events/{id}/participation`. The model renders
+  current-user intent state and plan/cancel action metadata without exposing
+  participant lists.
 - Delivery-risk review recommendations are now resolved or explicitly deferred
   without expanding V1 scope:
   - Implementation maturity: Admin Lite's dependency-free HTTP shell remains
@@ -295,8 +313,11 @@ not started yet:
   `/api/public/candidate-requests`,
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
   `/api/candidate/dashboard`,
+  `/api/candidate/events/{id}/participation`,
   `/api/brother/profile`, `/api/brother/today`, `/api/brother/prayers`,
   `/api/brother/events`,
+  `/api/brother/events/{id}`,
+  `/api/brother/events/{id}/participation`,
   `/api/brother/my-organization-units`,
   `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
@@ -310,8 +331,8 @@ not started yet:
   with push/notification preferences.
 - `/api/brother/my-organization-units` currently returns the active brother's
   organization-unit summaries only, and mobile renders those scoped summaries
-  without brother rosters. Officer summaries, event participation intent, event
-  details, and announcements remain Phase 9+ work.
+  without brother rosters. Officer summaries and announcements remain Phase 9+
+  work.
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive with audit side effects. The Admin Lite HTTP shell mounts
   organization-unit list, create, and scoped detail/edit form documents over the
@@ -320,7 +341,8 @@ not started yet:
   implemented route surface. The dependency-free HTTP shell remains available as
   a compatibility fallback while future route and React Server Component
   hardening steps are handled incrementally.
-- Remaining Phase 9 through 13 product workflows are not implemented yet unless
+- Remaining Phase 9 announcement/push work and Phase 10 through 13 product
+  workflows are not implemented yet unless
   explicitly listed above.
 
 ### How to Update This Document
@@ -366,8 +388,8 @@ not started yet:
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |
 | FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list, mobile API/demo/screen states                                                                                                                   |
 | FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | published public/family/brother/own organization-unit filtering, no candidate/officer/admin/unrelated-scope prayers                                                        |
-| FR-EVENT-002 Brother Events                | `GET /brother/events`                                                                                                                 | BrotherEvents screen model                   | events                                                                                   | guarded active-brother read API, shared DTO validation, published/non-cancelled visibility filtering, mobile API/demo model tests                                           |
-| FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | event detail                                 | event_participation                                                                      | visible event only, duplicate update                                                                                                                                        |
+| FR-EVENT-002 Brother Events                | `GET /brother/events`, `GET /brother/events/:id`                                                                                      | BrotherEvents and BrotherEventDetail screen models | events, event_participation                                                              | guarded active-brother read APIs, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only, mobile API/demo model tests |
+| FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | BrotherEventDetail screen model              | event_participation                                                                      | active candidate/brother profile required, visible open event only for creation, duplicate active intent returns existing record, cancellation limited to own active intent, mobile plan/cancel action metadata, no participant lists |
 | FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | no chat/comments, relevant only                                                                                                                                             |
 | FR-ROADMAP-002 Formation Roadmap           | `GET /brother/roadmap`                                                                                                                | formation roadmap                            | roadmap\_\*                                                                              | own roadmap, no auto degree                                                                                                                                                 |
 | FR-ROADMAP-003 Roadmap Step Submission     | `POST /brother/roadmap/steps/:stepId/submissions`                                                                                     | step detail                                  | roadmap_submissions, file_attachments optional                                           | pending duplicate, attachment policy                                                                                                                                        |

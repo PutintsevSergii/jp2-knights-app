@@ -1,11 +1,12 @@
-import { Controller, Get, Query, Req, UseGuards } from "@nestjs/common";
-import { ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Param, ParseUUIDPipe, Query, Req, UseGuards } from "@nestjs/common";
+import { ApiOkResponse, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { brotherEventListQuerySchema, brotherPrayerListQuerySchema } from "@jp2/shared-validation";
 import { CurrentUserGuard } from "../auth/current-user.guard.js";
 import type { RequestWithPrincipal } from "../auth/current-user.types.js";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
+  brotherEventDetailResponseOpenApiSchema,
   brotherEventListResponseOpenApiSchema,
   brotherPrayerListResponseOpenApiSchema,
   brotherProfileResponseOpenApiSchema,
@@ -15,6 +16,7 @@ import { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
   BrotherEventListQuery,
   BrotherEventListResponse,
+  BrotherEventDetailResponse,
   BrotherPrayerListQuery,
   BrotherPrayerListResponse,
   BrotherProfileResponse,
@@ -131,6 +133,41 @@ export class BrotherCompanionController {
     @Query(new ZodValidationPipe(brotherEventListQuerySchema)) query: BrotherEventListQuery
   ): Promise<BrotherEventListResponse> {
     return this.brotherCompanionService.listEvents(requirePrincipal(request), query);
+  }
+
+  @Get("events/:id")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Brother-visible event detail with the current user's own participation intent.",
+    schema: brotherEventDetailResponseOpenApiSchema
+  })
+  @ApiParam({
+    name: "id",
+    schema: { type: "string", format: "uuid" }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Authentication, approval, or active brother access is required.",
+    content: {
+      "application/json": {
+        schema: apiErrorOpenApiSchema
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The event is not visible in the current brother scope.",
+    content: {
+      "application/json": {
+        schema: apiErrorOpenApiSchema
+      }
+    }
+  })
+  getEvent(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<BrotherEventDetailResponse> {
+    return this.brotherCompanionService.getEvent(requirePrincipal(request), id);
   }
 
   @Get("prayers")

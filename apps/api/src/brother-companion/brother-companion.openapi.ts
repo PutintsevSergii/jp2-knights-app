@@ -53,6 +53,53 @@ export const brotherEventListResponseOpenApiSchema = {
   }
 };
 
+const ownEventParticipationOpenApiSchema = {
+  type: "object",
+  required: ["id", "eventId", "intentStatus", "createdAt", "cancelledAt"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    eventId: { type: "string", format: "uuid" },
+    intentStatus: {
+      type: "string",
+      enum: ["planning_to_attend", "cancelled"]
+    },
+    createdAt: { type: "string", format: "date-time" },
+    cancelledAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+export const brotherEventDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["event"],
+  additionalProperties: false,
+  properties: {
+    event: {
+      type: "object",
+      required: [
+        "id",
+        "title",
+        "type",
+        "startAt",
+        "endAt",
+        "locationLabel",
+        "visibility",
+        "description",
+        "currentUserParticipation"
+      ],
+      additionalProperties: false,
+      properties: {
+        ...brotherTodayEventSummaryOpenApiSchema.properties,
+        description: { type: "string", nullable: true, minLength: 1, maxLength: 8000 },
+        currentUserParticipation: {
+          nullable: true,
+          oneOf: [ownEventParticipationOpenApiSchema]
+        }
+      }
+    }
+  }
+};
+
 const brotherTodayCardOpenApiSchema = {
   type: "object",
   required: ["id", "label", "body", "targetRoute", "priority"],

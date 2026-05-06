@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  fallbackBrotherEventDetail,
   fallbackBrotherEvents,
   fallbackBrotherProfile,
   fallbackBrotherToday,
@@ -7,6 +8,7 @@ import {
 } from "./brother-companion.js";
 import {
   buildBrotherProfileScreen,
+  buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
@@ -93,9 +95,85 @@ describe("brother screen models", () => {
     ]);
     expect(screen.sections[0]?.body).toContain("Riga");
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "BrotherEventDetail",
       "BrotherToday",
       "MyOrganizationUnits"
     ]);
+    expect(screen.actions[0]).toEqual({
+      id: "open-first-event",
+      label: "Open first event",
+      targetRoute: "BrotherEventDetail",
+      targetId: fallbackBrotherEvents.events[0]!.id
+    });
+  });
+
+  it("builds Brother Event Detail with own participation intent actions", () => {
+    const screen = buildBrotherEventDetailScreen({
+      state: "ready",
+      response: fallbackBrotherEventDetail,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("BrotherEventDetail");
+    expect(screen.title).toBe("Brother Gathering");
+    expect(screen.body).toContain("planning to attend");
+    expect(screen.sections.map((section) => section.id)).toEqual(["event-detail", "participation"]);
+    expect(screen.sections[0]?.body).toContain("Private formation gathering");
+    expect(screen.sections[1]?.body).toBe("You are planning to attend.");
+    expect(screen.actions).toEqual([
+      {
+        id: "cancel-participation",
+        label: "Cancel intent",
+        targetRoute: "BrotherEventDetail",
+        targetId: fallbackBrotherEventDetail.event.id
+      },
+      {
+        id: "events",
+        label: "Brother Events",
+        targetRoute: "BrotherEvents"
+      },
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      }
+    ]);
+  });
+
+  it("builds Brother Event Detail plan action when the user has no active intent", () => {
+    const response = {
+      event: {
+        ...fallbackBrotherEventDetail.event,
+        description: null,
+        currentUserParticipation: null
+      }
+    };
+
+    const screen = buildBrotherEventDetailScreen({
+      state: "ready",
+      response,
+      runtimeMode: "api"
+    });
+
+    expect(screen.body).not.toContain("planning to attend");
+    expect(screen.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "event-detail",
+          body: "No event description is recorded yet."
+        }),
+        expect.objectContaining({
+          id: "participation",
+          body: "You have not marked an attendance intent."
+        })
+      ])
+    );
+    expect(screen.actions[0]).toEqual({
+      id: "plan-to-attend",
+      label: "Plan to attend",
+      targetRoute: "BrotherEventDetail",
+      targetId: fallbackBrotherEventDetail.event.id
+    });
   });
 
   it("maps non-ready states without content actions", () => {
@@ -160,6 +238,19 @@ describe("brother screen models", () => {
         route: "BrotherEvents",
         state: "offline",
         demoChromeVisible: true,
+        actions: []
+      })
+    );
+    expect(
+      buildBrotherEventDetailScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherEventDetail",
+        state: "idleApproval",
+        title: "Account Approval Pending",
         actions: []
       })
     );
@@ -237,6 +328,19 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherEvents",
+        state: "empty",
+        actions: []
+      })
+    );
+
+    expect(
+      buildBrotherEventDetailScreen({
+        state: "ready",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherEventDetail",
         state: "empty",
         actions: []
       })

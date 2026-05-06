@@ -432,6 +432,29 @@ export const brotherEventListResponseSchema = z.object({
   })
 });
 
+export const eventParticipationResponseSchema = z
+  .object({
+    participation: z
+      .object({
+        id: z.uuid(),
+        eventId: z.uuid(),
+        intentStatus: z.enum(["planning_to_attend", "cancelled"]),
+        createdAt: z.iso.datetime(),
+        cancelledAt: z.iso.datetime().nullable()
+      })
+      .strict()
+  })
+  .strict();
+
+const ownEventParticipationSchema = eventParticipationResponseSchema.shape.participation;
+
+export const brotherEventDetailResponseSchema = z.object({
+  event: brotherEventSummarySchema.extend({
+    description: z.string().trim().min(1).max(8000).nullable(),
+    currentUserParticipation: ownEventParticipationSchema.nullable()
+  })
+});
+
 const adminPrayerWriteBaseSchema = z
   .object({
     categoryId: z.uuid().nullable().optional(),
@@ -763,6 +786,8 @@ export type BrotherTodayResponseDto = z.infer<typeof brotherTodayResponseSchema>
 export type BrotherEventListQueryDto = z.infer<typeof brotherEventListQuerySchema>;
 export type BrotherEventSummaryDto = z.infer<typeof brotherEventSummarySchema>;
 export type BrotherEventListResponseDto = z.infer<typeof brotherEventListResponseSchema>;
+export type EventParticipationResponseDto = z.infer<typeof eventParticipationResponseSchema>;
+export type BrotherEventDetailResponseDto = z.infer<typeof brotherEventDetailResponseSchema>;
 export type BrotherPrayerListQueryDto = z.infer<typeof brotherPrayerListQuerySchema>;
 export type BrotherPrayerSummaryDto = z.infer<typeof brotherPrayerSummarySchema>;
 export type BrotherPrayerListResponseDto = z.infer<typeof brotherPrayerListResponseSchema>;

@@ -5,6 +5,7 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import type {
+  BrotherEventDetailResponse,
   BrotherEventListQuery,
   BrotherEventListResponse,
   BrotherPrayerListQuery,
@@ -87,6 +88,24 @@ export class BrotherCompanionService {
         offset: query.offset
       }
     };
+  }
+
+  async getEvent(principal: CurrentUserPrincipal, id: string): Promise<BrotherEventDetailResponse> {
+    const profile = await this.loadProfile(principal);
+    const organizationUnitIds = profile.memberships.map(
+      (membership) => membership.organizationUnit.id
+    );
+    const event = await this.brotherCompanionRepository.findVisibleBrotherEvent(
+      id,
+      organizationUnitIds,
+      principal.id
+    );
+
+    if (!event) {
+      throw new NotFoundException("Brother event was not found in the current scope.");
+    }
+
+    return { event };
   }
 
   private async loadProfile(principal: CurrentUserPrincipal): Promise<BrotherProfile> {

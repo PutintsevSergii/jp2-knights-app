@@ -1,9 +1,13 @@
 import {
+  brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
+  eventParticipationResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
+  type EventParticipationResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
   type MyOrganizationUnitsResponseDto
@@ -20,7 +24,7 @@ export interface BrotherCompanionFetchResponse {
 type MobilePrivateAccessErrorCode = "IDLE_APPROVAL_REQUIRED";
 
 export interface BrotherCompanionFetchInit {
-  method?: "GET";
+  method?: "GET" | "POST" | "DELETE";
   headers?: Record<string, string>;
 }
 
@@ -73,12 +77,64 @@ export async function fetchBrotherEvents(
   return brotherEventListResponseSchema.parse(await response.json());
 }
 
+export async function fetchBrotherEvent(options: {
+  id: string;
+} & FetchBrotherCompanionOptions): Promise<BrotherEventDetailResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherEventDetailUrl(options.id, options.baseUrl),
+    options
+  );
+
+  return brotherEventDetailResponseSchema.parse(await response.json());
+}
+
+export async function markBrotherEventParticipation(options: {
+  id: string;
+} & FetchBrotherCompanionOptions): Promise<EventParticipationResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherEventParticipationUrl(options.id, options.baseUrl),
+    options,
+    "POST"
+  );
+
+  return eventParticipationResponseSchema.parse(await response.json());
+}
+
+export async function cancelBrotherEventParticipation(options: {
+  id: string;
+} & FetchBrotherCompanionOptions): Promise<EventParticipationResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherEventParticipationUrl(options.id, options.baseUrl),
+    options,
+    "DELETE"
+  );
+
+  return eventParticipationResponseSchema.parse(await response.json());
+}
+
 export async function fetchMyOrganizationUnits(
   options: FetchBrotherCompanionOptions = {}
 ): Promise<MyOrganizationUnitsResponseDto> {
   const response = await fetchBrotherCompanion(buildMyOrganizationUnitsUrl(options.baseUrl), options);
 
   return myOrganizationUnitsResponseSchema.parse(await response.json());
+}
+
+export function buildBrotherEventDetailUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return new URL(`brother/events/${encodeURIComponent(id)}`, normalizeBaseUrl(baseUrl)).toString();
+}
+
+export function buildBrotherEventParticipationUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return new URL(
+    `brother/events/${encodeURIComponent(id)}/participation`,
+    normalizeBaseUrl(baseUrl)
+  ).toString();
 }
 
 export function buildBrotherProfileUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
@@ -143,7 +199,8 @@ export class BrotherCompanionHttpError extends Error {
 
 async function fetchBrotherCompanion(
   url: string,
-  options: FetchBrotherCompanionOptions
+  options: FetchBrotherCompanionOptions,
+  method: BrotherCompanionFetchInit["method"] = "GET"
 ): Promise<BrotherCompanionFetchResponse> {
   const fetcher = options.fetchImpl ?? getGlobalFetch();
   const headers: Record<string, string> = {};
@@ -153,7 +210,7 @@ async function fetchBrotherCompanion(
   }
 
   const response = await fetcher(url, {
-    method: "GET",
+    method,
     headers
   });
 

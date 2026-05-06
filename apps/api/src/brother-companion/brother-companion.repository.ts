@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
+  BrotherEventDetail,
   BrotherEventListQuery,
   BrotherEventSummary,
   BrotherPrayerCategorySummary,
@@ -22,6 +23,12 @@ export abstract class BrotherCompanionRepository {
     organizationUnitIds: readonly string[],
     now?: Date
   ): Promise<BrotherEventSummary[]>;
+  abstract findVisibleBrotherEvent(
+    id: string,
+    organizationUnitIds: readonly string[],
+    userId: string,
+    now?: Date
+  ): Promise<BrotherEventDetail | null>;
   abstract findPublishedBrotherPrayerCategories(
     language: string | undefined,
     now?: Date
@@ -86,6 +93,31 @@ export class PrismaBrotherCompanionRepository extends BrotherCompanionRepository
         skip: query.offset
       })
       .then((records) => records.map(toBrotherTodayEvent));
+  }
+
+  async findVisibleBrotherEvent(
+    id: string,
+    organizationUnitIds: readonly string[],
+    userId: string,
+    now = new Date()
+  ): Promise<BrotherEventDetail | null> {
+    const record = await this.prisma.event.findFirst({
+      where: brotherEventDetailWhere(id, organizationUnitIds, now),
+      include: {
+        participations: {
+          where: {
+            userId,
+            cancelledAt: null
+          },
+          take: 1,
+          orderBy: {
+            createdAt: "desc"
+          }
+        }
+      }
+    });
+
+    return record ? toBrotherEventDetail(record) : null;
   }
 
   findPublishedBrotherPrayerCategories(
@@ -182,6 +214,19 @@ interface BrotherEventRecord {
   visibility: string;
 }
 
+interface BrotherEventDetailRecord extends BrotherEventRecord {
+  description: string | null;
+  participations: readonly OwnEventParticipationRecord[];
+}
+
+interface OwnEventParticipationRecord {
+  id: string;
+  eventId: string;
+  intentStatus: string;
+  createdAt: Date;
+  cancelledAt: Date | null;
+}
+
 const brotherPrayerCategoryInclude = {
   category: {
     select: {
@@ -240,6 +285,38 @@ export function brotherEventWhere(
     archivedAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
     ...(query.type ? { type: query.type } : {}),
+    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    AND: [
+      {
+        OR: visibilityWhere
+      }
+    ]
+  };
+}
+
+export function brotherEventDetailWhere(
+  id: string,
+  organizationUnitIds: readonly string[],
+  now: Date
+): Prisma.EventWhereInput {
+  const visibilityWhere: Prisma.EventWhereInput[] = [
+    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
+  ];
+
+  if (organizationUnitIds.length > 0) {
+    visibilityWhere.push({
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: {
+        in: [...organizationUnitIds]
+      }
+    });
+  }
+
+  return {
+    id,
+    status: "published",
+    archivedAt: null,
+    cancelledAt: null,
     OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
     AND: [
       {
@@ -337,6 +414,38 @@ function toBrotherTodayEvent(record: BrotherEventRecord): BrotherTodayEventSumma
     locationLabel: record.locationLabel,
     visibility: toBrotherEventVisibility(record.visibility)
   };
+}
+
+function toBrotherEventDetail(record: BrotherEventDetailRecord): BrotherEventDetail {
+  return {
+    ...toBrotherTodayEvent(record),
+    description: record.description,
+    currentUserParticipation: record.participations[0]
+      ? toOwnEventParticipation(record.participations[0])
+      : null
+  };
+}
+
+function toOwnEventParticipation(
+  record: OwnEventParticipationRecord
+): BrotherEventDetail["currentUserParticipation"] {
+  return {
+    id: record.id,
+    eventId: record.eventId,
+    intentStatus: toParticipationStatus(record.intentStatus),
+    createdAt: record.createdAt.toISOString(),
+    cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null
+  };
+}
+
+function toParticipationStatus(
+  value: string
+): NonNullable<BrotherEventDetail["currentUserParticipation"]>["intentStatus"] {
+  if (value === "planning_to_attend" || value === "cancelled") {
+    return value;
+  }
+
+  throw new Error("Repository returned an unknown event participation status.");
 }
 
 function toBrotherPrayerCategorySummary(

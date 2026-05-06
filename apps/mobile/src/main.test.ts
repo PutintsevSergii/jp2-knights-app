@@ -3,6 +3,9 @@ import {
   buildAboutOrderScreen,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
+  buildBrotherEventDetailScreen,
+  buildBrotherEventDetailUrl,
+  buildBrotherEventParticipationUrl,
   buildBrotherEventsScreen,
   buildBrotherEventsUrl,
   buildBrotherProfileScreen,
@@ -17,6 +20,7 @@ import {
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
+  fallbackBrotherEventDetail,
   fallbackBrotherProfile,
   fallbackBrotherEvents,
   fallbackBrotherToday,
@@ -170,6 +174,20 @@ describe("mobile shell", () => {
     expect(buildBrotherEventsUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/events"
     );
+    expect(
+      buildBrotherEventDetailUrl(
+        "44444444-4444-4444-8444-444444444444",
+        "https://api.example.test"
+      )
+    ).toBe("https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444");
+    expect(
+      buildBrotherEventParticipationUrl(
+        "44444444-4444-4444-8444-444444444444",
+        "https://api.example.test"
+      )
+    ).toBe(
+      "https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444/participation"
+    );
     expect(buildMyOrganizationUnitsUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/my-organization-units"
     );
@@ -201,5 +219,12 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("BrotherEvents");
+    expect(
+      buildBrotherEventDetailScreen({
+        state: "ready",
+        response: fallbackBrotherEventDetail,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherEventDetail");
   });
 });

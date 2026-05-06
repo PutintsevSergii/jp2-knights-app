@@ -5,6 +5,7 @@ import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js"
 import type { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
+  BrotherEventDetail,
   BrotherEventSummary,
   BrotherPrayerSummary,
   BrotherProfile,
@@ -52,6 +53,18 @@ const event: BrotherTodayEventSummary = {
 };
 
 const eventListItem: BrotherEventSummary = event;
+
+const eventDetail: BrotherEventDetail = {
+  ...event,
+  description: "Private formation gathering.",
+  currentUserParticipation: {
+    id: "88888888-8888-4888-8888-888888888888",
+    eventId: event.id,
+    intentStatus: "planning_to_attend",
+    createdAt: "2026-05-06T12:00:00.000Z",
+    cancelledAt: null
+  }
+};
 
 const prayer: BrotherPrayerSummary = {
   id: "55555555-5555-4555-8555-555555555555",
@@ -215,6 +228,30 @@ describe("BrotherCompanionService", () => {
     expect(repository.eventListScopes).toEqual([[organizationUnit.id]]);
   });
 
+  it("returns brother-visible event detail with only the current user's participation", async () => {
+    const repository = repositoryWith(profile, [eventListItem], [], eventDetail);
+
+    await expect(new BrotherCompanionService(repository).getEvent(brother, event.id)).resolves.toEqual({
+      event: eventDetail
+    });
+    expect(repository.eventDetailScopes).toEqual([
+      {
+        eventId: event.id,
+        organizationUnitIds: [organizationUnit.id],
+        userId: brother.id
+      }
+    ]);
+  });
+
+  it("returns not found for event details hidden from the active brother", async () => {
+    await expect(
+      new BrotherCompanionService(repositoryWith(profile, [eventListItem], [], null)).getEvent(
+        brother,
+        event.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it("blocks non-brothers and brothers without an active membership profile", async () => {
     const candidate: CurrentUserPrincipal = {
       ...brother,
@@ -239,6 +276,7 @@ describe("BrotherCompanionService", () => {
     expect(repository.profileLookups).toEqual([]);
     expect(repository.eventScopes).toEqual([]);
     expect(repository.eventListScopes).toEqual([]);
+    expect(repository.eventDetailScopes).toEqual([]);
     expect(repository.prayerScopes).toEqual([]);
   });
 });
@@ -252,16 +290,23 @@ function service(
 function repositoryWith(
   profileRecord: BrotherProfile | null,
   events: BrotherTodayEventSummary[],
-  prayers: BrotherPrayerSummary[] = []
+  prayers: BrotherPrayerSummary[] = [],
+  detail: BrotherEventDetail | null = eventDetail
 ): BrotherCompanionRepository & {
   eventScopes: string[][];
   eventListScopes: string[][];
+  eventDetailScopes: Array<{
+    eventId: string;
+    organizationUnitIds: string[];
+    userId: string;
+  }>;
   prayerScopes: string[][];
   profileLookups: string[];
 } {
   return {
     eventScopes: [],
     eventListScopes: [],
+    eventDetailScopes: [],
     prayerScopes: [],
     profileLookups: [],
     findActiveBrotherProfile(userId) {
@@ -275,6 +320,14 @@ function repositoryWith(
     findVisibleBrotherEvents(_query, organizationUnitIds) {
       this.eventListScopes.push([...organizationUnitIds]);
       return Promise.resolve(events);
+    },
+    findVisibleBrotherEvent(eventId, organizationUnitIds, userId) {
+      this.eventDetailScopes.push({
+        eventId,
+        organizationUnitIds: [...organizationUnitIds],
+        userId
+      });
+      return Promise.resolve(detail);
     },
     findPublishedBrotherPrayerCategories() {
       return Promise.resolve(prayers.map((item) => item.category).filter((item) => item !== null));
