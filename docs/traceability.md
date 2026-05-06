@@ -281,6 +281,13 @@ started with event participation intent:
   `POST/DELETE /api/brother/events/{id}/participation`. The model renders
   current-user intent state and plan/cancel action metadata without exposing
   participant lists.
+- Phase 9 now includes guarded candidate event reads:
+  `GET /api/candidate/events` and `GET /api/candidate/events/{id}`. The
+  endpoints require an active candidate profile, validate shared query/response
+  DTOs, filter server-side to currently published, non-cancelled, non-archived
+  `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or assigned organization-unit events,
+  and expose only the current user's own active participation intent on detail
+  responses.
 - Delivery-risk review recommendations are now resolved or explicitly deferred
   without expanding V1 scope:
   - Implementation maturity: Admin Lite's dependency-free HTTP shell remains
@@ -313,6 +320,7 @@ started with event participation intent:
   `/api/public/candidate-requests`,
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
   `/api/candidate/dashboard`,
+  `/api/candidate/events`, `/api/candidate/events/{id}`,
   `/api/candidate/events/{id}/participation`,
   `/api/brother/profile`, `/api/brother/today`, `/api/brother/prayers`,
   `/api/brother/events`,
@@ -382,7 +390,7 @@ started with event participation intent:
 | FR-ADMIN-008 Candidate Profile Management  | `GET /admin/candidates`, `GET/PATCH /admin/candidates/:id`; `POST /admin/candidates/:id/convert-to-brother` pending brother lifecycle | candidate list/detail                        | candidate_profiles, users, user_roles, audit_logs; memberships pending brother lifecycle | officer scope, profile update audit, admin client/shell API/demo states, Next.js list/detail route smoke tests, brother conversion deferred to brother lifecycle             |
 | FR-CANDIDATE-001 Candidate Dashboard       | `GET /candidate/dashboard`                                                                                                            | candidate dashboard                          | candidate_profiles, events; roadmap_assignments/announcements pending later phases       | active profile required, scoped event visibility, mobile API/client state mapping, no brother content                                                                       |
 | FR-ROADMAP-001 Candidate Roadmap           | `GET /candidate/roadmap`                                                                                                              | candidate roadmap                            | roadmap_definitions, assignments                                                         | assigned candidate only                                                                                                                                                     |
-| FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`                                                                                                               | candidate events                             | events                                                                                   | candidate visibility, organization-unit candidate rule                                                                                                                      |
+| FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`, `GET /candidate/events/:id`                                                                                  | candidate events                             | events, event_participation                                                              | active candidate profile required, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only on detail, no participant lists        |
 | FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | candidate announcements                      | announcements                                                                            | pinned sort, no brother announcements                                                                                                                                       |
 | FR-BROTHER-001 Brother Today               | `GET /brother/today`                                                                                                                  | brother today                                | users, memberships, organization_units, events; announcements/roadmap pending later      | personalized profile cards, own organization units, brother-safe event visibility, mobile API/demo states                                                                   |
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |

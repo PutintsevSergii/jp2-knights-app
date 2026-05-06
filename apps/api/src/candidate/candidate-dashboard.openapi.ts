@@ -41,6 +41,76 @@ const candidateDashboardEventSummaryOpenApiSchema = {
   }
 };
 
+const candidatePaginationOpenApiSchema = {
+  type: "object",
+  required: ["limit", "offset"],
+  additionalProperties: false,
+  properties: {
+    limit: { type: "integer", minimum: 1, maximum: 50 },
+    offset: { type: "integer", minimum: 0, maximum: 1000 }
+  }
+};
+
+const ownEventParticipationOpenApiSchema = {
+  type: "object",
+  required: ["id", "eventId", "intentStatus", "createdAt", "cancelledAt"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    eventId: { type: "string", format: "uuid" },
+    intentStatus: {
+      type: "string",
+      enum: ["planning_to_attend", "cancelled"]
+    },
+    createdAt: { type: "string", format: "date-time" },
+    cancelledAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+export const candidateEventListResponseOpenApiSchema = {
+  type: "object",
+  required: ["events", "pagination"],
+  additionalProperties: false,
+  properties: {
+    events: {
+      type: "array",
+      items: candidateDashboardEventSummaryOpenApiSchema
+    },
+    pagination: candidatePaginationOpenApiSchema
+  }
+};
+
+export const candidateEventDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["event"],
+  additionalProperties: false,
+  properties: {
+    event: {
+      type: "object",
+      required: [
+        "id",
+        "title",
+        "type",
+        "startAt",
+        "endAt",
+        "locationLabel",
+        "visibility",
+        "description",
+        "currentUserParticipation"
+      ],
+      additionalProperties: false,
+      properties: {
+        ...candidateDashboardEventSummaryOpenApiSchema.properties,
+        description: { type: "string", nullable: true, minLength: 1, maxLength: 8000 },
+        currentUserParticipation: {
+          nullable: true,
+          oneOf: [ownEventParticipationOpenApiSchema]
+        }
+      }
+    }
+  }
+};
+
 const candidateDashboardAnnouncementSummaryOpenApiSchema = {
   type: "object",
   required: ["id", "title", "body", "publishedAt"],

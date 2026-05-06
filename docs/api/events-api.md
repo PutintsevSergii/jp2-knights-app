@@ -6,6 +6,7 @@
 | ------ | ------------------------------------- | ---- | ------------------- | ---------------------- | ---------------------------------- |
 | GET    | `/public/events`                      | No   | Guest               | public/family list     | `PUBLIC`, `FAMILY_OPEN`            |
 | GET    | `/candidate/events`                   | Yes  | Candidate           | candidate-visible list | public/family/candidate/own scoped |
+| GET    | `/candidate/events/:id`               | Yes  | Candidate           | candidate event detail | public/family/candidate/own scoped |
 | POST   | `/candidate/events/:id/participation` | Yes  | Candidate           | participation intent   | visible candidate event only       |
 | DELETE | `/candidate/events/:id/participation` | Yes  | Candidate           | cancelled intent       | own intent only                    |
 | GET    | `/brother/events`                     | Yes  | Brother             | brother-visible list   | public/family/brother/own scoped   |
@@ -34,6 +35,12 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 
 ## Implemented Authenticated Participation Rules
 
+- `GET /candidate/events` supports `from`, `type`, `limit`, and `offset`
+  filters, requires an active candidate profile, and returns currently
+  published, non-cancelled, non-archived candidate-visible events only.
+- `GET /candidate/events/:id` returns candidate-visible event detail with
+  description and only the current user's own active participation intent. It
+  never returns participant lists or other user ids.
 - `GET /brother/events/:id` returns brother-visible event detail with
   description and only the current user's own active participation intent. It
   never returns participant lists or other user ids.

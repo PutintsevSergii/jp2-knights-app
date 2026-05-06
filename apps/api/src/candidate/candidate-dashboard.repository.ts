@@ -2,6 +2,9 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
+  CandidateEventDetail,
+  CandidateEventListQuery,
+  CandidateEventSummary,
   CandidateDashboardEventSummary,
   CandidateDashboardProfile
 } from "./candidate-dashboard.types.js";
@@ -12,6 +15,17 @@ export abstract class CandidateDashboardRepository {
     assignedOrganizationUnitId: string | null,
     now?: Date
   ): Promise<CandidateDashboardEventSummary[]>;
+  abstract findVisibleCandidateEvents(
+    query: CandidateEventListQuery,
+    assignedOrganizationUnitId: string | null,
+    now?: Date
+  ): Promise<CandidateEventSummary[]>;
+  abstract findVisibleCandidateEvent(
+    id: string,
+    assignedOrganizationUnitId: string | null,
+    userId: string,
+    now?: Date
+  ): Promise<CandidateEventDetail | null>;
 }
 
 @Injectable()
@@ -42,6 +56,46 @@ export class PrismaCandidateDashboardRepository implements CandidateDashboardRep
         take: 3
       })
       .then((records) => records.map(toCandidateDashboardEvent));
+  }
+
+  findVisibleCandidateEvents(
+    query: CandidateEventListQuery,
+    assignedOrganizationUnitId: string | null,
+    now = new Date()
+  ): Promise<CandidateEventSummary[]> {
+    return this.prisma.event
+      .findMany({
+        where: candidateEventWhere(query, assignedOrganizationUnitId, now),
+        orderBy: [{ startAt: "asc" }, { title: "asc" }],
+        take: query.limit,
+        skip: query.offset
+      })
+      .then((records) => records.map(toCandidateDashboardEvent));
+  }
+
+  async findVisibleCandidateEvent(
+    id: string,
+    assignedOrganizationUnitId: string | null,
+    userId: string,
+    now = new Date()
+  ): Promise<CandidateEventDetail | null> {
+    const record = await this.prisma.event.findFirst({
+      where: candidateEventDetailWhere(id, assignedOrganizationUnitId, now),
+      include: {
+        participations: {
+          where: {
+            userId,
+            cancelledAt: null
+          },
+          take: 1,
+          orderBy: {
+            createdAt: "desc"
+          }
+        }
+      }
+    });
+
+    return record ? toCandidateEventDetail(record) : null;
   }
 }
 
@@ -87,7 +141,28 @@ interface CandidateEventRecord {
   visibility: string;
 }
 
+interface CandidateEventDetailRecord extends CandidateEventRecord {
+  description: string | null;
+  participations: readonly OwnEventParticipationRecord[];
+}
+
+interface OwnEventParticipationRecord {
+  id: string;
+  eventId: string;
+  intentStatus: string;
+  createdAt: Date;
+  cancelledAt: Date | null;
+}
+
 export function candidateDashboardEventWhere(
+  assignedOrganizationUnitId: string | null,
+  now: Date
+): Prisma.EventWhereInput {
+  return candidateEventWhere({ limit: 3, offset: 0 }, assignedOrganizationUnitId, now);
+}
+
+export function candidateEventWhere(
+  query: Pick<CandidateEventListQuery, "from" | "type" | "limit" | "offset">,
   assignedOrganizationUnitId: string | null,
   now: Date
 ): Prisma.EventWhereInput {
@@ -105,7 +180,39 @@ export function candidateDashboardEventWhere(
   return {
     status: "published",
     archivedAt: null,
-    startAt: { gte: now },
+    cancelledAt: null,
+    startAt: { gte: query.from ? new Date(query.from) : now },
+    ...(query.type ? { type: query.type } : {}),
+    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    AND: [
+      {
+        OR: visibilityWhere
+      }
+    ]
+  };
+}
+
+export function candidateEventDetailWhere(
+  id: string,
+  assignedOrganizationUnitId: string | null,
+  now: Date
+): Prisma.EventWhereInput {
+  const visibilityWhere: Prisma.EventWhereInput[] = [
+    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
+  ];
+
+  if (assignedOrganizationUnitId) {
+    visibilityWhere.push({
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: assignedOrganizationUnitId
+    });
+  }
+
+  return {
+    id,
+    status: "published",
+    archivedAt: null,
+    cancelledAt: null,
     OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
     AND: [
       {
@@ -155,6 +262,38 @@ function toCandidateDashboardEvent(record: CandidateEventRecord): CandidateDashb
     locationLabel: record.locationLabel,
     visibility: toCandidateEventVisibility(record.visibility)
   };
+}
+
+function toCandidateEventDetail(record: CandidateEventDetailRecord): CandidateEventDetail {
+  return {
+    ...toCandidateDashboardEvent(record),
+    description: record.description,
+    currentUserParticipation: record.participations[0]
+      ? toOwnEventParticipation(record.participations[0])
+      : null
+  };
+}
+
+function toOwnEventParticipation(
+  record: OwnEventParticipationRecord
+): CandidateEventDetail["currentUserParticipation"] {
+  return {
+    id: record.id,
+    eventId: record.eventId,
+    intentStatus: toParticipationStatus(record.intentStatus),
+    createdAt: record.createdAt.toISOString(),
+    cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null
+  };
+}
+
+function toParticipationStatus(
+  value: string
+): NonNullable<CandidateEventDetail["currentUserParticipation"]>["intentStatus"] {
+  if (value === "planning_to_attend" || value === "cancelled") {
+    return value;
+  }
+
+  throw new Error("Repository returned an unknown event participation status.");
 }
 
 function toCandidateEventVisibility(

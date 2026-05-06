@@ -358,6 +358,29 @@ export const candidateDashboardResponseSchema = z.object({
   announcements: z.array(candidateDashboardAnnouncementSummarySchema)
 });
 
+export const candidateEventListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    offset: z.coerce.number().int().min(0).max(1000).default(0),
+    from: z.iso.datetime().optional(),
+    type: z.string().trim().min(1).max(80).optional()
+  })
+  .strict();
+
+export const candidateEventSummarySchema = candidateDashboardEventSummarySchema.strict();
+
+export const candidateEventListResponseSchema = z
+  .object({
+    events: z.array(candidateEventSummarySchema),
+    pagination: z
+      .object({
+        limit: z.number().int().min(1).max(50),
+        offset: z.number().int().min(0).max(1000)
+      })
+      .strict()
+  })
+  .strict();
+
 export const brotherMembershipSummarySchema = z.object({
   id: z.uuid(),
   currentDegree: z.string().trim().min(1).max(120).nullable(),
@@ -447,6 +470,17 @@ export const eventParticipationResponseSchema = z
   .strict();
 
 const ownEventParticipationSchema = eventParticipationResponseSchema.shape.participation;
+
+export const candidateEventDetailResponseSchema = z
+  .object({
+    event: candidateEventSummarySchema
+      .extend({
+        description: z.string().trim().min(1).max(8000).nullable(),
+        currentUserParticipation: ownEventParticipationSchema.nullable()
+      })
+      .strict()
+  })
+  .strict();
 
 export const brotherEventDetailResponseSchema = z.object({
   event: brotherEventSummarySchema.extend({
@@ -778,6 +812,10 @@ export type CandidateDashboardAnnouncementSummaryDto = z.infer<
   typeof candidateDashboardAnnouncementSummarySchema
 >;
 export type CandidateDashboardResponseDto = z.infer<typeof candidateDashboardResponseSchema>;
+export type CandidateEventListQueryDto = z.infer<typeof candidateEventListQuerySchema>;
+export type CandidateEventSummaryDto = z.infer<typeof candidateEventSummarySchema>;
+export type CandidateEventListResponseDto = z.infer<typeof candidateEventListResponseSchema>;
+export type CandidateEventDetailResponseDto = z.infer<typeof candidateEventDetailResponseSchema>;
 export type BrotherMembershipSummaryDto = z.infer<typeof brotherMembershipSummarySchema>;
 export type BrotherProfileResponseDto = z.infer<typeof brotherProfileResponseSchema>;
 export type BrotherTodayEventSummaryDto = z.infer<typeof brotherTodayEventSummarySchema>;

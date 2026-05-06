@@ -16,6 +16,9 @@ import {
   brotherPrayerListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
+  candidateEventDetailResponseSchema,
+  candidateEventListQuerySchema,
+  candidateEventListResponseSchema,
   candidateDashboardResponseSchema,
   contentStatusSchema,
   convertCandidateRequestSchema,
@@ -129,6 +132,76 @@ describe("shared validation", () => {
 
   it("validates attachment status values from the shared contract", () => {
     expect(attachmentStatusSchema.parse("archived")).toBe("archived");
+  });
+
+  it("validates candidate event list and detail contracts without participant lists", () => {
+    expect(candidateEventListQuerySchema.parse({ limit: "10", offset: "2" })).toEqual({
+      limit: 10,
+      offset: 2
+    });
+
+    const event = {
+      id: "11111111-1111-4111-8111-111111111111",
+      title: "Candidate Gathering",
+      type: "formation",
+      startAt: "2026-06-01T10:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "CANDIDATE" as const
+    };
+
+    expect(
+      candidateEventListResponseSchema.parse({
+        events: [event],
+        pagination: {
+          limit: 10,
+          offset: 2
+        }
+      })
+    ).toEqual({
+      events: [event],
+      pagination: {
+        limit: 10,
+        offset: 2
+      }
+    });
+
+    expect(
+      candidateEventDetailResponseSchema.parse({
+        event: {
+          ...event,
+          description: "Formation gathering for active candidates.",
+          currentUserParticipation: {
+            id: "22222222-2222-4222-8222-222222222222",
+            eventId: event.id,
+            intentStatus: "planning_to_attend",
+            createdAt: "2026-05-06T12:00:00.000Z",
+            cancelledAt: null
+          }
+        }
+      })
+    ).toEqual({
+      event: {
+        ...event,
+        description: "Formation gathering for active candidates.",
+        currentUserParticipation: {
+          id: "22222222-2222-4222-8222-222222222222",
+          eventId: event.id,
+          intentStatus: "planning_to_attend",
+          createdAt: "2026-05-06T12:00:00.000Z",
+          cancelledAt: null
+        }
+      }
+    });
+
+    expect(() =>
+      candidateEventDetailResponseSchema.parse({
+        event: {
+          ...event,
+          participants: []
+        }
+      })
+    ).toThrow();
   });
 
   it("validates organization lifecycle status values from the shared contract", () => {

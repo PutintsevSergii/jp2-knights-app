@@ -1,25 +1,22 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { canAccessCandidateMode } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
-import type { CandidateDashboardResponse } from "./candidate-dashboard.types.js";
+import type {
+  CandidateDashboardProfile,
+  CandidateDashboardResponse,
+  CandidateEventDetailResponse,
+  CandidateEventListQuery,
+  CandidateEventListResponse
+} from "./candidate-dashboard.types.js";
 
 @Injectable()
 export class CandidateDashboardService {
   constructor(private readonly candidateDashboardRepository: CandidateDashboardRepository) {}
 
   async getDashboard(principal: CurrentUserPrincipal): Promise<CandidateDashboardResponse> {
-    if (!canAccessCandidateMode(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Candidate access is required.");
-    }
-
-    const profile = await this.candidateDashboardRepository.findActiveProfile(principal.id);
-
-    if (!profile) {
-      throw new ForbiddenException("An active candidate profile is required.");
-    }
+    const profile = await this.loadProfile(principal);
 
     const upcomingEvents = await this.candidateDashboardRepository.findUpcomingEvents(
       profile.assignedOrganizationUnit?.id ?? null
@@ -31,6 +28,58 @@ export class CandidateDashboardService {
       upcomingEvents,
       announcements: []
     };
+  }
+
+  async listEvents(
+    principal: CurrentUserPrincipal,
+    query: CandidateEventListQuery
+  ): Promise<CandidateEventListResponse> {
+    const profile = await this.loadProfile(principal);
+    const events = await this.candidateDashboardRepository.findVisibleCandidateEvents(
+      query,
+      profile.assignedOrganizationUnit?.id ?? null
+    );
+
+    return {
+      events,
+      pagination: {
+        limit: query.limit,
+        offset: query.offset
+      }
+    };
+  }
+
+  async getEvent(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<CandidateEventDetailResponse> {
+    const profile = await this.loadProfile(principal);
+    const event = await this.candidateDashboardRepository.findVisibleCandidateEvent(
+      id,
+      profile.assignedOrganizationUnit?.id ?? null,
+      principal.id
+    );
+
+    if (!event) {
+      throw new NotFoundException("Candidate event was not found in the current scope.");
+    }
+
+    return { event };
+  }
+
+  private async loadProfile(principal: CurrentUserPrincipal): Promise<CandidateDashboardProfile> {
+    if (!canAccessCandidateMode(principal)) {
+      assertNotIdleApprovalPrincipal(principal);
+      throw new ForbiddenException("Candidate access is required.");
+    }
+
+    const profile = await this.candidateDashboardRepository.findActiveProfile(principal.id);
+
+    if (!profile) {
+      throw new ForbiddenException("An active candidate profile is required.");
+    }
+
+    return profile;
   }
 }
 

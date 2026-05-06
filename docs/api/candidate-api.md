@@ -5,6 +5,7 @@
 | GET    | `/candidate/dashboard`                | Yes  | Candidate | none                              | next step, contact, events, announcements                        | 401 invalid token, 403 missing/forbidden/idle | candidate/public filtered          | No brother content          |
 | GET    | `/candidate/roadmap`                  | Yes  | Candidate | none                              | assigned roadmap stages/steps/submissions                        | 404 if none       | own assignment                     | Candidate sees guided path  |
 | GET    | `/candidate/events`                   | Yes  | Candidate | filters/pagination                | visible event list                                               | 400               | public/family/candidate/own scoped | Brother-only hidden         |
+| GET    | `/candidate/events/:id`               | Yes  | Candidate | none                              | event detail with own participation intent                       | 403,404           | public/family/candidate/own scoped | No participant list         |
 | POST   | `/candidate/events/:id/participation` | Yes  | Candidate | none                              | participation intent                                             | 403,404           | visible candidate event only       | Intent only, duplicate updates existing |
 | DELETE | `/candidate/events/:id/participation` | Yes  | Candidate | none                              | cancelled participation                                          | 403,404           | own intent only                    | Cancels own intent only     |
 | GET    | `/candidate/announcements`            | Yes  | Candidate | pagination                        | announcements                                                    | 400               | candidate/public/own scoped        | Private brother hidden      |
@@ -22,7 +23,17 @@ events, memberships, degrees, brother profiles, or admin notes.
 
 Candidate roadmap screens are read-only in default V1. A candidate response may include administrative step status or officer-provided notes when scoped to the candidate, but candidate-authored roadmap submissions are out of scope unless explicitly approved and documented.
 
-## Implemented Phase 9 Event Participation
+## Implemented Phase 9 Candidate Events and Participation
+
+- `GET /candidate/events` requires an active candidate profile and supports
+  `from`, `type`, `limit`, and `offset` filters.
+- Candidate event reads return only currently published, non-cancelled,
+  non-archived `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or assigned
+  `ORGANIZATION_UNIT` events. Brother-only and unrelated organization-unit
+  events are hidden server-side.
+- `GET /candidate/events/:id` returns candidate-visible event detail with
+  description and only the current user's own active participation intent. It
+  never returns participant lists or unrelated user ids.
 
 - Candidate participation mutations require an active candidate profile.
 - Creation verifies the event is currently published, non-cancelled,
