@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
+  BrotherEventListQuery,
+  BrotherEventSummary,
   BrotherPrayerCategorySummary,
   BrotherPrayerListQuery,
   BrotherPrayerSummary,
@@ -15,6 +17,11 @@ export abstract class BrotherCompanionRepository {
     organizationUnitIds: readonly string[],
     now?: Date
   ): Promise<BrotherTodayEventSummary[]>;
+  abstract findVisibleBrotherEvents(
+    query: BrotherEventListQuery,
+    organizationUnitIds: readonly string[],
+    now?: Date
+  ): Promise<BrotherEventSummary[]>;
   abstract findPublishedBrotherPrayerCategories(
     language: string | undefined,
     now?: Date
@@ -62,6 +69,21 @@ export class PrismaBrotherCompanionRepository extends BrotherCompanionRepository
         where: brotherUpcomingEventWhere(organizationUnitIds, now),
         orderBy: [{ startAt: "asc" }, { title: "asc" }],
         take: 3
+      })
+      .then((records) => records.map(toBrotherTodayEvent));
+  }
+
+  findVisibleBrotherEvents(
+    query: BrotherEventListQuery,
+    organizationUnitIds: readonly string[],
+    now = new Date()
+  ): Promise<BrotherEventSummary[]> {
+    return this.prisma.event
+      .findMany({
+        where: brotherEventWhere(query, organizationUnitIds, now),
+        orderBy: [{ startAt: "asc" }, { title: "asc" }],
+        take: query.limit,
+        skip: query.offset
       })
       .then((records) => records.map(toBrotherTodayEvent));
   }
@@ -192,6 +214,14 @@ export function brotherUpcomingEventWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.EventWhereInput {
+  return brotherEventWhere({ limit: 3, offset: 0 }, organizationUnitIds, now);
+}
+
+export function brotherEventWhere(
+  query: Pick<BrotherEventListQuery, "from" | "type" | "limit" | "offset">,
+  organizationUnitIds: readonly string[],
+  now: Date
+): Prisma.EventWhereInput {
   const visibilityWhere: Prisma.EventWhereInput[] = [
     { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
   ];
@@ -208,7 +238,8 @@ export function brotherUpcomingEventWhere(
   return {
     status: "published",
     archivedAt: null,
-    startAt: { gte: now },
+    startAt: { gte: query.from ? new Date(query.from) : now },
+    ...(query.type ? { type: query.type } : {}),
     OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
     AND: [
       {

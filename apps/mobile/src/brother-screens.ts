@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
+  BrotherEventListResponseDto,
   BrotherProfileResponseDto,
   BrotherTodayResponseDto,
   MyOrganizationUnitsResponseDto,
@@ -65,6 +66,17 @@ export interface BrotherProfileScreen {
 
 export interface MyOrganizationUnitsScreen {
   route: "MyOrganizationUnits";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: BrotherScreenSection[];
+  actions: BrotherScreenAction[];
+  demoChromeVisible: boolean;
+  theme: BrotherScreenTheme;
+}
+
+export interface BrotherEventsScreen {
+  route: "BrotherEvents";
   state: MobileScreenState;
   title: string;
   body: string;
@@ -165,6 +177,46 @@ export function buildMyOrganizationUnitsScreen(options: {
         id: "profile",
         label: "Brother Profile",
         targetRoute: "BrotherProfile"
+      }
+    ],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: brotherScreenTheme
+  };
+}
+
+export function buildBrotherEventsScreen(options: {
+  state: MobileScreenState;
+  response?: BrotherEventListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}): BrotherEventsScreen {
+  if (options.state !== "ready") {
+    return stateOnlyBrotherEvents(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response || options.response.events.length === 0) {
+    return stateOnlyBrotherEvents("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "BrotherEvents",
+    state: "ready",
+    title: "Brother Events",
+    body: eventCountBody(options.response.events.length),
+    sections: options.response.events.map((event) => ({
+      id: `event-${event.id}`,
+      title: event.title,
+      body: brotherEventBody(event)
+    })),
+    actions: [
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      },
+      {
+        id: "organization-units",
+        label: "My choragiew",
+        targetRoute: "MyOrganizationUnits"
       }
     ],
     demoChromeVisible: options.runtimeMode === "demo",
@@ -280,6 +332,24 @@ function stateOnlyMyOrganizationUnits(
   };
 }
 
+function stateOnlyBrotherEvents(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): BrotherEventsScreen {
+  const copy = brotherEventsStateCopy[state];
+
+  return {
+    route: "BrotherEvents",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: brotherScreenTheme
+  };
+}
+
 function buildOrganizationUnitSection(
   organizationUnit: OrganizationUnitSummaryDto
 ): BrotherScreenSection {
@@ -298,6 +368,10 @@ function buildOrganizationUnitSection(
 
 function organizationUnitCountBody(count: number): string {
   return count === 1 ? "1 active organization unit" : `${count} active organization units`;
+}
+
+function eventCountBody(count: number): string {
+  return count === 1 ? "1 brother-visible event" : `${count} brother-visible events`;
 }
 
 function brotherTodayBody(response: BrotherTodayResponseDto): string {
@@ -411,6 +485,37 @@ const myOrganizationUnitsStateCopy: Record<MobileScreenState, { title: string; b
   offline: {
     title: "Offline",
     body: "Reconnect to refresh My Choragiew."
+  }
+};
+
+const brotherEventsStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Brother Events",
+    body: "Brother-visible events are available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Brother events are loading."
+  },
+  empty: {
+    title: "Brother Events",
+    body: "No brother-visible events are listed yet."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Brother events could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "An active brother profile is required."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before brother events are available."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh brother events."
   }
 };
 

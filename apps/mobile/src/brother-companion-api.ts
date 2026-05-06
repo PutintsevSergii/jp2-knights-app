@@ -1,7 +1,9 @@
 import {
+  brotherEventListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherEventListResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
   type MyOrganizationUnitsResponseDto
@@ -33,6 +35,17 @@ export interface FetchBrotherCompanionOptions {
   fetchImpl?: BrotherCompanionFetch;
 }
 
+export interface BrotherEventListUrlQuery {
+  from?: string;
+  type?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface FetchBrotherEventsOptions
+  extends FetchBrotherCompanionOptions,
+    BrotherEventListUrlQuery {}
+
 export async function fetchBrotherProfile(
   options: FetchBrotherCompanionOptions = {}
 ): Promise<BrotherProfileResponseDto> {
@@ -49,6 +62,17 @@ export async function fetchBrotherToday(
   return brotherTodayResponseSchema.parse(await response.json());
 }
 
+export async function fetchBrotherEvents(
+  options: FetchBrotherEventsOptions = {}
+): Promise<BrotherEventListResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherEventsUrl(options.baseUrl, options),
+    options
+  );
+
+  return brotherEventListResponseSchema.parse(await response.json());
+}
+
 export async function fetchMyOrganizationUnits(
   options: FetchBrotherCompanionOptions = {}
 ): Promise<MyOrganizationUnitsResponseDto> {
@@ -63,6 +87,19 @@ export function buildBrotherProfileUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): s
 
 export function buildBrotherTodayUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return new URL("brother/today", normalizeBaseUrl(baseUrl)).toString();
+}
+
+export function buildBrotherEventsUrl(
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
+  query: BrotherEventListUrlQuery = {}
+): string {
+  const url = new URL("brother/events", normalizeBaseUrl(baseUrl));
+  setOptionalParam(url, "from", query.from);
+  setOptionalParam(url, "type", query.type);
+  setOptionalNumberParam(url, "limit", query.limit);
+  setOptionalNumberParam(url, "offset", query.offset);
+
+  return url.toString();
 }
 
 export function buildMyOrganizationUnitsUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
@@ -150,6 +187,18 @@ function parsePrivateAccessErrorCode(value: unknown): MobilePrivateAccessErrorCo
   }
 
   return error.code === "IDLE_APPROVAL_REQUIRED" ? "IDLE_APPROVAL_REQUIRED" : null;
+}
+
+function setOptionalParam(url: URL, key: string, value: string | undefined) {
+  if (value) {
+    url.searchParams.set(key, value);
+  }
+}
+
+function setOptionalNumberParam(url: URL, key: string, value: number | undefined) {
+  if (typeof value === "number") {
+    url.searchParams.set(key, String(value));
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

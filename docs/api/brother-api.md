@@ -23,6 +23,12 @@
 - `GET /brother/today` requires the same active brother profile, returns daily
   action cards, active organization-unit summaries, and upcoming events filtered
   to `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or the brother's own organization units.
+- `GET /brother/events` requires the same active brother profile, supports
+  `from`, `type`, `limit`, and `offset`, and returns only currently published
+  non-cancelled events visible to brothers: `PUBLIC`, `FAMILY_OPEN`, `BROTHER`,
+  or the brother's own organization units. Cancelled, archived,
+  future-published, candidate/officer/admin-only, and unrelated
+  organization-unit events are hidden.
 - `GET /brother/prayers` requires the same active brother profile, supports
   `categoryId`, `q`, `language`, `limit`, and `offset`, and returns only
   currently published `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own

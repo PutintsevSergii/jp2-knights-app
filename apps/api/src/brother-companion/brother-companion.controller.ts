@@ -1,17 +1,20 @@
 import { Controller, Get, Query, Req, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { brotherPrayerListQuerySchema } from "@jp2/shared-validation";
+import { brotherEventListQuerySchema, brotherPrayerListQuerySchema } from "@jp2/shared-validation";
 import { CurrentUserGuard } from "../auth/current-user.guard.js";
 import type { RequestWithPrincipal } from "../auth/current-user.types.js";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
+  brotherEventListResponseOpenApiSchema,
   brotherPrayerListResponseOpenApiSchema,
   brotherProfileResponseOpenApiSchema,
   brotherTodayResponseOpenApiSchema
 } from "./brother-companion.openapi.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
+  BrotherEventListQuery,
+  BrotherEventListResponse,
   BrotherPrayerListQuery,
   BrotherPrayerListResponse,
   BrotherProfileResponse,
@@ -77,6 +80,57 @@ export class BrotherCompanionController {
   })
   getToday(@Req() request: RequestWithPrincipal): Promise<BrotherTodayResponse> {
     return this.brotherCompanionService.getToday(requirePrincipal(request));
+  }
+
+  @Get("events")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Published events visible to the active brother.",
+    schema: brotherEventListResponseOpenApiSchema
+  })
+  @ApiQuery({
+    name: "from",
+    required: false,
+    schema: { type: "string", format: "date-time" }
+  })
+  @ApiQuery({
+    name: "type",
+    required: false,
+    schema: { type: "string", minLength: 1, maxLength: 80 }
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    schema: { type: "integer", minimum: 1, maximum: 50, default: 20 }
+  })
+  @ApiQuery({
+    name: "offset",
+    required: false,
+    schema: { type: "integer", minimum: 0, maximum: 1000, default: 0 }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Authentication, approval, or active brother access is required.",
+    content: {
+      "application/json": {
+        schema: apiErrorOpenApiSchema
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The current brother has no active membership profile.",
+    content: {
+      "application/json": {
+        schema: apiErrorOpenApiSchema
+      }
+    }
+  })
+  listEvents(
+    @Req() request: RequestWithPrincipal,
+    @Query(new ZodValidationPipe(brotherEventListQuerySchema)) query: BrotherEventListQuery
+  ): Promise<BrotherEventListResponse> {
+    return this.brotherCompanionService.listEvents(requirePrincipal(request), query);
   }
 
   @Get("prayers")

@@ -6,6 +6,9 @@
     "dev": {
       "command": "pnpm --filter @jp2/admin dev"
     },
+    "dev:http-shell": {
+      "command": "pnpm --filter @jp2/admin dev:http-shell"
+    },
     "lint": {
       "command": "eslint apps/admin/src --max-warnings=0"
     },
@@ -16,7 +19,7 @@
       "command": "vitest run apps/admin"
     },
     "build": {
-      "command": "tsc -p apps/admin/tsconfig.json"
+      "command": "pnpm --filter @jp2/admin build"
     }
   }
 }

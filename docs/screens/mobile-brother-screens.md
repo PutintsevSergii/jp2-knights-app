@@ -32,3 +32,7 @@
   Native screen over `/api/brother/my-organization-units`; it renders active
   organization-unit summaries only with ready/empty/loading/error/offline/
   forbidden/idle-approval states.
+- `BrotherEvents` now has an API/demo-backed mobile screen model over
+  `/api/brother/events`; it renders brother-visible event summaries with
+  ready/empty/loading/error/offline/forbidden states and no participation
+  mutation flow.

@@ -3,6 +3,7 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { BrotherCompanionController } from "./brother-companion.controller.js";
 import type { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
+  BrotherEventListResponse,
   BrotherPrayerListResponse,
   BrotherProfileResponse,
   BrotherTodayResponse
@@ -97,6 +98,24 @@ const prayerResponse: BrotherPrayerListResponse = {
   }
 };
 
+const eventResponse: BrotherEventListResponse = {
+  events: [
+    {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Brother Gathering",
+      type: "formation",
+      startAt: "2026-06-01T10:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "ORGANIZATION_UNIT"
+    }
+  ],
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+};
+
 describe("BrotherCompanionController", () => {
   it("delegates profile, today, and prayer requests using the guard-attached principal", async () => {
     const service = new FakeBrotherCompanionService();
@@ -106,10 +125,13 @@ describe("BrotherCompanionController", () => {
 
     await expect(controller.getProfile({ principal })).resolves.toEqual(profileResponse);
     await expect(controller.getToday({ principal })).resolves.toEqual(todayResponse);
+    await expect(controller.listEvents({ principal }, { limit: 20, offset: 0 })).resolves.toEqual(
+      eventResponse
+    );
     await expect(controller.listPrayers({ principal }, { limit: 20, offset: 0 })).resolves.toEqual(
       prayerResponse
     );
-    expect(service.principals).toEqual([principal, principal, principal]);
+    expect(service.principals).toEqual([principal, principal, principal, principal]);
   });
 
   it("fails closed when invoked without the guard-attached principal", () => {
@@ -119,6 +141,9 @@ describe("BrotherCompanionController", () => {
 
     expect(() => controller.getProfile({})).toThrow("CurrentUserGuard did not attach a principal.");
     expect(() => controller.getToday({})).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() => controller.listEvents({}, { limit: 20, offset: 0 })).toThrow(
+      "CurrentUserGuard did not attach a principal."
+    );
     expect(() => controller.listPrayers({}, { limit: 20, offset: 0 })).toThrow(
       "CurrentUserGuard did not attach a principal."
     );
@@ -127,7 +152,7 @@ describe("BrotherCompanionController", () => {
 
 class FakeBrotherCompanionService implements Pick<
   BrotherCompanionService,
-  "getProfile" | "getToday" | "listPrayers"
+  "getProfile" | "getToday" | "listEvents" | "listPrayers"
 > {
   principals: CurrentUserPrincipal[] = [];
 
@@ -139,6 +164,11 @@ class FakeBrotherCompanionService implements Pick<
   getToday(input: CurrentUserPrincipal) {
     this.principals.push(input);
     return Promise.resolve(todayResponse);
+  }
+
+  listEvents(input: CurrentUserPrincipal) {
+    this.principals.push(input);
+    return Promise.resolve(eventResponse);
   }
 
   listPrayers(input: CurrentUserPrincipal) {

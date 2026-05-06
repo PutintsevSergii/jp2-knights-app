@@ -3,6 +3,8 @@ import {
   buildAboutOrderScreen,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
+  buildBrotherEventsScreen,
+  buildBrotherEventsUrl,
   buildBrotherProfileScreen,
   buildBrotherProfileUrl,
   buildBrotherTodayScreen,
@@ -16,6 +18,7 @@ import {
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
   fallbackBrotherProfile,
+  fallbackBrotherEvents,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits,
   fallbackCandidateDashboard,
@@ -164,6 +167,9 @@ describe("mobile shell", () => {
     expect(buildBrotherProfileUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/profile"
     );
+    expect(buildBrotherEventsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/events"
+    );
     expect(buildMyOrganizationUnitsUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/my-organization-units"
     );
@@ -188,5 +194,12 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("MyOrganizationUnits");
+    expect(
+      buildBrotherEventsScreen({
+        state: "ready",
+        response: fallbackBrotherEvents,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherEvents");
   });
 });

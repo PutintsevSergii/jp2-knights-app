@@ -40,6 +40,19 @@ const brotherTodayEventSummaryOpenApiSchema = {
   }
 };
 
+export const brotherEventListResponseOpenApiSchema = {
+  type: "object",
+  required: ["events", "pagination"],
+  additionalProperties: false,
+  properties: {
+    events: {
+      type: "array",
+      items: brotherTodayEventSummaryOpenApiSchema
+    },
+    pagination: brotherPaginationOpenApiSchema
+  }
+};
+
 const brotherTodayCardOpenApiSchema = {
   type: "object",
   required: ["id", "label", "body", "targetRoute", "priority"],

@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 5, 2026 (Phases 0–7 complete; Phase 8 in progress)
+**Last Updated**: May 6, 2026 (Phases 0–7 complete; Phase 8 in progress)
 
 ---
 
@@ -224,15 +224,43 @@ Companion Core is in progress:
   active brother membership enforcement, category/search/language/pagination
   filters, and server-side visibility limited to currently published `PUBLIC`,
   `FAMILY_OPEN`, `BROTHER`, or own organization-unit prayers.
+- Phase 8 now includes brother event read coverage:
+  guarded `GET /api/brother/events` with shared query/response DTO validation,
+  active brother membership enforcement, `from`/type/pagination filters, and
+  server-side visibility limited to currently published, non-cancelled,
+  non-archived `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own organization-unit
+  events. Mobile now has an authenticated API client, demo fallback, and
+  `BrotherEvents` screen model with ready/empty/loading/error/offline/forbidden
+  states.
+- Phase 8 now runs Admin Lite on a real Next.js App Router target. `@jp2/admin`
+  has Next/React runtime dependencies, `next dev`, `next build`, and `next
+  start` scripts, Nx `admin:build` now runs `next build`, and the previous
+  dependency-free HTTP shell remains available as `dev:http-shell` for
+  compatibility. `/admin`, `/admin/dashboard`,
+  `/admin/identity-access-reviews`, candidate request list/detail, candidate
+  profile list/detail, organization-unit list/create/detail, prayers, and events
+  all live under `apps/admin/src/app` as dynamic route handlers. The route
+  handlers delegate to the existing Admin Lite render/client/model layer, which
+  preserves current API clients, shared DTO validation, screen models, action
+  metadata, and demo fixtures while moving the runtime to Next.js. Route smoke
+  tests cover demo mode without backend calls, dashboard API bearer forwarding,
+  identity-access review queue mounting, all list routes, and dynamic
+  detail/form routes. `next build` verifies the complete current route surface.
 - Delivery-risk review recommendations are now tracked as in-progress hardening
   and planning items alongside Phase 8, without expanding V1 scope:
   - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
-    accepted V1 foundation, and add a Phase 8 planning item for an incremental
-    Next.js/App Router admin migration. The planned solution is to scaffold a
-    Next.js admin shell alongside the current shell, mount `/admin/dashboard`
-    first, reuse existing API clients/DTO validation/screen models, then migrate
-    admin routes one by one after auth/session behavior and smoke tests are
-    defined.
+    accepted V1 foundation while the incremental Next.js/App Router admin
+    migration is now a real Next.js runtime target for the current implemented
+    Admin Lite route surface. Future admin routes should follow the same adapter
+    pattern until React Server Component rewrites are intentionally scheduled
+    with parity tests.
+  - Next.js Admin Lite follow-up steps for Phase 8 hardening:
+    keep `dev:http-shell` only as a short-term compatibility fallback; add
+    Next `dev/start` smoke checks after the broader smoke target is introduced;
+    verify production auth/session cookie behavior through the Next route
+    handlers; and convert framework-neutral HTML renderers to native React
+    Server Components only after route parity and authorization smoke tests are
+    stable.
   - Production readiness: add smoke/E2E targets for API boot, Admin Lite routes,
     mobile demo launch, and production-mode demo rejection. CI already runs
     lint/typecheck/test/coverage/build/contracts/migration checks; the next
@@ -261,6 +289,7 @@ Companion Core is in progress:
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
   `/api/candidate/dashboard`,
   `/api/brother/profile`, `/api/brother/today`, `/api/brother/prayers`,
+  `/api/brother/events`,
   `/api/brother/my-organization-units`,
   `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
@@ -274,15 +303,16 @@ Companion Core is in progress:
   with push/notification preferences.
 - `/api/brother/my-organization-units` currently returns the active brother's
   organization-unit summaries only, and mobile renders those scoped summaries
-  without brother rosters. Officer summaries, participation intent, and
-  announcements remain Phase 9+ work.
+  without brother rosters. Officer summaries, event participation intent, event
+  details, and announcements remain Phase 9+ work.
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive with audit side effects. The Admin Lite HTTP shell mounts
   organization-unit list, create, and scoped detail/edit form documents over the
   existing contracts.
-- A future Next.js/App Router scaffold can replace or host the dependency-free
-  shell if the owner wants that framework target specifically, but the Phase 6
-  mounted Admin Lite foundation is complete without adding a new dependency.
+- Admin Lite now has a real Next.js App Router runtime target for the current
+  implemented route surface. The dependency-free HTTP shell remains available as
+  a compatibility fallback while future route and React Server Component
+  hardening steps are handled incrementally.
 - Remaining Phase 8 through 13 product workflows are not implemented yet unless
   explicitly listed above.
 
@@ -311,7 +341,7 @@ Companion Core is in progress:
 | Requirement                                | APIs                                                                                                                                  | Screens                                      | Data                                                                                     | Key tests                                                                                                                                                                   |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | NFR-SEC-001 Authentication                 | `/auth/session`, `/auth/logout`, `/auth/refresh`, `GET /auth/me`                                                                      | Login, Admin Login                           | users, identity_provider_accounts, user_roles, memberships                               | Firebase adapter verification, fake-provider replacement, inactive-user blocking, provider-linking                                                                          |
-| FR-AUTH-001 Firebase Idle Approval         | `/auth/session`, `GET /auth/me`; `/admin/identity-access-reviews`, `/admin/identity-access-reviews/{id}`, `/admin/identity-access-reviews/{id}/confirm`, `/admin/identity-access-reviews/{id}/reject`, `/admin/identity-access-reviews/expire` | login pending approval, admin idle approvals | users, identity_provider_accounts, identity_access_reviews, identity_access_approver_assignments, user_roles, memberships, candidate_profiles, officer_assignments, audit_logs | Firebase sign-in stays idle/public-only, 30-day expiry, scoped country/region approval privilege, audited role/scope assignment, rejection/expiry public-only state |
+| FR-AUTH-001 Firebase Idle Approval         | `/auth/session`, `GET /auth/me`; `/admin/identity-access-reviews`, `/admin/identity-access-reviews/{id}`, `/admin/identity-access-reviews/{id}/confirm`, `/admin/identity-access-reviews/{id}/reject`, `/admin/identity-access-reviews/expire` | login pending approval, admin idle approvals | users, identity_provider_accounts, identity_access_reviews, identity_access_approver_assignments, user_roles, memberships, candidate_profiles, officer_assignments, audit_logs | Firebase sign-in stays idle/public-only, 30-day expiry, scoped country/region approval privilege, audited role/scope assignment, rejection/expiry public-only state, Next.js identity-access route smoke test |
 | NFR-DEMO-001 Demo mode                     | runtime mode config                                                                                                                   | Mobile/Admin launch shells                   | demo fixtures once screen flows exist                                                    | shared parser, mobile/admin/API production rejection tests                                                                                                                  |
 | FR-PUBLIC-001 Public Home                  | `GET /public/home`                                                                                                                    | `PublicHome`                                 | prayers, events, content pages                                                           | public no-auth, no private content, empty state                                                                                                                             |
 | FR-PUBLIC-002 About the Order              | `GET /public/content-pages/{slug}`                                                                                                    | `AboutOrder`                                 | content_pages                                                                            | published `PUBLIC` content only, private/missing pages 404, English fallback, mobile API/demo states                                                                        |
@@ -319,8 +349,8 @@ Companion Core is in progress:
 | FR-EVENT-001 Public Events                 | `GET /public/events`, `GET /public/events/:id`                                                                                        | public event list/detail                     | events                                                                                   | public/family only, date filters, mobile list/detail API/demo states                                                                                                        |
 | FR-PRAYER-002 Public Silent Prayer         | `GET/POST /public/silent-prayer-events`                                                                                               | public silent prayer                         | silent_prayer_events, silent_prayer_participation, Redis presence                        | anonymous aggregate only, duplicate join                                                                                                                                    |
 | FR-CANDIDATE-REQ-001 Join Interest Request | `POST /public/candidate-requests`                                                                                                     | join request form                            | candidate_requests                                                                       | consent-required shared DTO, server persistence with consent metadata, idempotency key retry, repeated-attempt rate limit, duplicate active email conflict, no-PII response |
-| FR-ADMIN-001 Candidate Request Management  | `GET /admin/candidate-requests`, `GET/PATCH /admin/candidate-requests/:id`, `POST /admin/candidate-requests/:id/convert`              | candidate request list/detail                | candidate_requests, audit_logs                                                           | officer scope, status transitions, audit, admin client/shell API/demo states                                                                                                |
-| FR-ADMIN-008 Candidate Profile Management  | `GET /admin/candidates`, `GET/PATCH /admin/candidates/:id`; `POST /admin/candidates/:id/convert-to-brother` pending brother lifecycle | candidate list/detail                        | candidate_profiles, users, user_roles, audit_logs; memberships pending brother lifecycle | officer scope, profile update audit, admin client/shell API/demo states, brother conversion deferred to brother lifecycle                                                   |
+| FR-ADMIN-001 Candidate Request Management  | `GET /admin/candidate-requests`, `GET/PATCH /admin/candidate-requests/:id`, `POST /admin/candidate-requests/:id/convert`              | candidate request list/detail                | candidate_requests, audit_logs                                                           | officer scope, status transitions, audit, admin client/shell API/demo states, Next.js list/detail route smoke tests                                                         |
+| FR-ADMIN-008 Candidate Profile Management  | `GET /admin/candidates`, `GET/PATCH /admin/candidates/:id`; `POST /admin/candidates/:id/convert-to-brother` pending brother lifecycle | candidate list/detail                        | candidate_profiles, users, user_roles, audit_logs; memberships pending brother lifecycle | officer scope, profile update audit, admin client/shell API/demo states, Next.js list/detail route smoke tests, brother conversion deferred to brother lifecycle             |
 | FR-CANDIDATE-001 Candidate Dashboard       | `GET /candidate/dashboard`                                                                                                            | candidate dashboard                          | candidate_profiles, events; roadmap_assignments/announcements pending later phases       | active profile required, scoped event visibility, mobile API/client state mapping, no brother content                                                                       |
 | FR-ROADMAP-001 Candidate Roadmap           | `GET /candidate/roadmap`                                                                                                              | candidate roadmap                            | roadmap_definitions, assignments                                                         | assigned candidate only                                                                                                                                                     |
 | FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`                                                                                                               | candidate events                             | events                                                                                   | candidate visibility, organization-unit candidate rule                                                                                                                      |
@@ -329,7 +359,7 @@ Companion Core is in progress:
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |
 | FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list, mobile API/demo/screen states                                                                                                                   |
 | FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | published public/family/brother/own organization-unit filtering, no candidate/officer/admin/unrelated-scope prayers                                                        |
-| FR-EVENT-002 Brother Events                | `GET /brother/events`                                                                                                                 | brother event screens                        | events                                                                                   | relevant only, cancelled behavior                                                                                                                                           |
+| FR-EVENT-002 Brother Events                | `GET /brother/events`                                                                                                                 | BrotherEvents screen model                   | events                                                                                   | guarded active-brother read API, shared DTO validation, published/non-cancelled visibility filtering, mobile API/demo model tests                                           |
 | FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | event detail                                 | event_participation                                                                      | visible event only, duplicate update                                                                                                                                        |
 | FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | no chat/comments, relevant only                                                                                                                                             |
 | FR-ROADMAP-002 Formation Roadmap           | `GET /brother/roadmap`                                                                                                                | formation roadmap                            | roadmap\_\*                                                                              | own roadmap, no auto degree                                                                                                                                                 |
@@ -337,11 +367,11 @@ Companion Core is in progress:
 | FR-ROADMAP-004 Roadmap Approval            | `GET/PATCH /admin/roadmap-submissions/:id`                                                                                            | roadmap request detail                       | roadmap_submissions, audit_logs                                                          | officer scope, rejection comment, audit                                                                                                                                     |
 | FR-PRAYER-004 Silent Brother Prayer        | brother silent prayer routes and socket events                                                                                        | brother silent prayer                        | silent_prayer_events, Redis presence                                                     | once per user, reconnect                                                                                                                                                    |
 | FR-NOTIF-001 Notification Preferences      | `PUT /auth/notification-preferences`, `POST /auth/device-tokens`                                                                      | settings                                     | notification_preferences, device_tokens                                                  | self only, duplicate token ownership                                                                                                                                        |
-| FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                                | admin dashboard                              | scoped aggregates                                                                        | guarded scoped counts, admin dashboard route/demo fixture, no unrelated scope                                                                                               |
+| FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                                | admin dashboard                              | scoped aggregates                                                                        | guarded scoped counts, admin dashboard route/demo fixture, no unrelated scope, Next.js `/admin/dashboard` route smoke tests for demo/API modes                               |
 | FR-ADMIN-003 Brother Registry              | `/admin/brothers` routes                                                                                                              | brother list/detail/editor                   | users, user_roles, memberships, audit_logs                                               | officer scope, critical audit                                                                                                                                               |
-| FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                                    | organization unit list/detail                | organization_units, officer_assignments, audit_logs                                      | scoped list API, Super Admin create/update/archive, audit side effects, rendered Admin Lite list/detail/form routes                                                         |
-| FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                               | prayer list/editor                           | prayers, audit_logs                                                                      | guarded list/create/patch API, admin app list/editor workflow model, visibility required, archive not delete, audit side effects                                            |
-| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                                | event list/editor                            | events, audit_logs                                                                       | guarded list/create/patch API, admin app list/editor workflow model, officer scope, public/private explicit, archive not delete, audit side effects                         |
+| FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                                    | organization unit list/detail                | organization_units, officer_assignments, audit_logs                                      | scoped list API, Super Admin create/update/archive, audit side effects, rendered Admin Lite list/detail/form routes, Next.js list/create/detail route smoke tests            |
+| FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                               | prayer list/editor                           | prayers, audit_logs                                                                      | guarded list/create/patch API, admin app list/editor workflow model, visibility required, archive not delete, audit side effects, Next.js list route smoke test              |
+| FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                                | event list/editor                            | events, audit_logs                                                                       | guarded list/create/patch API, admin app list/editor workflow model, officer scope, public/private explicit, archive not delete, audit side effects, Next.js list route smoke test |
 | FR-ADMIN-006 Announcement Management       | `/admin/announcements` routes                                                                                                         | announcement list/editor                     | announcements, audit_logs                                                                | audience-safe push                                                                                                                                                          |
 | FR-ADMIN-007 Silent Prayer Management      | `/admin/silent-prayer-events` routes                                                                                                  | silent prayer editor                         | silent_prayer_events, audit_logs                                                         | no participant list                                                                                                                                                         |
 | FR-AUDIT-001 Audit Logging                 | mutation side effects, `/admin/audit-logs`                                                                                            | audit log                                    | audit_logs                                                                               | before/after redaction, access control                                                                                                                                      |

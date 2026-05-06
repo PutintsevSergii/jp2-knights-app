@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 5, 2026
+Updated: May 6, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -20,7 +20,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                            | —                            |
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
-| **8**    | 🟡 IN PROGRESS | ~55%     | ███████████░░░░░░░░░ | Brother profile, Brother Today API, My Chorągiew mobile view, brother prayer API, delivery-risk hardening plan       | Brother event reads + hardening |
+| **8**    | 🟡 IN PROGRESS | ~80%     | ████████████████░░░░ | Brother profile, Brother Today API, My Chorągiew mobile view, brother prayer/event APIs, Admin Lite Next runtime, delivery-risk hardening plan | Request-id + smoke hardening |
 | **9–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | After Phase 8                |
 
 ---
@@ -130,8 +130,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Brother-visible prayer/event APIs (Phase 8/9)
-- ⏳ Participation intent (Phase 9)
+- ⏳ Brother event detail and participation intent (Phase 9)
+- ⏳ Brother announcements and push surfaces (Phase 9)
 
 **Exit criteria**: ✅ Public APIs, mobile public views, admin prayer/event APIs, audit side effects, admin workflow models, rendered templates, and shell routes are implemented
 
@@ -235,7 +235,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 8: Brother Companion Core 🟡
 
-**Status**: IN PROGRESS (~55%)
+**Status**: IN PROGRESS (~80%)
 
 **Completed**:
 
@@ -246,18 +246,20 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Mobile brother demo fixtures and `BrotherToday`/`BrotherProfile` screen models with ready/empty/loading/error/offline/forbidden states
 - ✅ Mobile My Chorągiew API client/demo fallback/screen model and React Native screen over `/api/brother/my-organization-units`, rendering scoped organization-unit summaries only
 - ✅ Guarded `GET /api/brother/prayers` with active brother enforcement, shared DTO/OpenAPI schema, category/search/language/pagination filters, and published public/family/brother/own-organization-unit visibility
+- ✅ Guarded `GET /api/brother/events` with active brother enforcement, shared DTO/OpenAPI schema, `from`/type/pagination filters, and published non-cancelled public/family/brother/own-organization-unit visibility
+- ✅ Mobile brother event API client, demo fallback, and `BrotherEvents` screen model with ready/empty/loading/error/offline/forbidden states
+- ✅ Admin Lite now has real Next.js/React runtime dependencies, `next dev`, `next build`, and `next start` scripts; the prior dependency-free shell remains available as `dev:http-shell`
+- ✅ Nx `admin:build` now runs `next build`, and `next build` verifies every current Admin Lite route as a dynamic App Router route
+- ✅ Next.js/App Router Admin Lite route surface mounts through a reusable route adapter that keeps the existing render/client/model layer as the source of truth: `/admin`, `/admin/dashboard`, `/admin/identity-access-reviews`, candidate request list/detail, candidate profile list/detail, organization-unit list/create/detail, prayers, and events
+- ✅ Admin route smoke tests cover demo mode without backend calls, dashboard API mode bearer forwarding, identity-access review queue mounting, all current list routes, and dynamic detail/form routes
 
 **In Progress**:
 
-- 🟡 Brother event list API remains a separate Phase 8 follow-up slice
-- 🟡 Next.js/App Router admin migration plan: scaffold a Next.js admin shell
-  alongside the current dependency-free shell, mount `/admin/dashboard` first,
-  reuse existing API clients/DTO validation/screen models, then migrate admin
-  routes incrementally after auth/session behavior and smoke tests are defined
+- 🟡 Phase 8 Next Admin follow-up steps: keep `dev:http-shell` only as a short-term compatibility fallback; add Next `dev/start` smoke checks after the broader smoke target is introduced; verify production auth/session cookie behavior through the Next route handlers; convert framework-neutral HTML renderers to native React Server Components only after route parity and authorization smoke tests are stable
 - 🟡 Delivery-risk hardening plan from code review:
   - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
-    current V1 foundation while planning the incremental Next.js/App Router
-    migration as a Phase 8 follow-up item.
+    compatibility fallback while the current Admin Lite route surface runs on
+    the Next.js App Router runtime.
   - Production readiness: add API boot, Admin Lite route, mobile demo launch,
     and production-mode demo rejection smoke targets. Existing CI already runs
     lint/typecheck/test/coverage/build/contracts/migration checks; the gap is
@@ -276,9 +278,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
     rejection requirements, responsible-officer assignment behavior, and
     follow-up timeline expectations.
 
-**Exit criteria**: 🟡 Brother Today/profile, assigned organization-unit mobile views, and brother prayer reads work; brother event reads and hardening remain
+**Exit criteria**: 🟡 Brother Today/profile, assigned organization-unit mobile views, brother prayer/event reads, and the current Admin Lite route surface build under Next.js App Router; request-id, launch smoke, and production auth/session hardening remain
 
-**Next step**: Add brother event read API and schedule the Next.js admin shell scaffold, request-id middleware, and smoke-test targets before Phase 9 grows the surface area.
+**Next step**: Add request-id middleware/interceptor, Next `dev/start` and production auth/session smoke checks, and broader API/mobile launch smoke targets before Phase 9 grows the surface area.
 
 ### Phases 4–13: Roadmap
 
@@ -303,13 +305,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.37% statements / 80.29% branches / 92.05% functions / 91.21% lines  |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer DTO/controller/service/repository visibility tests added                      |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.06% statements / 81.59% branches / 93.13% functions / 91.82% lines  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer/event visibility tests and full current Admin Lite Next route smoke tests added |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed; admin build now runs `next build`                                    |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes identity access review endpoints                                |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires identity access review endpoints                                    |
 | **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review migration and seed fixtures included                                 |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile brother demo fixtures validate through shared DTOs                                   |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile brother demo fixtures validate through shared DTOs; current Next admin route surface avoids backend calls in demo smoke tests |
 
 ---
 
@@ -401,6 +403,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile brother profile/today API clients, demo fixtures, and screen models added with shared DTO validation and state handling
 - Mobile My Chorągiew API client, demo fixture, React Native screen, and screen model added over `/brother/my-organization-units`; it renders organization-unit summaries only and no brother roster
 - Brother prayer API added with guarded `/brother/prayers`, shared DTO/OpenAPI schema, and published public/family/brother/own-organization-unit visibility filtering
+- Brother event API added with guarded `/brother/events`, shared DTO/OpenAPI schema, published non-cancelled public/family/brother/own-organization-unit visibility filtering, and mobile API/demo/screen model coverage
+- Admin Lite now has a real Next.js App Router runtime for the current implemented route surface, preserving current API/client/DTO/model/fixture behavior through the shared route adapter
 - Delivery-risk recommendations are tracked as active hardening/planning work:
   request-id propagation, smoke/E2E launch checks, realistic seed/load fixtures,
   Redis TTL validation for Phase 11, explicit V1 organization-scope constraints,
@@ -440,7 +444,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Update this dashboard after changes
 
 4. **Production-readiness review hardening**
-   - [ ] Plan and scaffold a Next.js/App Router Admin Lite shell alongside the current TypeScript HTTP shell, starting with `/admin/dashboard` and reusing existing admin API clients, DTO schemas, screen models, and fixtures
+   - [x] Plan and complete the Next.js/App Router Admin Lite runtime for the current implemented route surface, reusing existing admin API clients, DTO schemas, screen models, and fixtures
+   - [x] Add brother event read API/client/screen model coverage for Phase 8 companion parity
+   - [ ] Add Next `dev/start` smoke checks and production auth/session cookie checks for the App Router handlers
+   - [ ] Decide when to retire `dev:http-shell` after Next route parity is stable
+   - [ ] Convert framework-neutral Admin Lite renderers to native React Server Components only after parity and authorization smoke tests are stable
    - [ ] Add request-id middleware/interceptor and thread the generated id through error responses and audit log writes
    - [ ] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
    - [ ] Expand realistic seed/load fixtures across multiple chorągwie, roles, inactive users, archived records, and visibility levels
@@ -545,6 +553,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 5, 2026
+**Last Updated**: May 6, 2026
 **Current Phase**: Phase 8 in progress; Phases 0–7 complete
 **Next Major Milestone**: Complete brother companion core

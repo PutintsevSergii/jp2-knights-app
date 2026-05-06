@@ -5,6 +5,7 @@ import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js"
 import type { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
+  BrotherEventSummary,
   BrotherPrayerSummary,
   BrotherProfile,
   BrotherTodayEventSummary
@@ -49,6 +50,8 @@ const event: BrotherTodayEventSummary = {
   locationLabel: "Riga",
   visibility: "ORGANIZATION_UNIT"
 };
+
+const eventListItem: BrotherEventSummary = event;
 
 const prayer: BrotherPrayerSummary = {
   id: "55555555-5555-4555-8555-555555555555",
@@ -192,6 +195,26 @@ describe("BrotherCompanionService", () => {
     expect(repository.prayerScopes).toEqual([[organizationUnit.id]]);
   });
 
+  it("lists brother-visible events using active membership organization-unit scope", async () => {
+    const repository = repositoryWith(profile, [eventListItem]);
+
+    await expect(
+      new BrotherCompanionService(repository).listEvents(brother, {
+        from: "2026-05-01T00:00:00.000Z",
+        type: "formation",
+        limit: 20,
+        offset: 0
+      })
+    ).resolves.toEqual({
+      events: [eventListItem],
+      pagination: {
+        limit: 20,
+        offset: 0
+      }
+    });
+    expect(repository.eventListScopes).toEqual([[organizationUnit.id]]);
+  });
+
   it("blocks non-brothers and brothers without an active membership profile", async () => {
     const candidate: CurrentUserPrincipal = {
       ...brother,
@@ -215,6 +238,7 @@ describe("BrotherCompanionService", () => {
     });
     expect(repository.profileLookups).toEqual([]);
     expect(repository.eventScopes).toEqual([]);
+    expect(repository.eventListScopes).toEqual([]);
     expect(repository.prayerScopes).toEqual([]);
   });
 });
@@ -231,11 +255,13 @@ function repositoryWith(
   prayers: BrotherPrayerSummary[] = []
 ): BrotherCompanionRepository & {
   eventScopes: string[][];
+  eventListScopes: string[][];
   prayerScopes: string[][];
   profileLookups: string[];
 } {
   return {
     eventScopes: [],
+    eventListScopes: [],
     prayerScopes: [],
     profileLookups: [],
     findActiveBrotherProfile(userId) {
@@ -244,6 +270,10 @@ function repositoryWith(
     },
     findUpcomingEvents(organizationUnitIds) {
       this.eventScopes.push([...organizationUnitIds]);
+      return Promise.resolve(events);
+    },
+    findVisibleBrotherEvents(_query, organizationUnitIds) {
+      this.eventListScopes.push([...organizationUnitIds]);
       return Promise.resolve(events);
     },
     findPublishedBrotherPrayerCategories() {

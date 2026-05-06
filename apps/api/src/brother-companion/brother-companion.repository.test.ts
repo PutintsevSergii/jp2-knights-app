@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaService } from "../database/prisma.service.js";
 import {
+  brotherEventWhere,
   brotherPrayerWhere,
   brotherUpcomingEventWhere,
   PrismaBrotherCompanionRepository
@@ -84,6 +85,44 @@ describe("brotherUpcomingEventWhere", () => {
       AND: [
         {
           OR: [{ visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }]
+        }
+      ]
+    });
+  });
+});
+
+describe("brotherEventWhere", () => {
+  it("applies filters and excludes cancelled, archived, unpublished, and hidden events", () => {
+    const now = new Date("2026-05-05T00:00:00.000Z");
+
+    expect(
+      brotherEventWhere(
+        {
+          from: "2026-06-01T00:00:00.000Z",
+          type: "formation",
+          limit: 20,
+          offset: 0
+        },
+        [organizationUnitRecord.id],
+        now
+      )
+    ).toEqual({
+      status: "published",
+      archivedAt: null,
+      startAt: { gte: new Date("2026-06-01T00:00:00.000Z") },
+      type: "formation",
+      OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+      AND: [
+        {
+          OR: [
+            { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } },
+            {
+              visibility: "ORGANIZATION_UNIT",
+              targetOrganizationUnitId: {
+                in: [organizationUnitRecord.id]
+              }
+            }
+          ]
         }
       ]
     });
@@ -237,6 +276,50 @@ describe("PrismaBrotherCompanionRepository", () => {
       new PrismaBrotherCompanionRepository(prisma).findUpcomingEvents([])
     ).rejects.toThrow("Repository returned an event visibility hidden from brothers.");
   });
+
+  it("maps paginated brother-visible events", async () => {
+    const { eventFindMany, prisma } = prismaMock();
+    eventFindMany.mockResolvedValueOnce([
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        title: "Brother Gathering",
+        type: "formation",
+        startAt: new Date("2026-06-01T10:00:00.000Z"),
+        endAt: null,
+        locationLabel: "Riga",
+        visibility: "BROTHER"
+      }
+    ]);
+
+    await expect(
+      new PrismaBrotherCompanionRepository(prisma).findVisibleBrotherEvents(
+        {
+          from: "2026-06-01T00:00:00.000Z",
+          type: "formation",
+          limit: 10,
+          offset: 5
+        },
+        [organizationUnitRecord.id]
+      )
+    ).resolves.toEqual([
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        title: "Brother Gathering",
+        type: "formation",
+        startAt: "2026-06-01T10:00:00.000Z",
+        endAt: null,
+        locationLabel: "Riga",
+        visibility: "BROTHER"
+      }
+    ]);
+    expect(eventFindMany).toHaveBeenCalledWith({
+      where: expect.any(Object) as unknown,
+      orderBy: [{ startAt: "asc" }, { title: "asc" }],
+      take: 10,
+      skip: 5
+    });
+  });
+
 
   it("maps brother-visible prayer categories and prayers", async () => {
     const { prayerCategoryFindMany, prayerFindMany, prisma } = prismaMock();

@@ -2,15 +2,18 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BrotherCompanionHttpError,
   brotherCompanionLoadFailureState,
+  buildBrotherEventsUrl,
   buildMyOrganizationUnitsUrl,
   buildBrotherProfileUrl,
   buildBrotherTodayUrl,
   fetchMyOrganizationUnits,
+  fetchBrotherEvents,
   fetchBrotherProfile,
   fetchBrotherToday
 } from "./brother-companion-api.js";
 import {
   fallbackBrotherProfile,
+  fallbackBrotherEvents,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
@@ -22,9 +25,7 @@ describe("brother companion api", () => {
         ok: true,
         status: 200,
         json: () =>
-          Promise.resolve(
-            input.endsWith("/brother/profile") ? fallbackBrotherProfile : fallbackBrotherToday
-          )
+          Promise.resolve(responseForBrotherUrl(input))
       })
     );
 
@@ -49,6 +50,17 @@ describe("brother companion api", () => {
         fetchImpl
       })
     ).resolves.toEqual(fallbackMyOrganizationUnits);
+    await expect(
+      fetchBrotherEvents({
+        baseUrl: "https://api.example.test",
+        authToken: "token",
+        from: "2026-06-01T00:00:00.000Z",
+        type: "formation",
+        limit: 10,
+        offset: 5,
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackBrotherEvents);
     expect(fetchImpl).toHaveBeenNthCalledWith(1, "https://api.example.test/brother/profile", {
       method: "GET",
       headers: { authorization: "Bearer token" }
@@ -65,6 +77,14 @@ describe("brother companion api", () => {
         headers: { authorization: "Bearer token" }
       }
     );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      4,
+      "https://api.example.test/brother/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token" }
+      }
+    );
   });
 
   it("builds URLs and maps load failures", async () => {
@@ -73,6 +93,16 @@ describe("brother companion api", () => {
     );
     expect(buildBrotherTodayUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/today"
+    );
+    expect(
+      buildBrotherEventsUrl("https://api.example.test", {
+        from: "2026-06-01T00:00:00.000Z",
+        type: "formation",
+        limit: 10,
+        offset: 5
+      })
+    ).toBe(
+      "https://api.example.test/brother/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5"
     );
     expect(buildMyOrganizationUnitsUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/my-organization-units"
@@ -119,3 +149,19 @@ describe("brother companion api", () => {
     ).toBe("idleApproval");
   });
 });
+
+function responseForBrotherUrl(input: string) {
+  if (input.includes("/brother/profile")) {
+    return fallbackBrotherProfile;
+  }
+
+  if (input.includes("/brother/events")) {
+    return fallbackBrotherEvents;
+  }
+
+  if (input.includes("/brother/my-organization-units")) {
+    return fallbackMyOrganizationUnits;
+  }
+
+  return fallbackBrotherToday;
+}

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  fallbackBrotherEvents,
   fallbackBrotherProfile,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
 import {
   buildBrotherProfileScreen,
+  buildBrotherEventsScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
 } from "./brother-screens.js";
@@ -73,6 +75,29 @@ describe("brother screen models", () => {
     ]);
   });
 
+  it("builds Brother Events with visible event summaries and navigation actions", () => {
+    const screen = buildBrotherEventsScreen({
+      state: "ready",
+      response: fallbackBrotherEvents,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("BrotherEvents");
+    expect(screen.title).toBe("Brother Events");
+    expect(screen.body).toBe("1 brother-visible event");
+    expect(screen.sections).toEqual([
+      expect.objectContaining({
+        id: `event-${fallbackBrotherEvents.events[0]!.id}`,
+        title: "Brother Gathering"
+      })
+    ]);
+    expect(screen.sections[0]?.body).toContain("Riga");
+    expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "BrotherToday",
+      "MyOrganizationUnits"
+    ]);
+  });
+
   it("maps non-ready states without content actions", () => {
     expect(
       buildBrotherTodayScreen({
@@ -122,6 +147,19 @@ describe("brother screen models", () => {
         route: "MyOrganizationUnits",
         state: "idleApproval",
         title: "Account Approval Pending",
+        actions: []
+      })
+    );
+    expect(
+      buildBrotherEventsScreen({
+        state: "offline",
+        runtimeMode: "demo"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherEvents",
+        state: "offline",
+        demoChromeVisible: true,
         actions: []
       })
     );
@@ -188,6 +226,20 @@ describe("brother screen models", () => {
           body: "Current degree is not recorded yet."
         })
       ])
+    );
+
+    expect(
+      buildBrotherEventsScreen({
+        state: "ready",
+        response: { events: [], pagination: { limit: 20, offset: 0 } },
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherEvents",
+        state: "empty",
+        actions: []
+      })
     );
   });
 });

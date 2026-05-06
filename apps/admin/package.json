@@ -4,11 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsc -b tsconfig.json && node dist/main.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "dev:http-shell": "tsc -b tsconfig.json && node dist/main.js"
   },
   "dependencies": {
     "@jp2/shared-design-tokens": "workspace:*",
     "@jp2/shared-types": "workspace:*",
-    "@jp2/shared-validation": "workspace:*"
+    "@jp2/shared-validation": "workspace:*",
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
   }
 }

@@ -1,7 +1,9 @@
 import {
+  brotherEventListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherEventListResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
   type MyOrganizationUnitsResponseDto
@@ -81,6 +83,14 @@ export const fallbackBrotherToday = brotherTodayResponseSchema.parse({
   ],
   organizationUnits: [fallbackOrganizationUnit]
 }) satisfies BrotherTodayResponseDto;
+
+export const fallbackBrotherEvents = brotherEventListResponseSchema.parse({
+  events: fallbackBrotherToday.upcomingEvents,
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+}) satisfies BrotherEventListResponseDto;
 
 export const fallbackMyOrganizationUnits = myOrganizationUnitsResponseSchema.parse({
   organizationUnits: [fallbackOrganizationUnit]
