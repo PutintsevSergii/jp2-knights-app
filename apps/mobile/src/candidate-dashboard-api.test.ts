@@ -1,10 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
-import { fallbackCandidateDashboard } from "./candidate-dashboard.js";
 import {
+  fallbackCandidateEventDetail,
+  fallbackCandidateEvents,
+  fallbackCandidateDashboard
+} from "./candidate-dashboard.js";
+import {
+  buildCandidateEventDetailUrl,
+  buildCandidateEventParticipationUrl,
+  buildCandidateEventsUrl,
   buildCandidateDashboardUrl,
+  cancelCandidateEventParticipation,
   candidateDashboardLoadFailureState,
   CandidateDashboardHttpError,
-  fetchCandidateDashboard
+  fetchCandidateEvent,
+  fetchCandidateEvents,
+  fetchCandidateDashboard,
+  markCandidateEventParticipation
 } from "./candidate-dashboard-api.js";
 
 describe("mobile candidate dashboard API client", () => {
@@ -17,12 +28,12 @@ describe("mobile candidate dashboard API client", () => {
     );
   });
 
-  it("fetches with bearer auth and validates the shared DTO schema", async () => {
-    const fetchImpl = vi.fn(() =>
+  it("fetches candidate resources with bearer auth and validates shared DTO schemas", async () => {
+    const fetchImpl = vi.fn((input: string) =>
       Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(fallbackCandidateDashboard)
+        json: () => Promise.resolve(responseForCandidateUrl(input))
       })
     );
 
@@ -33,12 +44,91 @@ describe("mobile candidate dashboard API client", () => {
         fetchImpl
       })
     ).resolves.toEqual(fallbackCandidateDashboard);
+    await expect(
+      fetchCandidateEvents({
+        baseUrl: "https://api.example.test",
+        authToken: "candidate-token",
+        from: "2026-06-01T00:00:00.000Z",
+        type: "formation",
+        limit: 10,
+        offset: 5,
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackCandidateEvents);
+    await expect(
+      fetchCandidateEvent({
+        id: fallbackCandidateEvents.events[0]!.id,
+        baseUrl: "https://api.example.test",
+        authToken: "candidate-token",
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackCandidateEventDetail);
+    await expect(
+      markCandidateEventParticipation({
+        id: fallbackCandidateEvents.events[0]!.id,
+        baseUrl: "https://api.example.test",
+        authToken: "candidate-token",
+        fetchImpl
+      })
+    ).resolves.toEqual({
+      participation: fallbackCandidateEventDetail.event.currentUserParticipation
+    });
+    await expect(
+      cancelCandidateEventParticipation({
+        id: fallbackCandidateEvents.events[0]!.id,
+        baseUrl: "https://api.example.test",
+        authToken: "candidate-token",
+        fetchImpl
+      })
+    ).resolves.toEqual({
+      participation: fallbackCandidateEventDetail.event.currentUserParticipation
+    });
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/candidate/dashboard", {
       method: "GET",
       headers: {
         authorization: "Bearer candidate-token"
       }
     });
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "https://api.example.test/candidate/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5",
+      {
+        method: "GET",
+        headers: {
+          authorization: "Bearer candidate-token"
+        }
+      }
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555",
+      {
+        method: "GET",
+        headers: {
+          authorization: "Bearer candidate-token"
+        }
+      }
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      4,
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation",
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer candidate-token"
+        }
+      }
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      5,
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation",
+      {
+        method: "DELETE",
+        headers: {
+          authorization: "Bearer candidate-token"
+        }
+      }
+    );
   });
 
   it("rejects dashboard events with brother-only visibility", async () => {
@@ -80,6 +170,34 @@ describe("mobile candidate dashboard API client", () => {
     expect(candidateDashboardLoadFailureState(new TypeError("Network request failed"))).toBe(
       "offline"
     );
+    expect(candidateDashboardLoadFailureState(new CandidateDashboardHttpError(404))).toBe("empty");
+  });
+
+  it("builds candidate event URLs", () => {
+    expect(
+      buildCandidateEventsUrl("https://api.example.test", {
+        from: "2026-06-01T00:00:00.000Z",
+        type: "formation",
+        limit: 10,
+        offset: 5
+      })
+    ).toBe(
+      "https://api.example.test/candidate/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5"
+    );
+    expect(
+      buildCandidateEventDetailUrl(
+        "55555555-5555-4555-8555-555555555555",
+        "https://api.example.test"
+      )
+    ).toBe("https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555");
+    expect(
+      buildCandidateEventParticipationUrl(
+        "55555555-5555-4555-8555-555555555555",
+        "https://api.example.test"
+      )
+    ).toBe(
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation"
+    );
   });
 
   it("maps idle approval API errors into an idle approval state", async () => {
@@ -106,3 +224,21 @@ describe("mobile candidate dashboard API client", () => {
     ).toBe("idleApproval");
   });
 });
+
+function responseForCandidateUrl(input: string) {
+  if (input.includes("/participation")) {
+    return {
+      participation: fallbackCandidateEventDetail.event.currentUserParticipation
+    };
+  }
+
+  if (input.includes("/candidate/events/")) {
+    return fallbackCandidateEventDetail;
+  }
+
+  if (input.includes("/candidate/events")) {
+    return fallbackCandidateEvents;
+  }
+
+  return fallbackCandidateDashboard;
+}

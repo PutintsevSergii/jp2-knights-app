@@ -17,3 +17,9 @@
 - The current Candidate Dashboard foundation renders the `GET /candidate/dashboard`
   payload with assignment/contact, next-step, events, empty announcements, demo
   fallback, and ready/empty/loading/error/offline/forbidden states.
+- The current Candidate Events foundation renders API/demo `CandidateEvents` and
+  `CandidateEventDetail` screen models over `GET /candidate/events`,
+  `GET /candidate/events/{id}`, and candidate participation mutation clients.
+  It shows only candidate-visible events, own intent state, plan/cancel action
+  metadata, and ready/empty/loading/error/offline/forbidden/idle-approval
+  states.

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAboutOrderScreen,
+  buildCandidateEventDetailScreen,
+  buildCandidateEventDetailUrl,
+  buildCandidateEventParticipationUrl,
+  buildCandidateEventsScreen,
+  buildCandidateEventsUrl,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
   buildBrotherEventDetailScreen,
@@ -25,6 +30,8 @@ import {
   fallbackBrotherEvents,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits,
+  fallbackCandidateEventDetail,
+  fallbackCandidateEvents,
   fallbackCandidateDashboard,
   fallbackPublicCandidateRequestResponse,
   fallbackPublicEventDetail,
@@ -162,6 +169,37 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("CandidateDashboard");
+    expect(buildCandidateEventsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/candidate/events"
+    );
+    expect(
+      buildCandidateEventDetailUrl(
+        "55555555-5555-4555-8555-555555555555",
+        "https://api.example.test"
+      )
+    ).toBe("https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555");
+    expect(
+      buildCandidateEventParticipationUrl(
+        "55555555-5555-4555-8555-555555555555",
+        "https://api.example.test"
+      )
+    ).toBe(
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation"
+    );
+    expect(
+      buildCandidateEventsScreen({
+        state: "ready",
+        response: fallbackCandidateEvents,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("CandidateEvents");
+    expect(
+      buildCandidateEventDetailScreen({
+        state: "ready",
+        response: fallbackCandidateEventDetail,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("CandidateEventDetail");
   });
 
   it("exports brother companion helpers and screen model builders", () => {

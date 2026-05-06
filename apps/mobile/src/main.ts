@@ -27,11 +27,22 @@ export {
   submitPublicCandidateRequest
 } from "./public-candidate-request-api.js";
 export {
+  buildCandidateEventDetailUrl,
+  buildCandidateEventParticipationUrl,
+  buildCandidateEventsUrl,
   buildCandidateDashboardUrl,
+  cancelCandidateEventParticipation,
   candidateDashboardLoadFailureState,
-  fetchCandidateDashboard
+  fetchCandidateEvent,
+  fetchCandidateEvents,
+  fetchCandidateDashboard,
+  markCandidateEventParticipation
 } from "./candidate-dashboard-api.js";
-export { fallbackCandidateDashboard } from "./candidate-dashboard.js";
+export {
+  fallbackCandidateEventDetail,
+  fallbackCandidateEvents,
+  fallbackCandidateDashboard
+} from "./candidate-dashboard.js";
 export {
   brotherCompanionLoadFailureState,
   buildBrotherEventDetailUrl,
@@ -76,7 +87,11 @@ export {
 } from "./public-home-api.js";
 export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js";
 export { resolveMobileLaunchState } from "./navigation.js";
-export { buildCandidateDashboardScreen } from "./candidate-screens.js";
+export {
+  buildCandidateEventDetailScreen,
+  buildCandidateEventsScreen,
+  buildCandidateDashboardScreen
+} from "./candidate-screens.js";
 export {
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
@@ -97,6 +112,8 @@ export type {
 } from "./brother-screens.js";
 export type {
   CandidateDashboardScreen,
+  CandidateEventDetailScreen,
+  CandidateEventsScreen,
   CandidateRoute,
   CandidateScreenAction,
   CandidateScreenSection,
