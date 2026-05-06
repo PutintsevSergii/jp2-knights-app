@@ -1,5 +1,15 @@
 import { organizationUnitSummaryOpenApiSchema } from "../organization/organization.openapi.js";
 
+const brotherPaginationOpenApiSchema = {
+  type: "object",
+  required: ["limit", "offset"],
+  additionalProperties: false,
+  properties: {
+    limit: { type: "integer", minimum: 1, maximum: 50 },
+    offset: { type: "integer", minimum: 0, maximum: 1000 }
+  }
+};
+
 const brotherMembershipSummaryOpenApiSchema = {
   type: "object",
   required: ["id", "currentDegree", "joinedAt", "organizationUnit"],
@@ -49,6 +59,47 @@ const brotherTodayCardOpenApiSchema = {
       ]
     },
     priority: { type: "string", enum: ["normal", "attention"] }
+  }
+};
+
+const brotherPrayerCategorySummaryOpenApiSchema = {
+  type: "object",
+  required: ["id", "slug", "title", "language"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    slug: { type: "string", minLength: 1, maxLength: 120 },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    language: { type: "string", minLength: 2, maxLength: 10 }
+  }
+};
+
+const brotherPrayerSummaryOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "title",
+    "excerpt",
+    "language",
+    "visibility",
+    "targetOrganizationUnitId",
+    "category"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    excerpt: { type: "string", minLength: 1, maxLength: 240 },
+    language: { type: "string", minLength: 2, maxLength: 10 },
+    visibility: {
+      type: "string",
+      enum: ["PUBLIC", "FAMILY_OPEN", "BROTHER", "ORGANIZATION_UNIT"]
+    },
+    targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
+    category: {
+      nullable: true,
+      oneOf: [brotherPrayerCategorySummaryOpenApiSchema]
+    }
   }
 };
 
@@ -120,5 +171,22 @@ export const brotherTodayResponseOpenApiSchema = {
       minItems: 1,
       items: organizationUnitSummaryOpenApiSchema
     }
+  }
+};
+
+export const brotherPrayerListResponseOpenApiSchema = {
+  type: "object",
+  required: ["categories", "prayers", "pagination"],
+  additionalProperties: false,
+  properties: {
+    categories: {
+      type: "array",
+      items: brotherPrayerCategorySummaryOpenApiSchema
+    },
+    prayers: {
+      type: "array",
+      items: brotherPrayerSummaryOpenApiSchema
+    },
+    pagination: brotherPaginationOpenApiSchema
   }
 };

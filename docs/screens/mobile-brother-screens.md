@@ -4,7 +4,7 @@
 | ------------------------ | ------------------------- | -------------------- | ------------------------------------------------------------- | ------------------------------------- | ------------------------- | -------------------------- |
 | Brother Today            | `BrotherToday`            | Daily summary        | degree, next step, prayer, event, announcement, silent prayer | open cards                            | empty cards allowed       | Filtered to brother        |
 | Brother Profile          | `BrotherProfile`          | Own identity         | name, role, status, degree, chorągiew, join date              | edit basic contact if enabled, logout | missing optional fields   | Critical data read-only    |
-| My Chorągiew             | `MyChoragiew`             | Local community      | chorągiew info, officer, events, announcements                | open event/announcement               | no assignment support     | No brother list by default |
+| My Chorągiew             | `MyOrganizationUnits`     | Assigned units       | active organization-unit summaries                            | open today/profile                    | no assignment support     | No brother list            |
 | Prayer Categories        | `PrayerCategories`        | Browse prayers       | categories                                                    | select                                | empty                     | Visibility enforced        |
 | Prayer List              | `PrayerList`              | Prayer list/search   | summaries                                                     | open/search                           | empty search              | Relevant only              |
 | Prayer Detail            | `PrayerDetail`            | Read prayer          | title/body                                                    | favorite/cache                        | not found                 | No leak by id              |
@@ -28,3 +28,7 @@
 - `BrotherProfile` now has an API/demo-backed mobile screen model for own
   read-only profile, contact summary, active memberships, current degree, and
   join date.
+- `MyOrganizationUnits` now has an API/demo-backed mobile screen model and React
+  Native screen over `/api/brother/my-organization-units`; it renders active
+  organization-unit summaries only with ready/empty/loading/error/offline/
+  forbidden/idle-approval states.

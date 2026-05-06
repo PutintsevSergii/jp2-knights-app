@@ -1,4 +1,7 @@
 import type {
+  BrotherPrayerListQueryDto,
+  BrotherPrayerListResponseDto,
+  BrotherPrayerSummaryDto,
   BrotherMembershipSummaryDto,
   BrotherProfileResponseDto,
   BrotherTodayEventSummaryDto,
@@ -10,3 +13,7 @@ export type BrotherProfile = BrotherProfileResponseDto["profile"];
 export type BrotherProfileResponse = BrotherProfileResponseDto;
 export type BrotherTodayEventSummary = BrotherTodayEventSummaryDto;
 export type BrotherTodayResponse = BrotherTodayResponseDto;
+export type BrotherPrayerListQuery = BrotherPrayerListQueryDto;
+export type BrotherPrayerSummary = BrotherPrayerSummaryDto;
+export type BrotherPrayerCategorySummary = BrotherPrayerListResponseDto["categories"][number];
+export type BrotherPrayerListResponse = BrotherPrayerListResponseDto;

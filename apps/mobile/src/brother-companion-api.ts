@@ -1,8 +1,10 @@
 import {
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
+  myOrganizationUnitsResponseSchema,
   type BrotherProfileResponseDto,
-  type BrotherTodayResponseDto
+  type BrotherTodayResponseDto,
+  type MyOrganizationUnitsResponseDto
 } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
 import { DEFAULT_PUBLIC_API_BASE_URL } from "./public-home-api.js";
@@ -47,12 +49,24 @@ export async function fetchBrotherToday(
   return brotherTodayResponseSchema.parse(await response.json());
 }
 
+export async function fetchMyOrganizationUnits(
+  options: FetchBrotherCompanionOptions = {}
+): Promise<MyOrganizationUnitsResponseDto> {
+  const response = await fetchBrotherCompanion(buildMyOrganizationUnitsUrl(options.baseUrl), options);
+
+  return myOrganizationUnitsResponseSchema.parse(await response.json());
+}
+
 export function buildBrotherProfileUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return new URL("brother/profile", normalizeBaseUrl(baseUrl)).toString();
 }
 
 export function buildBrotherTodayUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return new URL("brother/today", normalizeBaseUrl(baseUrl)).toString();
+}
+
+export function buildMyOrganizationUnitsUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
+  return new URL("brother/my-organization-units", normalizeBaseUrl(baseUrl)).toString();
 }
 
 export function brotherCompanionLoadFailureState(error: unknown): MobileScreenState {

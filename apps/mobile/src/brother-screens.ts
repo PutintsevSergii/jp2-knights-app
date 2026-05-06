@@ -1,6 +1,11 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
-import type { BrotherProfileResponseDto, BrotherTodayResponseDto } from "@jp2/shared-validation";
+import type {
+  BrotherProfileResponseDto,
+  BrotherTodayResponseDto,
+  MyOrganizationUnitsResponseDto,
+  OrganizationUnitSummaryDto
+} from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
 
 export type BrotherRoute =
@@ -49,6 +54,17 @@ export interface BrotherTodayScreen {
 
 export interface BrotherProfileScreen {
   route: "BrotherProfile";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: BrotherScreenSection[];
+  actions: BrotherScreenAction[];
+  demoChromeVisible: boolean;
+  theme: BrotherScreenTheme;
+}
+
+export interface MyOrganizationUnitsScreen {
+  route: "MyOrganizationUnits";
   state: MobileScreenState;
   title: string;
   body: string;
@@ -118,6 +134,44 @@ export function buildBrotherProfileScreen(options: {
   };
 }
 
+export function buildMyOrganizationUnitsScreen(options: {
+  state: MobileScreenState;
+  response?: MyOrganizationUnitsResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}): MyOrganizationUnitsScreen {
+  if (options.state !== "ready") {
+    return stateOnlyMyOrganizationUnits(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response || options.response.organizationUnits.length === 0) {
+    return stateOnlyMyOrganizationUnits("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "MyOrganizationUnits",
+    state: "ready",
+    title: "My Choragiew",
+    body: organizationUnitCountBody(options.response.organizationUnits.length),
+    sections: options.response.organizationUnits.map((organizationUnit) =>
+      buildOrganizationUnitSection(organizationUnit)
+    ),
+    actions: [
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      },
+      {
+        id: "profile",
+        label: "Brother Profile",
+        targetRoute: "BrotherProfile"
+      }
+    ],
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: brotherScreenTheme
+  };
+}
+
 function buildTodaySections(response: BrotherTodayResponseDto): BrotherScreenSection[] {
   const sections = response.cards.map((card) => ({
     id: `card-${card.id}`,
@@ -142,13 +196,9 @@ function buildTodaySections(response: BrotherTodayResponseDto): BrotherScreenSec
   }
 
   sections.push(
-    ...response.organizationUnits.map((organizationUnit) => ({
-      id: `organization-unit-${organizationUnit.id}`,
-      title: organizationUnit.name,
-      body: organizationUnit.parish
-        ? `${organizationUnit.city}, ${organizationUnit.country} - ${organizationUnit.parish}`
-        : `${organizationUnit.city}, ${organizationUnit.country}`
-    }))
+    ...response.organizationUnits.map((organizationUnit) =>
+      buildOrganizationUnitSection(organizationUnit)
+    )
   );
 
   return sections;
@@ -210,6 +260,44 @@ function stateOnlyBrotherProfile(
     demoChromeVisible,
     theme: brotherScreenTheme
   };
+}
+
+function stateOnlyMyOrganizationUnits(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): MyOrganizationUnitsScreen {
+  const copy = myOrganizationUnitsStateCopy[state];
+
+  return {
+    route: "MyOrganizationUnits",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: brotherScreenTheme
+  };
+}
+
+function buildOrganizationUnitSection(
+  organizationUnit: OrganizationUnitSummaryDto
+): BrotherScreenSection {
+  const details = [
+    `${organizationUnit.city}, ${organizationUnit.country}`,
+    organizationUnit.parish,
+    organizationUnit.publicDescription
+  ].filter((item): item is string => Boolean(item));
+
+  return {
+    id: `organization-unit-${organizationUnit.id}`,
+    title: organizationUnit.name,
+    body: details.join("\n")
+  };
+}
+
+function organizationUnitCountBody(count: number): string {
+  return count === 1 ? "1 active organization unit" : `${count} active organization units`;
 }
 
 function brotherTodayBody(response: BrotherTodayResponseDto): string {
@@ -292,6 +380,37 @@ const brotherProfileStateCopy: Record<MobileScreenState, { title: string; body: 
   offline: {
     title: "Offline",
     body: "Reconnect to refresh brother profile."
+  }
+};
+
+const myOrganizationUnitsStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "My Choragiew",
+    body: "Your organization-unit assignments are available."
+  },
+  loading: {
+    title: "Loading",
+    body: "My Choragiew is loading."
+  },
+  empty: {
+    title: "My Choragiew",
+    body: "No active organization unit is assigned to your brother profile."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "My Choragiew could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "An active brother profile is required."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before organization-unit content is available."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh My Choragiew."
   }
 };
 

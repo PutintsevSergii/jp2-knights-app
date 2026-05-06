@@ -4,7 +4,11 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
-import type { BrotherProfile, BrotherTodayEventSummary } from "./brother-companion.types.js";
+import type {
+  BrotherPrayerSummary,
+  BrotherProfile,
+  BrotherTodayEventSummary
+} from "./brother-companion.types.js";
 
 const organizationUnit = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -44,6 +48,21 @@ const event: BrotherTodayEventSummary = {
   endAt: null,
   locationLabel: "Riga",
   visibility: "ORGANIZATION_UNIT"
+};
+
+const prayer: BrotherPrayerSummary = {
+  id: "55555555-5555-4555-8555-555555555555",
+  title: "Brother Prayer",
+  excerpt: "A brother-visible prayer.",
+  language: "en",
+  visibility: "ORGANIZATION_UNIT",
+  targetOrganizationUnitId: organizationUnit.id,
+  category: {
+    id: "66666666-6666-4666-8666-666666666666",
+    slug: "daily",
+    title: "Daily Prayer",
+    language: "en"
+  }
 };
 
 const brother: CurrentUserPrincipal = {
@@ -153,6 +172,26 @@ describe("BrotherCompanionService", () => {
     expect(today.organizationUnits).toEqual([organizationUnit, secondOrganizationUnit]);
   });
 
+  it("lists brother-visible prayers using active membership organization-unit scope", async () => {
+    const repository = repositoryWith(profile, [event], [prayer]);
+
+    await expect(
+      new BrotherCompanionService(repository).listPrayers(brother, {
+        language: "en",
+        limit: 20,
+        offset: 0
+      })
+    ).resolves.toEqual({
+      categories: [prayer.category],
+      prayers: [prayer],
+      pagination: {
+        limit: 20,
+        offset: 0
+      }
+    });
+    expect(repository.prayerScopes).toEqual([[organizationUnit.id]]);
+  });
+
   it("blocks non-brothers and brothers without an active membership profile", async () => {
     const candidate: CurrentUserPrincipal = {
       ...brother,
@@ -176,6 +215,7 @@ describe("BrotherCompanionService", () => {
     });
     expect(repository.profileLookups).toEqual([]);
     expect(repository.eventScopes).toEqual([]);
+    expect(repository.prayerScopes).toEqual([]);
   });
 });
 
@@ -187,10 +227,16 @@ function service(
 
 function repositoryWith(
   profileRecord: BrotherProfile | null,
-  events: BrotherTodayEventSummary[]
-): BrotherCompanionRepository & { eventScopes: string[][]; profileLookups: string[] } {
+  events: BrotherTodayEventSummary[],
+  prayers: BrotherPrayerSummary[] = []
+): BrotherCompanionRepository & {
+  eventScopes: string[][];
+  prayerScopes: string[][];
+  profileLookups: string[];
+} {
   return {
     eventScopes: [],
+    prayerScopes: [],
     profileLookups: [],
     findActiveBrotherProfile(userId) {
       this.profileLookups.push(userId);
@@ -199,6 +245,13 @@ function repositoryWith(
     findUpcomingEvents(organizationUnitIds) {
       this.eventScopes.push([...organizationUnitIds]);
       return Promise.resolve(events);
+    },
+    findPublishedBrotherPrayerCategories() {
+      return Promise.resolve(prayers.map((item) => item.category).filter((item) => item !== null));
+    },
+    findVisibleBrotherPrayers(_query, organizationUnitIds) {
+      this.prayerScopes.push([...organizationUnitIds]);
+      return Promise.resolve(prayers);
     }
   };
 }

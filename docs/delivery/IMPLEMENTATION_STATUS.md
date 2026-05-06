@@ -20,7 +20,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                            | —                            |
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
-| **8**    | 🟡 IN PROGRESS | ~35%     | ███████░░░░░░░░░░░░░ | Brother profile, Brother Today API, mobile brother API/demo/screen models                                             | Add My Chorągiew mobile view |
+| **8**    | 🟡 IN PROGRESS | ~55%     | ███████████░░░░░░░░░ | Brother profile, Brother Today API, My Chorągiew mobile view, brother prayer API, delivery-risk hardening plan       | Brother event reads + hardening |
 | **9–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | After Phase 8                |
 
 ---
@@ -235,7 +235,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 8: Brother Companion Core 🟡
 
-**Status**: IN PROGRESS (~35%)
+**Status**: IN PROGRESS (~55%)
 
 **Completed**:
 
@@ -244,15 +244,41 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Shared brother profile/today DTO validation and generated OpenAPI schemas
 - ✅ Mobile brother profile/today API clients with auth headers, DTO validation, and failure-state mapping
 - ✅ Mobile brother demo fixtures and `BrotherToday`/`BrotherProfile` screen models with ready/empty/loading/error/offline/forbidden states
+- ✅ Mobile My Chorągiew API client/demo fallback/screen model and React Native screen over `/api/brother/my-organization-units`, rendering scoped organization-unit summaries only
+- ✅ Guarded `GET /api/brother/prayers` with active brother enforcement, shared DTO/OpenAPI schema, category/search/language/pagination filters, and published public/family/brother/own-organization-unit visibility
 
 **In Progress**:
 
-- 🟡 Mobile My Chorągiew view over `/api/brother/my-organization-units`
-- 🟡 Brother event/prayer list APIs remain separate Phase 8 follow-up slices
+- 🟡 Brother event list API remains a separate Phase 8 follow-up slice
+- 🟡 Next.js/App Router admin migration plan: scaffold a Next.js admin shell
+  alongside the current dependency-free shell, mount `/admin/dashboard` first,
+  reuse existing API clients/DTO validation/screen models, then migrate admin
+  routes incrementally after auth/session behavior and smoke tests are defined
+- 🟡 Delivery-risk hardening plan from code review:
+  - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
+    current V1 foundation while planning the incremental Next.js/App Router
+    migration as a Phase 8 follow-up item.
+  - Production readiness: add API boot, Admin Lite route, mobile demo launch,
+    and production-mode demo rejection smoke targets. Existing CI already runs
+    lint/typecheck/test/coverage/build/contracts/migration checks; the gap is
+    journey-level launch validation.
+  - Realtime/scalability: keep one PostgreSQL instance and no `/v2` routes in
+    V1. Read replicas, `/v2`, hierarchy rollups, and cross-unit reporting remain
+    deferred unless owner-approved. Phase 11 must add Redis TTL/reconnect/
+    duplicate-join/multi-instance counter tests for silent prayer.
+  - Organization constraints: document that V1 permissions are explicit and
+    chorągiew-scoped. Do not add hierarchy-derived permissions or cross-unit
+    rollups without a scope decision.
+  - Observability: add API request-id generation and propagation through error
+    responses and audit logs, then choose the pilot log/metric destination in
+    release hardening.
+  - Candidate lifecycle: define and enforce allowed request status transitions,
+    rejection requirements, responsible-officer assignment behavior, and
+    follow-up timeline expectations.
 
-**Exit criteria**: 🟡 Brother Today/profile foundation works; assigned organization-unit mobile view still pending
+**Exit criteria**: 🟡 Brother Today/profile, assigned organization-unit mobile views, and brother prayer reads work; brother event reads and hardening remain
 
-**Next step**: Add My Chorągiew mobile API/demo/screen model and then complete Phase 8 event/prayer reads
+**Next step**: Add brother event read API and schedule the Next.js admin shell scaffold, request-id middleware, and smoke-test targets before Phase 9 grows the surface area.
 
 ### Phases 4–13: Roadmap
 
@@ -277,8 +303,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.48% statements / 80.16% branches / 91.64% functions / 91.36% lines  |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review auth/repository/service/controller/admin shell tests added            |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.37% statements / 80.29% branches / 92.05% functions / 91.21% lines  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer DTO/controller/service/repository visibility tests added                      |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes identity access review endpoints                                |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires identity access review endpoints                                    |
@@ -373,6 +399,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Brother profile API added with own active profile, active memberships, roles, current degree, join date, and read-only critical data
 - Brother Today API added with personalized cards, active organization units, and upcoming events filtered to public/family/brother/own-organization-unit visibility
 - Mobile brother profile/today API clients, demo fixtures, and screen models added with shared DTO validation and state handling
+- Mobile My Chorągiew API client, demo fixture, React Native screen, and screen model added over `/brother/my-organization-units`; it renders organization-unit summaries only and no brother roster
+- Brother prayer API added with guarded `/brother/prayers`, shared DTO/OpenAPI schema, and published public/family/brother/own-organization-unit visibility filtering
+- Delivery-risk recommendations are tracked as active hardening/planning work:
+  request-id propagation, smoke/E2E launch checks, realistic seed/load fixtures,
+  Redis TTL validation for Phase 11, explicit V1 organization-scope constraints,
+  and stricter candidate lifecycle transition rules
 
 ---
 
@@ -406,6 +438,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Phase 4 content tables created (prayers, events)
    - [x] Phase 5 provider adapter and auth session endpoints
    - [x] Update this dashboard after changes
+
+4. **Production-readiness review hardening**
+   - [ ] Plan and scaffold a Next.js/App Router Admin Lite shell alongside the current TypeScript HTTP shell, starting with `/admin/dashboard` and reusing existing admin API clients, DTO schemas, screen models, and fixtures
+   - [ ] Add request-id middleware/interceptor and thread the generated id through error responses and audit log writes
+   - [ ] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
+   - [ ] Expand realistic seed/load fixtures across multiple chorągwie, roles, inactive users, archived records, and visibility levels
+   - [ ] Document V1 organization constraints explicitly: no hierarchy-derived permissions, no cross-unit rollups, no read replicas, and no `/v2` routes without owner approval
+   - [ ] Define candidate request lifecycle transition rules, rejection requirements, responsible-officer assignment behavior, and follow-up timeline expectations
+   - [ ] Queue Phase 11 Redis TTL/reconnect/duplicate-join/multi-instance tests for silent prayer before implementing realtime sockets
 
 ### Medium Term (Next 5–10 commits)
 

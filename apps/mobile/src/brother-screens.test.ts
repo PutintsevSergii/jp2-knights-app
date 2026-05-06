@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { fallbackBrotherProfile, fallbackBrotherToday } from "./brother-companion.js";
-import { buildBrotherProfileScreen, buildBrotherTodayScreen } from "./brother-screens.js";
+import {
+  fallbackBrotherProfile,
+  fallbackBrotherToday,
+  fallbackMyOrganizationUnits
+} from "./brother-companion.js";
+import {
+  buildBrotherProfileScreen,
+  buildBrotherTodayScreen,
+  buildMyOrganizationUnitsScreen
+} from "./brother-screens.js";
 
 describe("brother screen models", () => {
   it("builds Brother Today sections and actions from the daily response", () => {
@@ -42,6 +50,29 @@ describe("brother screen models", () => {
     ]);
   });
 
+  it("builds My Organization Units with scoped summaries and no brother roster", () => {
+    const screen = buildMyOrganizationUnitsScreen({
+      state: "ready",
+      response: fallbackMyOrganizationUnits,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("MyOrganizationUnits");
+    expect(screen.title).toBe("My Choragiew");
+    expect(screen.body).toBe("1 active organization unit");
+    expect(screen.sections).toEqual([
+      expect.objectContaining({
+        id: `organization-unit-${fallbackMyOrganizationUnits.organizationUnits[0]!.id}`,
+        title: "Pilot Choragiew"
+      })
+    ]);
+    expect(screen.sections.map((section) => section.body).join("\n")).not.toContain("Brother:");
+    expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "BrotherToday",
+      "BrotherProfile"
+    ]);
+  });
+
   it("maps non-ready states without content actions", () => {
     expect(
       buildBrotherTodayScreen({
@@ -76,6 +107,19 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherToday",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
+    expect(
+      buildMyOrganizationUnitsScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "MyOrganizationUnits",
         state: "idleApproval",
         title: "Account Approval Pending",
         actions: []

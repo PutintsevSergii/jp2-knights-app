@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaService } from "../database/prisma.service.js";
 import {
+  brotherPrayerWhere,
   brotherUpcomingEventWhere,
   PrismaBrotherCompanionRepository
 } from "./brother-companion.repository.js";
@@ -35,6 +36,23 @@ const profileRecord = {
   ]
 };
 
+const prayerCategoryRecord = {
+  id: "55555555-5555-4555-8555-555555555555",
+  slug: "daily",
+  title: "Daily Prayer",
+  language: "en"
+};
+
+const prayerRecord = {
+  id: "66666666-6666-4666-8666-666666666666",
+  title: "Brother Prayer",
+  body: "A brother-visible prayer.",
+  language: "en",
+  visibility: "ORGANIZATION_UNIT",
+  targetOrganizationUnitId: organizationUnitRecord.id,
+  category: prayerCategoryRecord
+};
+
 describe("brotherUpcomingEventWhere", () => {
   it("limits events to published public, brother, and own organization-unit visibility", () => {
     const now = new Date("2026-05-05T00:00:00.000Z");
@@ -66,6 +84,53 @@ describe("brotherUpcomingEventWhere", () => {
       AND: [
         {
           OR: [{ visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }]
+        }
+      ]
+    });
+  });
+});
+
+describe("brotherPrayerWhere", () => {
+  it("limits prayers to published public, brother, and own organization-unit visibility", () => {
+    const now = new Date("2026-05-05T00:00:00.000Z");
+
+    expect(
+      brotherPrayerWhere(
+        {
+          categoryId: prayerCategoryRecord.id,
+          q: "brother",
+          language: "en",
+          limit: 20,
+          offset: 0
+        },
+        [organizationUnitRecord.id],
+        now
+      )
+    ).toEqual({
+      language: "en",
+      status: "PUBLISHED",
+      archivedAt: null,
+      categoryId: prayerCategoryRecord.id,
+      AND: [
+        {
+          OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
+        },
+        {
+          OR: [
+            { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } },
+            {
+              visibility: "ORGANIZATION_UNIT",
+              targetOrganizationUnitId: {
+                in: [organizationUnitRecord.id]
+              }
+            }
+          ]
+        },
+        {
+          OR: [
+            { title: { contains: "brother", mode: "insensitive" } },
+            { body: { contains: "brother", mode: "insensitive" } }
+          ]
         }
       ]
     });
@@ -172,22 +237,82 @@ describe("PrismaBrotherCompanionRepository", () => {
       new PrismaBrotherCompanionRepository(prisma).findUpcomingEvents([])
     ).rejects.toThrow("Repository returned an event visibility hidden from brothers.");
   });
+
+  it("maps brother-visible prayer categories and prayers", async () => {
+    const { prayerCategoryFindMany, prayerFindMany, prisma } = prismaMock();
+    prayerCategoryFindMany.mockResolvedValueOnce([prayerCategoryRecord]);
+    prayerFindMany.mockResolvedValueOnce([prayerRecord]);
+
+    const repository = new PrismaBrotherCompanionRepository(prisma);
+
+    await expect(repository.findPublishedBrotherPrayerCategories("en")).resolves.toEqual([
+      prayerCategoryRecord
+    ]);
+    await expect(
+      repository.findVisibleBrotherPrayers(
+        {
+          language: "en",
+          limit: 20,
+          offset: 0
+        },
+        [organizationUnitRecord.id]
+      )
+    ).resolves.toEqual([
+      {
+        id: prayerRecord.id,
+        title: prayerRecord.title,
+        excerpt: prayerRecord.body,
+        language: prayerRecord.language,
+        visibility: "ORGANIZATION_UNIT",
+        targetOrganizationUnitId: organizationUnitRecord.id,
+        category: prayerCategoryRecord
+      }
+    ]);
+    expect(prayerFindMany).toHaveBeenCalledWith({
+      where: expect.any(Object) as unknown,
+      include: {
+        category: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            language: true
+          }
+        }
+      },
+      orderBy: [{ title: "asc" }],
+      take: 20,
+      skip: 0
+    });
+  });
 });
 
 function prismaMock(): {
   eventFindMany: ReturnType<typeof vi.fn>;
+  prayerCategoryFindMany: ReturnType<typeof vi.fn>;
+  prayerFindMany: ReturnType<typeof vi.fn>;
   userFindFirst: ReturnType<typeof vi.fn>;
   prisma: PrismaService;
 } {
   const eventFindMany = vi.fn(() => Promise.resolve([]));
+  const prayerCategoryFindMany = vi.fn(() => Promise.resolve([]));
+  const prayerFindMany = vi.fn(() => Promise.resolve([]));
   const userFindFirst = vi.fn(() => Promise.resolve(null));
 
   return {
     eventFindMany,
+    prayerCategoryFindMany,
+    prayerFindMany,
     userFindFirst,
     prisma: {
       event: {
         findMany: eventFindMany
+      },
+      prayerCategory: {
+        findMany: prayerCategoryFindMany
+      },
+      prayer: {
+        findMany: prayerFindMany
       },
       user: {
         findFirst: userFindFirst

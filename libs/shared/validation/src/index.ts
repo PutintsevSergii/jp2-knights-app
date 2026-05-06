@@ -606,6 +606,22 @@ export const publicPrayerListResponseSchema = z.object({
   })
 });
 
+export const brotherPrayerListQuerySchema = publicPrayerListQuerySchema;
+
+const brotherPrayerSummarySchema = publicPrayerSummarySchema.extend({
+  visibility: z.enum(["PUBLIC", "FAMILY_OPEN", "BROTHER", "ORGANIZATION_UNIT"]),
+  targetOrganizationUnitId: z.uuid().nullable()
+});
+
+export const brotherPrayerListResponseSchema = z.object({
+  categories: z.array(publicPrayerCategorySummarySchema),
+  prayers: z.array(brotherPrayerSummarySchema),
+  pagination: z.object({
+    limit: z.number().int().min(1).max(50),
+    offset: z.number().int().min(0).max(1000)
+  })
+});
+
 export const publicPrayerDetailResponseSchema = z.object({
   prayer: publicPrayerSummarySchema.extend({
     body: z.string().trim().min(1).max(8000)
@@ -725,6 +741,9 @@ export type BrotherProfileResponseDto = z.infer<typeof brotherProfileResponseSch
 export type BrotherTodayEventSummaryDto = z.infer<typeof brotherTodayEventSummarySchema>;
 export type BrotherTodayCardDto = z.infer<typeof brotherTodayCardSchema>;
 export type BrotherTodayResponseDto = z.infer<typeof brotherTodayResponseSchema>;
+export type BrotherPrayerListQueryDto = z.infer<typeof brotherPrayerListQuerySchema>;
+export type BrotherPrayerSummaryDto = z.infer<typeof brotherPrayerSummarySchema>;
+export type BrotherPrayerListResponseDto = z.infer<typeof brotherPrayerListResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
 export type AdminCandidateRequestSummaryDto = z.infer<typeof adminCandidateRequestSummarySchema>;

@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { BrotherCompanionController } from "./brother-companion.controller.js";
 import type { BrotherCompanionService } from "./brother-companion.service.js";
-import type { BrotherProfileResponse, BrotherTodayResponse } from "./brother-companion.types.js";
+import type {
+  BrotherPrayerListResponse,
+  BrotherProfileResponse,
+  BrotherTodayResponse
+} from "./brother-companion.types.js";
 
 const principal: CurrentUserPrincipal = {
   id: "22222222-2222-4222-8222-222222222222",
@@ -62,8 +66,39 @@ const todayResponse: BrotherTodayResponse = {
   organizationUnits: [profileResponse.profile.memberships[0]!.organizationUnit]
 };
 
+const prayerResponse: BrotherPrayerListResponse = {
+  categories: [
+    {
+      id: "55555555-5555-4555-8555-555555555555",
+      slug: "daily",
+      title: "Daily Prayer",
+      language: "en"
+    }
+  ],
+  prayers: [
+    {
+      id: "66666666-6666-4666-8666-666666666666",
+      title: "Brother Prayer",
+      excerpt: "A brother-visible prayer.",
+      language: "en",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: principal.memberOrganizationUnitIds![0]!,
+      category: {
+        id: "55555555-5555-4555-8555-555555555555",
+        slug: "daily",
+        title: "Daily Prayer",
+        language: "en"
+      }
+    }
+  ],
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+};
+
 describe("BrotherCompanionController", () => {
-  it("delegates profile and today requests using the guard-attached principal", async () => {
+  it("delegates profile, today, and prayer requests using the guard-attached principal", async () => {
     const service = new FakeBrotherCompanionService();
     const controller = new BrotherCompanionController(
       service as unknown as BrotherCompanionService
@@ -71,7 +106,10 @@ describe("BrotherCompanionController", () => {
 
     await expect(controller.getProfile({ principal })).resolves.toEqual(profileResponse);
     await expect(controller.getToday({ principal })).resolves.toEqual(todayResponse);
-    expect(service.principals).toEqual([principal, principal]);
+    await expect(controller.listPrayers({ principal }, { limit: 20, offset: 0 })).resolves.toEqual(
+      prayerResponse
+    );
+    expect(service.principals).toEqual([principal, principal, principal]);
   });
 
   it("fails closed when invoked without the guard-attached principal", () => {
@@ -81,12 +119,15 @@ describe("BrotherCompanionController", () => {
 
     expect(() => controller.getProfile({})).toThrow("CurrentUserGuard did not attach a principal.");
     expect(() => controller.getToday({})).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() => controller.listPrayers({}, { limit: 20, offset: 0 })).toThrow(
+      "CurrentUserGuard did not attach a principal."
+    );
   });
 });
 
 class FakeBrotherCompanionService implements Pick<
   BrotherCompanionService,
-  "getProfile" | "getToday"
+  "getProfile" | "getToday" | "listPrayers"
 > {
   principals: CurrentUserPrincipal[] = [];
 
@@ -98,5 +139,10 @@ class FakeBrotherCompanionService implements Pick<
   getToday(input: CurrentUserPrincipal) {
     this.principals.push(input);
     return Promise.resolve(todayResponse);
+  }
+
+  listPrayers(input: CurrentUserPrincipal) {
+    this.principals.push(input);
+    return Promise.resolve(prayerResponse);
   }
 }

@@ -11,6 +11,8 @@ import {
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
   attachmentStatusSchema,
+  brotherPrayerListQuerySchema,
+  brotherPrayerListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   candidateDashboardResponseSchema,
@@ -251,6 +253,42 @@ describe("shared validation", () => {
     expect(
       publicPrayerDetailResponseSchema.parse({ prayer: { ...summary, body: summary.excerpt } })
     ).toEqual({ prayer: { ...summary, body: summary.excerpt } });
+  });
+
+  it("validates brother prayer list DTOs with visibility scope metadata", () => {
+    expect(brotherPrayerListQuerySchema.parse({ language: " en ", limit: "10" })).toEqual({
+      language: "en",
+      limit: 10,
+      offset: 0
+    });
+
+    const category = {
+      id: "22222222-2222-4222-8222-222222222222",
+      slug: "daily",
+      title: "Daily Prayer",
+      language: "en"
+    };
+    const prayer = {
+      id: "33333333-3333-4333-8333-333333333333",
+      title: "Brother Prayer",
+      excerpt: "A brother-visible prayer.",
+      language: "en",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      category
+    };
+
+    expect(
+      brotherPrayerListResponseSchema.parse({
+        categories: [category],
+        prayers: [prayer],
+        pagination: { limit: 10, offset: 0 }
+      })
+    ).toEqual({
+      categories: [category],
+      prayers: [prayer],
+      pagination: { limit: 10, offset: 0 }
+    });
   });
 
   it("validates admin prayer write and response DTOs", () => {

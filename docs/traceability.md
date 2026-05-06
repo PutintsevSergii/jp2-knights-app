@@ -214,6 +214,45 @@ Companion Core is in progress:
   organization-unit events. Mobile now has API clients, demo fixtures, and
   token-backed `BrotherToday` and `BrotherProfile` screen models with
   ready/empty/loading/error/offline/forbidden states.
+- Phase 8 now includes the Mobile My Chorągiew slice over
+  `/api/brother/my-organization-units`: API mode sends bearer credentials and
+  validates the shared DTO, demo mode uses a backend-free parsed fallback, and
+  the React Native screen/model renders active organization-unit summaries only
+  with ready/empty/loading/error/offline/forbidden/idle-approval states.
+- Phase 8 now includes the brother prayer read API foundation:
+  guarded `GET /api/brother/prayers` with shared query/response DTO validation,
+  active brother membership enforcement, category/search/language/pagination
+  filters, and server-side visibility limited to currently published `PUBLIC`,
+  `FAMILY_OPEN`, `BROTHER`, or own organization-unit prayers.
+- Delivery-risk review recommendations are now tracked as in-progress hardening
+  and planning items alongside Phase 8, without expanding V1 scope:
+  - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
+    accepted V1 foundation, and add a Phase 8 planning item for an incremental
+    Next.js/App Router admin migration. The planned solution is to scaffold a
+    Next.js admin shell alongside the current shell, mount `/admin/dashboard`
+    first, reuse existing API clients/DTO validation/screen models, then migrate
+    admin routes one by one after auth/session behavior and smoke tests are
+    defined.
+  - Production readiness: add smoke/E2E targets for API boot, Admin Lite routes,
+    mobile demo launch, and production-mode demo rejection. CI already runs
+    lint/typecheck/test/coverage/build/contracts/migration checks; the next
+    solution is to add launch and journey-level checks rather than duplicate
+    existing unit gates.
+  - Realtime and scalability: keep single PostgreSQL and no `/v2` routes for
+    V1. Treat read replicas, API version expansion, hierarchy rollups, and
+    cross-unit reporting as deferred scale/backlog decisions. Phase 11 must
+    include Redis TTL tuning tests for duplicate joins, reconnects, disconnect
+    expiry, and multi-instance counter correctness.
+  - Organization model constraints: document that V1 permissions stay explicit
+    and chorągiew-scoped. Do not add hierarchy-derived permissions or cross-unit
+    rollups without owner-approved scope expansion.
+  - Observability: add API request-id generation/propagation so every error
+    response and audit log can be correlated, then define the pilot logging and
+    metrics destination during release hardening.
+  - Candidate lifecycle: tighten the documented and service-level status
+    transition rules for request follow-up, rejection, invitation, conversion,
+    officer assignment, and timeline expectations before extending candidate
+    workflows.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
   `/api/public/content-pages/{slug}`,
   `/api/public/prayers`, `/api/public/prayers/{id}`,
@@ -221,7 +260,7 @@ Companion Core is in progress:
   `/api/public/candidate-requests`,
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
   `/api/candidate/dashboard`,
-  `/api/brother/profile`, `/api/brother/today`,
+  `/api/brother/profile`, `/api/brother/today`, `/api/brother/prayers`,
   `/api/brother/my-organization-units`,
   `/api/admin/dashboard`,
   `/api/admin/organization-units`, `/api/admin/organization-units/{id}`,
@@ -234,7 +273,8 @@ Companion Core is in progress:
 - Auth device-token and notification-preference endpoints remain Phase 9 work
   with push/notification preferences.
 - `/api/brother/my-organization-units` currently returns the active brother's
-  organization-unit summaries only; officer summaries, participation intent, and
+  organization-unit summaries only, and mobile renders those scoped summaries
+  without brother rosters. Officer summaries, participation intent, and
   announcements remain Phase 9+ work.
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive with audit side effects. The Admin Lite HTTP shell mounts
@@ -287,8 +327,8 @@ Companion Core is in progress:
 | FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | candidate announcements                      | announcements                                                                            | pinned sort, no brother announcements                                                                                                                                       |
 | FR-BROTHER-001 Brother Today               | `GET /brother/today`                                                                                                                  | brother today                                | users, memberships, organization_units, events; announcements/roadmap pending later      | personalized profile cards, own organization units, brother-safe event visibility, mobile API/demo states                                                                   |
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |
-| FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list                                                                                                                                                  |
-| FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | brother/own organization-unit filtering                                                                                                                                     |
+| FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list, mobile API/demo/screen states                                                                                                                   |
+| FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | published public/family/brother/own organization-unit filtering, no candidate/officer/admin/unrelated-scope prayers                                                        |
 | FR-EVENT-002 Brother Events                | `GET /brother/events`                                                                                                                 | brother event screens                        | events                                                                                   | relevant only, cancelled behavior                                                                                                                                           |
 | FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | event detail                                 | event_participation                                                                      | visible event only, duplicate update                                                                                                                                        |
 | FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | no chat/comments, relevant only                                                                                                                                             |

@@ -5,6 +5,8 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import type {
+  BrotherPrayerListQuery,
+  BrotherPrayerListResponse,
   BrotherProfile,
   BrotherProfileResponse,
   BrotherTodayResponse
@@ -37,6 +39,29 @@ export class BrotherCompanionService {
       cards: buildTodayCards(profile, organizationUnits),
       upcomingEvents,
       organizationUnits
+    };
+  }
+
+  async listPrayers(
+    principal: CurrentUserPrincipal,
+    query: BrotherPrayerListQuery
+  ): Promise<BrotherPrayerListResponse> {
+    const profile = await this.loadProfile(principal);
+    const organizationUnitIds = profile.memberships.map(
+      (membership) => membership.organizationUnit.id
+    );
+    const [categories, prayers] = await Promise.all([
+      this.brotherCompanionRepository.findPublishedBrotherPrayerCategories(query.language),
+      this.brotherCompanionRepository.findVisibleBrotherPrayers(query, organizationUnitIds)
+    ]);
+
+    return {
+      categories,
+      prayers,
+      pagination: {
+        limit: query.limit,
+        offset: query.offset
+      }
     };
   }
 

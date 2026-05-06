@@ -1,8 +1,10 @@
 import {
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
+  myOrganizationUnitsResponseSchema,
   type BrotherProfileResponseDto,
-  type BrotherTodayResponseDto
+  type BrotherTodayResponseDto,
+  type MyOrganizationUnitsResponseDto
 } from "@jp2/shared-validation";
 
 const fallbackOrganizationUnit = {
@@ -79,3 +81,7 @@ export const fallbackBrotherToday = brotherTodayResponseSchema.parse({
   ],
   organizationUnits: [fallbackOrganizationUnit]
 }) satisfies BrotherTodayResponseDto;
+
+export const fallbackMyOrganizationUnits = myOrganizationUnitsResponseSchema.parse({
+  organizationUnits: [fallbackOrganizationUnit]
+}) satisfies MyOrganizationUnitsResponseDto;

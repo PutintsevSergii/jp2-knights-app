@@ -2,12 +2,18 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BrotherCompanionHttpError,
   brotherCompanionLoadFailureState,
+  buildMyOrganizationUnitsUrl,
   buildBrotherProfileUrl,
   buildBrotherTodayUrl,
+  fetchMyOrganizationUnits,
   fetchBrotherProfile,
   fetchBrotherToday
 } from "./brother-companion-api.js";
-import { fallbackBrotherProfile, fallbackBrotherToday } from "./brother-companion.js";
+import {
+  fallbackBrotherProfile,
+  fallbackBrotherToday,
+  fallbackMyOrganizationUnits
+} from "./brother-companion.js";
 
 describe("brother companion api", () => {
   it("fetches and validates brother profile and today responses", async () => {
@@ -36,6 +42,13 @@ describe("brother companion api", () => {
         fetchImpl
       })
     ).resolves.toEqual(fallbackBrotherToday);
+    await expect(
+      fetchMyOrganizationUnits({
+        baseUrl: "https://api.example.test",
+        authToken: "token",
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackMyOrganizationUnits);
     expect(fetchImpl).toHaveBeenNthCalledWith(1, "https://api.example.test/brother/profile", {
       method: "GET",
       headers: { authorization: "Bearer token" }
@@ -44,6 +57,14 @@ describe("brother companion api", () => {
       method: "GET",
       headers: { authorization: "Bearer token" }
     });
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      "https://api.example.test/brother/my-organization-units",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token" }
+      }
+    );
   });
 
   it("builds URLs and maps load failures", async () => {
@@ -52,6 +73,9 @@ describe("brother companion api", () => {
     );
     expect(buildBrotherTodayUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/today"
+    );
+    expect(buildMyOrganizationUnitsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/my-organization-units"
     );
 
     await expect(

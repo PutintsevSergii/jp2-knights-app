@@ -23,5 +23,10 @@
 - `GET /brother/today` requires the same active brother profile, returns daily
   action cards, active organization-unit summaries, and upcoming events filtered
   to `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or the brother's own organization units.
+- `GET /brother/prayers` requires the same active brother profile, supports
+  `categoryId`, `q`, `language`, `limit`, and `offset`, and returns only
+  currently published `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own
+  organization-unit prayers. `CANDIDATE`, `OFFICER`, `ADMIN`, unpublished,
+  archived, future-published, and unrelated organization-unit prayers are hidden.
 - Missing active brother membership resolves as `404`; non-brother access
   resolves as `403`.
