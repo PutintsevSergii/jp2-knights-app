@@ -24,6 +24,16 @@ export async function renderAdminNextRoute(request: Request, path: string): Prom
 
 function headersFromRequest(request: Request): Record<string, string> {
   const authorization = request.headers.get("authorization");
+  const cookie = request.headers.get("cookie");
+  const headers: Record<string, string> = {};
 
-  return authorization ? { authorization } : {};
+  if (authorization) {
+    headers.authorization = authorization;
+  }
+
+  if (cookie) {
+    headers.cookie = cookie;
+  }
+
+  return headers;
 }

@@ -20,8 +20,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                            | —                            |
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
-| **8**    | 🟡 IN PROGRESS | ~80%     | ████████████████░░░░ | Brother profile, Brother Today API, My Chorągiew mobile view, brother prayer/event APIs, Admin Lite Next runtime, delivery-risk hardening plan | Request-id + smoke hardening |
-| **9–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | After Phase 8                |
+| **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
+| **9–13** | ⏳ PENDING     | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Events/announcements, push, roadmap, silent prayer, hardening                                                         | Start Phase 9                |
 
 ---
 
@@ -231,11 +231,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Exit criteria**: ✅ Candidate request API, public form, admin UI foundation, profile persistence, request conversion, candidate dashboard, and admin candidate profile management exist
 
-**Next step**: Start Phase 8 brother companion core
+**Next step**: Phase 8 complete; start Phase 9 events/announcements/push
 
-### Phase 8: Brother Companion Core 🟡
+### Phase 8: Brother Companion Core ✅
 
-**Status**: IN PROGRESS (~80%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 
@@ -252,35 +252,26 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Nx `admin:build` now runs `next build`, and `next build` verifies every current Admin Lite route as a dynamic App Router route
 - ✅ Next.js/App Router Admin Lite route surface mounts through a reusable route adapter that keeps the existing render/client/model layer as the source of truth: `/admin`, `/admin/dashboard`, `/admin/identity-access-reviews`, candidate request list/detail, candidate profile list/detail, organization-unit list/create/detail, prayers, and events
 - ✅ Admin route smoke tests cover demo mode without backend calls, dashboard API mode bearer forwarding, identity-access review queue mounting, all current list routes, and dynamic detail/form routes
+- ✅ API request-id middleware now normalizes/echoes incoming `x-request-id`, generates missing request ids, exposes them to error responses, and threads request-context ids into audit log writes
+- ✅ Candidate request lifecycle transitions are now enforced server-side, conversion requires `invited`, rejection requires an officer note, terminal requests cannot be updated, and Admin Lite actions mirror the allowed follow-up sequence
+- ✅ Next App Router handlers forward bearer credentials and session cookies to backend API clients, with tests and production `next start` smoke coverage
+- ✅ `pnpm smoke:phase8` boots the compiled API, checks `/api/health`, exercises Admin Lite under `next dev` and production `next start`, validates mobile demo launch, and verifies production demo-mode rejection
+- ✅ V1 organization constraints and candidate follow-up expectations are documented without expanding scope
 
 **In Progress**:
 
-- 🟡 Phase 8 Next Admin follow-up steps: keep `dev:http-shell` only as a short-term compatibility fallback; add Next `dev/start` smoke checks after the broader smoke target is introduced; verify production auth/session cookie behavior through the Next route handlers; convert framework-neutral HTML renderers to native React Server Components only after route parity and authorization smoke tests are stable
-- 🟡 Delivery-risk hardening plan from code review:
-  - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
-    compatibility fallback while the current Admin Lite route surface runs on
-    the Next.js App Router runtime.
-  - Production readiness: add API boot, Admin Lite route, mobile demo launch,
-    and production-mode demo rejection smoke targets. Existing CI already runs
-    lint/typecheck/test/coverage/build/contracts/migration checks; the gap is
-    journey-level launch validation.
-  - Realtime/scalability: keep one PostgreSQL instance and no `/v2` routes in
-    V1. Read replicas, `/v2`, hierarchy rollups, and cross-unit reporting remain
-    deferred unless owner-approved. Phase 11 must add Redis TTL/reconnect/
-    duplicate-join/multi-instance counter tests for silent prayer.
-  - Organization constraints: document that V1 permissions are explicit and
-    chorągiew-scoped. Do not add hierarchy-derived permissions or cross-unit
-    rollups without a scope decision.
-  - Observability: add API request-id generation and propagation through error
-    responses and audit logs, then choose the pilot log/metric destination in
-    release hardening.
-  - Candidate lifecycle: define and enforce allowed request status transitions,
-    rejection requirements, responsible-officer assignment behavior, and
-    follow-up timeline expectations.
+- ✅ None
 
-**Exit criteria**: 🟡 Brother Today/profile, assigned organization-unit mobile views, brother prayer/event reads, and the current Admin Lite route surface build under Next.js App Router; request-id, launch smoke, and production auth/session hardening remain
+**Post-Phase-8 cleanup/deferred work**:
 
-**Next step**: Add request-id middleware/interceptor, Next `dev/start` and production auth/session smoke checks, and broader API/mobile launch smoke targets before Phase 9 grows the surface area.
+- Retire `dev:http-shell` only after the next Admin Lite route additions prove App Router parity remains stable.
+- Convert framework-neutral Admin Lite HTML renderers to React Server Components only with separate parity tests.
+- Choose the pilot logging/metrics destination during release hardening.
+- Phase 11 must add Redis TTL/reconnect/duplicate-join/multi-instance tests before silent-prayer realtime sockets.
+
+**Exit criteria**: ✅ Brother Today/profile, assigned organization-unit mobile views, brother prayer/event reads, current Admin Lite route surface under Next.js App Router, request-id propagation, candidate lifecycle enforcement, launch smoke, and production auth/session cookie hardening are complete
+
+**Next step**: Start Phase 9 events/announcements/push
 
 ### Phases 4–13: Roadmap
 
@@ -290,8 +281,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
 | **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
 | **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
-| **8**  | Brother Companion Core           | 🟡 In progress | Started May 5   |
-| **9**  | Events/Announcements/Push        | ⏳ Not started | After Phase 8   |
+| **8**  | Brother Companion Core           | ✅ Complete    | Completed May 6 |
+| **9**  | Events/Announcements/Push        | ⏳ Not started | Next            |
 | **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
 | **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
@@ -305,13 +296,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed                                                                       |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.06% statements / 81.59% branches / 93.13% functions / 91.82% lines  |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer/event visibility tests and full current Admin Lite Next route smoke tests added |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 90.89% statements / 81.56% branches / 93.08% functions / 91.63% lines  |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Brother prayer/event visibility tests, Admin Lite Next route smoke/cookie tests, request-id middleware, and candidate lifecycle tests added |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm quality` passed; admin build now runs `next build`                                    |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes identity access review endpoints                                |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires identity access review endpoints                                    |
 | **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Identity access review migration and seed fixtures included                                 |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Mobile brother demo fixtures validate through shared DTOs; current Next admin route surface avoids backend calls in demo smoke tests |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `pnpm smoke:phase8` covers API boot, Admin Next dev/start, mobile demo launch, and production demo rejection |
 
 ---
 
@@ -396,7 +387,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Candidate dashboard foundation added with `GET /candidate/dashboard`, active-profile enforcement, scoped assignment/contact data, candidate-visible events, mobile API/demo client, screen model, and React Native screen
 - Admin candidate profile management added with guarded list/detail/update API, scoped officer reads, audited status/assignment/responsible-officer updates, Admin Lite client/screen/shell routes, mounted navigation, and demo fallback
 
-**Phase 8 In Progress** 🟡:
+**Phase 8 Complete** ✅:
 
 - Brother profile API added with own active profile, active memberships, roles, current degree, join date, and read-only critical data
 - Brother Today API added with personalized cards, active organization units, and upcoming events filtered to public/family/brother/own-organization-unit visibility
@@ -405,10 +396,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Brother prayer API added with guarded `/brother/prayers`, shared DTO/OpenAPI schema, and published public/family/brother/own-organization-unit visibility filtering
 - Brother event API added with guarded `/brother/events`, shared DTO/OpenAPI schema, published non-cancelled public/family/brother/own-organization-unit visibility filtering, and mobile API/demo/screen model coverage
 - Admin Lite now has a real Next.js App Router runtime for the current implemented route surface, preserving current API/client/DTO/model/fixture behavior through the shared route adapter
-- Delivery-risk recommendations are tracked as active hardening/planning work:
-  request-id propagation, smoke/E2E launch checks, realistic seed/load fixtures,
-  Redis TTL validation for Phase 11, explicit V1 organization-scope constraints,
-  and stricter candidate lifecycle transition rules
+- API request-id generation/propagation, candidate request lifecycle enforcement, App Router cookie forwarding, launch smoke checks, V1 organization constraints, and candidate follow-up expectations are complete
+- Deferred hardening remains scoped to later phases: realistic seed/load expansion, Phase 11 Redis realtime tests, pilot logging/metrics destination, and optional Admin Lite renderer cleanup
 
 ---
 
@@ -446,14 +435,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 4. **Production-readiness review hardening**
    - [x] Plan and complete the Next.js/App Router Admin Lite runtime for the current implemented route surface, reusing existing admin API clients, DTO schemas, screen models, and fixtures
    - [x] Add brother event read API/client/screen model coverage for Phase 8 companion parity
-   - [ ] Add Next `dev/start` smoke checks and production auth/session cookie checks for the App Router handlers
-   - [ ] Decide when to retire `dev:http-shell` after Next route parity is stable
-   - [ ] Convert framework-neutral Admin Lite renderers to native React Server Components only after parity and authorization smoke tests are stable
-   - [ ] Add request-id middleware/interceptor and thread the generated id through error responses and audit log writes
-   - [ ] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
+   - [x] Add request-id middleware/interceptor and thread the generated id through error responses and audit log writes
+   - [x] Define and enforce candidate request status transitions, rejection-note requirements, terminal request behavior, and conversion preconditions
+   - [x] Add Next `dev/start` smoke checks and production auth/session cookie checks for the App Router handlers
+   - [x] Decide `dev:http-shell` remains a short-term compatibility fallback; retirement is post-Phase-8 cleanup after future route parity stays stable
+   - [x] Defer framework-neutral Admin Lite renderer conversion to React Server Components until a separate parity-tested cleanup task
+   - [x] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
+   - [x] Document V1 organization constraints explicitly: no hierarchy-derived permissions, no cross-unit rollups, no read replicas, and no `/v2` routes without owner approval
+   - [x] Document pilot candidate follow-up timeline expectations
    - [ ] Expand realistic seed/load fixtures across multiple chorągwie, roles, inactive users, archived records, and visibility levels
-   - [ ] Document V1 organization constraints explicitly: no hierarchy-derived permissions, no cross-unit rollups, no read replicas, and no `/v2` routes without owner approval
-   - [ ] Define candidate request lifecycle transition rules, rejection requirements, responsible-officer assignment behavior, and follow-up timeline expectations
    - [ ] Queue Phase 11 Redis TTL/reconnect/duplicate-join/multi-instance tests for silent prayer before implementing realtime sockets
 
 ### Medium Term (Next 5–10 commits)
@@ -554,5 +544,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 6, 2026
-**Current Phase**: Phase 8 in progress; Phases 0–7 complete
-**Next Major Milestone**: Complete brother companion core
+**Current Phase**: Phase 9 pending; Phases 0–8 complete
+**Next Major Milestone**: Start events/announcements/push

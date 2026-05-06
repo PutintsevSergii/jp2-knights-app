@@ -19,6 +19,7 @@ export interface AdminIdentityAccessScreen {
 export interface RenderAdminIdentityAccessRouteOptions {
   runtimeMode: RuntimeMode;
   authToken?: string;
+  authCookie?: string;
   baseUrl?: string;
   canWrite?: boolean;
   fetchImpl?: AdminContentFetch;
@@ -83,6 +84,7 @@ async function resolveIdentityAccessScreen(
   try {
     const response = await fetchAdminIdentityAccessReviews({
       ...(options.authToken ? { authToken: options.authToken } : {}),
+      ...(options.authCookie ? { authCookie: options.authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });

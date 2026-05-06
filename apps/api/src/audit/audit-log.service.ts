@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../database/prisma.service.js";
+import { RequestContext } from "../observability/request-context.js";
 
 export type AuditSummary = Record<string, string | number | boolean | null>;
 
@@ -30,7 +31,7 @@ export class AuditLogService {
         scopeOrganizationUnitId: input.scopeOrganizationUnitId,
         beforeSummary: jsonOrNull(input.beforeSummary),
         afterSummary: jsonOrNull(input.afterSummary),
-        requestId: input.requestId ?? null,
+        requestId: input.requestId ?? RequestContext.getRequestId(),
         ipAddress: input.ipAddress ?? null
       }
     });

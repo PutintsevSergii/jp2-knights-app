@@ -51,6 +51,7 @@ export interface BuildAdminDashboardScreenOptions {
 export interface RenderAdminDashboardRouteOptions {
   runtimeMode: RuntimeMode;
   authToken?: string;
+  authCookie?: string;
   baseUrl?: string;
   fetchImpl?: AdminContentFetch;
 }

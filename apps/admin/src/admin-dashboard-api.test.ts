@@ -26,6 +26,28 @@ describe("admin dashboard API client", () => {
     });
   });
 
+  it("can authenticate dashboard requests with forwarded session cookies", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminDashboard)
+      })
+    );
+
+    await expect(
+      fetchAdminDashboard({
+        baseUrl: "https://api.example.test",
+        authCookie: "jp2_session=session_1",
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackAdminDashboard);
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/dashboard", {
+      method: "GET",
+      headers: { cookie: "jp2_session=session_1" }
+    });
+  });
+
   it("rejects non-OK responses and invalid payloads", async () => {
     await expect(
       fetchAdminDashboard({

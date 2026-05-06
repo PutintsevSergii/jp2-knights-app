@@ -193,7 +193,7 @@ function buildRowActions(
     });
   }
 
-  if (request.status !== "invited") {
+  if (request.status === "contacted") {
     actions.push({
       id: "invite",
       label: "Mark Invited",
@@ -224,7 +224,11 @@ function buildDetailActions(
     }
   ];
 
-  if (canWrite && request.status !== "converted_to_candidate") {
+  if (
+    canWrite &&
+    request.status !== "converted_to_candidate" &&
+    request.status !== "rejected"
+  ) {
     actions.unshift({
       id: "save",
       label: "Save Follow-up",

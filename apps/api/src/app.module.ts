@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
 import { AdminCandidateRequestModule } from "./admin-candidate-requests/admin-candidate-request.module.js";
 import { AdminCandidateModule } from "./admin-candidates/admin-candidate.module.js";
 import { AdminContentModule } from "./admin-content/admin-content.module.js";
@@ -10,6 +10,7 @@ import { AuthModule } from "./auth/auth.module.js";
 import { BrotherCompanionModule } from "./brother-companion/brother-companion.module.js";
 import { CandidateDashboardModule } from "./candidate/candidate-dashboard.module.js";
 import { OrganizationModule } from "./organization/organization.module.js";
+import { RequestIdMiddleware } from "./observability/request-id.middleware.js";
 import { PublicModule } from "./public/public.module.js";
 
 @Module({
@@ -28,4 +29,8 @@ import { PublicModule } from "./public/public.module.js";
   controllers: [AppController],
   providers: [AppService]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestIdMiddleware).forRoutes("*");
+  }
+}

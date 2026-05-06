@@ -117,8 +117,12 @@ describe("AdminCandidateRequestService", () => {
     expect(JSON.stringify(auditLog.records[0])).not.toContain("I would like to learn more.");
   });
 
-  it("converts an assigned request into a candidate profile and writes redacted audit", async () => {
+  it("converts an invited assigned request into a candidate profile and writes redacted audit", async () => {
     const repository = new FakeRepository();
+    repository.record = {
+      ...request,
+      status: "invited"
+    };
     const auditLog = new FakeAuditLog();
     const service = new AdminCandidateRequestService(
       repository,
@@ -180,10 +184,65 @@ describe("AdminCandidateRequestService", () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it("rejects conversion without assignment or from terminal request states", async () => {
+  it("rejects invalid candidate request lifecycle transitions", async () => {
+    const service = new AdminCandidateRequestService(new FakeRepository(), auditLog());
+
+    await expect(
+      service.updateCandidateRequest(officer, request.id, { status: "invited" })
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      service.updateCandidateRequest(officer, request.id, { status: "rejected" })
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    const contactedRepository = new FakeRepository();
+    contactedRepository.record = {
+      ...request,
+      status: "contacted"
+    };
+    await expect(
+      new AdminCandidateRequestService(contactedRepository, auditLog()).updateCandidateRequest(
+        officer,
+        request.id,
+        { status: "invited" }
+      )
+    ).resolves.toMatchObject({
+      candidateRequest: {
+        status: "invited"
+      }
+    });
+    await expect(
+      new AdminCandidateRequestService(contactedRepository, auditLog()).updateCandidateRequest(
+        officer,
+        request.id,
+        { status: "rejected", officerNote: "Candidate declined after follow-up." }
+      )
+    ).resolves.toMatchObject({
+      candidateRequest: {
+        status: "rejected",
+        officerNote: "Candidate declined after follow-up."
+      }
+    });
+
+    const rejectedRepository = new FakeRepository();
+    rejectedRepository.record = {
+      ...request,
+      status: "rejected",
+      officerNote: "Not a fit for V1 process."
+    };
+    await expect(
+      new AdminCandidateRequestService(rejectedRepository, auditLog()).updateCandidateRequest(
+        officer,
+        request.id,
+        { officerNote: "Changed after terminal status." }
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it("rejects conversion without assignment, invitation, or from terminal request states", async () => {
     const unassignedRepository = new FakeRepository();
     unassignedRepository.record = {
       ...request,
+      status: "invited",
       assignedOrganizationUnitId: null,
       assignedOrganizationUnitName: null
     };
@@ -200,6 +259,14 @@ describe("AdminCandidateRequestService", () => {
     };
     await expect(
       new AdminCandidateRequestService(rejectedRepository, auditLog()).convertCandidateRequest(
+        officer,
+        request.id,
+        {}
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    await expect(
+      new AdminCandidateRequestService(new FakeRepository(), auditLog()).convertCandidateRequest(
         officer,
         request.id,
         {}

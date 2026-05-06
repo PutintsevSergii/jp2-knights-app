@@ -35,6 +35,7 @@ export interface RenderAdminCandidateRequestRouteOptions {
   runtimeMode: RuntimeMode;
   canWrite: boolean;
   authToken?: string;
+  authCookie?: string;
   baseUrl?: string;
   fetchImpl?: AdminContentFetch;
 }

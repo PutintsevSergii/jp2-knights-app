@@ -58,6 +58,10 @@ async function requestAdminCandidate(
     headers.authorization = `Bearer ${options.authToken}`;
   }
 
+  if (options.authCookie) {
+    headers.cookie = options.authCookie;
+  }
+
   const response = await fetcher(buildAdminContentUrl(path, options.baseUrl), {
     method: init.method ?? "GET",
     headers,

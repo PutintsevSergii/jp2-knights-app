@@ -43,6 +43,7 @@ export type AdminContentFetch = (
 export interface AdminContentRequestOptions {
   baseUrl?: string;
   authToken?: string;
+  authCookie?: string;
   fetchImpl?: AdminContentFetch;
 }
 
@@ -145,7 +146,7 @@ async function requestAdminContent(
   const fetcher = options.fetchImpl ?? getGlobalFetch();
   const fetchInit: AdminContentFetchInit = {
     method: init.method ?? "GET",
-    headers: buildHeaders(options.authToken, init.body)
+    headers: buildHeaders(options.authToken, options.authCookie, init.body)
   };
 
   if (init.body !== undefined) {
@@ -163,6 +164,7 @@ async function requestAdminContent(
 
 function buildHeaders(
   authToken: string | undefined,
+  authCookie: string | undefined,
   body: string | undefined
 ): Record<string, string> {
   const headers: Record<string, string> = {};
@@ -173,6 +175,10 @@ function buildHeaders(
 
   if (authToken) {
     headers.authorization = `Bearer ${authToken}`;
+  }
+
+  if (authCookie) {
+    headers.cookie = authCookie;
   }
 
   return headers;

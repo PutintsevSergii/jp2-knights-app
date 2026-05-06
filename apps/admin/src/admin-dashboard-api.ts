@@ -21,6 +21,10 @@ export async function fetchAdminDashboard(
     headers.authorization = `Bearer ${options.authToken}`;
   }
 
+  if (options.authCookie) {
+    headers.cookie = options.authCookie;
+  }
+
   const response = await fetcher(buildAdminContentUrl("admin/dashboard", options.baseUrl), {
     method: "GET",
     headers

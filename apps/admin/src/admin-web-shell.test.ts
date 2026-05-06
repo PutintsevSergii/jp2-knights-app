@@ -45,6 +45,36 @@ describe("admin web shell", () => {
     });
   });
 
+  it("forwards session cookies from mounted admin routes to backend clients", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminDashboard)
+      })
+    );
+
+    const response = await renderAdminWebRequest(
+      {
+        path: "/admin/dashboard",
+        headers: {
+          cookie: "jp2_session=session_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        fetchImpl
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/dashboard", {
+      method: "GET",
+      headers: { cookie: "jp2_session=session_1" }
+    });
+  });
+
   it("mounts the identity access review route", async () => {
     const fetchImpl = vi.fn(() =>
       Promise.resolve({

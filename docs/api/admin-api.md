@@ -69,7 +69,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - `GET /admin/candidate-requests` and `GET /admin/candidate-requests/:id` require Admin Lite access.
 - Super Admin sees all non-archived candidate requests. Officers see only requests assigned to one of their officer organization units; unassigned requests remain Super Admin-only until assigned.
 - `PATCH /admin/candidate-requests/:id` updates status, assigned organization unit, or officer note. Direct `converted_to_candidate` status is not accepted here; conversion uses `POST /admin/candidate-requests/:id/convert`.
-- `POST /admin/candidate-requests/:id/convert` creates or reuses the local invited user, grants the `CANDIDATE` role, creates an active `candidate_profiles` row, and marks the request `converted_to_candidate`. It does not create a brother membership.
+- Candidate request status transitions are server-enforced: `new -> contacted/rejected`, `contacted -> invited/rejected`, and `invited -> rejected`. Rejected and converted requests are terminal. Rejection requires an officer note.
+- `POST /admin/candidate-requests/:id/convert` is allowed only from `invited`; it creates or reuses the local invited user, grants the `CANDIDATE` role, creates an active `candidate_profiles` row, and marks the request `converted_to_candidate`. It does not create a brother membership.
 - Officer assignment changes must stay within assigned organization units and cannot clear assignment. Super Admin may assign or clear assignment.
 - Candidate request updates record audit log before/after summaries with the full message and email redacted.
 - Candidate request conversion records an audit log with redacted request before-summary and candidate profile after-summary.

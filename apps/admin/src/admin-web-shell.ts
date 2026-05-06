@@ -56,11 +56,13 @@ export async function renderAdminWebRequest(
   }
 
   const authToken = bearerTokenFromHeaders(request.headers);
+  const authCookie = cookieFromHeaders(request.headers);
 
   if (path === "/admin/dashboard") {
     const rendered = await renderAdminDashboardRoute({
       runtimeMode,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -81,6 +83,7 @@ export async function renderAdminWebRequest(
       runtimeMode,
       canWrite: options.canWrite ?? false,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -102,6 +105,7 @@ export async function renderAdminWebRequest(
       runtimeMode,
       canWrite: options.canWrite ?? false,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -123,6 +127,7 @@ export async function renderAdminWebRequest(
       runtimeMode,
       canWrite: options.canWrite ?? false,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -144,6 +149,7 @@ export async function renderAdminWebRequest(
       runtimeMode,
       canWrite: options.canWrite ?? false,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -165,6 +171,7 @@ export async function renderAdminWebRequest(
       runtimeMode,
       canWrite: options.canWrite ?? false,
       ...(authToken ? { authToken } : {}),
+      ...(authCookie ? { authCookie } : {}),
       ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
       ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
     });
@@ -198,6 +205,7 @@ export async function renderAdminWebRequest(
     runtimeMode,
     canWrite: options.canWrite ?? false,
     ...(authToken ? { authToken } : {}),
+    ...(authCookie ? { authCookie } : {}),
     ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
     ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {})
   });
@@ -309,6 +317,18 @@ function bearerTokenFromHeaders(
   }
 
   return header.slice("Bearer ".length);
+}
+
+function cookieFromHeaders(
+  headers: Record<string, string | string[] | undefined> | undefined
+): string | undefined {
+  const cookie = headers?.cookie;
+
+  if (Array.isArray(cookie)) {
+    return cookie.join("; ");
+  }
+
+  return cookie;
 }
 
 function mountRenderedRoute(

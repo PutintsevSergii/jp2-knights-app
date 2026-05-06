@@ -13,6 +13,8 @@ import type {
   UpdateAdminCandidateRequest
 } from "./admin-candidate-request.types.js";
 
+type CandidateRequestStatus = AdminCandidateRequestDetail["status"];
+
 @Injectable()
 export class AdminCandidateRequestService {
   constructor(
@@ -68,6 +70,13 @@ export class AdminCandidateRequestService {
       id,
       scopeOrganizationUnitIds
     );
+
+    if (!beforeCandidateRequest) {
+      throw new NotFoundException("Candidate request was not found in the current admin scope.");
+    }
+
+    assertAllowedCandidateRequestUpdate(beforeCandidateRequest, data);
+
     const candidateRequest = await this.candidateRequestRepository.updateCandidateRequest(
       id,
       data,
@@ -84,9 +93,7 @@ export class AdminCandidateRequestService {
       entityType: "candidate_request",
       entityId: candidateRequest.id,
       scopeOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
-      beforeSummary: beforeCandidateRequest
-        ? summarizeCandidateRequestForAudit(beforeCandidateRequest)
-        : null,
+      beforeSummary: summarizeCandidateRequestForAudit(beforeCandidateRequest),
       afterSummary: summarizeCandidateRequestForAudit(candidateRequest)
     });
 
@@ -110,10 +117,7 @@ export class AdminCandidateRequestService {
       throw new NotFoundException("Candidate request was not found in the current admin scope.");
     }
 
-    if (
-      candidateRequest.status === "converted_to_candidate" ||
-      candidateRequest.status === "rejected"
-    ) {
+    if (candidateRequest.status !== "invited") {
       throw new ConflictException("Candidate request cannot be converted from its current status.");
     }
 
@@ -168,6 +172,42 @@ export class AdminCandidateRequestService {
 function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
   return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
 }
+
+function assertAllowedCandidateRequestUpdate(
+  candidateRequest: AdminCandidateRequestDetail,
+  data: UpdateAdminCandidateRequest
+): void {
+  if (
+    candidateRequest.status === "converted_to_candidate" ||
+    candidateRequest.status === "rejected"
+  ) {
+    throw new ConflictException("Terminal candidate requests cannot be updated.");
+  }
+
+  if (data.status === undefined || data.status === candidateRequest.status) {
+    return;
+  }
+
+  if (!allowedNextStatuses[candidateRequest.status].includes(data.status)) {
+    throw new ConflictException("Candidate request status transition is not allowed.");
+  }
+
+  if (data.status === "rejected") {
+    const rejectionNote = data.officerNote ?? candidateRequest.officerNote;
+
+    if (!rejectionNote) {
+      throw new ConflictException("Rejected candidate requests require an officer note.");
+    }
+  }
+}
+
+const allowedNextStatuses: Record<CandidateRequestStatus, readonly CandidateRequestStatus[]> = {
+  new: ["contacted", "rejected"],
+  contacted: ["invited", "rejected"],
+  invited: ["rejected"],
+  rejected: [],
+  converted_to_candidate: []
+};
 
 function assertCanUpdateCandidateRequest(
   principal: CurrentUserPrincipal,

@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 6, 2026 (Phases 0–7 complete; Phase 8 in progress)
+**Last Updated**: May 6, 2026 (Phases 0–8 complete; Phase 9 pending)
 
 ---
 
@@ -17,10 +17,10 @@ Use this document to:
 
 The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
 
-### Current Phase: Phase 8 (Brother Companion Core)
+### Current Phase: Phase 9 (Events, Announcements, and Push) — Pending
 
-Implementation is complete through the Phase 7 Candidate Funnel. Phase 8 Brother
-Companion Core is in progress:
+Implementation is complete through Phase 8 Brother Companion Core. Phase 9 has
+not started yet:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -246,41 +246,48 @@ Companion Core is in progress:
   tests cover demo mode without backend calls, dashboard API bearer forwarding,
   identity-access review queue mounting, all list routes, and dynamic
   detail/form routes. `next build` verifies the complete current route surface.
-- Delivery-risk review recommendations are now tracked as in-progress hardening
-  and planning items alongside Phase 8, without expanding V1 scope:
-  - Implementation maturity: keep Admin Lite's dependency-free HTTP shell as the
-    accepted V1 foundation while the incremental Next.js/App Router admin
-    migration is now a real Next.js runtime target for the current implemented
-    Admin Lite route surface. Future admin routes should follow the same adapter
-    pattern until React Server Component rewrites are intentionally scheduled
-    with parity tests.
-  - Next.js Admin Lite follow-up steps for Phase 8 hardening:
-    keep `dev:http-shell` only as a short-term compatibility fallback; add
-    Next `dev/start` smoke checks after the broader smoke target is introduced;
-    verify production auth/session cookie behavior through the Next route
-    handlers; and convert framework-neutral HTML renderers to native React
-    Server Components only after route parity and authorization smoke tests are
-    stable.
-  - Production readiness: add smoke/E2E targets for API boot, Admin Lite routes,
-    mobile demo launch, and production-mode demo rejection. CI already runs
-    lint/typecheck/test/coverage/build/contracts/migration checks; the next
-    solution is to add launch and journey-level checks rather than duplicate
-    existing unit gates.
+- Phase 8 hardening now adds API request-id generation and propagation:
+  inbound `x-request-id` values are normalized and echoed, missing ids are
+  generated as `req_*`, error responses use the current request id, and audit
+  log writes automatically include the request-context id unless an explicit
+  audit request id is supplied.
+- Candidate request lifecycle hardening now enforces server-side status
+  transitions: `new -> contacted/rejected`, `contacted -> invited/rejected`,
+  `invited -> rejected`, and conversion only from `invited`; rejected or
+  converted requests are terminal, and rejection requires an officer note. Admin
+  Lite candidate-request actions now mirror that sequence by withholding the
+  invite action until a request is contacted.
+- Phase 8 now includes launch-level smoke coverage through `pnpm smoke:phase8`,
+  which boots the compiled API, checks generated request ids on `/api/health`,
+  exercises Admin Lite under `next dev` and production `next start`, verifies
+  App Router session-cookie forwarding to backend API clients, checks mobile
+  demo launch, and validates production demo-mode rejection for API, admin, and
+  mobile paths. `pnpm quality` now runs this smoke target after build.
+- Delivery-risk review recommendations are now resolved or explicitly deferred
+  without expanding V1 scope:
+  - Implementation maturity: Admin Lite's dependency-free HTTP shell remains
+    available as `dev:http-shell` only for short-term compatibility. New Admin
+    routes should target the Next App Router adapter. Retiring the shell and
+    converting framework-neutral HTML renderers to React Server Components are
+    post-Phase-8 cleanup decisions that require parity tests.
+  - Production readiness: Phase 8 adds launch-level smoke coverage for API boot,
+    Admin Lite Next routes, mobile demo launch, and production-mode demo
+    rejection. Deeper journey E2E remains release-hardening work.
   - Realtime and scalability: keep single PostgreSQL and no `/v2` routes for
     V1. Treat read replicas, API version expansion, hierarchy rollups, and
     cross-unit reporting as deferred scale/backlog decisions. Phase 11 must
     include Redis TTL tuning tests for duplicate joins, reconnects, disconnect
     expiry, and multi-instance counter correctness.
-  - Organization model constraints: document that V1 permissions stay explicit
-    and chorągiew-scoped. Do not add hierarchy-derived permissions or cross-unit
-    rollups without owner-approved scope expansion.
-  - Observability: add API request-id generation/propagation so every error
-    response and audit log can be correlated, then define the pilot logging and
-    metrics destination during release hardening.
-  - Candidate lifecycle: tighten the documented and service-level status
-    transition rules for request follow-up, rejection, invitation, conversion,
-    officer assignment, and timeline expectations before extending candidate
-    workflows.
+  - Organization model constraints: V1 permissions are now documented as
+    explicit, assignment-based, and organization-unit scoped. Hierarchy-derived
+    permissions and cross-unit rollups require owner-approved scope expansion.
+  - Observability: request-id generation/propagation is now implemented for API
+    errors and audit logs. Pilot log and metric destination selection remains
+    release-hardening work.
+  - Candidate lifecycle: core request status transitions and rejection note
+    requirements are now enforced server-side, and V1 human follow-up timeline
+    expectations are documented. Automated reminders remain out of scope until
+    explicitly approved.
 - Generated OpenAPI currently includes `/api/health`, `/api/public/home`,
   `/api/public/content-pages/{slug}`,
   `/api/public/prayers`, `/api/public/prayers/{id}`,
@@ -313,7 +320,7 @@ Companion Core is in progress:
   implemented route surface. The dependency-free HTTP shell remains available as
   a compatibility fallback while future route and React Server Component
   hardening steps are handled incrementally.
-- Remaining Phase 8 through 13 product workflows are not implemented yet unless
+- Remaining Phase 9 through 13 product workflows are not implemented yet unless
   explicitly listed above.
 
 ### How to Update This Document

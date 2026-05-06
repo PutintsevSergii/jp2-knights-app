@@ -74,6 +74,35 @@ describe("Next admin dashboard route scaffold", () => {
     });
   });
 
+  it("forwards session cookies through Next route handlers in API mode", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminDashboard)
+      })
+    );
+    vi.stubEnv("APP_RUNTIME_MODE", "api");
+    vi.stubEnv("API_BASE_URL", "https://api.example.test");
+    vi.stubGlobal("fetch", fetchImpl);
+
+    const response = await getAdminDashboard(
+      new Request("https://admin.example.test/admin/dashboard", {
+        headers: {
+          cookie: "jp2_session=session_1"
+        }
+      })
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(body).toContain("Scoped V1 operations overview.");
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/dashboard", {
+      method: "GET",
+      headers: { cookie: "jp2_session=session_1" }
+    });
+  });
+
   it("mounts /admin through the same dashboard shell", async () => {
     const fetchImpl = vi.fn();
     vi.stubEnv("APP_RUNTIME_MODE", "demo");

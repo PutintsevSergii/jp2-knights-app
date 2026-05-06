@@ -42,6 +42,35 @@ describe("admin candidate request screens", () => {
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual([
       "view",
       "contact",
+      "reject"
+    ]);
+
+    const contactedScreen = buildAdminCandidateRequestListScreen({
+      state: "ready",
+      response: {
+        candidateRequests: [
+          {
+            id: candidateRequest.id,
+            firstName: candidateRequest.firstName,
+            lastName: candidateRequest.lastName,
+            email: candidateRequest.email,
+            country: candidateRequest.country,
+            city: candidateRequest.city,
+            status: "contacted",
+            assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+            assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+            createdAt: candidateRequest.createdAt,
+            updatedAt: candidateRequest.updatedAt,
+            archivedAt: candidateRequest.archivedAt
+          }
+        ]
+      },
+      runtimeMode: "api",
+      canWrite: true
+    });
+
+    expect(contactedScreen.rows[0]?.actions.map((action) => action.id)).toEqual([
+      "view",
       "invite",
       "reject"
     ]);

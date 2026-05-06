@@ -43,3 +43,11 @@
 
 - Can manage all V1 data.
 - Should still use audit logging for critical actions.
+
+## V1 Organization Scope Constraints
+
+- V1 permissions are explicit, assignment-based, and scoped to the concrete organization-unit ids on the principal.
+- V1 does not derive permissions from parent/child hierarchy, sibling units, geography, or implied country/region rollups.
+- V1 does not expose cross-unit operational rollups to officers. Super Admin remains the only global operational role.
+- Read replicas, hierarchy-derived reporting, `/v2` routes, and cross-unit analytics stay out of scope unless the human owner approves a documented scope expansion.
+- Admin and brother/candidate APIs must continue to filter on the server before returning data; UI hiding is never a permission boundary.

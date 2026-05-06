@@ -5,6 +5,7 @@ import {
   HttpStatus,
   type ExceptionFilter
 } from "@nestjs/common";
+import { RequestContext } from "../observability/request-context.js";
 
 type ApiErrorCode =
   | "VALIDATION_ERROR"
@@ -49,7 +50,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
         code: toErrorCode(status, body),
         message: toMessage(status, body),
         details: body.issues ?? body.details ?? [],
-        requestId: toRequestId(request.headers?.["x-request-id"]),
+        requestId: toRequestId(request.headers?.["x-request-id"]) ?? "unknown",
         timestamp: new Date().toISOString()
       }
     });
@@ -76,12 +77,12 @@ function toMessage(status: number, body: ErrorResponseBody): string {
   return status === 500 ? "An unexpected error occurred." : "Request failed.";
 }
 
-function toRequestId(value: string | string[] | undefined): string {
+function toRequestId(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
-    return value[0] ?? "unknown";
+    return value[0] ?? RequestContext.getRequestId();
   }
 
-  return value ?? "unknown";
+  return value ?? RequestContext.getRequestId();
 }
 
 function toErrorCode(status: number, body: ErrorResponseBody): ApiErrorCode {
