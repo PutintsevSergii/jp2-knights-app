@@ -10,6 +10,7 @@ import {
 } from "./public-content.js";
 import {
   buildAboutOrderScreen,
+  buildIdleApprovalScreen,
   buildJoinRequestConfirmationScreen,
   buildJoinRequestFormScreen,
   buildPublicEventDetailScreen,
@@ -17,6 +18,7 @@ import {
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
+  buildSignInScreen,
   JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
 
@@ -235,11 +237,57 @@ describe("mobile public screen models", () => {
       title: "JP2 App"
     });
     expect(screen.actions.map((action) => action.targetRoute)).toContain("AboutOrder");
+    expect(screen.actions.map((action) => action.targetRoute)).toContain("IdleApproval");
     expect(screen.sections.at(0)).toEqual({
       id: "identity-approval",
       title: "Account Approval Pending",
       body: "Your sign-in is waiting for officer approval. Public content remains available."
     });
+  });
+
+  it("builds a token-backed sign-in entry screen without granting private access", () => {
+    const screen = buildSignInScreen({ state: "ready", runtimeMode: "api" });
+
+    expect(screen).toMatchObject({
+      route: "Login",
+      state: "ready",
+      title: "Sign In",
+      demoChromeVisible: false
+    });
+    expect(screen.fields.map((field) => field.id)).toEqual(["email", "password"]);
+    expect(screen.fields.find((field) => field.id === "password")?.secureTextEntry).toBe(true);
+    expect(screen.sections.at(0)?.body).toContain("configured authentication provider");
+    expect(JSON.stringify(screen)).not.toMatch(/roles|membership|officer scope/i);
+  });
+
+  it("builds an idle approval status screen with aggregate approval state only", () => {
+    const launchState = resolveMobileLaunchState({
+      id: "idle_1",
+      roles: [],
+      status: "active",
+      approval: {
+        state: "pending",
+        expiresAt: "2026-06-04T08:00:00.000Z",
+        scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+      }
+    });
+    const screen = buildIdleApprovalScreen({ launchState });
+
+    expect(screen).toMatchObject({
+      route: "IdleApproval",
+      state: "idleApproval",
+      title: "Account Approval Pending",
+      actions: [
+        {
+          id: "home",
+          label: "Home",
+          targetRoute: "PublicHome"
+        }
+      ]
+    });
+    expect(screen.sections.at(0)?.body).toContain("Status: pending");
+    expect(screen.sections.at(0)?.body).toContain("Review expires: Jun 4, 2026");
+    expect(JSON.stringify(screen)).not.toMatch(/roles|membership|officer scope/i);
   });
 
   it("builds an AboutOrder screen from a published public content page", () => {

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   buildAboutOrderScreen,
   buildCurrentUserUrl,
@@ -26,6 +28,7 @@ import {
   buildMyOrganizationUnitsUrl,
   buildJoinRequestConfirmationScreen,
   buildJoinRequestFormScreen,
+  buildIdleApprovalScreen,
   buildPublicCandidateRequestUrl,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
@@ -48,8 +51,12 @@ import {
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
+  buildSignInScreen,
   getMobileHealth,
   getMobileThemePreview,
+  isBrotherRoute,
+  isCandidateRoute,
+  isPublicRoute,
   readMobileRuntimeMode,
   resolveMobileLaunchState
 } from "./main.js";
@@ -95,10 +102,44 @@ describe("mobile shell", () => {
 
   it("uses shared design tokens", () => {
     expect(getMobileThemePreview().surface).toBeDefined();
+    expect(getMobileThemePreview().screenTitleSize).toBe(28);
   });
 
   it("exports the public launch resolver", () => {
     expect(resolveMobileLaunchState(null).initialRoute).toBe("PublicHome");
+  });
+
+  it("exports route group guards for the split mobile shell", () => {
+    expect(isPublicRoute("PublicHome")).toBe(true);
+    expect(isPublicRoute("Login")).toBe(true);
+    expect(isPublicRoute("IdleApproval")).toBe(true);
+    expect(isCandidateRoute("CandidateEvents")).toBe(true);
+    expect(isBrotherRoute("BrotherToday")).toBe(true);
+    expect(isPublicRoute("BrotherToday")).toBe(false);
+    expect(isCandidateRoute("PublicHome")).toBe(false);
+    expect(isBrotherRoute("CandidateDashboard")).toBe(false);
+  });
+
+  it("keeps App.tsx as a thin composition root for Phase 10A", () => {
+    const appSource = readFileSync(join(process.cwd(), "apps/mobile/src/App.tsx"), "utf8");
+
+    expect(appSource).toContain("MobilePublicSurface");
+    expect(appSource).toContain("MobileCandidateSurface");
+    expect(appSource).toContain("MobileBrotherSurface");
+    expect(appSource).not.toContain("fetchCandidateDashboard");
+    expect(appSource).not.toContain("fetchBrotherToday");
+    expect(appSource).not.toContain("submitPublicCandidateRequest");
+    expect(appSource).not.toContain("markCandidateEventParticipation");
+    expect(appSource).not.toContain("markBrotherEventParticipation");
+  });
+
+  it("keeps plural screen model files as barrels only", () => {
+    for (const fileName of ["public-screens.ts", "candidate-screens.ts", "brother-screens.ts"]) {
+      const source = readFileSync(join(process.cwd(), "apps/mobile/src", fileName), "utf8");
+
+      expect(source).not.toMatch(/export function build[A-Za-z]+Screen/);
+      expect(source).not.toMatch(/export interface [A-Za-z]+Screen/);
+    }
   });
 
   it("exports the public home screen model builder", () => {
@@ -169,6 +210,24 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("JoinRequestConfirmation");
+  });
+
+  it("exports sign-in and idle approval screen model builders", () => {
+    expect(buildSignInScreen({ state: "ready", runtimeMode: "demo" }).route).toBe("Login");
+    expect(
+      buildIdleApprovalScreen({
+        launchState: resolveMobileLaunchState({
+          id: "idle_1",
+          roles: [],
+          status: "active",
+          approval: {
+            state: "pending",
+            expiresAt: null,
+            scopeOrganizationUnitId: null
+          }
+        })
+      }).route
+    ).toBe("IdleApproval");
   });
 
   it("exports candidate dashboard helpers and screen model builder", () => {

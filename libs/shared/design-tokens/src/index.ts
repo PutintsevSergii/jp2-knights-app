@@ -33,5 +33,31 @@ export const designTokens = {
   radius: {
     sm: 4,
     md: 8
+  },
+  typography: {
+    fontFamily: {
+      web: 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+    },
+    size: {
+      screenTitle: 28,
+      sectionTitle: 20,
+      body: 16,
+      secondary: 14,
+      label: 12,
+      button: 16
+    },
+    lineHeight: {
+      screenTitle: 34,
+      sectionTitle: 28,
+      body: 24,
+      secondary: 20,
+      label: 16,
+      button: 20
+    },
+    weight: {
+      regular: "400",
+      medium: "500",
+      bold: "700"
+    }
   }
 } as const;

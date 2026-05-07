@@ -100,6 +100,8 @@ export {
 } from "./public-home-api.js";
 export { mobileRuntimeConfig, readMobileRuntimeMode } from "./runtime-config.js";
 export { resolveMobileLaunchState } from "./navigation.js";
+export { isBrotherRoute, isCandidateRoute, isPublicRoute } from "./mobile-routes.js";
+export type { MobileAppRoute } from "./mobile-routes.js";
 export {
   buildCandidateAnnouncementsScreen,
   buildCandidateEventDetailScreen,
@@ -138,6 +140,7 @@ export type {
 } from "./candidate-screens.js";
 export {
   buildAboutOrderScreen,
+  buildIdleApprovalScreen,
   buildJoinRequestConfirmationScreen,
   buildJoinRequestFormScreen,
   buildPublicEventDetailScreen,
@@ -145,6 +148,7 @@ export {
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
+  buildSignInScreen,
   JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
 export type {
@@ -156,6 +160,7 @@ export type {
 } from "./navigation.js";
 export type {
   AboutOrderScreen,
+  IdleApprovalScreen,
   JoinRequestConfirmationScreen,
   JoinRequestConsent,
   JoinRequestFieldId,
@@ -167,7 +172,10 @@ export type {
   PublicRoute,
   PublicScreenAction,
   PublicScreenSection,
-  PublicScreenTheme
+  PublicScreenTheme,
+  SignInFieldId,
+  SignInFormField,
+  SignInScreen
 } from "./public-screens.js";
 
 export function getMobileHealth(mode?: string, nodeEnv?: string): HealthStatus {
@@ -183,7 +191,8 @@ export function getMobileHealth(mode?: string, nodeEnv?: string): HealthStatus {
 export function getMobileThemePreview() {
   return {
     surface: designTokens.color.background.surface,
-    text: designTokens.color.text.primary
+    text: designTokens.color.text.primary,
+    screenTitleSize: designTokens.typography.size.screenTitle
   };
 }
 

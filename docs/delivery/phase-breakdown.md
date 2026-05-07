@@ -46,3 +46,15 @@ Exit requirements:
 - remaining implemented Candidate/Brother private event, announcement, profile, and organization-unit surfaces share the same header/card/bottom-nav system;
 - Admin Lite Candidate Requests and other Figma-covered officer/admin routes are responsive and visually aligned while remaining web-first;
 - tests verify role landing, forbidden/idle/offline/error states, no forbidden fields, action metadata, and token usage.
+
+## Phase 10B: Formation Roadmap And Localization Foundation
+
+Phase 10B continues Phase 10 after the Figma/RBAC alignment track. It implements the formation roadmap while adding the missing localization foundation required by `NFR-LOC-001`.
+
+Exit requirements:
+
+- roadmap data tables/contracts, candidate/brother read APIs, screen models, and scoped Admin Lite review workflows are implemented;
+- a shared localization key contract and default English catalog exist for mobile and Admin Lite user-facing UI strings;
+- new Phase 10B mobile/admin screens use localization helpers instead of hardcoded UI copy;
+- existing content-language fields remain the source for approved prayers, public content, announcements, and formation text;
+- tests cover default English lookup, missing-key fallback behavior, and at least one localized mobile and Admin Lite screen model.

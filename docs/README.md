@@ -31,7 +31,7 @@ This is not a full ERP for the whole Order. Implementation agents must build pha
 | [screens](screens/mobile-public-screens.md) | Screen descriptions for mobile and Admin Lite |
 | [flows](flows/guest-discovery-flow.md) | User and admin workflows with rules and data effects |
 | [delivery](delivery/implementation-roadmap.md) | Roadmap, phases, testing, release plan, support, risk register |
-| [agent](agent/working-agreement.md) | Operating contract, quality gates, no-duplicate policy, instructions |
+| [agent](agent/working-agreement.md) | Operating contract, quality gates, no-duplicate policy, component boundary contracts, instructions |
 
 ### Strategy & Governance
 
@@ -100,6 +100,7 @@ The non-negotiable constraints remain:
 - Technology stack changes require a short architecture decision entry with the reason, tradeoffs, and migration impact.
 - Coding tasks must satisfy [agent/quality-gates.md](agent/quality-gates.md) before completion.
 - New reusable logic must follow [agent/no-duplicate-policy.md](agent/no-duplicate-policy.md).
+- New screens, route groups, and reusable components must declare or follow [agent/component-boundary-contracts.md](agent/component-boundary-contracts.md) before adding more code to a root or shell file.
 - Approved scope expansion must update scope, backlog, traceability, and affected implementation docs before or with the code change.
 
 ## Required Human Approval Areas

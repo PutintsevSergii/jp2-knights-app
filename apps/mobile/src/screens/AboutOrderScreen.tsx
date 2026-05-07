@@ -1,4 +1,5 @@
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { designTokens } from "@jp2/shared-design-tokens";
 import type { AboutOrderScreen as AboutOrderScreenModel } from "../public-screens.js";
 
 export interface AboutOrderScreenProps {
@@ -104,17 +105,21 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start"
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.screenTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.screenTitle
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.sectionTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.sectionTitle
   },
   action: {
     alignItems: "center"
   },
   actionText: {
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.button,
+    fontWeight: designTokens.typography.weight.medium,
+    lineHeight: designTokens.typography.lineHeight.button
   }
 });

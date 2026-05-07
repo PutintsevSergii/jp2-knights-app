@@ -30,7 +30,7 @@ Inspected metadata confirms these mobile frames:
 | `1:177` | `Brother Today (Gold/Grey)` | Brother dashboard landing |
 | `1:1635` | `Candidate Requests (Gold/Grey)` | Officer/Admin candidate request management surface |
 
-The richer Figma design-context/screenshot call was rate-limited during review, so exact fills, font names, shadows, and component properties still need extraction from direct frame context when the Figma MCP limit resets or a direct frame screenshot is available. Until then, implementation must treat the Figma frame names and layer structure as the source for layout and role flow, but must not invent hardcoded gold/grey values.
+The richer Figma design-context/screenshot call is currently blocked by the Figma MCP Starter-plan tool-call limit, so exact fills, font names, shadows, and component properties still need extraction from direct frame context when access is available or a direct frame screenshot is provided. Until then, implementation must treat the Figma frame names and layer structure as the source for layout and role flow, but must not invent hardcoded gold/grey values.
 
 ## Current Design Gap
 
@@ -38,7 +38,7 @@ The existing code has strong API/RBAC foundations through Phase 9, but the V1 la
 
 - Public and selected dashboard screens have React Native screen components.
 - Candidate/brother private event and announcement screens are mounted in Expo, but several use `PrivateContentScreen`, a generic renderer.
-- The Expo root component (`apps/mobile/src/App.tsx`) currently carries too much orchestration: manual route switching, per-screen loading effects, demo/API fallback state, join-request form state, and participation actions. This was acceptable while earlier phases proved contracts and mode behavior, but it should not be the foundation for the Figma screen buildout.
+- The Expo root component (`apps/mobile/src/App.tsx`) has now been split for Phase 10A: it reads runtime/auth launch state and delegates to public, candidate, or brother route surfaces. The remaining UI gap is that candidate/brother private event and announcement routes still render through the generic `PrivateContentScreen` until Figma-specific screens land.
 - Figma targets a Gold/Grey visual system, while the current shared design tokens still expose the older blue action palette.
 - Officer/admin workflows are implemented in Admin Lite web routes, not as a V1 mobile officer app.
 - Candidate Contact, Candidate Roadmap, Brother Prayer Library, Silent Prayer, and several admin management screens must now be placed deliberately in V1 phases rather than left as open design debt. Roadmap remains Phase 10, Silent Prayer remains Phase 11, and final privacy/security/pilot hardening remains Phases 12-13.
@@ -86,10 +86,10 @@ In-progress update target:
 | Status palette | Success/warning/danger tokens exist | Keep semantic status tokens; do not replace with decorative brand colors |
 | Spacing | 4/8/12/16/24/32 scale exists | Reuse for Figma frame spacing; add only if Figma requires a repeated missing token |
 | Radius | 4 and 8 exist | Keep cards/buttons at 8px or less unless Figma frame proves otherwise |
-| Typography | Screen-local sizes in RN components | Move to tokenized type roles before visual parity pass |
+| Typography | Shared roles now exist for screen title, section title, body, secondary, label, and button text; current mobile shell screens consume them | Confirm exact Figma font family/weights from frames when access is available |
 | Navigation | Mode-specific action arrays | Add tab/header component tokens for Figma bottom nav/top app bar parity |
 
-Exact gold/grey values are pending Figma variable/frame extraction. Until then, docs and code should say "Figma Gold/Grey target" rather than guessing hex values.
+Exact gold/grey values are pending Figma variable/frame extraction. Until then, docs and code should say "Figma Gold/Grey target" rather than guessing hex values. The current token update only centralizes documented legacy typography roles and does not claim visual parity with the Gold/Grey frames.
 
 ## Screen Implementation Matrix
 
@@ -102,8 +102,8 @@ Legend:
 
 | Screen | Figma node | Requirement | Current implementation | Exact next implementation |
 | --- | --- | --- | --- | --- |
-| Sign In | `1:2` | FR-AUTH-001 | Auth APIs and Idle approval state exist; no Figma-matched Expo sign-in screen yet | Build `SignInScreen.tsx` using Gold/Grey frame layout, email/password fields, password visibility toggle, forgot-password link as disabled/deferred if provider flow does not support it, and primary sign-in action wired to provider/session flow |
-| Account Approval Pending | Pending direct frame | FR-AUTH-001 | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance | Add an Idle approval screen/state sharing the sign-in visual shell; show submitted/expiry/rejected copy without private roles/scopes |
+| Sign In | `1:2` | FR-AUTH-001 | Public `Login` route now mounts a token-backed `SignInScreen.tsx` foundation with email/password fields and safe provider-flow pending copy; not Figma-matched yet | Apply exact Gold/Grey frame layout, password visibility toggle, forgot-password link as disabled/deferred if provider flow does not support it, and wire primary sign-in action to the selected native/provider session flow |
+| Account Approval Pending | Pending direct frame | FR-AUTH-001 | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance; public `IdleApproval` route now renders pending/rejected/expired approval state without private roles/scopes | Match the Sign In visual shell once exact Figma values are available; keep submitted/expiry/rejected copy public-only |
 | Public Home | Pending direct frame | FR-PUBLIC-001 | Implemented and mounted | Create Figma-specific public home frame or map existing public screen to Gold/Grey tokens; keep no-auth public-only payload |
 | About the Order | Pending direct frame | FR-PUBLIC-002 | Implemented and mounted | Apply shared Gold/Grey content typography and page header pattern |
 | Public Prayer Library | Pending direct frame | FR-PRAYER-001 | Implemented list/detail | Add Figma-specific card/list variants when design exists |
@@ -138,9 +138,14 @@ Legend:
 
 ## Route And Component Targets
 
+Boundary contract: all Phase 10A screen and route work must follow
+[docs/agent/component-boundary-contracts.md](../agent/component-boundary-contracts.md)
+before adding logic to root, shell, or renderer files.
+
 Mobile implementation targets:
 
 - keep `apps/mobile/src/App.tsx` as a thin composition root only;
+- keep plural `*-screens.ts` model files as barrels only; every concrete screen model/builder belongs in a dedicated `<screen-name>-screen.ts` file;
 - extract public, candidate, and brother route orchestration before adding more Figma-specific screens;
 - extract repeated API/demo loading and action handlers into screen/domain hooks or controllers;
 - `apps/mobile/src/screens/SignInScreen.tsx`
@@ -173,7 +178,7 @@ Shared implementation targets:
 
 ## Mobile Shell Refactor Plan
 
-The current mobile app is not literally one file: API clients, screen-model builders, demo fixtures, tests, and several React Native screens are already separated. The concentration problem is specifically `apps/mobile/src/App.tsx`, which acts as router, data loader, form controller, action dispatcher, and screen switchboard.
+The current mobile app is not literally one file: API clients, screen-model builders, demo fixtures, tests, and several React Native screens are already separated. Phase 10A has resolved the main concentration problem by keeping `apps/mobile/src/App.tsx` as a composition root and moving route orchestration into `mobile-public-surface.tsx`, `mobile-candidate-surface.tsx`, and `mobile-brother-surface.tsx`.
 
 Valid short-term reason for the current shape:
 
@@ -189,15 +194,17 @@ Why it must improve during Phase 10A:
 
 Refactor sequence:
 
-1. Keep `App.tsx` as a thin composition root that reads runtime config/auth config and chooses the public, candidate, or brother app surface.
-2. Extract public, candidate, and brother route modules or hooks that own their route state, selected IDs, loaders, and action handlers.
-3. Extract shared mobile chrome components for top app bar, bottom navigation, demo banner, and common state views.
-4. Add Figma-specific screens on top of that split, starting with Sign In/Idle approval, Candidate Events, and Brother Today.
+1. ✅ Keep `App.tsx` as a thin composition root that reads runtime config/auth config and chooses the public, candidate, or brother app surface.
+2. ✅ Extract public, candidate, and brother route modules or hooks that own their route state, selected IDs, loaders, and action handlers.
+3. Start extracting shared mobile chrome tokens for top app bar, bottom navigation, demo banner, and common state views. Typography roles are now centralized; nav/header color values still require Figma extraction.
+4. Add Figma-specific screens on top of that split. Sign In/Idle approval now have token-backed foundations; exact visual parity and provider submission remain pending. Candidate Events and Brother Today are next private-screen targets.
 5. Reassess React Navigation or Expo Router only after the route groups are clear. Add a navigation dependency if deep links, tab stacks, back behavior, or native navigation semantics become real requirements; do not add it just to hide a local organization problem.
 
 Acceptance checks for the refactor:
 
 - `App.tsx` no longer owns per-screen fetch effects or participation/join-request action logic;
+- each new Phase 10A screen has a file/component contract entry or matches an existing entry in `docs/agent/component-boundary-contracts.md`;
+- plural screen model files stay as re-export barrels with regression coverage; concrete screen builders live in per-screen files;
 - public/candidate/brother route groups remain covered by tests for initial route, forbidden/Idle/offline/error states, demo mode, and role visibility;
 - server-side RBAC and visibility remain unchanged; the refactor must not move filtering into the client;
 - no new out-of-scope surfaces are introduced while splitting the shell.
@@ -223,10 +230,10 @@ Visual QA should include screenshots for at least:
 
 ## Phase 10A Order Of Work
 
-1. Extract exact Figma variables/screenshots for nodes `1:2`, `1:47`, `1:177`, and `1:1635`.
-2. Split the current mobile shell so `App.tsx` becomes a thin composition root and public/candidate/brother route groups own their loaders/actions.
-3. Update shared design tokens with Figma Gold/Grey semantic palette and typography roles.
-4. Build Figma-matched Sign In and Idle approval screens because they define the auth shell.
+1. Extract exact Figma variables/screenshots for nodes `1:2`, `1:47`, `1:177`, and `1:1635` when Figma MCP access is available.
+2. ✅ Split the current mobile shell so `App.tsx` becomes a thin composition root and public/candidate/brother route groups own their loaders/actions.
+3. 🟡 Update shared design tokens with Figma Gold/Grey semantic palette and typography roles. Typography roles are in place from documented specs; Gold/Grey colors remain pending Figma extraction.
+4. 🟡 Build Figma-matched Sign In and Idle approval screens because they define the auth shell. Public route foundations are in place; exact Figma styling and native/provider submission remain pending.
 5. Replace generic private renderer usage for Candidate Events and Brother Today with dedicated Figma-matched RN screens.
 6. Apply the same card/nav/header system to remaining candidate/brother event and announcement screens.
 7. Restyle Admin Lite Candidate Requests from the Figma `1:1635` frame while preserving web-first admin scope.

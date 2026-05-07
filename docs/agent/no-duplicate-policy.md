@@ -23,5 +23,6 @@ Duplication in this project is a product risk because roles, visibility, content
 - Search before creating anything reusable.
 - Prefer moving a repeated pattern into a shared library over copying it into a second app.
 - Keep shared utilities boring and domain-specific; do not create speculative frameworks.
+- Use [component-boundary-contracts.md](component-boundary-contracts.md) before expanding root files, route surfaces, or render components with reusable behavior.
 - If duplication is temporary during a migration, add a cleanup note and keep it inside the same phase scope.
 - Duplicated security logic is not acceptable temporary debt.

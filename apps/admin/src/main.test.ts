@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { getAdminHealth, getAdminShellRoutes, getAdminThemePreview } from "./main.js";
 
 describe("admin shell", () => {
@@ -27,5 +29,19 @@ describe("admin shell", () => {
       "/admin/events",
       "/admin/announcements"
     ]);
+  });
+
+  it("keeps multi-screen admin model files as barrels only", () => {
+    for (const fileName of [
+      "admin-content-screens.ts",
+      "admin-candidate-requests-screen.ts",
+      "admin-candidates-screen.ts",
+      "admin-organization-units-screen.ts"
+    ]) {
+      const source = readFileSync(join(process.cwd(), "apps/admin/src", fileName), "utf8");
+
+      expect(source).not.toMatch(/export function build[A-Za-z]+Screen/);
+      expect(source).not.toMatch(/export interface [A-Za-z]+Screen/);
+    }
   });
 });

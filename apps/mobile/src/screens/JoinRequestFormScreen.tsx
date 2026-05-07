@@ -1,4 +1,5 @@
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { designTokens } from "@jp2/shared-design-tokens";
 import type { JoinRequestFormDraft } from "../public-candidate-request.js";
 import type {
   JoinRequestFieldId,
@@ -185,12 +186,14 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start"
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.screenTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.screenTitle
   },
   fieldLabel: {
-    fontSize: 16,
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.body,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.body
   },
   input: {
     borderWidth: 1
@@ -211,6 +214,8 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   actionText: {
-    fontWeight: "700"
+    fontSize: designTokens.typography.size.button,
+    fontWeight: designTokens.typography.weight.medium,
+    lineHeight: designTokens.typography.lineHeight.button
   }
 });

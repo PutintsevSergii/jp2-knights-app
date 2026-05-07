@@ -424,19 +424,58 @@ Implementation is complete through Phase 9 Events, Announcements, and Push. The 
   It records the inspected Figma frames (`Sign In`, `Candidate Events`,
   `Brother Today`, and `Candidate Requests`), exact route/component targets,
   role/RBAC constraints, and per-screen implementation status.
-- The Phase 10A plan now explicitly documents the mobile shell shape: the app is
-  split into API clients, screen models, fixtures, tests, and screen components,
-  but `apps/mobile/src/App.tsx` still concentrates route switching, loaders,
-  demo/API fallback state, join-request form state, and participation actions.
-  That concentration is accepted as a Phase 0-9 delivery bridge only; Phase 10A
-  should split it before adding more Figma-specific private screens.
-- Phase 10A implementation should extract exact Figma Gold/Grey tokens, add
-  them through shared design tokens, split the Expo root into a thin composition
-  layer plus public/candidate/brother route groups, replace generic private
-  renderers on pilot-critical Candidate/Brother screens, add missing V1 mobile
-  surfaces for already implemented contracts such as Brother Prayer Library and
-  Organization Unit Detail, and restyle Figma-covered Admin Lite routes as
-  responsive web.
+- Phase 10A now includes the mobile shell split required before Figma-specific
+  screen buildout. `apps/mobile/src/App.tsx` is a thin composition root that
+  reads runtime/auth launch state and delegates to public, candidate, or brother
+  route surfaces. `mobile-public-surface.tsx`,
+  `mobile-candidate-surface.tsx`, and `mobile-brother-surface.tsx` now own
+  their loaders, selected IDs, join-request form state, and event participation
+  actions. Route-group guards live in `mobile-routes.ts`, with regression
+  coverage preventing candidate/brother/join-request orchestration from moving
+  back into the root.
+- Phase 10A now also includes the first design-token alignment slice:
+  documented typography roles for screen title, section title, body, secondary,
+  label, and button text are centralized in
+  `libs/shared/design-tokens/src/index.ts`, and current mobile shell screens use
+  those token roles instead of local hardcoded title/button typography. Exact
+  Figma Gold/Grey color and font values are still pending because Figma MCP
+  design-context access is currently blocked by the Starter-plan call limit.
+- Phase 10A now includes the mobile auth-entry screen foundation:
+  `Login` is a real public route with a token-backed Sign In screen model and
+  React Native screen, and Idle Firebase approval users can navigate to a
+  dedicated public-only `IdleApproval` screen. These screens expose only safe
+  approval state/copy, keep public navigation available, and do not grant
+  private roles or scopes client-side. The actual native/provider credential
+  flow and exact Figma Gold/Grey visual parity remain pending.
+- Phase 10A now also has a component boundary contract in
+  [docs/agent/component-boundary-contracts.md](agent/component-boundary-contracts.md).
+  Future screen, route-surface, API/demo, and reusable component work must
+  declare file ownership and forbidden responsibilities before adding more
+  behavior to roots or shells.
+- Phase 10A now enforces one screen model/builder per file for mobile screen
+  models. `public-screens.ts`, `candidate-screens.ts`, and
+  `brother-screens.ts` are barrels only, while concrete builders live in
+  dedicated files such as `public-home-screen.ts`, `candidate-events-screen.ts`,
+  and `brother-today-screen.ts`; regression coverage prevents builders from
+  moving back into the plural files.
+- The same one-screen-model-per-file rule now also applies to Admin Lite
+  multi-screen model files. `admin-content-screens.ts`,
+  `admin-candidate-requests-screen.ts`, `admin-candidates-screen.ts`, and
+  `admin-organization-units-screen.ts` are compatibility barrels only, while
+  concrete list/detail/editor builders live in dedicated per-screen files with
+  regression coverage.
+- Localization is not implemented as a UI translation layer yet. Current code
+  supports content `language` fields and candidate preferred-language capture,
+  but mobile/Admin Lite UI strings remain hardcoded English. Phase 10B now
+  explicitly includes the localization foundation for `NFR-LOC-001`: shared
+  translation keys, a default English catalog, lookup helpers, fallback tests,
+  and replacing UI copy touched by roadmap work.
+- Phase 10A implementation should next extract exact Figma Gold/Grey color/font
+  values when access is available, wire provider sign-in when the mobile auth
+  provider flow is selected, replace generic private renderers on pilot-critical
+  Candidate/Brother screens, add missing V1 mobile surfaces for already
+  implemented contracts such as Brother Prayer Library and Organization Unit
+  Detail, and restyle Figma-covered Admin Lite routes as responsive web.
 - Phase 10B Formation Roadmap, Phase 11 Silent Prayer, Phase 12 privacy/security
   hardening, and Phase 13 pilot readiness are not implemented yet unless
   explicitly listed above.
