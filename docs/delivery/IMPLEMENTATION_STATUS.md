@@ -22,7 +22,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
 | **9**    | ✅ COMPLETE    | 100%    | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch | Phase 10 |
-| **10** | 🟡 IN PROGRESS | 5%      | █░░░░░░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; formation roadmap next in same phase                                                   | Implement Phase 10A screens/tokens |
+| **10** | 🟡 IN PROGRESS | 5%      | █░░░░░░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split planned before screen buildout; formation roadmap next in same phase | Implement Phase 10A shell/tokens/screens |
 | **11–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                   | After Phase 10               |
 
 ---
@@ -39,6 +39,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Read the `docs/design-updates` package and compared it with canonical roles, visibility, and Phase 9 implementation status
 - ✅ Recorded inspected Figma priority frames: `Sign In (Gold/Grey)` node `1:2`, `Candidate Events (Gold/Grey)` node `1:47`, `Brother Today (Gold/Grey)` node `1:177`, and `Candidate Requests (Gold/Grey)` node `1:1635`
 - ✅ Added the screen-by-screen implementation matrix covering current implementation, exact next screen/component targets, and RBAC constraints
+- ✅ Documented why the mobile app currently concentrates orchestration in `apps/mobile/src/App.tsx`, why that is acceptable only as a short-term Phase 0-9 bridge, and why Phase 10A should split the shell before adding more Figma-specific screens
 - ✅ Aligned design-role docs with canonical stored roles: `CANDIDATE`, `BROTHER`, `OFFICER`, `SUPER_ADMIN`; `GUEST` and `IDLE` are runtime states; family member remains future/V2
 - ✅ Documented that Officer/Super Admin management stays Admin Lite web-first in V1; Figma mobile-sized admin frames inform responsive Admin Lite design and do not authorize an Expo officer mode
 - ✅ Updated V1 scope, out-of-scope, V2 backlog, phase breakdown, roadmap, traceability, and this dashboard to place the work in Phase 10A
@@ -46,6 +47,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **In Progress**:
 
 - 🟡 Extract exact Figma Gold/Grey color, typography, spacing, and component properties when Figma design-context/screenshot access is available
+- 🟡 Split the Expo mobile root so `App.tsx` becomes a thin composition root and public/candidate/brother route groups own loaders, selected IDs, and actions
 - 🟡 Add Figma-derived semantic tokens to `libs/shared/design-tokens/src/index.ts`
 - 🟡 Replace generic private mobile renderers with Figma-specific Candidate Events, Brother Today, event detail, and announcement screens
 - 🟡 Restyle Admin Lite Candidate Requests against the Figma `1:1635` frame while preserving server-side officer scope
@@ -483,6 +485,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 - Owner-approved V1 Figma/RBAC alignment is now tracked in `docs/design-updates/06-figma-implementation-plan.md`
 - V1 scope/out-of-scope/V2 backlog docs now place Gold/Grey visual parity, dedicated member screens, responsive Admin Lite parity, and role/RBAC UI-state alignment inside V1
+- The Phase 10A plan now explicitly places the mobile shell split before further Figma-specific screen implementation, so `apps/mobile/src/App.tsx` does not continue absorbing routing, loaders, form state, and action handling
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
@@ -530,7 +533,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 5. **Start Phase 10A Figma/RBAC Alignment**
    - [x] Add owner-approved V1 scope update for Figma/RBAC alignment
    - [x] Add exact implementation plan with Figma nodes, screen targets, and RBAC constraints
+   - [x] Document mobile `App.tsx` concentration, the short-term rationale, and the Phase 10A shell-split sequence
    - [ ] Extract exact Figma Gold/Grey variables/screenshots for priority frames
+   - [ ] Split the Expo root into thin composition plus public/candidate/brother route groups before adding more Figma-specific private screens
    - [ ] Add shared Gold/Grey semantic tokens and typography roles
    - [ ] Build Figma-matched Sign In and Idle approval screens
    - [ ] Replace generic Candidate Events and Brother Today renderers with dedicated RN screens

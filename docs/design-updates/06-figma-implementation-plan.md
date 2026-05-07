@@ -38,6 +38,7 @@ The existing code has strong API/RBAC foundations through Phase 9, but the V1 la
 
 - Public and selected dashboard screens have React Native screen components.
 - Candidate/brother private event and announcement screens are mounted in Expo, but several use `PrivateContentScreen`, a generic renderer.
+- The Expo root component (`apps/mobile/src/App.tsx`) currently carries too much orchestration: manual route switching, per-screen loading effects, demo/API fallback state, join-request form state, and participation actions. This was acceptable while earlier phases proved contracts and mode behavior, but it should not be the foundation for the Figma screen buildout.
 - Figma targets a Gold/Grey visual system, while the current shared design tokens still expose the older blue action palette.
 - Officer/admin workflows are implemented in Admin Lite web routes, not as a V1 mobile officer app.
 - Candidate Contact, Candidate Roadmap, Brother Prayer Library, Silent Prayer, and several admin management screens must now be placed deliberately in V1 phases rather than left as open design debt. Roadmap remains Phase 10, Silent Prayer remains Phase 11, and final privacy/security/pilot hardening remains Phases 12-13.
@@ -139,6 +140,9 @@ Legend:
 
 Mobile implementation targets:
 
+- keep `apps/mobile/src/App.tsx` as a thin composition root only;
+- extract public, candidate, and brother route orchestration before adding more Figma-specific screens;
+- extract repeated API/demo loading and action handlers into screen/domain hooks or controllers;
 - `apps/mobile/src/screens/SignInScreen.tsx`
 - `apps/mobile/src/screens/CandidateEventsScreen.tsx`
 - `apps/mobile/src/screens/CandidateEventDetailScreen.tsx`
@@ -167,6 +171,37 @@ Shared implementation targets:
 - mobile theme adapters that map screen model themes to shared tokens
 - admin style helpers that consume shared tokens instead of hardcoded colors.
 
+## Mobile Shell Refactor Plan
+
+The current mobile app is not literally one file: API clients, screen-model builders, demo fixtures, tests, and several React Native screens are already separated. The concentration problem is specifically `apps/mobile/src/App.tsx`, which acts as router, data loader, form controller, action dispatcher, and screen switchboard.
+
+Valid short-term reason for the current shape:
+
+- earlier phases prioritized proving server-side visibility, DTO validation, API/demo mode separation, and launch routing before choosing a full navigation stack;
+- the mobile package intentionally stayed dependency-light, with Expo, React, and React Native but no React Navigation or Expo Router dependency yet;
+- screen models and API clients were split first so business behavior could be tested without blocking on polished native UI.
+
+Why it must improve during Phase 10A:
+
+- every Figma-matched private screen would otherwise add more `useState`, `useEffect`, and route-switch branches to the root component;
+- shared top app bar, bottom navigation, demo chrome, loading, empty, forbidden, Idle approval, and offline states need one reusable shell instead of repeated per-screen wiring;
+- role routing must remain explicit and testable while avoiding a root component that owns every screen's behavior.
+
+Refactor sequence:
+
+1. Keep `App.tsx` as a thin composition root that reads runtime config/auth config and chooses the public, candidate, or brother app surface.
+2. Extract public, candidate, and brother route modules or hooks that own their route state, selected IDs, loaders, and action handlers.
+3. Extract shared mobile chrome components for top app bar, bottom navigation, demo banner, and common state views.
+4. Add Figma-specific screens on top of that split, starting with Sign In/Idle approval, Candidate Events, and Brother Today.
+5. Reassess React Navigation or Expo Router only after the route groups are clear. Add a navigation dependency if deep links, tab stacks, back behavior, or native navigation semantics become real requirements; do not add it just to hide a local organization problem.
+
+Acceptance checks for the refactor:
+
+- `App.tsx` no longer owns per-screen fetch effects or participation/join-request action logic;
+- public/candidate/brother route groups remain covered by tests for initial route, forbidden/Idle/offline/error states, demo mode, and role visibility;
+- server-side RBAC and visibility remain unchanged; the refactor must not move filtering into the client;
+- no new out-of-scope surfaces are introduced while splitting the shell.
+
 ## Acceptance Checks For Figma Parity
 
 Each Figma-aligned screen must add or update tests for:
@@ -189,10 +224,11 @@ Visual QA should include screenshots for at least:
 ## Phase 10A Order Of Work
 
 1. Extract exact Figma variables/screenshots for nodes `1:2`, `1:47`, `1:177`, and `1:1635`.
-2. Update shared design tokens with Figma Gold/Grey semantic palette and typography roles.
-3. Build Figma-matched Sign In and Idle approval screens because they define the auth shell.
-4. Replace generic private renderer usage for Candidate Events and Brother Today with dedicated Figma-matched RN screens.
-5. Apply the same card/nav/header system to remaining candidate/brother event and announcement screens.
-6. Restyle Admin Lite Candidate Requests from the Figma `1:1635` frame while preserving web-first admin scope.
-7. Add Brother Prayer Library and Organization Unit Detail mobile surfaces so already implemented V1 contracts have launchable screens.
-8. Update traceability, implementation status, and screenshot QA evidence after each screen lands.
+2. Split the current mobile shell so `App.tsx` becomes a thin composition root and public/candidate/brother route groups own their loaders/actions.
+3. Update shared design tokens with Figma Gold/Grey semantic palette and typography roles.
+4. Build Figma-matched Sign In and Idle approval screens because they define the auth shell.
+5. Replace generic private renderer usage for Candidate Events and Brother Today with dedicated Figma-matched RN screens.
+6. Apply the same card/nav/header system to remaining candidate/brother event and announcement screens.
+7. Restyle Admin Lite Candidate Requests from the Figma `1:1635` frame while preserving web-first admin scope.
+8. Add Brother Prayer Library and Organization Unit Detail mobile surfaces so already implemented V1 contracts have launchable screens.
+9. Update traceability, implementation status, and screenshot QA evidence after each screen lands.

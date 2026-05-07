@@ -424,11 +424,19 @@ Implementation is complete through Phase 9 Events, Announcements, and Push. The 
   It records the inspected Figma frames (`Sign In`, `Candidate Events`,
   `Brother Today`, and `Candidate Requests`), exact route/component targets,
   role/RBAC constraints, and per-screen implementation status.
+- The Phase 10A plan now explicitly documents the mobile shell shape: the app is
+  split into API clients, screen models, fixtures, tests, and screen components,
+  but `apps/mobile/src/App.tsx` still concentrates route switching, loaders,
+  demo/API fallback state, join-request form state, and participation actions.
+  That concentration is accepted as a Phase 0-9 delivery bridge only; Phase 10A
+  should split it before adding more Figma-specific private screens.
 - Phase 10A implementation should extract exact Figma Gold/Grey tokens, add
-  them through shared design tokens, replace generic private renderers on
-  pilot-critical Candidate/Brother screens, add missing V1 mobile surfaces for
-  already implemented contracts such as Brother Prayer Library and Organization
-  Unit Detail, and restyle Figma-covered Admin Lite routes as responsive web.
+  them through shared design tokens, split the Expo root into a thin composition
+  layer plus public/candidate/brother route groups, replace generic private
+  renderers on pilot-critical Candidate/Brother screens, add missing V1 mobile
+  surfaces for already implemented contracts such as Brother Prayer Library and
+  Organization Unit Detail, and restyle Figma-covered Admin Lite routes as
+  responsive web.
 - Phase 10B Formation Roadmap, Phase 11 Silent Prayer, Phase 12 privacy/security
   hardening, and Phase 13 pilot readiness are not implemented yet unless
   explicitly listed above.
