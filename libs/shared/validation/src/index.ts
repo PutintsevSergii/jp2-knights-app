@@ -890,6 +890,38 @@ export const authSessionRequestSchema = z
   })
   .strict();
 
+export const currentUserResponseSchema = z
+  .object({
+    user: z
+      .object({
+        id: z.string().trim().min(1),
+        email: z.email(),
+        displayName: z.string().trim().min(1),
+        preferredLanguage: z.string().trim().min(1).nullable(),
+        status: userStatusSchema,
+        roles: z.array(roleSchema)
+      })
+      .strict(),
+    access: z
+      .object({
+        mobileMode: z.enum(["public", "candidate", "brother"]),
+        adminLite: z.boolean(),
+        candidateOrganizationUnitId: z.uuid().nullable(),
+        memberOrganizationUnitIds: z.array(z.uuid()),
+        officerOrganizationUnitIds: z.array(z.uuid()),
+        approval: z
+          .object({
+            state: z.enum(["pending", "rejected", "expired"]),
+            expiresAt: z.iso.datetime().nullable(),
+            scopeOrganizationUnitId: z.uuid().nullable()
+          })
+          .strict()
+          .nullable()
+      })
+      .strict()
+  })
+  .strict();
+
 export const registerDeviceTokenRequestSchema = z
   .object({
     platform: deviceTokenPlatformSchema,
@@ -1050,6 +1082,7 @@ export type PublicCandidateRequestResponseDto = z.infer<
   typeof publicCandidateRequestResponseSchema
 >;
 export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
+export type CurrentUserResponseDto = z.infer<typeof currentUserResponseSchema>;
 export type RegisterDeviceTokenRequestDto = z.infer<typeof registerDeviceTokenRequestSchema>;
 export type DeviceTokenRegistrationResponseDto = z.infer<
   typeof deviceTokenRegistrationResponseSchema

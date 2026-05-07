@@ -13,6 +13,18 @@ The following are outside the default V1 scope. They may be proposed only when t
 | Documents | Electronic signatures, formal document repository, versioned official corpus |
 | Media | Photo reports, galleries, live audio/video prayer |
 | Family accounts | Wife/family login accounts and family communications |
+| Native officer mobile | Officer/Super Admin management inside the Expo member app; V1 uses responsive Admin Lite web for officer/admin workflows |
+
+## Approved V1 Pull-Forward: Figma And RBAC Alignment
+
+The human owner approved pulling the design-update/Figma alignment work into V1 on May 7, 2026. The following are no longer deferred:
+
+- Figma Gold/Grey visual alignment for launch-critical V1 screens;
+- dedicated mobile Candidate/Brother screens for pilot-critical private surfaces currently mounted through generic renderers;
+- responsive Admin Lite visual parity for Figma-covered officer/admin workflows;
+- role/RBAC UI-state alignment for Guest, Idle, Candidate, Brother, Officer, and Super Admin modes.
+
+This approval does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
 ## Rule for Agents
 

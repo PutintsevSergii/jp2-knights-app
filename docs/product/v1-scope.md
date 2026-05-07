@@ -32,6 +32,10 @@ V1 includes four modes:
 - notification preferences and device tokens for authenticated users;
 - Admin Lite for organization units, brothers, candidates, content, events, announcements, roadmap submissions, silent prayer;
 - Admin Lite approval/assignment workflow for confirming or rejecting Idle Firebase sign-ins by country/region approvers or Super Admin;
+- Figma Gold/Grey design alignment for V1 launch screens, including Sign In/Idle approval, Candidate Events, Brother Today, Candidate Requests/Admin Lite responsive layouts, and the shared mobile/admin component patterns needed by those frames;
+- dedicated V1 React Native member screens for implemented Candidate/Brother event, announcement, profile, dashboard, and organization-unit surfaces instead of relying on generic private renderers for pilot-critical paths;
+- responsive Admin Lite visual parity for officer/admin workflows that appear in the Figma design package, while keeping officer/admin management web-first for V1;
+- role/RBAC UI alignment across launch, navigation, screen states, and Admin Lite chrome so Guest, Idle, Candidate, Brother, Officer, and Super Admin states are visibly and behaviorally consistent with backend authorization;
 - audit metadata and critical action logs;
 - PostgreSQL, Redis, NestJS API, React Native mobile, Next.js admin, Nx monorepo.
 - TypeScript strict mode, pnpm workspaces, Prisma migrations, OpenAPI contracts, and shared Zod validation schemas.
@@ -41,6 +45,7 @@ V1 includes four modes:
 - a generic organization-unit foundation with `type`, `parentUnitId`, status, and scoped user relations;
 - V1 screens may initially use `CHORAGIEW` organization units only, while the data/API contract must not hardcode one Order structure;
 - full hierarchy management UX, hierarchy-derived permissions, and cross-unit rollups remain later work unless explicitly approved;
+- authenticated wife/family accounts remain outside V1 unless separately approved; V1 supports public/family-open content visibility but does not create a stored family role;
 - participation intent only, not verified attendance;
 - aggregate silent prayer counters only, not participant lists;
 - basic content approval, not a complex editorial workflow;

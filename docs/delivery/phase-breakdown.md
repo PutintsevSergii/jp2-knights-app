@@ -14,7 +14,7 @@
 | 7     | Join request to candidate account flow works                                                                                                                                                                                                                                                                                          |
 | 8     | Brother Today/profile/assigned organization-unit work                                                                                                                                                                                                                                                                                 |
 | 9     | Event intent, announcements, preferences work                                                                                                                                                                                                                                                                                         |
-| 10    | Roadmap submission and officer review work                                                                                                                                                                                                                                                                                            |
+| 10    | Approved V1 Figma/RBAC alignment is implemented for launch-critical screens, then roadmap submission and officer review work                                                                                                                                                                                                          |
 | 11    | Silent prayer counters work across reconnects                                                                                                                                                                                                                                                                                         |
 | 12    | Audit/privacy/content approval checks pass; retention/export/erasure support exists for sensitive V1 records                                                                                                                                                                                                                          |
 | 13    | Pilot scenarios pass with seed data; launch-readiness wrap-up, restore test, and support runbook are complete                                                                                                                                                                                                                         |
@@ -33,3 +33,16 @@ Every phase must leave the relevant apps launchable. Before a phase is complete:
 - mobile and admin demo mode still launch without the backend;
 - documented launch commands are current;
 - demo fixtures are updated when DTOs, screens, roles, visibility, or workflows change.
+
+## Phase 10A: V1 Figma/RBAC Alignment
+
+Phase 10 starts with a short 10A implementation track before or alongside roadmap data work so design parity is not deferred until pilot hardening.
+
+Exit requirements:
+
+- exact Figma Gold/Grey variables or frame-derived token values are captured and added through shared design tokens;
+- Sign In and Idle approval screens use the Figma launch shell and preserve public-only Idle behavior;
+- Candidate Events and Brother Today no longer rely on generic private rendering for pilot-critical mobile paths;
+- remaining implemented Candidate/Brother private event, announcement, profile, and organization-unit surfaces share the same header/card/bottom-nav system;
+- Admin Lite Candidate Requests and other Figma-covered officer/admin routes are responsive and visually aligned while remaining web-first;
+- tests verify role landing, forbidden/idle/offline/error states, no forbidden fields, action metadata, and token usage.

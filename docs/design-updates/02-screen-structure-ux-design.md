@@ -7,11 +7,13 @@
 
 **Screen → Requirement Mapping:** Each screen section includes the relevant FR (Functional Requirement) ID for cross-reference.
 
+**Implementation alignment:** The current Figma file contains Gold/Grey mobile frames for Sign In (`1:2`), Candidate Events (`1:47`), Brother Today (`1:177`), and Candidate Requests (`1:1635`). The exact screen-by-screen implementation plan is tracked in [06-figma-implementation-plan.md](06-figma-implementation-plan.md). This document remains the UX inventory; the implementation plan records what is implemented, partial, pending, or deferred.
+
 ---
 
 ## Design System
 
-### Color Palette (Based on Organization Branding & Current App)
+### Color Palette (Legacy Baseline; Figma Gold/Grey Update In Progress)
 - **Primary Blue:** `#1d4ed8` - Main action buttons, key navigation
 - **Dark Text:** `#111827` - Body text, headlines
 - **Muted Text:** `#4b5563` - Secondary information, placeholders
@@ -21,6 +23,8 @@
 - **Success Green:** `#15803d` - Confirmation, positive states
 - **Warning Orange:** `#a16207` - Caution, pending states
 - **Danger Red:** `#b91c1c` - Error, danger states
+
+The inspected Figma frames are named `Gold/Grey`. The current blue palette is still the implemented token baseline. Do not hardcode guessed gold/grey values in screens; extract exact values from Figma variables/frames and add them through shared design tokens first.
 
 ### Typography
 - **Headlines:** Bold, Dark Text (#111827)
@@ -454,6 +458,8 @@ Silent Prayer
 
 ### Navigation Structure
 ```
+
+**Implementation note:** Officer and Super Admin management is Admin Lite web-first in V1. The Figma `Candidate Requests (Gold/Grey)` mobile-sized frame should be used as responsive Admin Lite design input, not as approval to add an officer-only Expo mobile mode.
 Officer Dashboard
 ├── Pending Approvals
 ├── Candidate Management
@@ -739,4 +745,3 @@ Unit Management
 - Success icon + confirmation message
 - Auto-dismiss after 2-3 seconds
 - or Manual dismiss button
-

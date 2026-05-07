@@ -23,6 +23,17 @@ The color palette combines:
 
 ## Primary Color Palette
 
+## Figma Gold/Grey Alignment Status
+
+The current implemented token palette is still the legacy blue/neutral baseline below. The inspected Figma file uses `Gold/Grey` frame names for the priority screens, so the next visual implementation pass must extract exact Figma variable/frame values and add them as semantic shared tokens before screen code changes.
+
+Rules for the in-progress update:
+
+- Do not guess or hardcode gold/grey hex values in mobile or admin screens.
+- Add Figma-derived values to `libs/shared/design-tokens/src/index.ts`.
+- Keep status colors semantic; gold/grey branding must not replace success/warning/danger meaning.
+- Update mobile/admin token adapters before restyling individual screens.
+
 ### Blue: The Primary Color
 - **Hex:** `#1d4ed8`
 - **RGB:** 29, 78, 216
@@ -489,4 +500,3 @@ This color scheme is finalized and ready for implementation across all app scree
 **Color Palette Version:** 1.0
 **Last Updated:** 2026-05-07
 **Status:** Final & Approved
-

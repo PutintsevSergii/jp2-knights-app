@@ -7,6 +7,18 @@ The Order of Knights of St. John Paul II the Great is a Catholic men's organizat
 
 **Note:** This document focuses on **design-specific role definitions and UI/UX implications**. For complete functional and permission specifications, see the existing product documentation linked above.
 
+## Canonical Implementation Alignment
+
+The current implementation uses the product RBAC model as the source of truth:
+
+- Stored roles are `CANDIDATE`, `BROTHER`, `OFFICER`, and `SUPER_ADMIN`.
+- `GUEST` and `IDLE` are runtime states, not stored roles.
+- Firebase Authentication proves identity only. New provider identities remain Idle/public-only until an authorized approver confirms role and scope.
+- Mobile member mode is only Candidate or Brother. Officer and Super Admin management is Admin Lite web-first in V1 unless the user also has `CANDIDATE` or `BROTHER`.
+- Mobile precedence is Brother over Candidate after conversion.
+- Officer permissions are explicit direct organization-unit assignments in V1; hierarchy-derived permissions and cross-unit rollups are not implemented without owner-approved scope expansion.
+- Family member access remains future/V2 only.
+
 ## User Types and Access Levels
 
 ### 1. **Public User** (Unauthenticated)
@@ -76,6 +88,7 @@ The Order of Knights of St. John Paul II the Great is a Catholic men's organizat
 ### 4. **Wife/Family Member of Brother** (Future Enhancement)
 **Description:** Family members (particularly wives) of brother members
 - **Role:** `FAMILY_MEMBER` (proposed)
+- **Implementation Status:** Not implemented in V1; do not create a stored role, screen, API, or visibility value without explicit scope approval
 - **Profile Status:** Active, Archived
 - **Access Level:** Limited to family-related information
 - **Proposed Functionality:**
@@ -91,6 +104,7 @@ The Order of Knights of St. John Paul II the Great is a Catholic men's organizat
 ### 5. **Officer**
 **Description:** Leadership member responsible for organization unit management and candidate approval
 - **Role:** `OFFICER`
+- **Implementation Status:** Admin Lite web management role in V1. Officer-only users do not receive a mobile officer mode.
 - **Officer Types:**
   - Ceremonial Master
   - Guardian
@@ -119,6 +133,7 @@ The Order of Knights of St. John Paul II the Great is a Catholic men's organizat
 ### 6. **Super Admin**
 **Description:** System administrator with full application access
 - **Role:** `SUPER_ADMIN`
+- **Implementation Status:** Admin Lite web management role in V1. Super Admin does not imply mobile Brother or Candidate mode.
 - **Access Level:** Complete system management
 - **Functionality:**
   - All officer capabilities plus:
@@ -213,15 +228,22 @@ Brother Profile Status: Active
 
 ### Permission Levels
 1. **Public** - No authentication required
-2. **Authenticated** - Any logged-in user
-3. **Role-based** - Specific role required
-4. **Unit-scoped** - Limited to assigned organization units
-5. **Admin** - System-wide access
+2. **Idle authenticated** - Provider identity is known but app access is pending; private APIs remain blocked
+3. **Authenticated app user** - Approved local user with at least one active stored role
+4. **Role-based** - Specific role required
+5. **Unit-scoped** - Limited to directly assigned organization units in V1
+6. **Admin** - System-wide access for Super Admin only
 
 ### Data Access Control
 - Candidates see only their assigned information and candidate-visible content
 - Brothers see their profile, memberships, and brother-visible content
-- Officers see data for their organization unit and below
-- Admins see all organizational data
+- Officers see data for directly assigned organization units in V1
+- Super Admins see all organizational data
 - All users can only modify their own profile information unless they have officer+ permissions
 
+### Server-Side Enforcement Requirements
+- Public APIs must return only `PUBLIC` or approved public-family content.
+- Candidate APIs must require an active candidate profile and must not return brother-only records.
+- Brother APIs must require an active brother membership and must not return candidate/officer/admin records.
+- Officer/Admin APIs must enforce scope in services/repositories, not only in Admin Lite UI.
+- UI navigation and hidden buttons are convenience only; they are not an authorization boundary.

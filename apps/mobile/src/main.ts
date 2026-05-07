@@ -86,6 +86,13 @@ export {
   fallbackPublicPrayers
 } from "./public-content.js";
 export {
+  buildCurrentUserUrl,
+  currentUserLoadFailureState,
+  fetchCurrentUser,
+  readMobileAuthToken,
+  toMobilePrincipal
+} from "./mobile-auth-api.js";
+export {
   buildPublicHomeUrl,
   fetchPublicHome,
   publicHomeLoadFailureState,

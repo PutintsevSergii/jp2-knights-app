@@ -22,7 +22,36 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
 | **9**    | ✅ COMPLETE    | 100%    | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch | Phase 10 |
-| **10–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Formation roadmap, silent prayer, privacy/security hardening, pilot                                                   | Start Phase 10               |
+| **10** | 🟡 IN PROGRESS | 5%      | █░░░░░░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; formation roadmap next in same phase                                                   | Implement Phase 10A screens/tokens |
+| **11–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                   | After Phase 10               |
+
+---
+
+## Phase 10A: V1 Figma/RBAC Alignment 🟡
+
+**Status**: IN PROGRESS (approved V1 scope; documentation and planning complete, implementation pending)
+
+**Current source**: [docs/design-updates/06-figma-implementation-plan.md](../design-updates/06-figma-implementation-plan.md)
+
+**Completed in this documentation pass**:
+
+- ✅ Owner approved design-update/Figma alignment as V1 scope on May 7, 2026
+- ✅ Read the `docs/design-updates` package and compared it with canonical roles, visibility, and Phase 9 implementation status
+- ✅ Recorded inspected Figma priority frames: `Sign In (Gold/Grey)` node `1:2`, `Candidate Events (Gold/Grey)` node `1:47`, `Brother Today (Gold/Grey)` node `1:177`, and `Candidate Requests (Gold/Grey)` node `1:1635`
+- ✅ Added the screen-by-screen implementation matrix covering current implementation, exact next screen/component targets, and RBAC constraints
+- ✅ Aligned design-role docs with canonical stored roles: `CANDIDATE`, `BROTHER`, `OFFICER`, `SUPER_ADMIN`; `GUEST` and `IDLE` are runtime states; family member remains future/V2
+- ✅ Documented that Officer/Super Admin management stays Admin Lite web-first in V1; Figma mobile-sized admin frames inform responsive Admin Lite design and do not authorize an Expo officer mode
+- ✅ Updated V1 scope, out-of-scope, V2 backlog, phase breakdown, roadmap, traceability, and this dashboard to place the work in Phase 10A
+
+**In Progress**:
+
+- 🟡 Extract exact Figma Gold/Grey color, typography, spacing, and component properties when Figma design-context/screenshot access is available
+- 🟡 Add Figma-derived semantic tokens to `libs/shared/design-tokens/src/index.ts`
+- 🟡 Replace generic private mobile renderers with Figma-specific Candidate Events, Brother Today, event detail, and announcement screens
+- 🟡 Restyle Admin Lite Candidate Requests against the Figma `1:1635` frame while preserving server-side officer scope
+- 🟡 Add V1 launchable mobile screens for already implemented contracts that are still model/API-only, especially Brother Prayer Library and Organization Unit Detail
+
+**Scope guard**: This workstream is now V1 scope. It still does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
 ---
 
@@ -299,6 +328,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Admin Lite `/admin/announcements/new` and `/admin/announcements/:id` editor routes with write-gated create, API/demo detail resolution from the scoped list contract, readonly fields for non-writers, 404 scoped misses, save/publish/archive action metadata, and no push delivery state rendering
 - ✅ `device_tokens` and `notification_preferences` persistence, shared DTO/OpenAPI schemas, guarded `POST /api/auth/device-tokens`, guarded `PUT /api/auth/notification-preferences`, duplicate token ownership transfer by token hash, no raw token return, candidate/brother self-scoped preferences with defaults, and a no-op push adapter boundary
 - ✅ Announcement first-publication push dispatch wiring resolves recipients server-side from active candidate/brother role plus profile/membership scope, announcement visibility, active non-revoked device tokens, and announcement notification preferences; dispatch uses generic copy, deep links by announcement id, configured push adapter boundary, and operational audit counts only
+- ✅ Mobile Expo API-mode private routing now resolves `/api/auth/me` with optional bearer credentials, maps the current-user DTO into shared mobile mode resolution, and mounts the implemented candidate/brother private dashboard, event, announcement, profile, My Chorągiew, and participation-detail surfaces
 
 **In Progress**:
 
@@ -310,7 +340,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Exit criteria**: ✅ Candidate/brother event read, participation, announcement read foundation, mobile announcement screen models, admin announcement API/UI, notification preferences, device tokens, push adapter boundary, and audience-safe announcement publish dispatch are in place
 
-**Next step**: Start Phase 10 formation roadmap
+**Next step**: Implement Phase 10A Figma/RBAC alignment, then continue Phase 10B formation roadmap
 
 ### Phases 4–13: Roadmap
 
@@ -322,7 +352,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
 | **8**  | Brother Companion Core           | ✅ Complete    | Completed May 6 |
 | **9**  | Events/Announcements/Push        | ✅ Complete    | Completed May 7 |
-| **10** | Formation Roadmap                | ⏳ Not started | Current         |
+| **10** | Figma/RBAC Alignment + Formation Roadmap | 🟡 In progress | Current         |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
 | **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
 | **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12  |
@@ -335,8 +365,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm lint`                                                   |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm typecheck`                                              |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.34% statements / 82.36% branches / 93.45% functions / 92.02% lines    |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile announcement models, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.24% statements / 82.17% branches / 93.34% functions / 91.95% lines    |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm build`                                                  |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
@@ -447,6 +477,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile CandidateEvents/CandidateEventDetail screen models and authenticated API clients added for candidate event list/detail plus candidate plan/cancel participation actions
 - Candidate and brother announcement read APIs added with `announcements` persistence, shared DTO/OpenAPI schemas, active-profile checks, pinned ordering, server-side audience/scope filtering, and no comments/read receipts/push delivery details
 - Admin announcement management API/UI, notification preferences, device-token registration, and announcement first-publish push dispatch are complete with server-side recipient resolution and operational audit counts
+- Mobile Expo entry point now resolves authenticated candidate/brother mode from `/auth/me` and mounts the implemented private screen models through a shared private renderer
+
+**Phase 10A In Progress** 🟡:
+
+- Owner-approved V1 Figma/RBAC alignment is now tracked in `docs/design-updates/06-figma-implementation-plan.md`
+- V1 scope/out-of-scope/V2 backlog docs now place Gold/Grey visual parity, dedicated member screens, responsive Admin Lite parity, and role/RBAC UI-state alignment inside V1
+- Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
 
@@ -490,7 +527,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Decide `dev:http-shell` remains a short-term compatibility fallback; retirement is post-Phase-8 cleanup after future route parity stays stable
    - [x] Defer framework-neutral Admin Lite renderer conversion to React Server Components until a separate parity-tested cleanup task
 
-5. **Start Phase 10 Formation Roadmap**
+5. **Start Phase 10A Figma/RBAC Alignment**
+   - [x] Add owner-approved V1 scope update for Figma/RBAC alignment
+   - [x] Add exact implementation plan with Figma nodes, screen targets, and RBAC constraints
+   - [ ] Extract exact Figma Gold/Grey variables/screenshots for priority frames
+   - [ ] Add shared Gold/Grey semantic tokens and typography roles
+   - [ ] Build Figma-matched Sign In and Idle approval screens
+   - [ ] Replace generic Candidate Events and Brother Today renderers with dedicated RN screens
+   - [ ] Apply shared header/card/bottom-nav system to candidate/brother private surfaces
+   - [ ] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
+
+6. **Start Phase 10B Formation Roadmap**
    - [ ] Define roadmap data tables/contracts from the canonical phase scope
    - [ ] Add candidate/brother roadmap read APIs and screen models
    - [ ] Add admin roadmap submission review workflow
@@ -598,5 +645,5 @@ Every week (or per phase):
 ---
 
 **Last Updated**: May 7, 2026
-**Current Phase**: Phase 10 pending; Phases 0–9 complete
-**Next Major Milestone**: Start formation roadmap
+**Current Phase**: Phase 10A Figma/RBAC alignment in progress; Phases 0–9 complete
+**Next Major Milestone**: Implement V1 Figma/RBAC screen and token alignment

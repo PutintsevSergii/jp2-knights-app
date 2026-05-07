@@ -5,6 +5,17 @@ This document maps each design screen to its corresponding functional requiremen
 
 > **See also:** [Functional Requirements](../product/functional-requirements.md) | [Screen Structure & UX Design](02-screen-structure-ux-design.md)
 
+For current Figma-to-code status, route/component targets, and RBAC constraints, use [06-figma-implementation-plan.md](06-figma-implementation-plan.md).
+
+## Priority Figma Alignment Frames
+
+| Figma node | Screen | Requirement | Implementation status |
+| --- | --- | --- | --- |
+| `1:2` | Sign In | FR-AUTH-001 | In progress: auth APIs exist; Figma-matched Expo screen pending |
+| `1:47` | Candidate Events | FR-CANDIDATE-002 / FR-EVENT-003 | Partial: APIs/models mounted; Figma-specific RN list/detail screens pending |
+| `1:177` | Brother Today | FR-BROTHER-001 | Partial: API/model mounted; Figma-specific RN dashboard pending |
+| `1:1635` | Candidate Requests | FR-ADMIN-001 | Partial: Admin Lite web implemented; Figma responsive visual parity pending |
+
 ---
 
 ## Authentication & Public Flows
@@ -170,4 +181,3 @@ Screens not yet designed:
 **Last Updated:** 2026-05-07  
 **Maintainer:** Design Team  
 **Next Review:** After design mockup creation
-

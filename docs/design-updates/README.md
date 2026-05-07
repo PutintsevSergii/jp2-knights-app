@@ -24,6 +24,7 @@ This directory contains comprehensive **UX/UI design documentation** for the JP2
 - User role design implications
 - Visual design and branding guidelines  
 - Ready-to-use prompts for creating visual mockups
+- In-progress Figma implementation plan for Gold/Grey screen parity, role/RBAC alignment, and per-screen build targets
 
 ---
 
@@ -118,6 +119,20 @@ This directory contains comprehensive **UX/UI design documentation** for the JP2
 
 **Use Case:** Generate high-fidelity mockups, create design prototypes, design in Figma/Adobe XD
 
+### 4. **06-figma-implementation-plan.md**
+**Purpose:** Track the exact in-progress implementation plan for matching the inspected Figma screens while preserving product scope and RBAC rules
+
+**Contents:**
+- Figma file and inspected frame node IDs
+- Current implementation gap between Phase 9 code and Figma Gold/Grey design
+- Canonical role/RBAC update for design work
+- Shared design-token update plan
+- Screen-by-screen implementation matrix
+- Mobile/Admin Lite route and component targets
+- Visual QA and acceptance checks
+
+**Use Case:** Plan and execute Figma-to-code implementation without expanding V1 mobile/admin scope by accident
+
 ---
 
 ## Screen-to-Requirement Mapping
@@ -153,16 +168,18 @@ Each screen maps to one or more Functional Requirements. Check [02-screen-struct
 ### For Frontend Developers
 1. Review: [Functional Requirements](../product/functional-requirements.md) (acceptance criteria)
 2. Study: **02-screen-structure-ux-design.md** (screen by screen with FR links)
-3. Check: Each screen's FR for permissions, edge cases, visibility rules
-4. Implement: Following the design system tokens from **04-color-scheme-branding.md**
-5. Code: Using existing screen builders (brother-screens.ts, candidate-screens.ts, etc.)
-6. Test: Against FR acceptance criteria and visibility rules from functional requirements
+3. Check: **06-figma-implementation-plan.md** for exact current implementation status, Figma node IDs, and route/component targets
+4. Check: Each screen's FR for permissions, edge cases, visibility rules
+5. Implement: Following shared design system tokens from **04-color-scheme-branding.md** and the Figma Gold/Grey token plan
+6. Code: Using existing screen builders (brother-screens.ts, candidate-screens.ts, etc.) until a Figma-specific React Native screen replaces a generic renderer
+7. Test: Against FR acceptance criteria and visibility rules from functional requirements
 
 ### For Backend/API Developers
 1. Review: **01-users-and-roles.md** (permissions and access control)
 2. Study: Content visibility matrix (what each role sees)
 3. Check: Approval workflows (candidate, content approval)
 4. Implement: Permission checks, visibility filters, role-based endpoints
+5. Verify any Figma-driven screen change still uses server-side RBAC and does not introduce client-only filtering
 
 ---
 
@@ -508,4 +525,3 @@ docs/
 ---
 
 **End of Design Documentation**
-

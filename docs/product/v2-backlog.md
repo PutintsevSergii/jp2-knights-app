@@ -12,6 +12,16 @@ These items are documented as extension points only.
 | Churches and Mass times | Church map, OSM integration, moderated mass data | Map/privacy approval |
 | Payments | Membership fees, treasurer role, contribution reports | Legal/financial approval |
 | Family accounts | Wife/family login, family event communication | Privacy and account model approval |
+| Native officer mobile | Officer/Super Admin management inside Expo instead of responsive Admin Lite web | V1 Admin Lite parity and explicit mobile-admin approval |
+
+## Pulled Into V1
+
+The following backlog/design items were pulled into V1 by owner approval on May 7, 2026:
+
+- Figma Gold/Grey launch-critical screen parity;
+- dedicated mobile Candidate/Brother pilot-critical screens replacing generic private renderers;
+- responsive Admin Lite visual parity for Figma-covered officer/admin workflows;
+- role/RBAC UI-state alignment across Guest, Idle, Candidate, Brother, Officer, and Super Admin modes.
 
 ## V2 Intake Rule
 

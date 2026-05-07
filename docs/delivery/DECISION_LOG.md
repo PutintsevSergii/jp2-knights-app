@@ -351,6 +351,34 @@ Use this to understand the "why" behind key choices and to avoid revisiting sett
 
 ---
 
+### May 7, 2026 — Pull Figma/RBAC Alignment Into V1 (ADR-011)
+
+**Problem**: The implementation was functionally complete through Phase 9, but launch-critical screens still used generic renderers or older visual tokens while the Figma file defined Gold/Grey target screens for Sign In, Candidate Events, Brother Today, and Candidate Requests. Waiting until final pilot hardening would leave too much visual/RBAC state work late in the schedule.
+
+**Options**:
+1. Leave Figma parity as V2/post-pilot polish.
+2. Move Figma/RBAC alignment into Phase 13 release hardening.
+3. Pull Figma/RBAC alignment into V1 as Phase 10A before or alongside Formation Roadmap.
+
+**Decision**: Option 3. Owner approved pulling Figma/RBAC alignment into V1 as Phase 10A.
+
+**Rationale**:
+- Sign In, Candidate Events, Brother Today, and Candidate Requests are pilot-critical first impressions.
+- Role-state UI must match backend RBAC before pilot users test mixed Guest, Idle, Candidate, Brother, Officer, and Super Admin paths.
+- Doing this before roadmap and pilot hardening gives enough time to fix shared tokens, mobile navigation, and Admin Lite responsive layout without rushing late.
+
+**Implementation Notes**:
+- Extract exact Gold/Grey values from Figma and add them to shared design tokens before screen restyling.
+- Replace generic private renderers with dedicated React Native member screens for pilot-critical Candidate/Brother flows.
+- Keep Officer/Super Admin management responsive Admin Lite web-first in V1; do not add native Expo officer/admin mode.
+- Preserve out-of-scope boundaries: no chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or social features.
+
+**Related Decisions**: ADR-001 (scope control), ADR-010 (design tokens), ADR-003 (no-duplicate policy)
+
+**Status**: DECIDED
+
+---
+
 ## Decisions Under Review
 
 (None currently. New decisions will be added here during Phase 3+.)

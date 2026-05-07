@@ -29,6 +29,7 @@ import {
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   createPublicCandidateRequestSchema,
+  currentUserResponseSchema,
   deviceTokenRegistrationResponseSchema,
   eventParticipationResponseSchema,
   membershipStatusSchema,
@@ -79,6 +80,36 @@ describe("shared validation", () => {
 
   it("validates role values from the shared contract", () => {
     expect(roleSchema.parse("OFFICER")).toBe("OFFICER");
+  });
+
+  it("validates the current user response used by mobile mode resolution", () => {
+    expect(
+      currentUserResponseSchema.parse({
+        user: {
+          id: "user-1",
+          email: "brother@example.test",
+          displayName: "Brother User",
+          preferredLanguage: "en",
+          status: "active",
+          roles: ["BROTHER"]
+        },
+        access: {
+          mobileMode: "brother",
+          adminLite: false,
+          candidateOrganizationUnitId: null,
+          memberOrganizationUnitIds: ["11111111-1111-4111-8111-111111111111"],
+          officerOrganizationUnitIds: [],
+          approval: null
+        }
+      })
+    ).toMatchObject({
+      user: {
+        roles: ["BROTHER"]
+      },
+      access: {
+        mobileMode: "brother"
+      }
+    });
   });
 
   it("validates content status values from the shared contract", () => {

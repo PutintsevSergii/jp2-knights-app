@@ -1,6 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  brotherCompanionLoadFailureState,
+  cancelBrotherEventParticipation,
+  fetchBrotherAnnouncements,
+  fetchBrotherEvent,
+  fetchBrotherEvents,
+  fetchBrotherProfile,
+  fetchBrotherToday,
+  fetchMyOrganizationUnits,
+  markBrotherEventParticipation
+} from "./brother-companion-api.js";
+import {
+  fallbackBrotherAnnouncements,
+  fallbackBrotherEventDetail,
+  fallbackBrotherEvents,
+  fallbackBrotherProfile,
+  fallbackBrotherToday,
+  fallbackMyOrganizationUnits
+} from "./brother-companion.js";
+import {
+  buildBrotherAnnouncementsScreen,
+  buildBrotherEventDetailScreen,
+  buildBrotherEventsScreen,
+  buildBrotherProfileScreen,
+  buildBrotherTodayScreen,
+  buildMyOrganizationUnitsScreen,
+  type BrotherRoute
+} from "./brother-screens.js";
+import {
+  candidateDashboardLoadFailureState,
+  cancelCandidateEventParticipation,
+  fetchCandidateAnnouncements,
+  fetchCandidateDashboard,
+  fetchCandidateEvent,
+  fetchCandidateEvents,
+  markCandidateEventParticipation
+} from "./candidate-dashboard-api.js";
+import {
+  fallbackCandidateAnnouncements,
+  fallbackCandidateDashboard,
+  fallbackCandidateEventDetail,
+  fallbackCandidateEvents
+} from "./candidate-dashboard.js";
+import {
+  buildCandidateAnnouncementsScreen,
+  buildCandidateDashboardScreen,
+  buildCandidateEventDetailScreen,
+  buildCandidateEventsScreen,
+  type CandidateRoute
+} from "./candidate-screens.js";
 import { resolveMobileLaunchState } from "./navigation.js";
 import type { MobileLaunchState, MobileScreenState } from "./navigation.js";
+import {
+  currentUserLoadFailureState,
+  fetchCurrentUser,
+  readMobileAuthToken,
+  toMobilePrincipal
+} from "./mobile-auth-api.js";
 import { fetchPublicContentPage, publicContentPageLoadFailureState } from "./public-content-api.js";
 import {
   fetchPublicEvent,
@@ -50,10 +106,24 @@ import { readMobileRuntimeMode } from "./runtime-config.js";
 import { AboutOrderScreen } from "./screens/AboutOrderScreen.js";
 import { JoinRequestConfirmationScreen } from "./screens/JoinRequestConfirmationScreen.js";
 import { JoinRequestFormScreen } from "./screens/JoinRequestFormScreen.js";
+import {
+  PrivateContentScreen,
+  type PrivateContentScreenAction
+} from "./screens/PrivateContentScreen.js";
 import { PublicContentDetailScreen } from "./screens/PublicContentDetailScreen.js";
 import { PublicContentListScreen } from "./screens/PublicContentListScreen.js";
 import { PublicHomeScreen } from "./screens/PublicHomeScreen.js";
 import type {
+  BrotherAnnouncementListResponseDto,
+  BrotherEventDetailResponseDto,
+  BrotherEventListResponseDto,
+  BrotherProfileResponseDto,
+  BrotherTodayResponseDto,
+  CandidateAnnouncementListResponseDto,
+  CandidateDashboardResponseDto,
+  CandidateEventDetailResponseDto,
+  CandidateEventListResponseDto,
+  MyOrganizationUnitsResponseDto,
   PublicCandidateRequestResponseDto,
   PublicContentPageResponseDto,
   PublicEventDetailResponseDto,
@@ -62,10 +132,13 @@ import type {
   PublicPrayerListResponseDto
 } from "@jp2/shared-validation";
 
+type MobileAppRoute = PublicRoute | CandidateRoute | BrotherRoute;
+
 export function App() {
   const runtimeMode = useMemo(() => readMobileRuntimeMode(), []);
   const publicApiBaseUrl = useMemo(() => readPublicApiBaseUrl(), []);
-  const [currentRoute, setCurrentRoute] = useState<PublicRoute>("PublicHome");
+  const authToken = useMemo(() => readMobileAuthToken(), []);
+  const [currentRoute, setCurrentRoute] = useState<MobileAppRoute>("PublicHome");
   const [launchState, setLaunchState] = useState<MobileLaunchState>(() =>
     runtimeMode === "demo"
       ? resolveMobileLaunchState(null, { runtimeMode })
@@ -116,6 +189,64 @@ export function App() {
   const [joinRequestResponse, setJoinRequestResponse] = useState<
     PublicCandidateRequestResponseDto | undefined
   >(() => (runtimeMode === "demo" ? undefined : undefined));
+  const [candidateDashboardState, setCandidateDashboardState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "loading"
+  );
+  const [candidateDashboard, setCandidateDashboard] = useState<
+    CandidateDashboardResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackCandidateDashboard : undefined));
+  const [candidateEventsState, setCandidateEventsState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [candidateEvents, setCandidateEvents] = useState<
+    CandidateEventListResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackCandidateEvents : undefined));
+  const [candidateAnnouncementsState, setCandidateAnnouncementsState] =
+    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [candidateAnnouncements, setCandidateAnnouncements] = useState<
+    CandidateAnnouncementListResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackCandidateAnnouncements : undefined));
+  const [selectedCandidateEventId, setSelectedCandidateEventId] = useState<string | undefined>();
+  const [candidateEventDetailState, setCandidateEventDetailState] =
+    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [candidateEventDetail, setCandidateEventDetail] = useState<
+    CandidateEventDetailResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackCandidateEventDetail : undefined));
+  const [brotherTodayState, setBrotherTodayState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "loading"
+  );
+  const [brotherToday, setBrotherToday] = useState<BrotherTodayResponseDto | undefined>(() =>
+    runtimeMode === "demo" ? fallbackBrotherToday : undefined
+  );
+  const [brotherProfileState, setBrotherProfileState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [brotherProfile, setBrotherProfile] = useState<BrotherProfileResponseDto | undefined>(() =>
+    runtimeMode === "demo" ? fallbackBrotherProfile : undefined
+  );
+  const [myOrganizationUnitsState, setMyOrganizationUnitsState] =
+    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [myOrganizationUnits, setMyOrganizationUnits] = useState<
+    MyOrganizationUnitsResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackMyOrganizationUnits : undefined));
+  const [brotherEventsState, setBrotherEventsState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [brotherEvents, setBrotherEvents] = useState<BrotherEventListResponseDto | undefined>(() =>
+    runtimeMode === "demo" ? fallbackBrotherEvents : undefined
+  );
+  const [brotherAnnouncementsState, setBrotherAnnouncementsState] =
+    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [brotherAnnouncements, setBrotherAnnouncements] = useState<
+    BrotherAnnouncementListResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackBrotherAnnouncements : undefined));
+  const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
+  const [brotherEventDetailState, setBrotherEventDetailState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [brotherEventDetail, setBrotherEventDetail] = useState<
+    BrotherEventDetailResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackBrotherEventDetail : undefined));
 
   useEffect(() => {
     if (runtimeMode === "demo") {
@@ -146,6 +277,41 @@ export function App() {
       cancelled = true;
     };
   }, [publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || !authToken) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchCurrentUser({ baseUrl: publicApiBaseUrl, authToken })
+      .then((currentUser) => {
+        if (cancelled) {
+          return;
+        }
+
+        const nextLaunchState = resolveMobileLaunchState(toMobilePrincipal(currentUser), {
+          runtimeMode,
+          ...(launchState.publicHome ? { publicHome: launchState.publicHome } : {}),
+          useFallbackPublicHome: false
+        });
+        setLaunchState(nextLaunchState);
+        setCurrentRoute(nextLaunchState.initialRoute);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setLaunchState((current) => ({
+            ...current,
+            state: currentUserLoadFailureState(error)
+          }));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, launchState.publicHome, publicApiBaseUrl, runtimeMode]);
 
   useEffect(() => {
     if (runtimeMode === "demo" || currentRoute !== "AboutOrder") {
@@ -286,6 +452,334 @@ export function App() {
     };
   }, [currentRoute, publicApiBaseUrl, runtimeMode, selectedPublicEventId]);
 
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "CandidateDashboard") {
+      return;
+    }
+
+    if (!authToken) {
+      setCandidateDashboardState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setCandidateDashboardState("loading");
+
+    fetchCandidateDashboard({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setCandidateDashboard(response);
+          setCandidateDashboardState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCandidateDashboard(undefined);
+          setCandidateDashboardState(candidateDashboardLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "CandidateEvents") {
+      return;
+    }
+
+    if (!authToken) {
+      setCandidateEventsState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setCandidateEventsState("loading");
+
+    fetchCandidateEvents({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setCandidateEvents(response);
+          setCandidateEventsState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCandidateEvents(undefined);
+          setCandidateEventsState(candidateDashboardLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "CandidateAnnouncements") {
+      return;
+    }
+
+    if (!authToken) {
+      setCandidateAnnouncementsState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setCandidateAnnouncementsState("loading");
+
+    fetchCandidateAnnouncements({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setCandidateAnnouncements(response);
+          setCandidateAnnouncementsState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCandidateAnnouncements(undefined);
+          setCandidateAnnouncementsState(candidateDashboardLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (
+      runtimeMode === "demo" ||
+      currentRoute !== "CandidateEventDetail" ||
+      !selectedCandidateEventId
+    ) {
+      return;
+    }
+
+    if (!authToken) {
+      setCandidateEventDetailState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setCandidateEventDetailState("loading");
+
+    fetchCandidateEvent({
+      id: selectedCandidateEventId,
+      baseUrl: publicApiBaseUrl,
+      authToken
+    })
+      .then((response) => {
+        if (!cancelled) {
+          setCandidateEventDetail(response);
+          setCandidateEventDetailState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCandidateEventDetail(undefined);
+          setCandidateEventDetailState(candidateDashboardLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode, selectedCandidateEventId]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "BrotherToday") {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherTodayState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherTodayState("loading");
+
+    fetchBrotherToday({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherToday(response);
+          setBrotherTodayState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherToday(undefined);
+          setBrotherTodayState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "BrotherProfile") {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherProfileState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherProfileState("loading");
+
+    fetchBrotherProfile({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherProfile(response);
+          setBrotherProfileState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherProfile(undefined);
+          setBrotherProfileState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "MyOrganizationUnits") {
+      return;
+    }
+
+    if (!authToken) {
+      setMyOrganizationUnitsState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setMyOrganizationUnitsState("loading");
+
+    fetchMyOrganizationUnits({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setMyOrganizationUnits(response);
+          setMyOrganizationUnitsState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMyOrganizationUnits(undefined);
+          setMyOrganizationUnitsState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "BrotherEvents") {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherEventsState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherEventsState("loading");
+
+    fetchBrotherEvents({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherEvents(response);
+          setBrotherEventsState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherEvents(undefined);
+          setBrotherEventsState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "BrotherAnnouncements") {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherAnnouncementsState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherAnnouncementsState("loading");
+
+    fetchBrotherAnnouncements({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherAnnouncements(response);
+          setBrotherAnnouncementsState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherAnnouncements(undefined);
+          setBrotherAnnouncementsState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || currentRoute !== "BrotherEventDetail" || !selectedBrotherEventId) {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherEventDetailState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherEventDetailState("loading");
+
+    fetchBrotherEvent({ id: selectedBrotherEventId, baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherEventDetail(response);
+          setBrotherEventDetailState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherEventDetail(undefined);
+          setBrotherEventDetailState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, currentRoute, publicApiBaseUrl, runtimeMode, selectedBrotherEventId]);
+
   function handlePublicRoute(route: PublicRoute, targetId?: string) {
     if (
       route === "PublicHome" ||
@@ -315,6 +809,125 @@ export function App() {
 
       setCurrentRoute(route);
     }
+  }
+
+  function handlePrivateAction(action: PrivateContentScreenAction) {
+    if (isCandidateRoute(action.targetRoute)) {
+      void handleCandidateRoute(action.targetRoute, action.targetId, action.id);
+      return;
+    }
+
+    void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
+  }
+
+  async function handleCandidateRoute(route: CandidateRoute, targetId?: string, actionId?: string) {
+    if (route === "CandidateContact" || route === "CandidateRoadmap") {
+      setCurrentRoute("CandidateDashboard");
+      return;
+    }
+
+    if (route === "CandidateEventDetail") {
+      setSelectedCandidateEventId(targetId);
+
+      if (runtimeMode === "demo") {
+        setCandidateEventDetail(fallbackCandidateEventDetail);
+        setCandidateEventDetailState(targetId ? "ready" : "empty");
+      } else if (targetId && authToken && actionId === "plan-to-attend") {
+        const response = await markCandidateEventParticipation({
+          id: targetId,
+          baseUrl: publicApiBaseUrl,
+          authToken
+        });
+        setCandidateEventDetail((current) =>
+          current
+            ? {
+                event: {
+                  ...current.event,
+                  currentUserParticipation: response.participation
+                }
+              }
+            : current
+        );
+        setCandidateEventDetailState("ready");
+      } else if (targetId && authToken && actionId === "cancel-participation") {
+        const response = await cancelCandidateEventParticipation({
+          id: targetId,
+          baseUrl: publicApiBaseUrl,
+          authToken
+        });
+        setCandidateEventDetail((current) =>
+          current
+            ? {
+                event: {
+                  ...current.event,
+                  currentUserParticipation:
+                    response.participation.intentStatus === "cancelled"
+                      ? null
+                      : response.participation
+                }
+              }
+            : current
+        );
+        setCandidateEventDetailState("ready");
+      }
+    }
+
+    setCurrentRoute(route);
+  }
+
+  async function handleBrotherRoute(route: BrotherRoute, targetId?: string, actionId?: string) {
+    if (route === "BrotherPrayers" || route === "SilentPrayer") {
+      setCurrentRoute("BrotherToday");
+      return;
+    }
+
+    if (route === "BrotherEventDetail") {
+      setSelectedBrotherEventId(targetId);
+
+      if (runtimeMode === "demo") {
+        setBrotherEventDetail(fallbackBrotherEventDetail);
+        setBrotherEventDetailState(targetId ? "ready" : "empty");
+      } else if (targetId && authToken && actionId === "plan-to-attend") {
+        const response = await markBrotherEventParticipation({
+          id: targetId,
+          baseUrl: publicApiBaseUrl,
+          authToken
+        });
+        setBrotherEventDetail((current) =>
+          current
+            ? {
+                event: {
+                  ...current.event,
+                  currentUserParticipation: response.participation
+                }
+              }
+            : current
+        );
+        setBrotherEventDetailState("ready");
+      } else if (targetId && authToken && actionId === "cancel-participation") {
+        const response = await cancelBrotherEventParticipation({
+          id: targetId,
+          baseUrl: publicApiBaseUrl,
+          authToken
+        });
+        setBrotherEventDetail((current) =>
+          current
+            ? {
+                event: {
+                  ...current.event,
+                  currentUserParticipation:
+                    response.participation.intentStatus === "cancelled"
+                      ? null
+                      : response.participation
+                }
+              }
+            : current
+        );
+        setBrotherEventDetailState("ready");
+      }
+    }
+
+    setCurrentRoute(route);
   }
 
   function handleJoinRequestFieldChange(field: JoinRequestFieldId, value: string) {
@@ -358,6 +971,136 @@ export function App() {
       setJoinRequestState(failureState === "offline" ? "offline" : "ready");
       setJoinRequestErrorMessage(joinRequestSubmitErrorMessage(error));
     }
+  }
+
+  if (currentRoute === "CandidateDashboard") {
+    return (
+      <PrivateContentScreen
+        screen={buildCandidateDashboardScreen({
+          state: candidateDashboardState,
+          response: candidateDashboard,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "CandidateEvents") {
+    return (
+      <PrivateContentScreen
+        screen={buildCandidateEventsScreen({
+          state: candidateEventsState,
+          response: candidateEvents,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "CandidateAnnouncements") {
+    return (
+      <PrivateContentScreen
+        screen={buildCandidateAnnouncementsScreen({
+          state: candidateAnnouncementsState,
+          response: candidateAnnouncements,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "CandidateEventDetail") {
+    return (
+      <PrivateContentScreen
+        screen={buildCandidateEventDetailScreen({
+          state: candidateEventDetailState,
+          response: candidateEventDetail,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "BrotherToday") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherTodayScreen({
+          state: brotherTodayState,
+          response: brotherToday,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "BrotherProfile") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherProfileScreen({
+          state: brotherProfileState,
+          response: brotherProfile,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "MyOrganizationUnits") {
+    return (
+      <PrivateContentScreen
+        screen={buildMyOrganizationUnitsScreen({
+          state: myOrganizationUnitsState,
+          response: myOrganizationUnits,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "BrotherEvents") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherEventsScreen({
+          state: brotherEventsState,
+          response: brotherEvents,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "BrotherAnnouncements") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherAnnouncementsScreen({
+          state: brotherAnnouncementsState,
+          response: brotherAnnouncements,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
+  }
+
+  if (currentRoute === "BrotherEventDetail") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherEventDetailScreen({
+          state: brotherEventDetailState,
+          response: brotherEventDetail,
+          runtimeMode
+        })}
+        onAction={handlePrivateAction}
+      />
+    );
   }
 
   if (currentRoute === "AboutOrder") {
@@ -463,6 +1206,17 @@ export function App() {
 
   return (
     <PublicHomeScreen screen={buildPublicHomeScreen(launchState)} onNavigate={handlePublicRoute} />
+  );
+}
+
+function isCandidateRoute(route: CandidateRoute | BrotherRoute): route is CandidateRoute {
+  return (
+    route === "CandidateDashboard" ||
+    route === "CandidateContact" ||
+    route === "CandidateRoadmap" ||
+    route === "CandidateEvents" ||
+    route === "CandidateAnnouncements" ||
+    route === "CandidateEventDetail"
   );
 }
 

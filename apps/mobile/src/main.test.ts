@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAboutOrderScreen,
+  buildCurrentUserUrl,
   buildCandidateAnnouncementsScreen,
   buildCandidateAnnouncementsUrl,
   buildCandidateEventDetailScreen,
@@ -102,6 +103,12 @@ describe("mobile shell", () => {
 
   it("exports the public home screen model builder", () => {
     expect(buildPublicHomeScreen(resolveMobileLaunchState(null)).route).toBe("PublicHome");
+  });
+
+  it("exports the current-user mobile auth helper", () => {
+    expect(buildCurrentUserUrl("https://api.example.test")).toBe(
+      "https://api.example.test/auth/me"
+    );
   });
 
   it("exports the about order screen model builder", () => {
