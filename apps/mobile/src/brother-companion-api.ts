@@ -1,10 +1,12 @@
 import {
+  brotherAnnouncementListResponseSchema,
   brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
   eventParticipationResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherAnnouncementListResponseDto,
   type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
   type EventParticipationResponseDto,
@@ -46,9 +48,18 @@ export interface BrotherEventListUrlQuery {
   offset?: number;
 }
 
+export interface BrotherAnnouncementListUrlQuery {
+  limit?: number;
+  offset?: number;
+}
+
 export interface FetchBrotherEventsOptions
   extends FetchBrotherCompanionOptions,
     BrotherEventListUrlQuery {}
+
+export interface FetchBrotherAnnouncementsOptions
+  extends FetchBrotherCompanionOptions,
+    BrotherAnnouncementListUrlQuery {}
 
 export async function fetchBrotherProfile(
   options: FetchBrotherCompanionOptions = {}
@@ -75,6 +86,17 @@ export async function fetchBrotherEvents(
   );
 
   return brotherEventListResponseSchema.parse(await response.json());
+}
+
+export async function fetchBrotherAnnouncements(
+  options: FetchBrotherAnnouncementsOptions = {}
+): Promise<BrotherAnnouncementListResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherAnnouncementsUrl(options.baseUrl, options),
+    options
+  );
+
+  return brotherAnnouncementListResponseSchema.parse(await response.json());
 }
 
 export async function fetchBrotherEvent(options: {
@@ -152,6 +174,17 @@ export function buildBrotherEventsUrl(
   const url = new URL("brother/events", normalizeBaseUrl(baseUrl));
   setOptionalParam(url, "from", query.from);
   setOptionalParam(url, "type", query.type);
+  setOptionalNumberParam(url, "limit", query.limit);
+  setOptionalNumberParam(url, "offset", query.offset);
+
+  return url.toString();
+}
+
+export function buildBrotherAnnouncementsUrl(
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
+  query: BrotherAnnouncementListUrlQuery = {}
+): string {
+  const url = new URL("brother/announcements", normalizeBaseUrl(baseUrl));
   setOptionalNumberParam(url, "limit", query.limit);
   setOptionalNumberParam(url, "offset", query.offset);
 

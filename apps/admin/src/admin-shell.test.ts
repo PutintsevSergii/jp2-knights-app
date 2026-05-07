@@ -38,6 +38,11 @@ describe("admin shell routes", () => {
         path: "/admin/events",
         label: "Events",
         screenRoute: "AdminEventList"
+      },
+      {
+        path: "/admin/announcements",
+        label: "Announcements",
+        screenRoute: "AdminAnnouncementList"
       }
     ]);
   });

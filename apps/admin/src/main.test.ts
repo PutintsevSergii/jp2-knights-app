@@ -24,7 +24,8 @@ describe("admin shell", () => {
       "/admin/candidates",
       "/admin/organization-units",
       "/admin/prayers",
-      "/admin/events"
+      "/admin/events",
+      "/admin/announcements"
     ]);
   });
 });

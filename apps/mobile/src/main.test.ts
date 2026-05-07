@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAboutOrderScreen,
+  buildCandidateAnnouncementsScreen,
+  buildCandidateAnnouncementsUrl,
   buildCandidateEventDetailScreen,
   buildCandidateEventDetailUrl,
   buildCandidateEventParticipationUrl,
@@ -8,6 +10,8 @@ import {
   buildCandidateEventsUrl,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
+  buildBrotherAnnouncementsScreen,
+  buildBrotherAnnouncementsUrl,
   buildBrotherEventDetailScreen,
   buildBrotherEventDetailUrl,
   buildBrotherEventParticipationUrl,
@@ -25,11 +29,13 @@ import {
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
   fallbackAboutOrderContentPage,
+  fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
   fallbackBrotherProfile,
   fallbackBrotherEvents,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits,
+  fallbackCandidateAnnouncements,
   fallbackCandidateEventDetail,
   fallbackCandidateEvents,
   fallbackCandidateDashboard,
@@ -172,6 +178,9 @@ describe("mobile shell", () => {
     expect(buildCandidateEventsUrl("https://api.example.test")).toBe(
       "https://api.example.test/candidate/events"
     );
+    expect(buildCandidateAnnouncementsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/candidate/announcements"
+    );
     expect(
       buildCandidateEventDetailUrl(
         "55555555-5555-4555-8555-555555555555",
@@ -200,6 +209,13 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("CandidateEventDetail");
+    expect(
+      buildCandidateAnnouncementsScreen({
+        state: "ready",
+        response: fallbackCandidateAnnouncements,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("CandidateAnnouncements");
   });
 
   it("exports brother companion helpers and screen model builders", () => {
@@ -211,6 +227,9 @@ describe("mobile shell", () => {
     );
     expect(buildBrotherEventsUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/events"
+    );
+    expect(buildBrotherAnnouncementsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/announcements"
     );
     expect(
       buildBrotherEventDetailUrl(
@@ -264,5 +283,12 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("BrotherEventDetail");
+    expect(
+      buildBrotherAnnouncementsScreen({
+        state: "ready",
+        response: fallbackBrotherAnnouncements,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherAnnouncements");
   });
 });

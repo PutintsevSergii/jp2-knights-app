@@ -17,7 +17,13 @@
 - Session-cookie creation requires a matching `csrfToken` request body value and `x-csrf-token` header before setting the `httpOnly` cookie.
 - Firebase Authentication provider sign-in is implemented behind the local Idle approval gate. A verified first-time Firebase identity creates or links a local identity, creates a pending `identity_access_reviews` row expiring 30 days after first sign-in, and returns public-only access until an authorized country/region approver or Super Admin confirms it.
 - `/auth/me` returns `access.approval` for pending/rejected/expired Idle identities. During Idle, `roles` is empty, `mobileMode` is `public`, `adminLite` is `false`, and scoped private IDs are empty/null.
-- `POST /auth/device-tokens` and `PUT /auth/notification-preferences` remain Phase 9 work with push/notification preferences.
+- Phase 9 implements `POST /auth/device-tokens` and
+  `PUT /auth/notification-preferences`. Device token registration requires an
+  approved private principal, stores only a SHA-256 token hash plus last-four
+  metadata, and transfers duplicate token ownership to the current user.
+  Notification preferences are self-only for candidates and brothers, accept
+  category booleans (`events`, `announcements`, `roadmapUpdates`,
+  `prayerReminders`), and return all categories with defaults filled in.
 
 ## Idle Approval Contract
 

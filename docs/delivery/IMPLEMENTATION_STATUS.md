@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 6, 2026
+Updated: May 7, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -21,8 +21,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
-| **9**    | 🟡 IN PROGRESS | ~50%    | ██████████░░░░░░░░░░ | Candidate/brother event reads, mobile event models, event participation intent API, announcement read APIs, persistence | Admin announcements and push |
-| **10–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Formation roadmap, silent prayer, privacy/security hardening, pilot                                                   | After Phase 9                |
+| **9**    | ✅ COMPLETE    | 100%    | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch | Phase 10 |
+| **10–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Formation roadmap, silent prayer, privacy/security hardening, pilot                                                   | Start Phase 10               |
 
 ---
 
@@ -256,7 +256,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ API request-id middleware now normalizes/echoes incoming `x-request-id`, generates missing request ids, exposes them to error responses, and threads request-context ids into audit log writes
 - ✅ Candidate request lifecycle transitions are now enforced server-side, conversion requires `invited`, rejection requires an officer note, terminal requests cannot be updated, and Admin Lite actions mirror the allowed follow-up sequence
 - ✅ Next App Router handlers forward bearer credentials and session cookies to backend API clients, with tests and production `next start` smoke coverage
-- ✅ `pnpm smoke:phase8` boots the compiled API, checks `/api/health`, exercises Admin Lite under `next dev` and production `next start`, validates mobile demo launch, and verifies production demo-mode rejection
+- ✅ `pnpm smoke:launch` boots the compiled API, checks `/api/health`, exercises Admin Lite under `next dev` and production `next start`, validates mobile demo launch, and verifies production demo-mode rejection
 - ✅ V1 organization constraints and candidate follow-up expectations are documented without expanding scope
 
 **In Progress**:
@@ -274,9 +274,9 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Next step**: Start Phase 9 events/announcements/push
 
-### Phase 9: Events, Announcements & Push 🟡
+### Phase 9: Events, Announcements & Push ✅
 
-**Status**: IN PROGRESS (~50%)
+**Status**: COMPLETE (100%)
 
 **Completed**:
 
@@ -293,6 +293,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Mobile `CandidateEvents` and `CandidateEventDetail` API/demo screen models with authenticated list/detail clients, candidate plan/cancel participation clients, own intent copy, and action metadata
 - ✅ `announcements` persistence, migration, and local candidate/brother seed fixtures
 - ✅ Guarded `GET /api/candidate/announcements` and `GET /api/brother/announcements` with active-profile checks, shared DTO/OpenAPI schemas, pinned ordering, and server-side candidate/brother visibility filtering
+- ✅ Guarded `GET /api/admin/announcements`, `POST /api/admin/announcements`, and `PATCH /api/admin/announcements/:id` with shared DTO/OpenAPI schemas, server-side officer scope filtering, scoped officer writes, Super Admin global management, publish/archive lifecycle timestamps, and body-redacted audit summaries
+- ✅ Mobile `CandidateAnnouncements` and `BrotherAnnouncements` API/demo screen models with authenticated clients, shared DTO validation, parsed demo fixtures, ready/empty/loading/error/offline/forbidden/idle-approval states, and one-way message rendering without chat, comments, read receipts, push delivery state, or participant lists
+- ✅ Admin Lite `/admin/announcements` Next.js route and mounted shell navigation with shared announcement DTO validation, API/demo loading, parsed demo fixture, list renderer, scoped write-state action metadata, and one-way management UI without chat/comments/read receipts/push delivery state
+- ✅ Admin Lite `/admin/announcements/new` and `/admin/announcements/:id` editor routes with write-gated create, API/demo detail resolution from the scoped list contract, readonly fields for non-writers, 404 scoped misses, save/publish/archive action metadata, and no push delivery state rendering
+- ✅ `device_tokens` and `notification_preferences` persistence, shared DTO/OpenAPI schemas, guarded `POST /api/auth/device-tokens`, guarded `PUT /api/auth/notification-preferences`, duplicate token ownership transfer by token hash, no raw token return, candidate/brother self-scoped preferences with defaults, and a no-op push adapter boundary
+- ✅ Announcement first-publication push dispatch wiring resolves recipients server-side from active candidate/brother role plus profile/membership scope, announcement visibility, active non-revoked device tokens, and announcement notification preferences; dispatch uses generic copy, deep links by announcement id, configured push adapter boundary, and operational audit counts only
 
 **In Progress**:
 
@@ -300,13 +306,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Not Yet**:
 
-- ⏳ Mobile announcement surfaces
-- ⏳ Admin announcement management
-- ⏳ Device tokens, notification preferences, and push dispatch adapter
+- ✅ None
 
-**Exit criteria**: 🟡 Candidate/brother event read, participation, and announcement read foundation is in place; admin/mobile announcement surfaces and push remain
+**Exit criteria**: ✅ Candidate/brother event read, participation, announcement read foundation, mobile announcement screen models, admin announcement API/UI, notification preferences, device tokens, push adapter boundary, and audience-safe announcement publish dispatch are in place
 
-**Next step**: Add admin announcement management contracts
+**Next step**: Start Phase 10 formation roadmap
 
 ### Phases 4–13: Roadmap
 
@@ -317,8 +321,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
 | **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
 | **8**  | Brother Companion Core           | ✅ Complete    | Completed May 6 |
-| **9**  | Events/Announcements/Push        | 🟡 In progress | Current         |
-| **10** | Formation Roadmap                | ⏳ Not started | After Phase 9   |
+| **9**  | Events/Announcements/Push        | ✅ Complete    | Completed May 7 |
+| **10** | Formation Roadmap                | ⏳ Not started | Current         |
 | **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
 | **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
 | **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12  |
@@ -329,15 +333,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 | Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                       |
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm lint`                                                     |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm typecheck`                                                |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.03% statements / 81.56% branches / 93.16% functions / 91.74% lines   |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, and mobile client/screen-model coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Current Phase 9 slice passed `pnpm build`                                                    |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, and announcement reads |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, and announcement reads |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation and announcement migrations validate                                      |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Existing Phase 8 smoke passed after localhost bind escalation                                 |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm lint`                                                   |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm typecheck`                                              |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.34% statements / 82.36% branches / 93.45% functions / 92.02% lines    |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile announcement models, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm build`                                                  |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation, announcement, and notification migrations validate                       |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Launch smoke passed after localhost bind escalation                                           |
 
 ---
 
@@ -434,7 +438,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - API request-id generation/propagation, candidate request lifecycle enforcement, App Router cookie forwarding, launch smoke checks, V1 organization constraints, and candidate follow-up expectations are complete
 - Deferred hardening remains scoped to later phases: realistic seed/load expansion, Phase 11 Redis realtime tests, pilot logging/metrics destination, and optional Admin Lite renderer cleanup
 
-**Phase 9 In Progress** 🟡:
+**Phase 9 Complete** ✅:
 
 - Brother event detail API added with active-profile checks, server-side event visibility, and own active participation intent only
 - Mobile BrotherEventDetail screen model and authenticated API clients added for event detail plus brother plan/cancel participation actions
@@ -442,6 +446,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Candidate event list/detail API added with active-profile checks, server-side candidate visibility, shared DTO/OpenAPI schemas, and own active participation intent only on detail
 - Mobile CandidateEvents/CandidateEventDetail screen models and authenticated API clients added for candidate event list/detail plus candidate plan/cancel participation actions
 - Candidate and brother announcement read APIs added with `announcements` persistence, shared DTO/OpenAPI schemas, active-profile checks, pinned ordering, server-side audience/scope filtering, and no comments/read receipts/push delivery details
+- Admin announcement management API/UI, notification preferences, device-token registration, and announcement first-publish push dispatch are complete with server-side recipient resolution and operational audit counts
 
 ---
 
@@ -484,6 +489,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add Next `dev/start` smoke checks and production auth/session cookie checks for the App Router handlers
    - [x] Decide `dev:http-shell` remains a short-term compatibility fallback; retirement is post-Phase-8 cleanup after future route parity stays stable
    - [x] Defer framework-neutral Admin Lite renderer conversion to React Server Components until a separate parity-tested cleanup task
+
+5. **Start Phase 10 Formation Roadmap**
+   - [ ] Define roadmap data tables/contracts from the canonical phase scope
+   - [ ] Add candidate/brother roadmap read APIs and screen models
+   - [ ] Add admin roadmap submission review workflow
    - [x] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
    - [x] Document V1 organization constraints explicitly: no hierarchy-derived permissions, no cross-unit rollups, no read replicas, and no `/v2` routes without owner approval
    - [x] Document pilot candidate follow-up timeline expectations
@@ -587,6 +597,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 6, 2026
-**Current Phase**: Phase 9 in progress; Phases 0–8 complete
-**Next Major Milestone**: Complete events/announcements/push
+**Last Updated**: May 7, 2026
+**Current Phase**: Phase 10 pending; Phases 0–9 complete
+**Next Major Milestone**: Start formation roadmap

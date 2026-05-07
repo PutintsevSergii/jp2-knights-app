@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   CONTENT_STATUSES,
+  DEVICE_TOKEN_PLATFORMS,
   MEMBERSHIP_STATUSES,
+  NOTIFICATION_CATEGORIES,
   ORGANIZATION_UNIT_STATUSES,
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
@@ -24,6 +26,16 @@ describe("shared types", () => {
 
   it("keeps operational statuses in snake_case", () => {
     expect(PARTICIPATION_STATUSES).toContain("planning_to_attend");
+  });
+
+  it("keeps notification categories and token platforms explicit", () => {
+    expect(NOTIFICATION_CATEGORIES).toEqual([
+      "events",
+      "announcements",
+      "roadmap_updates",
+      "prayer_reminders"
+    ]);
+    expect(DEVICE_TOKEN_PLATFORMS).toEqual(["ios", "android", "web"]);
   });
 
   it("keeps organization lifecycle statuses shared for API and admin code", () => {

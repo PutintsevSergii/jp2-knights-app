@@ -84,6 +84,28 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - Candidate profile updates record audit log before/after summaries with email redacted.
 - Candidate-to-brother conversion remains a separate audited operation on `/admin/candidates/:id/convert-to-brother`.
 
+## Implemented Announcement Management Rules
+
+- `GET /admin/announcements`, `POST /admin/announcements`, and `PATCH /admin/announcements/:id` require Admin Lite access.
+- Super Admin can list and manage all announcement records.
+- Officers can list public/family-open announcements and announcements assigned to their officer organization-unit scope.
+- Officer announcement writes must target one of their assigned organization units. Super Admin can create global or scoped announcements.
+- `ORGANIZATION_UNIT` visibility requires `targetOrganizationUnitId` in shared create/update DTO validation.
+- Publishing and archiving set lifecycle timestamps when status changes to `PUBLISHED` or `ARCHIVED`.
+- Announcement mutations record audit log summaries with title, visibility, target scope, pinned state, status, and lifecycle timestamps. Full announcement body text is redacted from audit summaries.
+- First publication resolves candidate/brother push recipients server-side from
+  announcement visibility, active profile/membership scope, active non-revoked
+  device tokens, and announcement notification preferences. Dispatch uses
+  generic copy and deep links by announcement id, then records operational
+  attempted/accepted/failed counts without exposing delivery state in Admin
+  Lite.
+- Admin Lite mounts `/admin/announcements`, `/admin/announcements/new`, and
+  `/admin/announcements/:id` through the Next App Router. The list and editor
+  surfaces use shared DTO validation, API/demo loading, scoped action metadata,
+  and render no chat, comments, read receipts, or push delivery state. Detail
+  editor rendering resolves the scoped announcement from the list contract until
+  a dedicated admin detail read contract is introduced.
+
 ## Canonical Admin Route Names
 
 - Roadmap configuration routes use `/admin/roadmap-definitions`; admin UI routes must use the same path.

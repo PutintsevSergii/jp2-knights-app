@@ -16,7 +16,7 @@ async function main() {
   await smokeProductionDemoRejection();
   await smokeMobileDemoLaunch();
 
-  console.log("Phase 8 smoke checks passed.");
+  console.log("Launch smoke checks passed.");
 }
 
 async function smokeApiBoot() {

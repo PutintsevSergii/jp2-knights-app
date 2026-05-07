@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  fallbackAdminAnnouncements,
   fallbackAdminCandidateProfiles,
   fallbackAdminCandidateRequestDetails,
   fallbackAdminDashboard,
@@ -13,6 +14,9 @@ import { GET as getCandidateRequests } from "./app/admin/candidate-requests/rout
 import { GET as getCandidateDetail } from "./app/admin/candidates/[id]/route.js";
 import { GET as getCandidates } from "./app/admin/candidates/route.js";
 import { GET as getEvents } from "./app/admin/events/route.js";
+import { GET as getAnnouncements } from "./app/admin/announcements/route.js";
+import { GET as getAnnouncementDetail } from "./app/admin/announcements/[id]/route.js";
+import { GET as getAnnouncementNew } from "./app/admin/announcements/new/route.js";
 import { GET as getOrganizationUnitDetail } from "./app/admin/organization-units/[id]/route.js";
 import { GET as getOrganizationUnitNew } from "./app/admin/organization-units/new/route.js";
 import { GET as getOrganizationUnits } from "./app/admin/organization-units/route.js";
@@ -194,6 +198,12 @@ describe("Next admin dashboard route scaffold", () => {
         get: getEvents,
         path: "/admin/events",
         expected: fallbackAdminEvents.events[0]!.title
+      },
+      {
+        label: "announcements",
+        get: getAnnouncements,
+        path: "/admin/announcements",
+        expected: fallbackAdminAnnouncements.announcements[0]!.title
       }
     ];
 
@@ -251,6 +261,22 @@ describe("Next admin dashboard route scaffold", () => {
     const organizationUnitBody = await organizationUnitDetail.text();
     expect(organizationUnitDetail.status).toBe(200);
     expect(organizationUnitBody).toContain(`Organization Unit: ${organizationUnit.name}`);
+
+    const createAnnouncement = await getAnnouncementNew(
+      new Request("https://admin.example.test/admin/announcements/new")
+    );
+    const createAnnouncementBody = await createAnnouncement.text();
+    expect(createAnnouncement.status).toBe(200);
+    expect(createAnnouncementBody).toContain("Create Announcement");
+
+    const announcement = fallbackAdminAnnouncements.announcements[0]!;
+    const announcementDetail = await getAnnouncementDetail(
+      new Request(`https://admin.example.test/admin/announcements/${announcement.id}`),
+      { params: Promise.resolve({ id: announcement.id }) }
+    );
+    const announcementBody = await announcementDetail.text();
+    expect(announcementDetail.status).toBe(200);
+    expect(announcementBody).toContain(`Announcement: ${announcement.title}`);
 
     expect(fetchImpl).not.toHaveBeenCalled();
   });

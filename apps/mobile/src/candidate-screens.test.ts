@@ -1,11 +1,13 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import { describe, expect, it } from "vitest";
 import {
+  fallbackCandidateAnnouncements,
   fallbackCandidateEventDetail,
   fallbackCandidateEvents,
   fallbackCandidateDashboard
 } from "./candidate-dashboard.js";
 import {
+  buildCandidateAnnouncementsScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
   buildCandidateDashboardScreen
@@ -99,6 +101,37 @@ describe("mobile candidate screen models", () => {
     expect(JSON.stringify({ list, detail })).not.toMatch(/participants|brother|membership|degree/i);
   });
 
+  it("builds candidate announcements without brother-only language", () => {
+    const screen = buildCandidateAnnouncementsScreen({
+      state: "ready",
+      response: fallbackCandidateAnnouncements,
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateAnnouncements",
+      state: "ready",
+      title: "Candidate Announcements",
+      body: "1 candidate-visible announcement",
+      demoChromeVisible: false
+    });
+    expect(screen.sections).toEqual([
+      expect.objectContaining({
+        id: `announcement-${fallbackCandidateAnnouncements.announcements[0]!.id}`,
+        title: "Candidate Formation Update (Pinned)"
+      })
+    ]);
+    expect(screen.sections[0]?.body).toContain("responsible officer");
+    expect(screen.actions).toEqual([
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        targetRoute: "CandidateDashboard"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/brother|membership|degree/i);
+  });
+
   it("builds plan-to-attend action when the candidate has no active intent", () => {
     expect(
       buildCandidateEventDetailScreen({
@@ -151,6 +184,27 @@ describe("mobile candidate screen models", () => {
       state: "idleApproval",
       title: "Account Approval Pending",
       sections: [],
+      actions: []
+    });
+    expect(
+      buildCandidateAnnouncementsScreen({ state: "idleApproval", runtimeMode: "api" })
+    ).toMatchObject({
+      route: "CandidateAnnouncements",
+      state: "idleApproval",
+      title: "Account Approval Pending",
+      sections: [],
+      actions: []
+    });
+    expect(
+      buildCandidateAnnouncementsScreen({
+        state: "ready",
+        response: { announcements: [], pagination: { limit: 20, offset: 0 } },
+        runtimeMode: "demo"
+      })
+    ).toMatchObject({
+      route: "CandidateAnnouncements",
+      state: "empty",
+      demoChromeVisible: true,
       actions: []
     });
   });

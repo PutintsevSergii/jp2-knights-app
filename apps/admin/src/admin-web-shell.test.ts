@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  fallbackAdminAnnouncements,
   fallbackAdminCandidateRequestDetails,
   fallbackAdminCandidateProfiles,
   fallbackAdminDashboard,
@@ -112,7 +113,7 @@ describe("admin web shell", () => {
     );
   });
 
-  it("mounts content routes and forwards write capability as render-only state", async () => {
+  it("mounts prayer content routes and forwards write capability as render-only state", async () => {
     const fetchImpl = vi.fn(() =>
       Promise.resolve({
         ok: true,
@@ -145,6 +146,87 @@ describe("admin web shell", () => {
     expect(response.body).toContain("Morning Offering");
     expect(response.body).toContain('data-action="create"');
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/prayers", {
+      method: "GET",
+      headers: { authorization: "Bearer token_1" }
+    });
+  });
+
+  it("mounts the announcement content route through the shared Admin Lite shell", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminAnnouncements)
+      })
+    );
+
+    const response = await renderAdminWebRequest(
+      {
+        path: "/admin/announcements",
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        canWrite: true,
+        fetchImpl
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain("JP2 Admin Lite");
+    expect(response.body).toContain('href="/admin/announcements" aria-current="page"');
+    expect(response.body).toContain("Service Schedule Update");
+    expect(response.body).toContain('data-target-route="AdminAnnouncementEditor"');
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/announcements", {
+      method: "GET",
+      headers: { authorization: "Bearer token_1" }
+    });
+  });
+
+  it("mounts announcement create and detail editor routes", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminAnnouncements)
+      })
+    );
+
+    const createResponse = await renderAdminWebRequest(
+      { path: "/admin/announcements/new" },
+      {
+        runtimeMode: "api",
+        canWrite: true,
+        fetchImpl
+      }
+    );
+    const detailResponse = await renderAdminWebRequest(
+      {
+        path: "/admin/announcements/55555555-5555-4555-8555-555555555555",
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        canWrite: true,
+        fetchImpl
+      }
+    );
+
+    expect(createResponse.statusCode).toBe(200);
+    expect(createResponse.body).toContain("Create Announcement");
+    expect(createResponse.body).toContain('href="/admin/announcements" aria-current="page"');
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body).toContain("Announcement: Service Schedule Update");
+    expect(detailResponse.body).toContain('data-action="publish"');
+    expect(detailResponse.body).toContain('href="/admin/announcements" aria-current="page"');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/announcements", {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });

@@ -23,3 +23,9 @@
   It shows only candidate-visible events, own intent state, plan/cancel action
   metadata, and ready/empty/loading/error/offline/forbidden/idle-approval
   states.
+- The current Candidate Announcements foundation renders an API/demo
+  `CandidateAnnouncements` screen model over `GET /candidate/announcements`.
+  It validates the shared DTO, handles ready/empty/loading/error/offline/
+  forbidden/idle-approval states, and renders one-way candidate-visible message
+  bodies without brother-only content, comments, replies, read receipts, or push
+  delivery state.

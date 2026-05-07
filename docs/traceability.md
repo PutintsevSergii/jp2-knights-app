@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 6, 2026 (Phases 0–8 complete; Phase 9 in progress)
+**Last Updated**: May 7, 2026 (Phases 0–9 complete; Phase 10 pending)
 
 ---
 
@@ -17,10 +17,9 @@ Use this document to:
 
 The rows below describe the full expected V1 surface (all 42 requirements). The narrative describes what's actually implemented right now.
 
-### Current Phase: Phase 9 (Events, Announcements, and Push) — In Progress
+### Current Phase: Phase 10 (Formation Roadmap) — Pending
 
-Implementation is complete through Phase 8 Brother Companion Core. Phase 9 has
-started with event participation intent:
+Implementation is complete through Phase 9 Events, Announcements, and Push. Phase 10 Formation Roadmap is the next planned phase:
 
 - Phase 1 repository/infrastructure baseline is in place.
 - Phase 2 shared auth/visibility helpers, mobile-mode resolution, published-content
@@ -257,7 +256,8 @@ started with event participation intent:
   converted requests are terminal, and rejection requires an officer note. Admin
   Lite candidate-request actions now mirror that sequence by withholding the
   invite action until a request is contacted.
-- Phase 8 now includes launch-level smoke coverage through `pnpm smoke:phase8`,
+- Phase 8 added launch-level smoke coverage, now exposed through
+  `pnpm smoke:launch`,
   which boots the compiled API, checks generated request ids on `/api/health`,
   exercises Admin Lite under `next dev` and production `next start`, verifies
   App Router session-cookie forwarding to backend API clients, checks mobile
@@ -304,6 +304,47 @@ started with event participation intent:
   published, non-archived `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own
   organization-unit announcements. Pinned items sort first, and neither endpoint
   exposes comments, read receipts, push delivery state, or unrelated scopes.
+- Phase 9 now includes admin announcement management contracts:
+  guarded `GET /api/admin/announcements`, `POST /api/admin/announcements`, and
+  `PATCH /api/admin/announcements/{id}` endpoints with shared DTO/OpenAPI
+  schemas, server-side officer scope filtering, scoped officer writes, Super
+  Admin global management, lifecycle timestamp handling for publish/archive
+  states, and audit summaries that redact announcement body text.
+- Mobile Phase 9 now includes `CandidateAnnouncements` and
+  `BrotherAnnouncements` API/demo screen models. API mode sends bearer
+  credentials to `GET /api/candidate/announcements` and
+  `GET /api/brother/announcements`, validates the shared list DTOs, maps
+  forbidden/idle/offline/error/empty states through the existing private mobile
+  load-state helpers, and demo mode uses backend-free parsed announcement
+  fixtures. The screen models render message bodies from the server-filtered
+  list contracts without chat, replies, read receipts, push delivery state, or
+  participant lists.
+- Admin Lite Phase 9 now mounts `/admin/announcements` in the shared Next.js
+  App Router and dependency-free shell surfaces. The route reuses the shared
+  admin announcement DTO validator, API/demo data loading, parsed demo fixture,
+  framework-neutral list renderer, scoped write-state action metadata, and
+  Admin Lite navigation. It renders one-way announcement management actions
+  without chat, comments, read receipts, or push delivery state.
+- Admin Lite Phase 9 now also mounts `/admin/announcements/new` and
+  `/admin/announcements/:id` editor documents. Create is write-gated, detail
+  rendering resolves the scoped announcement from the existing list contract,
+  read-only admins receive readonly fields, scoped misses return 404, and the
+  editor exposes save/publish/archive action metadata without rendering push
+  delivery state.
+- Phase 9 now includes notification preference and device-token foundations:
+  `device_tokens` and `notification_preferences` tables/migration, shared
+  DTO/OpenAPI schemas, guarded `POST /api/auth/device-tokens`, guarded
+  `PUT /api/auth/notification-preferences`, duplicate token ownership transfer
+  by token hash, no raw token return/logging, candidate/brother self-scoped
+  preference writes with defaults, and a no-op push adapter boundary for later
+  provider dispatch.
+- Phase 9 now wires announcement publishing to audience-safe push dispatch:
+  first publication resolves candidate/brother recipients server-side from
+  announcement visibility, active profile/membership scope, active non-revoked
+  device tokens, and announcement notification preferences. Dispatch uses
+  generic notification copy, deep links by announcement id, the configured push
+  adapter boundary, and operational audit summaries with attempted/accepted/
+  failed counts only.
 - Delivery-risk review recommendations are now resolved or explicitly deferred
   without expanding V1 scope:
   - Implementation maturity: Admin Lite's dependency-free HTTP shell remains
@@ -335,6 +376,7 @@ started with event participation intent:
   `/api/public/events`, `/api/public/events/{id}`,
   `/api/public/candidate-requests`,
   `/api/auth/session`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/me`,
+  `/api/auth/device-tokens`, `/api/auth/notification-preferences`,
   `/api/candidate/dashboard`,
   `/api/candidate/events`, `/api/candidate/events/{id}`,
   `/api/candidate/events/{id}/participation`,
@@ -351,14 +393,16 @@ started with event participation intent:
   `/api/admin/candidate-requests/{id}/convert`,
   `/api/admin/candidates`, `/api/admin/candidates/{id}`,
   `/api/admin/prayers`, `/api/admin/prayers/{id}`,
-  `/api/admin/events`, and `/api/admin/events/{id}` as foundation contracts
-  with request/response schemas.
-- Auth device-token and notification-preference endpoints remain Phase 9 work
-  with push/notification preferences.
+  `/api/admin/events`, `/api/admin/events/{id}`,
+  `/api/admin/announcements`, and `/api/admin/announcements/{id}` as foundation
+  contracts with request/response schemas.
+- Announcement publish dispatch is wired through the provider adapter boundary.
+  The default local/test adapter remains no-op because V1 stores token hashes or
+  provider-safe references rather than raw provider tokens.
 - `/api/brother/my-organization-units` currently returns the active brother's
   organization-unit summaries only, and mobile renders those scoped summaries
-  without brother rosters. Officer summaries and mobile/admin announcement
-  surfaces remain Phase 9+ work.
+  without brother rosters. Officer summaries and announcement push preferences
+  beyond the self-service preference toggle remain later work.
 - `/api/admin/organization-units` currently supports scoped active listing plus Super Admin
   create/update/archive with audit side effects. The Admin Lite HTTP shell mounts
   organization-unit list, create, and scoped detail/edit form documents over the
@@ -367,8 +411,7 @@ started with event participation intent:
   implemented route surface. The dependency-free HTTP shell remains available as
   a compatibility fallback while future route and React Server Component
   hardening steps are handled incrementally.
-- Remaining Phase 9 admin/mobile announcement and push work plus Phase 10
-  through 13 product workflows are not implemented yet unless
+- Phase 10 through 13 product workflows are not implemented yet unless
   explicitly listed above.
 
 ### How to Update This Document
@@ -409,25 +452,25 @@ started with event participation intent:
 | FR-CANDIDATE-001 Candidate Dashboard       | `GET /candidate/dashboard`                                                                                                            | candidate dashboard                          | candidate_profiles, events; roadmap_assignments/announcements pending later phases       | active profile required, scoped event visibility, mobile API/client state mapping, no brother content                                                                       |
 | FR-ROADMAP-001 Candidate Roadmap           | `GET /candidate/roadmap`                                                                                                              | candidate roadmap                            | roadmap_definitions, assignments                                                         | assigned candidate only                                                                                                                                                     |
 | FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`, `GET /candidate/events/:id`                                                                                  | CandidateEvents and CandidateEventDetail screen models | events, event_participation                                                              | active candidate profile required, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only on detail, mobile API/demo model tests, no participant lists |
-| FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | candidate announcements                      | announcements                                                                            | active profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/candidate/own organization-unit filtering, no brother/officer/admin/unrelated-scope announcements |
+| FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | CandidateAnnouncements screen model          | announcements                                                                            | active profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/candidate/own organization-unit filtering, mobile API/demo state handling, no brother/officer/admin/unrelated-scope announcements |
 | FR-BROTHER-001 Brother Today               | `GET /brother/today`                                                                                                                  | brother today                                | users, memberships, organization_units, events; announcements/roadmap pending later      | personalized profile cards, own organization units, brother-safe event visibility, mobile API/demo states                                                                   |
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |
 | FR-ORG-001 My Organization Units           | `GET /brother/my-organization-units`                                                                                                  | my organization units                        | organization_units, officer_assignments, events                                          | own scope, no brother list, mobile API/demo/screen states                                                                                                                   |
 | FR-PRAYER-003 Brother Prayer Library       | `GET /brother/prayers`                                                                                                                | brother prayer screens                       | prayers                                                                                  | published public/family/brother/own organization-unit filtering, no candidate/officer/admin/unrelated-scope prayers                                                        |
 | FR-EVENT-002 Brother Events                | `GET /brother/events`, `GET /brother/events/:id`                                                                                      | BrotherEvents and BrotherEventDetail screen models | events, event_participation                                                              | guarded active-brother read APIs, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only, mobile API/demo model tests |
 | FR-EVENT-003 Event Participation Intent    | `POST/DELETE /candidate/events/:id/participation`, `POST/DELETE /brother/events/:id/participation`                                    | BrotherEventDetail screen model              | event_participation                                                                      | active candidate/brother profile required, visible open event only for creation, duplicate active intent returns existing record, cancellation limited to own active intent, mobile plan/cancel action metadata, no participant lists |
-| FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | announcement list/detail                     | announcements                                                                            | active brother profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/brother/own organization-unit filtering, no chat/comments/read receipts, no candidate/officer/admin/unrelated-scope announcements |
+| FR-ANN-001 Brother Announcements           | `GET /brother/announcements`                                                                                                          | BrotherAnnouncements screen model            | announcements                                                                            | active brother profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/brother/own organization-unit filtering, mobile API/demo state handling, no chat/comments/read receipts, no candidate/officer/admin/unrelated-scope announcements |
 | FR-ROADMAP-002 Formation Roadmap           | `GET /brother/roadmap`                                                                                                                | formation roadmap                            | roadmap\_\*                                                                              | own roadmap, no auto degree                                                                                                                                                 |
 | FR-ROADMAP-003 Roadmap Step Submission     | `POST /brother/roadmap/steps/:stepId/submissions`                                                                                     | step detail                                  | roadmap_submissions, file_attachments optional                                           | pending duplicate, attachment policy                                                                                                                                        |
 | FR-ROADMAP-004 Roadmap Approval            | `GET/PATCH /admin/roadmap-submissions/:id`                                                                                            | roadmap request detail                       | roadmap_submissions, audit_logs                                                          | officer scope, rejection comment, audit                                                                                                                                     |
 | FR-PRAYER-004 Silent Brother Prayer        | brother silent prayer routes and socket events                                                                                        | brother silent prayer                        | silent_prayer_events, Redis presence                                                     | once per user, reconnect                                                                                                                                                    |
-| FR-NOTIF-001 Notification Preferences      | `PUT /auth/notification-preferences`, `POST /auth/device-tokens`                                                                      | settings                                     | notification_preferences, device_tokens                                                  | self only, duplicate token ownership                                                                                                                                        |
+| FR-NOTIF-001 Notification Preferences      | `PUT /auth/notification-preferences`, `POST /auth/device-tokens`                                                                      | settings                                     | notification_preferences, device_tokens                                                  | guarded approved private access for token registration, raw tokens hashed and never returned, duplicate token ownership transfers by token hash, candidate/brother self-only preference updates with defaults, announcement publish dispatch respects opt-outs and active non-revoked device tokens through the configured push adapter boundary |
 | FR-ADMIN-002 Admin Dashboard               | `GET /admin/dashboard`                                                                                                                | admin dashboard                              | scoped aggregates                                                                        | guarded scoped counts, admin dashboard route/demo fixture, no unrelated scope, Next.js `/admin/dashboard` route smoke tests for demo/API modes                               |
 | FR-ADMIN-003 Brother Registry              | `/admin/brothers` routes                                                                                                              | brother list/detail/editor                   | users, user_roles, memberships, audit_logs                                               | officer scope, critical audit                                                                                                                                               |
 | FR-ORG-002 Organization Unit Management    | `/admin/organization-units` routes                                                                                                    | organization unit list/detail                | organization_units, officer_assignments, audit_logs                                      | scoped list API, Super Admin create/update/archive, audit side effects, rendered Admin Lite list/detail/form routes, Next.js list/create/detail route smoke tests            |
 | FR-ADMIN-004 Prayer Management             | `/admin/prayers` routes                                                                                                               | prayer list/editor                           | prayers, audit_logs                                                                      | guarded list/create/patch API, admin app list/editor workflow model, visibility required, archive not delete, audit side effects, Next.js list route smoke test              |
 | FR-ADMIN-005 Event Management              | `/admin/events` routes                                                                                                                | event list/editor                            | events, audit_logs                                                                       | guarded list/create/patch API, admin app list/editor workflow model, officer scope, public/private explicit, archive not delete, audit side effects, Next.js list route smoke test |
-| FR-ADMIN-006 Announcement Management       | `/admin/announcements` routes                                                                                                         | announcement list/editor                     | announcements, audit_logs                                                                | audience-safe push                                                                                                                                                          |
+| FR-ADMIN-006 Announcement Management       | `GET/POST /admin/announcements`, `PATCH /admin/announcements/:id`; `/admin/announcements`, `/admin/announcements/new`, `/admin/announcements/:id` | announcement list/editor mounted             | announcements, audit_logs                                                                | guarded admin announcement API contracts, officer scope filtering/writes, Super Admin global management, lifecycle timestamps, body-redacted audit summaries; Admin Lite Next.js list/create/detail editor routes with shared DTO validation, API/demo loading, scoped action metadata, readonly state, 404 scoped misses, and no chat/comments/read receipts/push delivery state; first publish resolves audience-safe candidate/brother push recipients and dispatches generic notifications through the configured adapter |
 | FR-ADMIN-007 Silent Prayer Management      | `/admin/silent-prayer-events` routes                                                                                                  | silent prayer editor                         | silent_prayer_events, audit_logs                                                         | no participant list                                                                                                                                                         |
 | FR-AUDIT-001 Audit Logging                 | mutation side effects, `/admin/audit-logs`                                                                                            | audit log                                    | audit_logs                                                                               | before/after redaction, access control                                                                                                                                      |
 | FR-CONTENT-001 Content Approval            | admin content routes                                                                                                                  | content editors                              | publishable content tables                                                               | unapproved publish blocked                                                                                                                                                  |

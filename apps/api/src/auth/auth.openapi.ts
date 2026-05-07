@@ -133,3 +133,85 @@ export const authMutationResponseOpenApiSchema = {
     success: { type: "boolean", enum: [true] }
   }
 };
+
+export const registerDeviceTokenRequestOpenApiSchema = {
+  type: "object",
+  required: ["platform", "token"],
+  additionalProperties: false,
+  properties: {
+    platform: {
+      type: "string",
+      enum: ["ios", "android", "web"]
+    },
+    token: {
+      type: "string",
+      minLength: 16,
+      maxLength: 4096
+    }
+  }
+};
+
+export const deviceTokenRegistrationResponseOpenApiSchema = {
+  type: "object",
+  required: ["deviceToken"],
+  additionalProperties: false,
+  properties: {
+    deviceToken: {
+      type: "object",
+      required: ["id", "platform", "lastSeenAt", "revokedAt"],
+      additionalProperties: false,
+      properties: {
+        id: {
+          type: "string",
+          format: "uuid"
+        },
+        platform: {
+          type: "string",
+          enum: ["ios", "android", "web"]
+        },
+        lastSeenAt: {
+          type: "string",
+          format: "date-time"
+        },
+        revokedAt: {
+          type: "string",
+          format: "date-time",
+          nullable: true
+        }
+      }
+    }
+  }
+};
+
+export const notificationPreferenceSettingsOpenApiSchema = {
+  type: "object",
+  required: ["events", "announcements", "roadmapUpdates", "prayerReminders"],
+  additionalProperties: false,
+  properties: {
+    events: { type: "boolean" },
+    announcements: { type: "boolean" },
+    roadmapUpdates: { type: "boolean" },
+    prayerReminders: { type: "boolean" }
+  }
+};
+
+export const updateNotificationPreferencesRequestOpenApiSchema = {
+  type: "object",
+  minProperties: 1,
+  additionalProperties: false,
+  properties: {
+    events: { type: "boolean" },
+    announcements: { type: "boolean" },
+    roadmapUpdates: { type: "boolean" },
+    prayerReminders: { type: "boolean" }
+  }
+};
+
+export const notificationPreferencesResponseOpenApiSchema = {
+  type: "object",
+  required: ["preferences"],
+  additionalProperties: false,
+  properties: {
+    preferences: notificationPreferenceSettingsOpenApiSchema
+  }
+};

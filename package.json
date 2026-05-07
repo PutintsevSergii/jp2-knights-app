@@ -21,14 +21,14 @@
     "test": "nx run-many -t test --all",
     "test:coverage": "vitest run --coverage",
     "build": "nx run-many -t build --all",
-    "smoke:phase8": "node tools/scripts/phase8-smoke.mjs",
+    "smoke:launch": "node tools/scripts/launch-smoke.mjs",
     "contract:generate": "node tools/scripts/contract-generate.mjs",
     "contract:check": "node tools/scripts/contract-check.mjs",
     "prisma:generate": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma generate --schema prisma/schema.prisma",
     "prisma:validate": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma",
     "db:seed": "node prisma/seed.mjs",
     "db:migrate:check": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma && node tools/scripts/db-migrate-check.mjs",
-    "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm smoke:phase8 && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
+    "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm smoke:launch && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

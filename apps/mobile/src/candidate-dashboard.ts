@@ -1,7 +1,9 @@
 import {
+  candidateAnnouncementListResponseSchema,
   candidateEventDetailResponseSchema,
   candidateEventListResponseSchema,
   candidateDashboardResponseSchema,
+  type CandidateAnnouncementListResponseDto,
   type CandidateEventDetailResponseDto,
   type CandidateEventListResponseDto,
   type CandidateDashboardResponseDto
@@ -57,6 +59,24 @@ export const fallbackCandidateEvents = candidateEventListResponseSchema.parse({
     offset: 0
   }
 }) satisfies CandidateEventListResponseDto;
+
+export const fallbackCandidateAnnouncements = candidateAnnouncementListResponseSchema.parse({
+  announcements: [
+    {
+      id: "77777777-7777-4777-8777-777777777777",
+      title: "Candidate Formation Update",
+      body: "The next candidate formation note is available from your responsible officer.",
+      visibility: "CANDIDATE",
+      targetOrganizationUnitId: fallbackCandidateDashboard.profile.assignedOrganizationUnit!.id,
+      pinned: true,
+      publishedAt: "2026-05-07T12:00:00.000Z"
+    }
+  ],
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+}) satisfies CandidateAnnouncementListResponseDto;
 
 export const fallbackCandidateEventDetail = candidateEventDetailResponseSchema.parse({
   event: {

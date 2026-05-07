@@ -14,6 +14,7 @@ const requiredInputs = [
   "prisma/migrations/000007_identity_access_reviews/migration.sql",
   "prisma/migrations/000008_event_participation/migration.sql",
   "prisma/migrations/000009_announcements/migration.sql",
+  "prisma/migrations/000010_notifications/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -263,6 +264,33 @@ if (missingAnnouncementsMigrationSnippets.length > 0) {
   );
 }
 
+const notificationsMigrationSql = readFileSync(
+  "prisma/migrations/000010_notifications/migration.sql",
+  "utf8"
+);
+
+const requiredNotificationsMigrationSnippets = [
+  "CREATE TYPE device_token_platform AS ENUM",
+  "CREATE TYPE notification_category AS ENUM",
+  "CREATE TABLE device_tokens",
+  "CREATE TABLE notification_preferences",
+  "token_hash text NOT NULL",
+  "CREATE UNIQUE INDEX device_tokens_token_hash_unique",
+  "CREATE UNIQUE INDEX notification_preferences_user_category_unique"
+];
+
+const missingNotificationsMigrationSnippets = requiredNotificationsMigrationSnippets.filter(
+  (snippet) => !notificationsMigrationSql.includes(snippet)
+);
+
+if (missingNotificationsMigrationSnippets.length > 0) {
+  throw new Error(
+    `Notifications migration is missing required SQL: ${missingNotificationsMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -303,5 +331,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, and Phase 9 announcement fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, and Phase 9 notification tables."
 );

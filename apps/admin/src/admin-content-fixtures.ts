@@ -1,4 +1,5 @@
 import type {
+  AdminAnnouncementListResponseDto,
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
   AdminIdentityAccessReviewListResponseDto,
@@ -165,6 +166,22 @@ export const fallbackAdminEvents: AdminEventListResponseDto = {
       status: "draft",
       publishedAt: null,
       cancelledAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
+export const fallbackAdminAnnouncements: AdminAnnouncementListResponseDto = {
+  announcements: [
+    {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Service Schedule Update",
+      body: "The June service rota has been updated for the pilot organization unit.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      pinned: true,
+      status: "DRAFT",
+      publishedAt: null,
       archivedAt: null
     }
   ]

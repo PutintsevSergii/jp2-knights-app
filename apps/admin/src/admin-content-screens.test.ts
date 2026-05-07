@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { AdminEventListResponseDto, AdminPrayerListResponseDto } from "@jp2/shared-validation";
+import type {
+  AdminAnnouncementListResponseDto,
+  AdminEventListResponseDto,
+  AdminPrayerListResponseDto
+} from "@jp2/shared-validation";
 import {
   adminContentTheme,
+  buildAdminAnnouncementEditorScreen,
+  buildAdminAnnouncementListScreen,
   buildAdminEventListScreen,
   buildAdminPrayerListScreen
 } from "./admin-content-screens.js";
@@ -38,6 +44,22 @@ const eventResponse: AdminEventListResponseDto = {
       status: "published",
       publishedAt: "2026-05-04T00:00:00.000Z",
       cancelledAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
+const announcementResponse: AdminAnnouncementListResponseDto = {
+  announcements: [
+    {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Service Schedule Update",
+      body: "The June service rota has been updated.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      pinned: true,
+      status: "DRAFT",
+      publishedAt: null,
       archivedAt: null
     }
   ]
@@ -113,6 +135,89 @@ describe("admin content screen models", () => {
     expect(screen.rows[0]?.actions).toEqual([]);
   });
 
+  it("builds a writable announcement list without chat or read-receipt actions", () => {
+    const screen = buildAdminAnnouncementListScreen({
+      state: "ready",
+      response: announcementResponse,
+      runtimeMode: "api",
+      canWrite: true
+    });
+
+    expect(screen).toMatchObject({
+      route: "AdminAnnouncementList",
+      state: "ready",
+      title: "Announcements",
+      demoChromeVisible: false
+    });
+    expect(screen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
+    expect(screen.rows[0]).toMatchObject({
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Service Schedule Update",
+      primaryMeta: "Pinned / Organization Unit",
+      secondaryMeta: "Scoped to 11111111-1111-4111-8111-111111111111",
+      status: "DRAFT",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+    });
+    expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual([
+      "edit",
+      "publish",
+      "archive"
+    ]);
+  });
+
+  it("builds announcement create, edit, and readonly editor models", () => {
+    const createScreen = buildAdminAnnouncementEditorScreen({
+      state: "ready",
+      runtimeMode: "api",
+      canWrite: true,
+      mode: "create"
+    });
+    const editScreen = buildAdminAnnouncementEditorScreen({
+      state: "ready",
+      announcement: announcementResponse.announcements[0],
+      runtimeMode: "api",
+      canWrite: true,
+      mode: "edit"
+    });
+    const readonlyScreen = buildAdminAnnouncementEditorScreen({
+      state: "ready",
+      announcement: announcementResponse.announcements[0],
+      runtimeMode: "api",
+      canWrite: false,
+      mode: "edit"
+    });
+
+    expect(createScreen).toMatchObject({
+      route: "AdminAnnouncementEditor",
+      mode: "create",
+      title: "Create Announcement",
+      announcementId: null
+    });
+    expect(createScreen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
+    expect(editScreen).toMatchObject({
+      route: "AdminAnnouncementEditor",
+      mode: "edit",
+      title: "Announcement: Service Schedule Update",
+      announcementId: "55555555-5555-4555-8555-555555555555"
+    });
+    expect(editScreen.fields.find((field) => field.name === "body")).toMatchObject({
+      value: "The June service rota has been updated.",
+      readOnly: false
+    });
+    expect(editScreen.actions.map((action) => action.id)).toEqual([
+      "edit",
+      "refresh",
+      "publish",
+      "archive"
+    ]);
+    expect(readonlyScreen).toMatchObject({
+      mode: "readonly",
+      actions: [expect.objectContaining({ id: "refresh" })]
+    });
+    expect(readonlyScreen.fields.every((field) => field.readOnly)).toBe(true);
+  });
+
   it("maps empty, forbidden, and demo states into stable screen copy", () => {
     expect(
       buildAdminPrayerListScreen({
@@ -125,6 +230,30 @@ describe("admin content screen models", () => {
       route: "AdminPrayerList",
       state: "empty",
       demoChromeVisible: true
+    });
+    expect(
+      buildAdminAnnouncementListScreen({
+        state: "ready",
+        response: { announcements: [] },
+        runtimeMode: "api",
+        canWrite: true
+      })
+    ).toMatchObject({
+      route: "AdminAnnouncementList",
+      state: "empty",
+      actions: [expect.objectContaining({ id: "refresh" })]
+    });
+    expect(
+      buildAdminAnnouncementEditorScreen({
+        state: "ready",
+        runtimeMode: "api",
+        canWrite: true,
+        mode: "edit"
+      })
+    ).toMatchObject({
+      route: "AdminAnnouncementEditor",
+      state: "empty",
+      actions: [expect.objectContaining({ id: "refresh" })]
     });
     expect(
       buildAdminEventListScreen({

@@ -1,8 +1,10 @@
 import {
+  candidateAnnouncementListResponseSchema,
   candidateEventDetailResponseSchema,
   candidateEventListResponseSchema,
   candidateDashboardResponseSchema,
   eventParticipationResponseSchema,
+  type CandidateAnnouncementListResponseDto,
   type CandidateEventDetailResponseDto,
   type CandidateEventListResponseDto,
   type CandidateDashboardResponseDto
@@ -41,9 +43,18 @@ export interface CandidateEventListUrlQuery {
   offset?: number;
 }
 
+export interface CandidateAnnouncementListUrlQuery {
+  limit?: number;
+  offset?: number;
+}
+
 export interface FetchCandidateEventsOptions
   extends FetchCandidateDashboardOptions,
     CandidateEventListUrlQuery {}
+
+export interface FetchCandidateAnnouncementsOptions
+  extends FetchCandidateDashboardOptions,
+    CandidateAnnouncementListUrlQuery {}
 
 export async function fetchCandidateDashboard(
   options: FetchCandidateDashboardOptions = {}
@@ -59,6 +70,17 @@ export async function fetchCandidateEvents(
   const response = await fetchCandidateApi(buildCandidateEventsUrl(options.baseUrl, options), options);
 
   return candidateEventListResponseSchema.parse(await response.json());
+}
+
+export async function fetchCandidateAnnouncements(
+  options: FetchCandidateAnnouncementsOptions = {}
+): Promise<CandidateAnnouncementListResponseDto> {
+  const response = await fetchCandidateApi(
+    buildCandidateAnnouncementsUrl(options.baseUrl, options),
+    options
+  );
+
+  return candidateAnnouncementListResponseSchema.parse(await response.json());
 }
 
 export async function fetchCandidateEvent(options: {
@@ -107,6 +129,17 @@ export function buildCandidateEventsUrl(
   const url = new URL("candidate/events", normalizeBaseUrl(baseUrl));
   setOptionalParam(url, "from", query.from);
   setOptionalParam(url, "type", query.type);
+  setOptionalNumberParam(url, "limit", query.limit);
+  setOptionalNumberParam(url, "offset", query.offset);
+
+  return url.toString();
+}
+
+export function buildCandidateAnnouncementsUrl(
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
+  query: CandidateAnnouncementListUrlQuery = {}
+): string {
+  const url = new URL("candidate/announcements", normalizeBaseUrl(baseUrl));
   setOptionalNumberParam(url, "limit", query.limit);
   setOptionalNumberParam(url, "offset", query.offset);
 

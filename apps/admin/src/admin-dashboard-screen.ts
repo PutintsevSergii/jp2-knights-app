@@ -24,6 +24,7 @@ export interface AdminDashboardScreen {
     path:
       | "/admin/dashboard"
       | "/admin/candidate-requests"
+      | "/admin/announcements"
       | "/admin/identity-access-reviews"
       | AdminDashboardTaskDto["targetRoute"];
   }>;
@@ -329,7 +330,8 @@ const adminDashboardNavigation: AdminDashboardScreen["navigation"] = [
   { label: "Candidate Requests", path: "/admin/candidate-requests" },
   { label: "Organization Units", path: "/admin/organization-units" },
   { label: "Prayers", path: "/admin/prayers" },
-  { label: "Events", path: "/admin/events" }
+  { label: "Events", path: "/admin/events" },
+  { label: "Announcements", path: "/admin/announcements" }
 ];
 
 const dashboardStateCopy: Record<AdminContentScreenState, { title: string; body: string }> = {

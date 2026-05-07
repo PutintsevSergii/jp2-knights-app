@@ -45,3 +45,9 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
 - The Next.js route handlers delegate to the existing render/client/model layer so current API clients, DTO validation, screen models, action metadata, and demo fixtures remain the source of truth. The dependency-free HTTP shell remains available only as `dev:http-shell` compatibility fallback.
 - Phase 8 completes the Next Admin runtime cutover for the current route surface with `dev`/`start` launch smoke checks and server-side forwarding of bearer credentials or session cookies from App Router handlers to backend API clients.
 - `dev:http-shell` remains as a short-term compatibility fallback only. New Admin Lite routes should target the Next App Router adapter; retiring `dev:http-shell` and converting framework-neutral renderers to React Server Components are post-Phase-8 cleanup decisions that require parity tests, not Phase 8 exit criteria.
+- Phase 9 mounts `/admin/announcements`, `/admin/announcements/new`, and
+  `/admin/announcements/:id` through the Next App Router and shared Admin Lite
+  shell. The list and editor routes use the admin announcement API client,
+  shared DTO validation, demo fixture, scoped write-state action metadata, and
+  navigation active state. The routes are one-way management only: no chat,
+  comments, read receipts, or push delivery state are rendered.

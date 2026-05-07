@@ -1,14 +1,20 @@
 import {
+  adminAnnouncementDetailResponseSchema,
+  adminAnnouncementListResponseSchema,
   adminEventDetailResponseSchema,
   adminEventListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
+  type AdminAnnouncementDetailResponseDto,
+  type AdminAnnouncementListResponseDto,
   type AdminEventDetailResponseDto,
   type AdminEventListResponseDto,
   type AdminPrayerDetailResponseDto,
   type AdminPrayerListResponseDto,
+  type CreateAdminAnnouncementRequestDto,
   type CreateAdminEventRequestDto,
   type CreateAdminPrayerRequestDto,
+  type UpdateAdminAnnouncementRequestDto,
   type UpdateAdminEventRequestDto,
   type UpdateAdminPrayerRequestDto
 } from "@jp2/shared-validation";
@@ -111,6 +117,39 @@ export async function updateAdminEvent(
   });
 
   return adminEventDetailResponseSchema.parse(await response.json());
+}
+
+export async function fetchAdminAnnouncements(
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementListResponseDto> {
+  const response = await requestAdminContent("admin/announcements", options);
+
+  return adminAnnouncementListResponseSchema.parse(await response.json());
+}
+
+export async function createAdminAnnouncement(
+  data: CreateAdminAnnouncementRequestDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementDetailResponseDto> {
+  const response = await requestAdminContent("admin/announcements", options, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  return adminAnnouncementDetailResponseSchema.parse(await response.json());
+}
+
+export async function updateAdminAnnouncement(
+  id: string,
+  data: UpdateAdminAnnouncementRequestDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementDetailResponseDto> {
+  const response = await requestAdminContent(`admin/announcements/${id}`, options, {
+    method: "PATCH",
+    body: JSON.stringify(data)
+  });
+
+  return adminAnnouncementDetailResponseSchema.parse(await response.json());
 }
 
 export function buildAdminContentUrl(path: string, baseUrl = DEFAULT_ADMIN_API_BASE_URL): string {

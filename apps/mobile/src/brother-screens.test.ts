@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
   fallbackBrotherEvents,
   fallbackBrotherProfile,
@@ -7,6 +8,7 @@ import {
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
 import {
+  buildBrotherAnnouncementsScreen,
   buildBrotherProfileScreen,
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
@@ -140,6 +142,33 @@ describe("brother screen models", () => {
     ]);
   });
 
+  it("builds Brother Announcements with visible message bodies and no chat actions", () => {
+    const screen = buildBrotherAnnouncementsScreen({
+      state: "ready",
+      response: fallbackBrotherAnnouncements,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("BrotherAnnouncements");
+    expect(screen.title).toBe("Brother Announcements");
+    expect(screen.body).toBe("1 brother-visible announcement");
+    expect(screen.sections).toEqual([
+      expect.objectContaining({
+        id: `announcement-${fallbackBrotherAnnouncements.announcements[0]!.id}`,
+        title: "Brother Formation Notice (Pinned)"
+      })
+    ]);
+    expect(screen.sections[0]?.body).toContain("Pilot Choragiew");
+    expect(screen.actions).toEqual([
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/chat|comment|reply|read receipt/i);
+  });
+
   it("builds Brother Event Detail plan action when the user has no active intent", () => {
     const response = {
       event: {
@@ -254,6 +283,19 @@ describe("brother screen models", () => {
         actions: []
       })
     );
+    expect(
+      buildBrotherAnnouncementsScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherAnnouncements",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
   });
 
   it("builds empty and fallback detail copy for missing brother response fields", () => {
@@ -341,6 +383,20 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherEventDetail",
+        state: "empty",
+        actions: []
+      })
+    );
+
+    expect(
+      buildBrotherAnnouncementsScreen({
+        state: "ready",
+        response: { announcements: [], pagination: { limit: 20, offset: 0 } },
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherAnnouncements",
         state: "empty",
         actions: []
       })

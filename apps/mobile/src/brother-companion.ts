@@ -1,9 +1,11 @@
 import {
+  brotherAnnouncementListResponseSchema,
   brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
+  type BrotherAnnouncementListResponseDto,
   type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
   type BrotherProfileResponseDto,
@@ -93,6 +95,24 @@ export const fallbackBrotherEvents = brotherEventListResponseSchema.parse({
     offset: 0
   }
 }) satisfies BrotherEventListResponseDto;
+
+export const fallbackBrotherAnnouncements = brotherAnnouncementListResponseSchema.parse({
+  announcements: [
+    {
+      id: "77777777-7777-4777-8777-777777777777",
+      title: "Brother Formation Notice",
+      body: "A brother formation note is available for Pilot Choragiew.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: fallbackOrganizationUnit.id,
+      pinned: true,
+      publishedAt: "2026-05-07T12:00:00.000Z"
+    }
+  ],
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+}) satisfies BrotherAnnouncementListResponseDto;
 
 export const fallbackBrotherEventDetail = brotherEventDetailResponseSchema.parse({
   event: {

@@ -56,6 +56,17 @@ export type EventStatus = (typeof EVENT_STATUSES)[number];
 export const PARTICIPATION_STATUSES = ["planning_to_attend", "cancelled"] as const;
 export type ParticipationStatus = (typeof PARTICIPATION_STATUSES)[number];
 
+export const DEVICE_TOKEN_PLATFORMS = ["ios", "android", "web"] as const;
+export type DeviceTokenPlatform = (typeof DEVICE_TOKEN_PLATFORMS)[number];
+
+export const NOTIFICATION_CATEGORIES = [
+  "events",
+  "announcements",
+  "roadmap_updates",
+  "prayer_reminders"
+] as const;
+export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
+
 export const ROADMAP_SUBMISSION_STATUSES = ["pending_review", "approved", "rejected"] as const;
 export type RoadmapSubmissionStatus = (typeof ROADMAP_SUBMISSION_STATUSES)[number];
 

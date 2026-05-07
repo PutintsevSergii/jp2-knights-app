@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  fallbackCandidateAnnouncements,
   fallbackCandidateEventDetail,
   fallbackCandidateEvents,
   fallbackCandidateDashboard
 } from "./candidate-dashboard.js";
 import {
+  buildCandidateAnnouncementsUrl,
   buildCandidateEventDetailUrl,
   buildCandidateEventParticipationUrl,
   buildCandidateEventsUrl,
@@ -12,6 +14,7 @@ import {
   cancelCandidateEventParticipation,
   candidateDashboardLoadFailureState,
   CandidateDashboardHttpError,
+  fetchCandidateAnnouncements,
   fetchCandidateEvent,
   fetchCandidateEvents,
   fetchCandidateDashboard,
@@ -55,6 +58,15 @@ describe("mobile candidate dashboard API client", () => {
         fetchImpl
       })
     ).resolves.toEqual(fallbackCandidateEvents);
+    await expect(
+      fetchCandidateAnnouncements({
+        baseUrl: "https://api.example.test",
+        authToken: "candidate-token",
+        limit: 5,
+        offset: 10,
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackCandidateAnnouncements);
     await expect(
       fetchCandidateEvent({
         id: fallbackCandidateEvents.events[0]!.id,
@@ -101,7 +113,7 @@ describe("mobile candidate dashboard API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555",
+      "https://api.example.test/candidate/announcements?limit=5&offset=10",
       {
         method: "GET",
         headers: {
@@ -111,6 +123,16 @@ describe("mobile candidate dashboard API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       4,
+      "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555",
+      {
+        method: "GET",
+        headers: {
+          authorization: "Bearer candidate-token"
+        }
+      }
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      5,
       "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation",
       {
         method: "POST",
@@ -120,7 +142,7 @@ describe("mobile candidate dashboard API client", () => {
       }
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
-      5,
+      6,
       "https://api.example.test/candidate/events/55555555-5555-4555-8555-555555555555/participation",
       {
         method: "DELETE",
@@ -185,6 +207,12 @@ describe("mobile candidate dashboard API client", () => {
       "https://api.example.test/candidate/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5"
     );
     expect(
+      buildCandidateAnnouncementsUrl("https://api.example.test", {
+        limit: 5,
+        offset: 10
+      })
+    ).toBe("https://api.example.test/candidate/announcements?limit=5&offset=10");
+    expect(
       buildCandidateEventDetailUrl(
         "55555555-5555-4555-8555-555555555555",
         "https://api.example.test"
@@ -234,6 +262,10 @@ function responseForCandidateUrl(input: string) {
 
   if (input.includes("/candidate/events/")) {
     return fallbackCandidateEventDetail;
+  }
+
+  if (input.includes("/candidate/announcements")) {
+    return fallbackCandidateAnnouncements;
   }
 
   if (input.includes("/candidate/events")) {

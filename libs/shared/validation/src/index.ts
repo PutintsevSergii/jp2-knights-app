@@ -4,8 +4,10 @@ import {
   CANDIDATE_PROFILE_STATUSES,
   CANDIDATE_REQUEST_STATUSES,
   CONTENT_STATUSES,
+  DEVICE_TOKEN_PLATFORMS,
   EVENT_STATUSES,
   MEMBERSHIP_STATUSES,
+  NOTIFICATION_CATEGORIES,
   ORGANIZATION_UNIT_STATUSES,
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
@@ -28,6 +30,8 @@ export const candidateRequestStatusSchema = z.enum(CANDIDATE_REQUEST_STATUSES);
 export const candidateProfileStatusSchema = z.enum(CANDIDATE_PROFILE_STATUSES);
 export const eventStatusSchema = z.enum(EVENT_STATUSES);
 export const participationStatusSchema = z.enum(PARTICIPATION_STATUSES);
+export const deviceTokenPlatformSchema = z.enum(DEVICE_TOKEN_PLATFORMS);
+export const notificationCategorySchema = z.enum(NOTIFICATION_CATEGORIES);
 export const roadmapSubmissionStatusSchema = z.enum(ROADMAP_SUBMISSION_STATUSES);
 export const attachmentStatusSchema = z.enum(ATTACHMENT_STATUSES);
 
@@ -138,6 +142,26 @@ export const adminEventListResponseSchema = z.object({
 
 export const adminEventDetailResponseSchema = z.object({
   event: adminEventSummarySchema
+});
+
+export const adminAnnouncementSummarySchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(2000),
+  visibility: visibilitySchema,
+  targetOrganizationUnitId: z.uuid().nullable(),
+  pinned: z.boolean(),
+  status: contentStatusSchema,
+  publishedAt: z.iso.datetime().nullable(),
+  archivedAt: z.iso.datetime().nullable()
+});
+
+export const adminAnnouncementListResponseSchema = z.object({
+  announcements: z.array(adminAnnouncementSummarySchema)
+});
+
+export const adminAnnouncementDetailResponseSchema = z.object({
+  announcement: adminAnnouncementSummarySchema
 });
 
 export const adminCandidateRequestSummarySchema = z.object({
@@ -642,6 +666,40 @@ export const updateAdminEventRequestSchema = adminEventWriteBaseSchema
     path: ["endAt"]
   });
 
+const adminAnnouncementWriteBaseSchema = z
+  .object({
+    title: publishableContentTextSchema,
+    body: z.string().trim().min(1).max(2000),
+    visibility: visibilitySchema,
+    targetOrganizationUnitId: z.uuid().nullable().optional(),
+    pinned: z.boolean().optional(),
+    status: contentStatusSchema
+  })
+  .strict();
+
+export const createAdminAnnouncementRequestSchema = adminAnnouncementWriteBaseSchema.refine(
+  hasRequiredOrganizationUnitTarget,
+  {
+    message: "ORGANIZATION_UNIT visibility requires targetOrganizationUnitId.",
+    path: ["targetOrganizationUnitId"]
+  }
+);
+
+export const updateAdminAnnouncementRequestSchema = adminAnnouncementWriteBaseSchema
+  .partial()
+  .extend({
+    publishedAt: z.iso.datetime().nullable().optional(),
+    archivedAt: z.iso.datetime().nullable().optional()
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one announcement field must be provided."
+  })
+  .refine(hasRequiredOrganizationUnitTarget, {
+    message: "ORGANIZATION_UNIT visibility requires targetOrganizationUnitId.",
+    path: ["targetOrganizationUnitId"]
+  });
+
 export const publicHomeQuerySchema = z
   .object({
     language: z.string().trim().min(2).max(10).optional()
@@ -832,6 +890,48 @@ export const authSessionRequestSchema = z
   })
   .strict();
 
+export const registerDeviceTokenRequestSchema = z
+  .object({
+    platform: deviceTokenPlatformSchema,
+    token: z.string().trim().min(16).max(4096)
+  })
+  .strict();
+
+export const deviceTokenRegistrationResponseSchema = z
+  .object({
+    deviceToken: z
+      .object({
+        id: z.uuid(),
+        platform: deviceTokenPlatformSchema,
+        lastSeenAt: z.iso.datetime(),
+        revokedAt: z.iso.datetime().nullable()
+      })
+      .strict()
+  })
+  .strict();
+
+export const notificationPreferenceSettingsSchema = z
+  .object({
+    events: z.boolean(),
+    announcements: z.boolean(),
+    roadmapUpdates: z.boolean(),
+    prayerReminders: z.boolean()
+  })
+  .strict();
+
+export const updateNotificationPreferencesRequestSchema = notificationPreferenceSettingsSchema
+  .partial()
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one notification preference must be provided."
+  });
+
+export const notificationPreferencesResponseSchema = z
+  .object({
+    preferences: notificationPreferenceSettingsSchema
+  })
+  .strict();
+
 export type OrganizationUnitSummaryDto = z.infer<typeof organizationUnitSummarySchema>;
 export type CreateOrganizationUnitRequestDto = z.infer<typeof createOrganizationUnitRequestSchema>;
 export type UpdateOrganizationUnitRequestDto = z.infer<typeof updateOrganizationUnitRequestSchema>;
@@ -850,6 +950,13 @@ export type UpdateAdminPrayerRequestDto = z.infer<typeof updateAdminPrayerReques
 export type AdminEventSummaryDto = z.infer<typeof adminEventSummarySchema>;
 export type AdminEventListResponseDto = z.infer<typeof adminEventListResponseSchema>;
 export type AdminEventDetailResponseDto = z.infer<typeof adminEventDetailResponseSchema>;
+export type AdminAnnouncementSummaryDto = z.infer<typeof adminAnnouncementSummarySchema>;
+export type AdminAnnouncementListResponseDto = z.infer<
+  typeof adminAnnouncementListResponseSchema
+>;
+export type AdminAnnouncementDetailResponseDto = z.infer<
+  typeof adminAnnouncementDetailResponseSchema
+>;
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
 export type AdminIdentityAccessReviewSummaryDto = z.infer<
@@ -903,6 +1010,12 @@ export type BrotherPrayerSummaryDto = z.infer<typeof brotherPrayerSummarySchema>
 export type BrotherPrayerListResponseDto = z.infer<typeof brotherPrayerListResponseSchema>;
 export type CreateAdminEventRequestDto = z.infer<typeof createAdminEventRequestSchema>;
 export type UpdateAdminEventRequestDto = z.infer<typeof updateAdminEventRequestSchema>;
+export type CreateAdminAnnouncementRequestDto = z.infer<
+  typeof createAdminAnnouncementRequestSchema
+>;
+export type UpdateAdminAnnouncementRequestDto = z.infer<
+  typeof updateAdminAnnouncementRequestSchema
+>;
 export type AdminCandidateRequestSummaryDto = z.infer<typeof adminCandidateRequestSummarySchema>;
 export type AdminCandidateRequestDetailDto = z.infer<typeof adminCandidateRequestDetailSchema>;
 export type AdminCandidateRequestListResponseDto = z.infer<
@@ -937,6 +1050,19 @@ export type PublicCandidateRequestResponseDto = z.infer<
   typeof publicCandidateRequestResponseSchema
 >;
 export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
+export type RegisterDeviceTokenRequestDto = z.infer<typeof registerDeviceTokenRequestSchema>;
+export type DeviceTokenRegistrationResponseDto = z.infer<
+  typeof deviceTokenRegistrationResponseSchema
+>;
+export type NotificationPreferenceSettingsDto = z.infer<
+  typeof notificationPreferenceSettingsSchema
+>;
+export type UpdateNotificationPreferencesRequestDto = z.infer<
+  typeof updateNotificationPreferencesRequestSchema
+>;
+export type NotificationPreferencesResponseDto = z.infer<
+  typeof notificationPreferencesResponseSchema
+>;
 
 export interface RuntimeModeParseOptions {
   nodeEnv?: string | undefined;

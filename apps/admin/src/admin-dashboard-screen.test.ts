@@ -29,7 +29,8 @@ describe("admin dashboard screen", () => {
       "/admin/candidate-requests",
       "/admin/organization-units",
       "/admin/prayers",
-      "/admin/events"
+      "/admin/events",
+      "/admin/announcements"
     ]);
   });
 

@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
+  CandidateAnnouncementListResponseDto,
   CandidateEventDetailResponseDto,
   CandidateEventListResponseDto,
   CandidateDashboardResponseDto
@@ -12,6 +13,7 @@ export type CandidateRoute =
   | "CandidateContact"
   | "CandidateRoadmap"
   | "CandidateEvents"
+  | "CandidateAnnouncements"
   | "CandidateEventDetail";
 
 export interface CandidateScreenAction {
@@ -52,6 +54,17 @@ export interface CandidateDashboardScreen {
 
 export interface CandidateEventsScreen {
   route: "CandidateEvents";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: CandidateScreenSection[];
+  actions: CandidateScreenAction[];
+  demoChromeVisible: boolean;
+  theme: CandidateScreenTheme;
+}
+
+export interface CandidateAnnouncementsScreen {
+  route: "CandidateAnnouncements";
   state: MobileScreenState;
   title: string;
   body: string;
@@ -132,6 +145,41 @@ export function buildCandidateEventsScreen(options: {
         targetRoute: "CandidateDashboard"
       }
     ].filter((action): action is CandidateScreenAction => Boolean(action)),
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: candidateScreenTheme
+  };
+}
+
+export function buildCandidateAnnouncementsScreen(options: {
+  state: MobileScreenState;
+  response?: CandidateAnnouncementListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}): CandidateAnnouncementsScreen {
+  if (options.state !== "ready") {
+    return stateOnlyCandidateAnnouncements(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response || options.response.announcements.length === 0) {
+    return stateOnlyCandidateAnnouncements("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "CandidateAnnouncements",
+    state: "ready",
+    title: "Candidate Announcements",
+    body: candidateAnnouncementCountBody(options.response.announcements.length),
+    sections: options.response.announcements.map((announcement) => ({
+      id: `announcement-${announcement.id}`,
+      title: announcement.pinned ? `${announcement.title} (Pinned)` : announcement.title,
+      body: candidateAnnouncementBody(announcement)
+    })),
+    actions: [
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        targetRoute: "CandidateDashboard"
+      }
+    ],
     demoChromeVisible: options.runtimeMode === "demo",
     theme: candidateScreenTheme
   };
@@ -269,6 +317,14 @@ function buildCandidateDashboardActions(
     });
   }
 
+  if (response.announcements.length > 0) {
+    actions.push({
+      id: "announcements",
+      label: "Announcements",
+      targetRoute: "CandidateAnnouncements"
+    });
+  }
+
   return actions;
 }
 
@@ -298,6 +354,24 @@ function stateOnlyCandidateEvents(
 
   return {
     route: "CandidateEvents",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: candidateScreenTheme
+  };
+}
+
+function stateOnlyCandidateAnnouncements(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): CandidateAnnouncementsScreen {
+  const copy = candidateAnnouncementsStateCopy[state];
+
+  return {
+    route: "CandidateAnnouncements",
     state,
     title: copy.title,
     body: copy.body,
@@ -358,6 +432,28 @@ function candidateEventBody(event: CandidateDashboardResponseDto["upcomingEvents
 
 function candidateEventCountBody(count: number): string {
   return count === 1 ? "1 candidate-visible event" : `${count} candidate-visible events`;
+}
+
+function candidateAnnouncementCountBody(count: number): string {
+  return count === 1
+    ? "1 candidate-visible announcement"
+    : `${count} candidate-visible announcements`;
+}
+
+function candidateAnnouncementBody(
+  announcement: CandidateAnnouncementListResponseDto["announcements"][number]
+): string {
+  const formatted = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC"
+  }).format(new Date(announcement.publishedAt));
+
+  return `${formatted}\n${announcement.body}`;
 }
 
 function buildCandidateEventDetailSections(
@@ -483,6 +579,38 @@ const candidateEventsStateCopy: Record<MobileScreenState, { title: string; body:
     body: "Reconnect to refresh candidate events."
   }
 };
+
+const candidateAnnouncementsStateCopy: Record<MobileScreenState, { title: string; body: string }> =
+  {
+    ready: {
+      title: "Candidate Announcements",
+      body: "Candidate-visible announcements are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Candidate announcements are loading."
+    },
+    empty: {
+      title: "Candidate Announcements",
+      body: "No candidate announcements are listed yet."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Candidate announcements could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active candidate profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before candidate announcements are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh candidate announcements."
+    }
+  };
 
 const candidateEventDetailStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
   ready: {

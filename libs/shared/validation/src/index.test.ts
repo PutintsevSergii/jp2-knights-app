@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminAnnouncementDetailResponseSchema,
+  adminAnnouncementListResponseSchema,
   adminCandidateProfileDetailResponseSchema,
   adminCandidateProfileListResponseSchema,
   adminDashboardResponseSchema,
@@ -22,13 +24,16 @@ import {
   candidateDashboardResponseSchema,
   contentStatusSchema,
   convertCandidateRequestSchema,
+  createAdminAnnouncementRequestSchema,
   createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   createPublicCandidateRequestSchema,
+  deviceTokenRegistrationResponseSchema,
   eventParticipationResponseSchema,
   membershipStatusSchema,
   myOrganizationUnitsResponseSchema,
+  notificationPreferencesResponseSchema,
   organizationUnitStatusSchema,
   organizationUnitTypeSchema,
   parseRuntimeMode,
@@ -45,10 +50,13 @@ import {
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
   roleSchema,
+  registerDeviceTokenRequestSchema,
+  updateAdminAnnouncementRequestSchema,
   updateAdminEventRequestSchema,
   updateAdminCandidateProfileSchema,
   updateAdminCandidateRequestSchema,
   updateAdminPrayerRequestSchema,
+  updateNotificationPreferencesRequestSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
 } from "./index.js";
@@ -477,6 +485,56 @@ describe("shared validation", () => {
     expect(adminEventDetailResponseSchema.parse({ event })).toEqual({ event });
   });
 
+  it("validates admin announcement write and response DTOs", () => {
+    const announcement = {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Formation Evening",
+      body: "Join the formation evening this Friday.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      pinned: true,
+      status: "PUBLISHED",
+      publishedAt: "2026-05-07T18:00:00.000Z",
+      archivedAt: null
+    };
+
+    expect(
+      createAdminAnnouncementRequestSchema.parse({
+        title: " Formation Evening ",
+        body: " Join the formation evening this Friday. ",
+        visibility: "ORGANIZATION_UNIT",
+        targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+        pinned: true,
+        status: "PUBLISHED"
+      })
+    ).toEqual({
+      title: "Formation Evening",
+      body: "Join the formation evening this Friday.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      pinned: true,
+      status: "PUBLISHED"
+    });
+    expect(() =>
+      createAdminAnnouncementRequestSchema.parse({
+        title: "Scoped",
+        body: "Scoped body",
+        visibility: "ORGANIZATION_UNIT",
+        status: "DRAFT"
+      })
+    ).toThrow();
+    expect(updateAdminAnnouncementRequestSchema.parse({ status: "ARCHIVED" })).toEqual({
+      status: "ARCHIVED"
+    });
+    expect(() => updateAdminAnnouncementRequestSchema.parse({})).toThrow();
+    expect(adminAnnouncementListResponseSchema.parse({ announcements: [announcement] })).toEqual({
+      announcements: [announcement]
+    });
+    expect(adminAnnouncementDetailResponseSchema.parse({ announcement })).toEqual({
+      announcement
+    });
+  });
+
   it("validates admin candidate request management DTOs", () => {
     const candidateRequest = {
       id: "55555555-5555-4555-8555-555555555555",
@@ -869,5 +927,67 @@ describe("shared validation", () => {
         }
       }).success
     ).toBe(false);
+  });
+
+  it("validates notification preference and device-token DTOs without returning token material", () => {
+    expect(
+      registerDeviceTokenRequestSchema.parse({
+        platform: "ios",
+        token: "ExponentPushToken[abc1234567890]"
+      })
+    ).toEqual({
+      platform: "ios",
+      token: "ExponentPushToken[abc1234567890]"
+    });
+    expect(
+      registerDeviceTokenRequestSchema.safeParse({
+        platform: "desktop",
+        token: "short"
+      }).success
+    ).toBe(false);
+    expect(
+      deviceTokenRegistrationResponseSchema.parse({
+        deviceToken: {
+          id: "55555555-5555-4555-8555-555555555555",
+          platform: "android",
+          lastSeenAt: "2026-05-07T10:00:00.000Z",
+          revokedAt: null
+        }
+      })
+    ).toEqual({
+      deviceToken: {
+        id: "55555555-5555-4555-8555-555555555555",
+        platform: "android",
+        lastSeenAt: "2026-05-07T10:00:00.000Z",
+        revokedAt: null
+      }
+    });
+    expect(
+      updateNotificationPreferencesRequestSchema.parse({
+        announcements: false,
+        prayerReminders: true
+      })
+    ).toEqual({
+      announcements: false,
+      prayerReminders: true
+    });
+    expect(updateNotificationPreferencesRequestSchema.safeParse({}).success).toBe(false);
+    expect(
+      notificationPreferencesResponseSchema.parse({
+        preferences: {
+          events: true,
+          announcements: false,
+          roadmapUpdates: true,
+          prayerReminders: false
+        }
+      })
+    ).toEqual({
+      preferences: {
+        events: true,
+        announcements: false,
+        roadmapUpdates: true,
+        prayerReminders: false
+      }
+    });
   });
 });

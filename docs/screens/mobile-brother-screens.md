@@ -42,3 +42,9 @@
   current-user participation intent, plan/cancel action metadata, and
   ready/empty/loading/error/offline/forbidden/idle-approval states without
   participant lists.
+- `BrotherAnnouncements` now has an API/demo-backed mobile screen model over
+  `/api/brother/announcements`. It validates the shared DTO, renders
+  server-filtered one-way brother-visible message bodies, handles
+  ready/empty/loading/error/offline/forbidden/idle-approval states, and exposes
+  no chat, replies, comments, read receipts, push delivery state, or participant
+  lists.

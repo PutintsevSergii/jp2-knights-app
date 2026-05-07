@@ -3,9 +3,12 @@ import {
   AdminContentHttpError,
   adminContentFailureState,
   buildAdminContentUrl,
+  createAdminAnnouncement,
   createAdminEvent,
+  fetchAdminAnnouncements,
   fetchAdminEvents,
   fetchAdminPrayers,
+  updateAdminAnnouncement,
   updateAdminPrayer
 } from "./admin-content-api.js";
 
@@ -46,6 +49,22 @@ const eventsPayload = {
   ]
 };
 
+const announcementsPayload = {
+  announcements: [
+    {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "Service Schedule Update",
+      body: "The June service rota has been updated.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      pinned: true,
+      status: "DRAFT",
+      publishedAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
 describe("admin content API client", () => {
   it("builds admin content URLs under the API prefix", () => {
     expect(buildAdminContentUrl("admin/prayers", "https://api.example.test")).toBe(
@@ -53,7 +72,7 @@ describe("admin content API client", () => {
     );
   });
 
-  it("fetches and validates admin prayer and event lists", async () => {
+  it("fetches and validates admin prayer, event, and announcement lists", async () => {
     const prayerFetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
@@ -66,6 +85,13 @@ describe("admin content API client", () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve(eventsPayload)
+      })
+    );
+    const announcementFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(announcementsPayload)
       })
     );
 
@@ -83,11 +109,25 @@ describe("admin content API client", () => {
         fetchImpl: eventFetch
       })
     ).resolves.toEqual(eventsPayload);
+    await expect(
+      fetchAdminAnnouncements({
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: announcementFetch
+      })
+    ).resolves.toEqual(announcementsPayload);
 
     expect(prayerFetch).toHaveBeenCalledWith("https://api.example.test/admin/prayers", {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+    expect(announcementFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/announcements",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("sends create and update mutations with JSON bodies", async () => {
@@ -103,6 +143,23 @@ describe("admin content API client", () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({ prayer: { ...prayersPayload.prayers[0], status: "PUBLISHED" } })
+      })
+    );
+    const createAnnouncementFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ announcement: announcementsPayload.announcements[0] })
+      })
+    );
+    const updateAnnouncementFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            announcement: { ...announcementsPayload.announcements[0], status: "PUBLISHED" }
+          })
       })
     );
 
@@ -121,6 +178,22 @@ describe("admin content API client", () => {
       { status: "PUBLISHED" },
       { baseUrl: "https://api.example.test", fetchImpl: updateFetch }
     );
+    await createAdminAnnouncement(
+      {
+        title: "Service Schedule Update",
+        body: "The June service rota has been updated.",
+        visibility: "ORGANIZATION_UNIT",
+        targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+        pinned: true,
+        status: "DRAFT"
+      },
+      { baseUrl: "https://api.example.test", fetchImpl: createAnnouncementFetch }
+    );
+    await updateAdminAnnouncement(
+      "55555555-5555-4555-8555-555555555555",
+      { status: "PUBLISHED" },
+      { baseUrl: "https://api.example.test", fetchImpl: updateAnnouncementFetch }
+    );
 
     expect(createFetch).toHaveBeenCalledWith("https://api.example.test/admin/events", {
       method: "POST",
@@ -135,6 +208,29 @@ describe("admin content API client", () => {
     });
     expect(updateFetch).toHaveBeenCalledWith(
       "https://api.example.test/admin/prayers/33333333-3333-4333-8333-333333333333",
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "PUBLISHED" })
+      }
+    );
+    expect(createAnnouncementFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/announcements",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Service Schedule Update",
+          body: "The June service rota has been updated.",
+          visibility: "ORGANIZATION_UNIT",
+          targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+          pinned: true,
+          status: "DRAFT"
+        })
+      }
+    );
+    expect(updateAnnouncementFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/announcements/55555555-5555-4555-8555-555555555555",
       {
         method: "PATCH",
         headers: { "content-type": "application/json" },

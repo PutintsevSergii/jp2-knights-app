@@ -187,7 +187,7 @@ export async function renderAdminWebRequest(
     };
   }
 
-  if (path !== "/admin/prayers" && path !== "/admin/events") {
+  if (!isAdminContentRoute(path)) {
     return {
       statusCode: 404,
       headers: htmlHeaders,
@@ -214,7 +214,7 @@ export async function renderAdminWebRequest(
     statusCode: rendered.statusCode,
     headers: htmlHeaders,
     body: mountRenderedRoute(rendered.document, {
-      title: path === "/admin/prayers" ? "Admin Prayers" : "Admin Events",
+      title: titleForAdminContentRoute(path),
       path,
       runtimeMode
     })
@@ -280,7 +280,53 @@ function isAdminShellRoute(path: string): path is AdminShellRoute {
     path === "/admin/organization-units" ||
     isAdminOrganizationUnitDetailRoute(path) ||
     path === "/admin/prayers" ||
-    path === "/admin/events"
+    path === "/admin/events" ||
+    path === "/admin/announcements" ||
+    isAdminAnnouncementEditorRoute(path)
+  );
+}
+
+function isAdminContentRoute(
+  path: string
+): path is
+  | "/admin/prayers"
+  | "/admin/events"
+  | "/admin/announcements"
+  | "/admin/announcements/new"
+  | `/admin/announcements/${string}` {
+  return (
+    path === "/admin/prayers" ||
+    path === "/admin/events" ||
+    path === "/admin/announcements" ||
+    isAdminAnnouncementEditorRoute(path)
+  );
+}
+
+function titleForAdminContentRoute(
+  path:
+    | "/admin/prayers"
+    | "/admin/events"
+    | "/admin/announcements"
+    | "/admin/announcements/new"
+    | `/admin/announcements/${string}`
+): string {
+  if (path === "/admin/prayers") {
+    return "Admin Prayers";
+  }
+
+  if (path === "/admin/events") {
+    return "Admin Events";
+  }
+
+  return "Admin Announcements";
+}
+
+function isAdminAnnouncementEditorRoute(
+  path: string
+): path is "/admin/announcements/new" | `/admin/announcements/${string}` {
+  return (
+    path === "/admin/announcements/new" ||
+    (path.startsWith("/admin/announcements/") && path.length > "/admin/announcements/".length)
   );
 }
 
@@ -409,6 +455,10 @@ function isActiveRoute(routePath: string, currentPath: string): boolean {
 
   if (routePath === "/admin/organization-units") {
     return currentPath === routePath || currentPath.startsWith("/admin/organization-units/");
+  }
+
+  if (routePath === "/admin/announcements") {
+    return currentPath === routePath || currentPath.startsWith("/admin/announcements/");
   }
 
   return currentPath === routePath;

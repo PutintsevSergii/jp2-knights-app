@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
+  BrotherAnnouncementListResponseDto,
   BrotherEventDetailResponseDto,
   BrotherEventListResponseDto,
   BrotherProfileResponseDto,
@@ -15,6 +16,7 @@ export type BrotherRoute =
   | "BrotherProfile"
   | "MyOrganizationUnits"
   | "BrotherEvents"
+  | "BrotherAnnouncements"
   | "BrotherEventDetail"
   | "BrotherPrayers"
   | "SilentPrayer";
@@ -79,6 +81,17 @@ export interface MyOrganizationUnitsScreen {
 
 export interface BrotherEventsScreen {
   route: "BrotherEvents";
+  state: MobileScreenState;
+  title: string;
+  body: string;
+  sections: BrotherScreenSection[];
+  actions: BrotherScreenAction[];
+  demoChromeVisible: boolean;
+  theme: BrotherScreenTheme;
+}
+
+export interface BrotherAnnouncementsScreen {
+  route: "BrotherAnnouncements";
   state: MobileScreenState;
   title: string;
   body: string;
@@ -233,6 +246,41 @@ export function buildBrotherEventsScreen(options: {
         targetRoute: "MyOrganizationUnits"
       }
     ].filter((action): action is BrotherScreenAction => Boolean(action)),
+    demoChromeVisible: options.runtimeMode === "demo",
+    theme: brotherScreenTheme
+  };
+}
+
+export function buildBrotherAnnouncementsScreen(options: {
+  state: MobileScreenState;
+  response?: BrotherAnnouncementListResponseDto | undefined;
+  runtimeMode: RuntimeMode;
+}): BrotherAnnouncementsScreen {
+  if (options.state !== "ready") {
+    return stateOnlyBrotherAnnouncements(options.state, options.runtimeMode === "demo");
+  }
+
+  if (!options.response || options.response.announcements.length === 0) {
+    return stateOnlyBrotherAnnouncements("empty", options.runtimeMode === "demo");
+  }
+
+  return {
+    route: "BrotherAnnouncements",
+    state: "ready",
+    title: "Brother Announcements",
+    body: announcementCountBody(options.response.announcements.length),
+    sections: options.response.announcements.map((announcement) => ({
+      id: `announcement-${announcement.id}`,
+      title: announcement.pinned ? `${announcement.title} (Pinned)` : announcement.title,
+      body: brotherAnnouncementBody(announcement)
+    })),
+    actions: [
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      }
+    ],
     demoChromeVisible: options.runtimeMode === "demo",
     theme: brotherScreenTheme
   };
@@ -401,6 +449,24 @@ function stateOnlyBrotherEvents(
   };
 }
 
+function stateOnlyBrotherAnnouncements(
+  state: MobileScreenState,
+  demoChromeVisible: boolean
+): BrotherAnnouncementsScreen {
+  const copy = brotherAnnouncementsStateCopy[state];
+
+  return {
+    route: "BrotherAnnouncements",
+    state,
+    title: copy.title,
+    body: copy.body,
+    sections: [],
+    actions: [],
+    demoChromeVisible,
+    theme: brotherScreenTheme
+  };
+}
+
 function stateOnlyBrotherEventDetail(
   state: MobileScreenState,
   demoChromeVisible: boolean
@@ -441,6 +507,28 @@ function organizationUnitCountBody(count: number): string {
 
 function eventCountBody(count: number): string {
   return count === 1 ? "1 brother-visible event" : `${count} brother-visible events`;
+}
+
+function announcementCountBody(count: number): string {
+  return count === 1
+    ? "1 brother-visible announcement"
+    : `${count} brother-visible announcements`;
+}
+
+function brotherAnnouncementBody(
+  announcement: BrotherAnnouncementListResponseDto["announcements"][number]
+): string {
+  const formatted = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC"
+  }).format(new Date(announcement.publishedAt));
+
+  return `${formatted}\n${announcement.body}`;
 }
 
 function buildBrotherEventDetailSections(
@@ -645,6 +733,37 @@ const brotherEventsStateCopy: Record<MobileScreenState, { title: string; body: s
   offline: {
     title: "Offline",
     body: "Reconnect to refresh brother events."
+  }
+};
+
+const brotherAnnouncementsStateCopy: Record<MobileScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Brother Announcements",
+    body: "Brother-visible announcements are available."
+  },
+  loading: {
+    title: "Loading",
+    body: "Brother announcements are loading."
+  },
+  empty: {
+    title: "Brother Announcements",
+    body: "No brother-visible announcements are listed yet."
+  },
+  error: {
+    title: "Unable to Load",
+    body: "Brother announcements could not be loaded."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "An active brother profile is required."
+  },
+  idleApproval: {
+    title: "Account Approval Pending",
+    body: "Your sign-in is waiting for officer approval before brother announcements are available."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh brother announcements."
   }
 };
 

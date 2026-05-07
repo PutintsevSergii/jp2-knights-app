@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BrotherCompanionHttpError,
   brotherCompanionLoadFailureState,
+  buildBrotherAnnouncementsUrl,
   buildBrotherEventDetailUrl,
   buildBrotherEventParticipationUrl,
   buildBrotherEventsUrl,
@@ -9,6 +10,7 @@ import {
   buildBrotherProfileUrl,
   buildBrotherTodayUrl,
   cancelBrotherEventParticipation,
+  fetchBrotherAnnouncements,
   fetchMyOrganizationUnits,
   fetchBrotherEvent,
   fetchBrotherEvents,
@@ -17,6 +19,7 @@ import {
   markBrotherEventParticipation
 } from "./brother-companion-api.js";
 import {
+  fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
   fallbackBrotherProfile,
   fallbackBrotherEvents,
@@ -67,6 +70,15 @@ describe("brother companion api", () => {
         fetchImpl
       })
     ).resolves.toEqual(fallbackBrotherEvents);
+    await expect(
+      fetchBrotherAnnouncements({
+        baseUrl: "https://api.example.test",
+        authToken: "token",
+        limit: 5,
+        offset: 10,
+        fetchImpl
+      })
+    ).resolves.toEqual(fallbackBrotherAnnouncements);
     await expect(
       fetchBrotherEvent({
         id: fallbackBrotherEvents.events[0]!.id,
@@ -121,7 +133,7 @@ describe("brother companion api", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       5,
-      "https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444",
+      "https://api.example.test/brother/announcements?limit=5&offset=10",
       {
         method: "GET",
         headers: { authorization: "Bearer token" }
@@ -129,6 +141,14 @@ describe("brother companion api", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       6,
+      "https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token" }
+      }
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      7,
       "https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444/participation",
       {
         method: "POST",
@@ -136,7 +156,7 @@ describe("brother companion api", () => {
       }
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
-      7,
+      8,
       "https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444/participation",
       {
         method: "DELETE",
@@ -162,6 +182,12 @@ describe("brother companion api", () => {
     ).toBe(
       "https://api.example.test/brother/events?from=2026-06-01T00%3A00%3A00.000Z&type=formation&limit=10&offset=5"
     );
+    expect(
+      buildBrotherAnnouncementsUrl("https://api.example.test", {
+        limit: 5,
+        offset: 10
+      })
+    ).toBe("https://api.example.test/brother/announcements?limit=5&offset=10");
     expect(
       buildBrotherEventDetailUrl(
         "44444444-4444-4444-8444-444444444444",
@@ -235,6 +261,10 @@ function responseForBrotherUrl(input: string) {
 
   if (input.includes("/brother/events/")) {
     return fallbackBrotherEventDetail;
+  }
+
+  if (input.includes("/brother/announcements")) {
+    return fallbackBrotherAnnouncements;
   }
 
   if (input.includes("/brother/events")) {

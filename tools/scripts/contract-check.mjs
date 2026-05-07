@@ -35,6 +35,8 @@ const requiredPaths = [
   "/api/auth/logout",
   "/api/auth/refresh",
   "/api/auth/me",
+  "/api/auth/device-tokens",
+  "/api/auth/notification-preferences",
   "/api/candidate/dashboard",
   "/api/candidate/events",
   "/api/candidate/events/{id}",
@@ -64,7 +66,9 @@ const requiredPaths = [
   "/api/admin/prayers",
   "/api/admin/prayers/{id}",
   "/api/admin/events",
-  "/api/admin/events/{id}"
+  "/api/admin/events/{id}",
+  "/api/admin/announcements",
+  "/api/admin/announcements/{id}"
 ];
 const missingPaths = requiredPaths.filter((path) => !openApi.paths?.[path]);
 
@@ -90,6 +94,10 @@ const responseSchemaChecks = [
   ["/api/auth/refresh", "post", "200"],
   ["/api/auth/me", "get", "200"],
   ["/api/auth/me", "get", "403"],
+  ["/api/auth/device-tokens", "post", "200"],
+  ["/api/auth/device-tokens", "post", "403"],
+  ["/api/auth/notification-preferences", "put", "200"],
+  ["/api/auth/notification-preferences", "put", "403"],
   ["/api/candidate/dashboard", "get", "200"],
   ["/api/candidate/dashboard", "get", "403"],
   ["/api/candidate/events", "get", "200"],
@@ -197,7 +205,15 @@ const responseSchemaChecks = [
   ["/api/admin/events", "post", "403"],
   ["/api/admin/events/{id}", "patch", "200"],
   ["/api/admin/events/{id}", "patch", "400"],
-  ["/api/admin/events/{id}", "patch", "403"]
+  ["/api/admin/events/{id}", "patch", "403"],
+  ["/api/admin/announcements", "get", "200"],
+  ["/api/admin/announcements", "get", "403"],
+  ["/api/admin/announcements", "post", "200"],
+  ["/api/admin/announcements", "post", "400"],
+  ["/api/admin/announcements", "post", "403"],
+  ["/api/admin/announcements/{id}", "patch", "200"],
+  ["/api/admin/announcements/{id}", "patch", "400"],
+  ["/api/admin/announcements/{id}", "patch", "403"]
 ];
 const missingResponseSchemas = responseSchemaChecks.filter(([path, method, status]) => {
   const response = openApi.paths?.[path]?.[method]?.responses?.[status];
@@ -215,6 +231,8 @@ if (missingResponseSchemas.length > 0) {
 const requestSchemaChecks = [
   ["/api/public/candidate-requests", "post"],
   ["/api/auth/session", "post"],
+  ["/api/auth/device-tokens", "post"],
+  ["/api/auth/notification-preferences", "put"],
   ["/api/admin/identity-access-reviews/{id}/confirm", "post"],
   ["/api/admin/identity-access-reviews/{id}/reject", "post"],
   ["/api/admin/organization-units", "post"],
@@ -225,7 +243,9 @@ const requestSchemaChecks = [
   ["/api/admin/prayers", "post"],
   ["/api/admin/prayers/{id}", "patch"],
   ["/api/admin/events", "post"],
-  ["/api/admin/events/{id}", "patch"]
+  ["/api/admin/events/{id}", "patch"],
+  ["/api/admin/announcements", "post"],
+  ["/api/admin/announcements/{id}", "patch"]
 ];
 const missingRequestSchemas = requestSchemaChecks.filter(([path, method]) => {
   const requestBody = openApi.paths?.[path]?.[method]?.requestBody;
