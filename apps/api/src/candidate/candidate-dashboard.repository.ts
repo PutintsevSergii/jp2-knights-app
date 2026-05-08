@@ -20,6 +20,7 @@ export abstract class CandidateDashboardRepository {
   abstract findVisibleCandidateEvents(
     query: CandidateEventListQuery,
     assignedOrganizationUnitId: string | null,
+    userId: string,
     now?: Date
   ): Promise<CandidateEventSummary[]>;
   abstract findVisibleCandidateEvent(
@@ -68,16 +69,28 @@ export class PrismaCandidateDashboardRepository implements CandidateDashboardRep
   findVisibleCandidateEvents(
     query: CandidateEventListQuery,
     assignedOrganizationUnitId: string | null,
+    userId: string,
     now = new Date()
   ): Promise<CandidateEventSummary[]> {
     return this.prisma.event
       .findMany({
         where: candidateEventWhere(query, assignedOrganizationUnitId, now),
+        include: {
+          participations: {
+            where: {
+              userId
+            },
+            take: 1,
+            orderBy: {
+              createdAt: "desc"
+            }
+          }
+        },
         orderBy: [{ startAt: "asc" }, { title: "asc" }],
         take: query.limit,
         skip: query.offset
       })
-      .then((records) => records.map(toCandidateDashboardEvent));
+      .then((records) => records.map(toCandidateEventSummary));
   }
 
   async findVisibleCandidateEvent(
@@ -165,6 +178,10 @@ interface CandidateEventRecord {
 
 interface CandidateEventDetailRecord extends CandidateEventRecord {
   description: string | null;
+  participations: readonly OwnEventParticipationRecord[];
+}
+
+interface CandidateEventListRecord extends CandidateEventRecord {
   participations: readonly OwnEventParticipationRecord[];
 }
 
@@ -323,13 +340,19 @@ function toCandidateDashboardEvent(record: CandidateEventRecord): CandidateDashb
   };
 }
 
-function toCandidateEventDetail(record: CandidateEventDetailRecord): CandidateEventDetail {
+function toCandidateEventSummary(record: CandidateEventListRecord): CandidateEventSummary {
   return {
     ...toCandidateDashboardEvent(record),
-    description: record.description,
     currentUserParticipation: record.participations[0]
       ? toOwnEventParticipation(record.participations[0])
       : null
+  };
+}
+
+function toCandidateEventDetail(record: CandidateEventDetailRecord): CandidateEventDetail {
+  return {
+    ...toCandidateEventSummary(record),
+    description: record.description,
   };
 }
 

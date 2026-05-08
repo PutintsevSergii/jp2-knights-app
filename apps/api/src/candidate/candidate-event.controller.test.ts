@@ -24,7 +24,8 @@ const eventListResponse: CandidateEventListResponse = {
       startAt: "2026-06-01T10:00:00.000Z",
       endAt: null,
       locationLabel: "Riga",
-      visibility: "CANDIDATE"
+      visibility: "CANDIDATE",
+      currentUserParticipation: null
     }
   ],
   pagination: {

@@ -52,7 +52,7 @@ An unauthenticated user who has not logged in. Guests can discover the Order, re
 
 ### Idle User
 
-A person who has authenticated with Firebase, through Google/Gmail, email, or another enabled Firebase provider, but has not been approved for app access. Idle users remain public-only for up to 30 days.
+A person who has authenticated with Firebase through the V1 Google/Gmail provider, but has not been approved for app access. Idle users remain public-only for up to 30 days.
 
 **In the app**: Not a role. Local authorization must not grant Candidate, Brother, Officer, or Admin access until a scoped country/region approver or Super Admin confirms the person and assigns roles/scopes.
 

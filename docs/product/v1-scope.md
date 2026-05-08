@@ -19,7 +19,7 @@ V1 includes four modes:
 - public prayer library;
 - public and family-open events;
 - public silent prayer counter;
-- Firebase Authentication sign-in through enabled providers, such as Google/Gmail, email, or other Firebase-supported providers, with a 30-day Idle approval gate;
+- Firebase Authentication sign-in through Google/Gmail only for V1, with a 30-day Idle approval gate;
 - join interest request form with consent;
 - candidate request review;
 - candidate account and dashboard;

@@ -49,6 +49,7 @@ This file is the operating contract for coding agents working in this repository
 - Admin and mobile use API contracts, never direct database access.
 - Shared enums, DTOs, validation schemas, API clients, auth helpers, visibility filters, and error contracts are single sources of truth.
 - Shared design tokens are the single source for branding, colors, typography, spacing, radii, state colors, and component variants across mobile and admin.
+- Approved Figma screens are functional requirements, not visual references only. If a Figma screen requires data, state, actions, filters, counts, or workflow behavior that current APIs/DTOs do not support, document the gap, verify V1 scope/RBAC/privacy, and update backend APIs, shared DTOs/OpenAPI, demo fixtures, clients, tests, and docs in the same change.
 - Provider integrations belong behind adapters.
 - Mobile/admin support `api` and backend-free `demo` runtime modes. Demo mode is for local development, CI smoke checks, and controlled demos only; production builds must reject it.
 
@@ -72,6 +73,7 @@ This file is the operating contract for coding agents working in this repository
 
 ### UI & Styling
 - Do not hardcode brand colors, spacing, typography, radius, or status styling in screens. Use shared design tokens and platform adapters.
+- During Figma implementation, do not fake missing functionality in the UI. Missing Figma-required behavior must be implemented through the correct API/domain layer first unless it is explicitly deferred or rejected by scope/RBAC/privacy rules.
 
 ### Status Tracking
 - **Update [docs/traceability.md](docs/traceability.md) in the same commit as your code changes.** This is THE source of truth for progress.
@@ -87,6 +89,17 @@ This file is the operating contract for coding agents working in this repository
 6. Update design tokens/component variants when styling or branding changes.
 7. Add or update tests that would fail without the change.
 8. Run quality gates before completing the task.
+
+### Figma-To-Implementation Requirements
+
+For approved V1 Figma work, especially Phase 10A:
+
+1. Treat each Figma frame as a functional screen specification covering data, visible states, actions, filters, counts, navigation, and empty/error/loading/forbidden states.
+2. Compare the frame against current backend endpoints, shared DTOs/Zod schemas, OpenAPI, API clients, demo fixtures, screen models, route surfaces, and tests before implementing the UI.
+3. If the design requires fields or behavior missing from current contracts, document the gap in the relevant implementation plan and update the API/domain layer before or with the screen.
+4. Keep all privacy and RBAC boundaries server-side. UI visibility may improve ergonomics, but it must never become the security boundary.
+5. Implement V1-valid gaps end to end: database/migration if needed, service/repository logic, DTO/schema/OpenAPI, generated clients, demo fixtures, mobile/admin screen models, renderers, tests, and traceability/status docs.
+6. If a Figma element implies out-of-scope behavior such as chat, payments, maps, analytics, social features, private rosters, participant lists, or hierarchy-derived permissions, pause that part, document the scope/privacy/security impact, and request owner approval before implementation.
 
 ### Synchronizing traceability.md and IMPLEMENTATION_STATUS.md
 

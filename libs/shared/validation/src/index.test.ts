@@ -191,14 +191,24 @@ describe("shared validation", () => {
 
     expect(
       candidateEventListResponseSchema.parse({
-        events: [event],
+        events: [
+          {
+            ...event,
+            currentUserParticipation: null
+          }
+        ],
         pagination: {
           limit: 10,
           offset: 2
         }
       })
     ).toEqual({
-      events: [event],
+      events: [
+        {
+          ...event,
+          currentUserParticipation: null
+        }
+      ],
       pagination: {
         limit: 10,
         offset: 2

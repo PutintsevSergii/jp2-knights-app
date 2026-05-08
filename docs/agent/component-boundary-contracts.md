@@ -116,13 +116,13 @@ Use this shape when adding a new boundary entry:
 | Field | Contract |
 | --- | --- |
 | Requirement/phase | FR-AUTH-001, Phase 10A |
-| Data/API source | Runtime auth state from `/api/auth/me`; provider/native sign-in flow still pending selection |
+| Data/API source | Runtime auth state from `/api/auth/me`; V1 provider/native sign-in flow is Google/Gmail through Firebase only |
 | Screen model | `apps/mobile/src/sign-in-screen.ts` and `apps/mobile/src/idle-approval-screen.ts`; `apps/mobile/src/public-screens.ts` remains a barrel only |
 | Route/surface owner | `apps/mobile/src/mobile-public-surface.tsx` |
 | Renderer components | `apps/mobile/src/screens/SignInScreen.tsx`, `apps/mobile/src/screens/IdleApprovalScreen.tsx` |
 | Shared components/tokens | Shared typography roles and existing mobile token-backed theme preview |
 | Tests | `public-screens.test.ts`, `main.test.ts`, `SignInScreen.test.tsx`, `IdleApprovalScreen.test.tsx` |
-| Forbidden responsibilities | No private role granting, no officer/admin scope, no guessed Figma Gold/Grey values, no provider credential implementation until the provider flow is selected |
+| Forbidden responsibilities | No private role granting, no officer/admin scope, no guessed Figma Gold/Grey values, no email/password credential flow in V1 |
 | Scope guard | Public auth-entry only; chat, payments, maps, analytics, and native officer/admin mode remain out of scope |
 
 ### Candidate Events

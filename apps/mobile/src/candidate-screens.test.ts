@@ -71,7 +71,7 @@ describe("mobile candidate screen models", () => {
     expect(list).toMatchObject({
       route: "CandidateEvents",
       state: "ready",
-      title: "Candidate Events",
+      title: "Upcoming Events",
       demoChromeVisible: false
     });
     expect(list.actions).toEqual([
@@ -87,6 +87,19 @@ describe("mobile candidate screen models", () => {
         targetRoute: "CandidateDashboard"
       }
     ]);
+    expect(list.eventCards[0]).toMatchObject({
+      title: "Candidate Gathering",
+      locationLabel: "Riga",
+      statusLabel: "Planning to attend",
+      statusTone: "planning",
+      primaryAction: null,
+      detailAction: {
+        id: "view-event-detail",
+        label: "View Details",
+        targetRoute: "CandidateEventDetail",
+        targetId: fallbackCandidateEvents.events[0]!.id
+      }
+    });
     expect(detail).toMatchObject({
       route: "CandidateEventDetail",
       state: "ready",
@@ -99,6 +112,46 @@ describe("mobile candidate screen models", () => {
       targetId: fallbackCandidateEventDetail.event.id
     });
     expect(JSON.stringify({ list, detail })).not.toMatch(/participants|brother|membership|degree/i);
+  });
+
+  it("builds Figma candidate event card RSVP states from current-user participation only", () => {
+    const screen = buildCandidateEventsScreen({
+      state: "ready",
+      response: {
+        events: [
+          {
+            ...fallbackCandidateEvents.events[0]!,
+            id: "11111111-1111-4111-8111-111111111111",
+            currentUserParticipation: null
+          },
+          {
+            ...fallbackCandidateEvents.events[0]!,
+            id: "22222222-2222-4222-8222-222222222222",
+            currentUserParticipation: {
+              id: "33333333-3333-4333-8333-333333333333",
+              eventId: "22222222-2222-4222-8222-222222222222",
+              intentStatus: "cancelled",
+              createdAt: "2026-05-06T12:00:00.000Z",
+              cancelledAt: "2026-05-07T12:00:00.000Z"
+            }
+          }
+        ],
+        pagination: {
+          limit: 20,
+          offset: 0
+        }
+      },
+      runtimeMode: "api"
+    });
+
+    expect(screen.eventCards.map((event) => event.statusLabel)).toEqual([
+      "RSVP needed",
+      "Not attending"
+    ]);
+    expect(screen.eventCards.map((event) => event.primaryAction?.id)).toEqual([
+      "plan-to-attend",
+      "plan-to-attend"
+    ]);
   });
 
   it("builds candidate announcements without brother-only language", () => {

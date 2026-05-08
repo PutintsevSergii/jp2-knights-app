@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 7, 2026
+Updated: May 8, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -22,7 +22,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
 | **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
 | **9**    | ✅ COMPLETE    | 100%    | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch | Phase 10 |
-| **10** | 🟡 IN PROGRESS | 18%      | ████░░░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; typography tokens and auth-entry screens started; formation roadmap next in same phase | Extract Figma Gold/Grey colors/fonts, then implement Phase 10A private screens |
+| **10** | 🟡 IN PROGRESS | 29%      | ██████░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, and Candidate Events Figma screen/API gap complete; formation roadmap next in same phase | Implement Brother Today Figma screen and Google/Firebase sign-in |
 | **11–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                   | After Phase 10               |
 
 ---
@@ -46,17 +46,20 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Split the Expo mobile root so `App.tsx` is a thin composition root and public/candidate/brother route surfaces own loaders, selected IDs, join-request state, and event participation actions
 - ✅ Added mobile route-group guards and regression coverage that prevents candidate/brother/join-request orchestration from moving back into `App.tsx`
 - ✅ Added documented typography roles to shared design tokens and applied them to current mobile shell screens in place of local title/button typography values
+- ✅ Extracted upgraded Figma priority-frame screenshots and frame-derived colors, typography, spacing, radius, and shadow values into `docs/design-updates/figma-cache`
+- ✅ Added Figma-derived Gold/Grey semantic color, border, radius, shadow, action, and Work Sans typography tokens to shared design tokens
 - ✅ Added mobile Sign In and Idle Approval screen foundations as public routes with token-backed React Native screens, safe approval-state copy, and no client-side private role granting
+- ✅ Applied the extracted Gold/Grey auth shell to mobile Sign In and Idle Approval; owner direction now clarifies V1 Sign In should adapt the Figma form into Google/Gmail Firebase provider entry rather than email/password credentials
+- ✅ Extended `/api/candidate/events` list items with the signed-in candidate's own `currentUserParticipation` intent only, keeping server-side candidate visibility filters and no participant-list exposure
+- ✅ Replaced the generic Candidate Events mobile renderer with a dedicated Gold/Grey React Native screen matching the Figma event-card/header/bottom-nav structure and routing RSVP actions through the existing participation API
 - ✅ Added `docs/agent/component-boundary-contracts.md` so new Phase 10A screens, route surfaces, API/demo sources, and reusable components declare ownership before root or shell files grow
 - ✅ Split mobile screen model builders into one file per screen and reduced `public-screens.ts`, `candidate-screens.ts`, and `brother-screens.ts` to re-export barrels with regression coverage
 - ✅ Split Admin Lite multi-screen model files into one file per list/detail/editor screen and reduced the old aggregate files to compatibility barrels with regression coverage
 
 **In Progress**:
 
-- 🟡 Extract exact Figma Gold/Grey color, font, spacing, and component properties when Figma design-context/screenshot access is available; the current Figma MCP call is blocked by the Starter-plan call limit
-- 🟡 Add Figma-derived semantic color tokens to `libs/shared/design-tokens/src/index.ts`
 - 🟡 Wire the actual native/provider sign-in flow once the mobile provider UX is selected
-- 🟡 Replace generic private mobile renderers with Figma-specific Candidate Events, Brother Today, event detail, and announcement screens
+- 🟡 Replace remaining generic private mobile renderers with Figma-specific Brother Today, event detail, and announcement screens
 - 🟡 Restyle Admin Lite Candidate Requests against the Figma `1:1635` frame while preserving server-side officer scope
 - 🟡 Add V1 launchable mobile screens for already implemented contracts that are still model/API-only, especially Brother Prayer Library and Organization Unit Detail
 
@@ -372,11 +375,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 | Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                       |
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm lint`                                                   |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm typecheck`                                              |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.24% statements / 82.17% branches / 93.34% functions / 91.95% lines    |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm lint`                                  |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm typecheck`                             |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.03% statements / 81.93% branches / 92.66% functions / 91.71% lines     |
 | **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 9 completion slice passed `pnpm build`                                                  |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm build`                                 |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
 | **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation, announcement, and notification migrations validate                       |
@@ -494,8 +497,10 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - V1 scope/out-of-scope/V2 backlog docs now place Gold/Grey visual parity, dedicated member screens, responsive Admin Lite parity, and role/RBAC UI-state alignment inside V1
 - The mobile shell split is complete: `apps/mobile/src/App.tsx` now delegates to public/candidate/brother route surfaces, and those surfaces own routing loaders, selected IDs, join-request state, and event participation actions
 - Mobile route-group guards and regression tests now keep candidate/brother/join-request orchestration out of the root composition component
-- Shared typography tokens now cover screen title, section title, body, secondary, label, and button roles, and current mobile shell screens consume those roles while exact Figma Gold/Grey colors remain pending extraction
-- Mobile Sign In and Idle Approval screen foundations are now mounted in the public route surface; Idle users can inspect approval state without private roles/scopes, and provider credential submission remains explicitly pending
+- Local Figma cache now stores priority-frame screenshots and extracted Gold/Grey colors, Work Sans typography, spacing, radius, and shadow values under `docs/design-updates/figma-cache`
+- Shared typography and Gold/Grey semantic tokens now cover display, screen title, section title, body, secondary, label, button, action, border, radius, and shadow roles
+- Mobile Sign In and Idle Approval screen foundations are now mounted in the public route surface with the extracted Gold/Grey auth shell; Idle users can inspect approval state without private roles/scopes, and provider credential submission remains explicitly pending
+- Candidate Events now has a dedicated Figma-aligned mobile screen. Its list API returns only the current user's own participation intent for RSVP badge/action state and does not expose participant lists.
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
@@ -550,11 +555,12 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add component boundary contracts to keep future screens and route surfaces split by responsibility
    - [x] Split mobile screen model builders into dedicated per-screen files; keep plural screen files as barrels only
    - [x] Split Admin Lite aggregate screen model files into dedicated per-screen files; keep aggregate screen files as barrels only
-   - [ ] Extract exact Figma Gold/Grey variables/screenshots for priority frames
-   - [ ] Add shared Gold/Grey semantic color tokens
-   - [ ] Build Figma-matched Sign In and Idle approval screens once exact visual values are available
+   - [x] Extract exact Figma Gold/Grey frame values/screenshots for priority frames and cache them locally
+   - [x] Add shared Gold/Grey semantic color tokens
+   - [x] Build Figma-matched Sign In and Idle approval shell styling once exact visual values are available
    - [ ] Wire native/provider sign-in submission
-   - [ ] Replace generic Candidate Events and Brother Today renderers with dedicated RN screens
+   - [x] Replace generic Candidate Events renderer with a dedicated RN screen backed by list-level own RSVP state
+   - [ ] Replace generic Brother Today renderer with a dedicated RN screen
    - [ ] Apply shared header/card/bottom-nav system to candidate/brother private surfaces
    - [ ] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
 

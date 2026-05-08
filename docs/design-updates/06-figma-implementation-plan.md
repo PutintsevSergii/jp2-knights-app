@@ -30,7 +30,12 @@ Inspected metadata confirms these mobile frames:
 | `1:177` | `Brother Today (Gold/Grey)` | Brother dashboard landing |
 | `1:1635` | `Candidate Requests (Gold/Grey)` | Officer/Admin candidate request management surface |
 
-The richer Figma design-context/screenshot call is currently blocked by the Figma MCP Starter-plan tool-call limit, so exact fills, font names, shadows, and component properties still need extraction from direct frame context when access is available or a direct frame screenshot is provided. Until then, implementation must treat the Figma frame names and layer structure as the source for layout and role flow, but must not invent hardcoded gold/grey values.
+Phase 10A Figma extraction was refreshed on May 8, 2026 after Figma access was
+upgraded. Local implementation cache:
+[docs/design-updates/figma-cache](figma-cache/). The Figma file does not define
+local variables or local styles, so the implementation source is the cached
+frame screenshots plus frame-derived colors, typography, spacing, radius, and
+shadow values.
 
 ## Current Design Gap
 
@@ -50,6 +55,34 @@ The existing code has strong API/RBAC foundations through Phase 9, but the V1 la
 3. Implement mobile member experiences in Expo React Native. Implement officer/admin management as responsive Admin Lite web for V1.
 4. Preserve V1 scope: no chat, payments, maps, analytics, social features, or hierarchy-derived permissions.
 5. Match Figma screen structure only when it does not conflict with product docs. If Figma implies a feature outside V1, document it as deferred.
+6. Treat approved Figma frames as functional requirements, not visual references only. When a frame requires missing fields, counts, filters, action states, navigation, or workflows, document the API/DTO gap and implement it through the backend/shared contracts before or with the UI.
+7. Do not fake Figma-required behavior client-side. V1-valid behavior must flow through server-side scoped APIs, shared validation schemas, OpenAPI, generated clients, demo fixtures, screen models, tests, and traceability/status updates.
+8. Sign In is the explicit exception to Figma's email/password field structure:
+   V1 uses Google/Gmail through Firebase only. Use the Figma frame as the
+   Gold/Grey auth-shell baseline, but render and implement a Google/Firebase
+   provider action instead of email/password credentials.
+
+## Figma-Driven API Gap Workflow
+
+For each Figma-aligned screen:
+
+1. Compare the frame against existing API endpoints, shared DTOs/Zod schemas,
+   OpenAPI output, mobile/admin API clients, demo fixtures, screen models, route
+   surfaces, and tests.
+2. Record any missing functional requirement in this implementation plan before
+   coding the screen. Examples include status badge state, filter counts, current
+   user's RSVP/participation state, contact/review actions, detail metadata, or
+   empty/error/forbidden state requirements.
+3. If the gap is V1-valid and compatible with canonical RBAC/privacy rules,
+   implement it end to end: persistence/migration if needed, repository/service
+   logic, DTO/schema/OpenAPI, client/demo fixture, screen model, renderer, tests,
+   and docs.
+4. If the gap implies out-of-scope behavior such as chat, payments, maps,
+   analytics, social features, authenticated family accounts, private rosters,
+   participant lists, or hierarchy-derived permissions, pause that part and seek
+   owner approval before implementation.
+5. Keep officer/admin management web-first for V1 even when Figma uses
+   mobile-sized frames for responsive Admin Lite references.
 
 ## Role And RBAC Implementation Update
 
@@ -82,14 +115,16 @@ In-progress update target:
 
 | Token area | Current state | Required design update |
 | --- | --- | --- |
-| Brand palette | Blue primary action tokens | Add Figma-derived Gold/Grey semantic aliases after exact values are extracted |
+| Brand palette | Figma-derived Gold/Grey semantic aliases are now in shared tokens | Continue migrating screen themes away from legacy blue assumptions |
 | Status palette | Success/warning/danger tokens exist | Keep semantic status tokens; do not replace with decorative brand colors |
 | Spacing | 4/8/12/16/24/32 scale exists | Reuse for Figma frame spacing; add only if Figma requires a repeated missing token |
 | Radius | 4 and 8 exist | Keep cards/buttons at 8px or less unless Figma frame proves otherwise |
-| Typography | Shared roles now exist for screen title, section title, body, secondary, label, and button text; current mobile shell screens consume them | Confirm exact Figma font family/weights from frames when access is available |
+| Typography | Shared roles now use extracted Work Sans frame specs for display, screen, section, card, body, label, and button roles | Load or package Work Sans in Expo only if pilot devices require bundled font fidelity |
 | Navigation | Mode-specific action arrays | Add tab/header component tokens for Figma bottom nav/top app bar parity |
 
-Exact gold/grey values are pending Figma variable/frame extraction. Until then, docs and code should say "Figma Gold/Grey target" rather than guessing hex values. The current token update only centralizes documented legacy typography roles and does not claim visual parity with the Gold/Grey frames.
+Exact Gold/Grey values are now cached locally and added to
+`libs/shared/design-tokens/src/index.ts`. Screens should consume those semantic
+tokens instead of repeating hex values.
 
 ## Screen Implementation Matrix
 
@@ -102,15 +137,15 @@ Legend:
 
 | Screen | Figma node | Requirement | Current implementation | Exact next implementation |
 | --- | --- | --- | --- | --- |
-| Sign In | `1:2` | FR-AUTH-001 | Public `Login` route now mounts a token-backed `SignInScreen.tsx` foundation with email/password fields and safe provider-flow pending copy; not Figma-matched yet | Apply exact Gold/Grey frame layout, password visibility toggle, forgot-password link as disabled/deferred if provider flow does not support it, and wire primary sign-in action to the selected native/provider session flow |
-| Account Approval Pending | Pending direct frame | FR-AUTH-001 | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance; public `IdleApproval` route now renders pending/rejected/expired approval state without private roles/scopes | Match the Sign In visual shell once exact Figma values are available; keep submitted/expiry/rejected copy public-only |
+| Sign In | `1:2` | FR-AUTH-001 | Public `Login` route uses the extracted Gold/Grey auth shell as a baseline, but V1 owner direction is Google/Gmail Firebase only rather than Figma's email/password fields | Replace the email/password-oriented form controls with a Google/Firebase provider action using the same Gold/Grey shell, then wire primary sign-in to the native Firebase Google flow |
+| Account Approval Pending | Pending direct frame | FR-AUTH-001 | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance; public `IdleApproval` route now uses the same extracted Gold/Grey auth shell without private roles/scopes | Keep submitted/expiry/rejected copy public-only and update if a dedicated approval frame is provided |
 | Public Home | Pending direct frame | FR-PUBLIC-001 | Implemented and mounted | Create Figma-specific public home frame or map existing public screen to Gold/Grey tokens; keep no-auth public-only payload |
 | About the Order | Pending direct frame | FR-PUBLIC-002 | Implemented and mounted | Apply shared Gold/Grey content typography and page header pattern |
 | Public Prayer Library | Pending direct frame | FR-PRAYER-001 | Implemented list/detail | Add Figma-specific card/list variants when design exists |
 | Public Events | Pending direct frame | FR-EVENT-001 | Implemented list/detail | Align event card typography/status badges with Candidate Events frame where public-safe |
 | Candidate Request Form | Pending direct frame | FR-CANDIDATE-REQ-001 | Implemented mobile form/confirmation | Match multi-step form layout from design prompt; keep consent-required DTO and no account/membership promise in confirmation |
 | Candidate Dashboard | Pending direct frame | FR-CANDIDATE-001 | Implemented dedicated RN screen | Replace generic card styling with Figma Gold/Grey header, welcome/assignment/officer/upcoming-events sections; keep no brother-only content |
-| Candidate Events List | `1:47` | FR-CANDIDATE-002 | Mounted through generic private renderer | Build `CandidateEventsScreen.tsx` with Figma top app bar, event card variants for planning/pending/not attending, bottom nav, and filter control if backed by existing query state |
+| Candidate Events List | `1:47` | FR-CANDIDATE-002 | Dedicated RN `CandidateEventsScreen.tsx` renders the Gold/Grey top app bar, event card RSVP states, bottom nav, and list-level RSVP actions. `/api/candidate/events` list items now include only the signed-in candidate's own `currentUserParticipation` intent and expose no participant lists. | Add visual QA against a running Expo/native target and continue detail-screen parity after Brother Today |
 | Candidate Event Detail | Derived from `1:47` | FR-EVENT-003 | Mounted through generic private renderer | Build detail screen with event badge, time/location sections, own participation CTA, and no participant list |
 | Candidate Announcements List | Pending direct frame | FR-CANDIDATE-003 | Mounted through generic private renderer | Build Figma-style announcement cards with pinned state, published date, body preview; no chat/comments/read receipts |
 | Candidate Announcement Detail | Pending direct frame | FR-CANDIDATE-003 | List model only; detail route not yet implemented as separate API | Either implement from list item payload for V1 or add explicit detail contract if product requires it; keep candidate visibility filters server-side |
@@ -230,11 +265,11 @@ Visual QA should include screenshots for at least:
 
 ## Phase 10A Order Of Work
 
-1. Extract exact Figma variables/screenshots for nodes `1:2`, `1:47`, `1:177`, and `1:1635` when Figma MCP access is available.
+1. ✅ Extract exact Figma frame screenshots and frame-derived values for nodes `1:2`, `1:47`, `1:177`, and `1:1635`; cache them under `docs/design-updates/figma-cache`.
 2. ✅ Split the current mobile shell so `App.tsx` becomes a thin composition root and public/candidate/brother route groups own their loaders/actions.
-3. 🟡 Update shared design tokens with Figma Gold/Grey semantic palette and typography roles. Typography roles are in place from documented specs; Gold/Grey colors remain pending Figma extraction.
-4. 🟡 Build Figma-matched Sign In and Idle approval screens because they define the auth shell. Public route foundations are in place; exact Figma styling and native/provider submission remain pending.
-5. Replace generic private renderer usage for Candidate Events and Brother Today with dedicated Figma-matched RN screens.
+3. ✅ Update shared design tokens with Figma Gold/Grey semantic palette, radius, shadow, and Work Sans typography roles.
+4. 🟡 Build Figma-matched Sign In and Idle approval screens because they define the auth shell. Gold/Grey shell styling is in place; native/provider submission remains pending.
+5. 🟡 Replace generic private renderer usage for Candidate Events and Brother Today with dedicated Figma-matched RN screens. Candidate Events list is complete; Brother Today remains pending.
 6. Apply the same card/nav/header system to remaining candidate/brother event and announcement screens.
 7. Restyle Admin Lite Candidate Requests from the Figma `1:1635` frame while preserving web-first admin scope.
 8. Add Brother Prayer Library and Organization Unit Detail mobile surfaces so already implemented V1 contracts have launchable screens.

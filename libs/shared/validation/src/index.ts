@@ -391,7 +391,21 @@ export const candidateEventListQuerySchema = z
   })
   .strict();
 
-export const candidateEventSummarySchema = candidateDashboardEventSummarySchema.strict();
+const ownEventParticipationSchema = z
+  .object({
+    id: z.uuid(),
+    eventId: z.uuid(),
+    intentStatus: z.enum(["planning_to_attend", "cancelled"]),
+    createdAt: z.iso.datetime(),
+    cancelledAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const candidateEventSummarySchema = candidateDashboardEventSummarySchema
+  .extend({
+    currentUserParticipation: ownEventParticipationSchema.nullable()
+  })
+  .strict();
 
 export const candidateEventListResponseSchema = z
   .object({
@@ -539,19 +553,9 @@ export const brotherAnnouncementListResponseSchema = z.object({
 
 export const eventParticipationResponseSchema = z
   .object({
-    participation: z
-      .object({
-        id: z.uuid(),
-        eventId: z.uuid(),
-        intentStatus: z.enum(["planning_to_attend", "cancelled"]),
-        createdAt: z.iso.datetime(),
-        cancelledAt: z.iso.datetime().nullable()
-      })
-      .strict()
+    participation: ownEventParticipationSchema
   })
   .strict();
-
-const ownEventParticipationSchema = eventParticipationResponseSchema.shape.participation;
 
 export const candidateEventDetailResponseSchema = z
   .object({

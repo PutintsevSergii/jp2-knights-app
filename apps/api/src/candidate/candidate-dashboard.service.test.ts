@@ -70,7 +70,8 @@ const event: CandidateEventSummary = {
   startAt: "2026-06-01T10:00:00.000Z",
   endAt: null,
   locationLabel: "Riga",
-  visibility: "CANDIDATE"
+  visibility: "CANDIDATE",
+  currentUserParticipation: null
 };
 
 const eventDetail: CandidateEventDetail = {
@@ -158,7 +159,12 @@ describe("CandidateDashboardService", () => {
         offset: 0
       }
     });
-    expect(repository.eventListScopes).toEqual([profile.assignedOrganizationUnit?.id]);
+    expect(repository.eventListScopes).toEqual([
+      {
+        assignedOrganizationUnitId: profile.assignedOrganizationUnit?.id,
+        userId: candidate.id
+      }
+    ]);
   });
 
   it("returns candidate-visible event detail with only the current user's participation", async () => {
@@ -238,7 +244,10 @@ function dashboardRepository(
 ): CandidateDashboardRepository & {
   profileLookups: string[];
   eventScopes: Array<string | null>;
-  eventListScopes: Array<string | null>;
+  eventListScopes: Array<{
+    assignedOrganizationUnitId: string | null;
+    userId: string;
+  }>;
   announcementScopes: Array<string | null>;
   eventDetailScopes: Array<{
     eventId: string;
@@ -260,8 +269,11 @@ function dashboardRepository(
       this.eventScopes.push(assignedOrganizationUnitId);
       return Promise.resolve([event]);
     },
-    findVisibleCandidateEvents(_query, assignedOrganizationUnitId) {
-      this.eventListScopes.push(assignedOrganizationUnitId);
+    findVisibleCandidateEvents(_query, assignedOrganizationUnitId, userId) {
+      this.eventListScopes.push({
+        assignedOrganizationUnitId,
+        userId
+      });
       return Promise.resolve([event]);
     },
     findVisibleCandidateEvent(eventId, assignedOrganizationUnitId, userId) {

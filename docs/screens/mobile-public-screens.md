@@ -12,7 +12,7 @@
 | Join Request Form | `JoinRequestForm` | Submit interest | form fields and consent | submit | field validation | Consent required |
 | Join Request Confirmation | `JoinRequestConfirmation` | Confirm submission | safe confirmation text | return home | none | No account promise |
 | Public Silent Prayer | `PublicSilentPrayer` | Anonymous prayer session | title/intention/counter | join/leave | disconnected/closed | Aggregate only |
-| Login | `Login` | Auth entry | login fields/provider | login | auth errors | No public registration bypass |
+| Login | `Login` | Auth entry | Google/Firebase provider entry | Google sign-in | auth errors / Idle approval | No email-password login, no public registration bypass |
 
 ## Current Implementation Note
 

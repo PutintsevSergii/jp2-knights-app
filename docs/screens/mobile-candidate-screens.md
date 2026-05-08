@@ -17,12 +17,13 @@
 - The current Candidate Dashboard foundation renders the `GET /candidate/dashboard`
   payload with assignment/contact, next-step, events, empty announcements, demo
   fallback, and ready/empty/loading/error/offline/forbidden states.
-- The current Candidate Events foundation renders API/demo `CandidateEvents` and
-  `CandidateEventDetail` screen models over `GET /candidate/events`,
-  `GET /candidate/events/{id}`, and candidate participation mutation clients.
-  It shows only candidate-visible events, own intent state, plan/cancel action
-  metadata, and ready/empty/loading/error/offline/forbidden/idle-approval
-  states.
+- The current Candidate Events foundation renders a dedicated Gold/Grey
+  `CandidateEventsScreen` over `GET /candidate/events`, with list-level own RSVP
+  state for badges/actions, event detail navigation, and candidate participation
+  mutation clients. `CandidateEventDetail` still uses the shared private detail
+  renderer. Candidate event screens show only candidate-visible events, own
+  intent state, plan/cancel action metadata, and
+  ready/empty/loading/error/offline/forbidden/idle-approval states.
 - The current Candidate Announcements foundation renders an API/demo
   `CandidateAnnouncements` screen model over `GET /candidate/announcements`.
   It validates the shared DTO, handles ready/empty/loading/error/offline/

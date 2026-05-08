@@ -12,7 +12,7 @@ For current Figma-to-code status, route/component targets, and RBAC constraints,
 | Figma node | Screen | Requirement | Implementation status |
 | --- | --- | --- | --- |
 | `1:2` | Sign In | FR-AUTH-001 | In progress: auth APIs exist; Figma-matched Expo screen pending |
-| `1:47` | Candidate Events | FR-CANDIDATE-002 / FR-EVENT-003 | Partial: APIs/models mounted; Figma-specific RN list/detail screens pending |
+| `1:47` | Candidate Events | FR-CANDIDATE-002 / FR-EVENT-003 | Partial: Figma-specific RN list screen implemented with list-level own RSVP state; detail screen remains generic |
 | `1:177` | Brother Today | FR-BROTHER-001 | Partial: API/model mounted; Figma-specific RN dashboard pending |
 | `1:1635` | Candidate Requests | FR-ADMIN-001 | Partial: Admin Lite web implemented; Figma responsive visual parity pending |
 

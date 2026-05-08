@@ -30,6 +30,7 @@ import {
 import type { CandidateRoute } from "./candidate-screens.js";
 import type { MobileScreenState } from "./navigation.js";
 import { isCandidateRoute } from "./mobile-routes.js";
+import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
 export interface MobileCandidateSurfaceProps {
@@ -213,6 +214,25 @@ export function MobileCandidateSurface({
       return;
     }
 
+    if (nextRoute === "CandidateEvents" && targetId && actionId === "plan-to-attend") {
+      if (runtimeMode === "demo") {
+        setCandidateEvents((current) => markCandidateEventInList(current, targetId));
+      } else if (authToken) {
+        const response = await markCandidateEventParticipation({
+          id: targetId,
+          baseUrl: publicApiBaseUrl,
+          authToken
+        });
+        setCandidateEvents((current) =>
+          markCandidateEventInList(current, targetId, response.participation)
+        );
+      }
+
+      setCandidateEventsState("ready");
+      onRouteChange("CandidateEvents");
+      return;
+    }
+
     if (nextRoute === "CandidateEventDetail") {
       setSelectedCandidateEventId(targetId);
 
@@ -264,7 +284,7 @@ export function MobileCandidateSurface({
 
   if (route === "CandidateEvents") {
     return (
-      <PrivateContentScreen
+      <CandidateEventsScreen
         screen={buildCandidateEventsScreen({
           state: candidateEventsState,
           response: candidateEvents,
@@ -327,4 +347,32 @@ export function MobileCandidateSurface({
       }}
     />
   );
+}
+
+function markCandidateEventInList(
+  current: CandidateEventListResponseDto | undefined,
+  eventId: string,
+  participation: CandidateEventListResponseDto["events"][number]["currentUserParticipation"] = {
+    id: "99999999-9999-4999-8999-999999999999",
+    eventId,
+    intentStatus: "planning_to_attend",
+    createdAt: new Date().toISOString(),
+    cancelledAt: null
+  }
+): CandidateEventListResponseDto | undefined {
+  if (!current) {
+    return current;
+  }
+
+  return {
+    ...current,
+    events: current.events.map((event) =>
+      event.id === eventId
+        ? {
+            ...event,
+            currentUserParticipation: participation
+          }
+        : event
+    )
+  };
 }

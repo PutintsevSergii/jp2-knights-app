@@ -45,6 +45,27 @@ describe("SignInScreen", () => {
     findElementByAccessibilityLabel(element, "Home")?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("PublicHome");
   });
+
+  it("exposes Figma auth-shell actions without granting private access", () => {
+    const onNavigate = vi.fn();
+    const onTogglePasswordVisibility = vi.fn();
+    const element = SignInScreen({
+      screen: buildSignInScreen({ state: "ready", runtimeMode: "api" }),
+      values: {
+        email: "",
+        password: ""
+      },
+      onNavigate,
+      onTogglePasswordVisibility
+    });
+
+    findElementByAccessibilityLabel(element, "Show password")?.props.onPress?.();
+    expect(onTogglePasswordVisibility).toHaveBeenCalled();
+
+    findElementByAccessibilityLabel(element, "Create Account")?.props.onPress?.();
+    expect(onNavigate).toHaveBeenCalledWith("JoinRequestForm");
+    expect(JSON.stringify(element)).not.toMatch(/roles|membership|officer scope/i);
+  });
 });
 
 interface TestElement {

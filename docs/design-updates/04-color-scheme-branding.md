@@ -25,7 +25,10 @@ The color palette combines:
 
 ## Figma Gold/Grey Alignment Status
 
-The current implemented token palette is still the legacy blue/neutral baseline below. The inspected Figma file uses `Gold/Grey` frame names for the priority screens, so the next visual implementation pass must extract exact Figma variable/frame values and add them as semantic shared tokens before screen code changes.
+The Phase 10A Figma extraction is now cached locally in
+[figma-cache](figma-cache/). The Figma file has no local variables or local
+styles, so the shared implementation tokens are based on frame-derived colors,
+type, spacing, and screenshots from the priority Gold/Grey screens.
 
 Rules for the in-progress update:
 
@@ -33,6 +36,18 @@ Rules for the in-progress update:
 - Add Figma-derived values to `libs/shared/design-tokens/src/index.ts`.
 - Keep status colors semantic; gold/grey branding must not replace success/warning/danger meaning.
 - Update mobile/admin token adapters before restyling individual screens.
+
+Implemented Phase 10A token values now include:
+
+- Gold action: `#FECC00`
+- Gold text/link: `#745C00`
+- App background: `#FBF8FF`
+- Surface: `#FFFFFF`
+- Primary text: `#1A1B22`
+- Muted text: `#4E4632`
+- Card border: `#D1C5AB`
+- Chrome border: `#E3E1EC`
+- Primary font family: `Work Sans`
 
 ### Blue: The Primary Color
 - **Hex:** `#1d4ed8`

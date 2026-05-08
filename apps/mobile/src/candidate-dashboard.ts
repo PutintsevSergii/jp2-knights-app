@@ -53,7 +53,18 @@ export const fallbackCandidateDashboard = candidateDashboardResponseSchema.parse
 }) satisfies CandidateDashboardResponseDto;
 
 export const fallbackCandidateEvents = candidateEventListResponseSchema.parse({
-  events: fallbackCandidateDashboard.upcomingEvents,
+  events: [
+    {
+      ...fallbackCandidateDashboard.upcomingEvents[0]!,
+      currentUserParticipation: {
+        id: "66666666-6666-4666-8666-666666666666",
+        eventId: fallbackCandidateDashboard.upcomingEvents[0]!.id,
+        intentStatus: "planning_to_attend",
+        createdAt: "2026-05-06T12:00:00.000Z",
+        cancelledAt: null
+      }
+    }
+  ],
   pagination: {
     limit: 20,
     offset: 0
@@ -82,12 +93,6 @@ export const fallbackCandidateEventDetail = candidateEventDetailResponseSchema.p
   event: {
     ...fallbackCandidateDashboard.upcomingEvents[0]!,
     description: "Formation gathering for active candidates.",
-    currentUserParticipation: {
-      id: "66666666-6666-4666-8666-666666666666",
-      eventId: fallbackCandidateDashboard.upcomingEvents[0]!.id,
-      intentStatus: "planning_to_attend",
-      createdAt: "2026-05-06T12:00:00.000Z",
-      cancelledAt: null
-    }
+    currentUserParticipation: fallbackCandidateEvents.events[0]!.currentUserParticipation
   }
 }) satisfies CandidateEventDetailResponseDto;

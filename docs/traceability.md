@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 7, 2026 (Phases 0–9 complete; Phase 10A V1 Figma/RBAC alignment in progress)
+**Last Updated**: May 8, 2026 (Phases 0–9 complete; Phase 10A V1 Figma/RBAC alignment in progress)
 
 ---
 
@@ -433,20 +433,34 @@ Implementation is complete through Phase 9 Events, Announcements, and Push. The 
   actions. Route-group guards live in `mobile-routes.ts`, with regression
   coverage preventing candidate/brother/join-request orchestration from moving
   back into the root.
-- Phase 10A now also includes the first design-token alignment slice:
-  documented typography roles for screen title, section title, body, secondary,
-  label, and button text are centralized in
-  `libs/shared/design-tokens/src/index.ts`, and current mobile shell screens use
-  those token roles instead of local hardcoded title/button typography. Exact
-  Figma Gold/Grey color and font values are still pending because Figma MCP
-  design-context access is currently blocked by the Starter-plan call limit.
-- Phase 10A now includes the mobile auth-entry screen foundation:
-  `Login` is a real public route with a token-backed Sign In screen model and
-  React Native screen, and Idle Firebase approval users can navigate to a
-  dedicated public-only `IdleApproval` screen. These screens expose only safe
-  approval state/copy, keep public navigation available, and do not grant
-  private roles or scopes client-side. The actual native/provider credential
-  flow and exact Figma Gold/Grey visual parity remain pending.
+- Phase 10A now includes a local Figma extraction cache under
+  `docs/design-updates/figma-cache`: screenshots and frame-derived colors,
+  typography, spacing, radius, and shadow values for `Sign In`,
+  `Candidate Events`, `Brother Today`, and `Candidate Requests`. The inspected
+  Figma file has no local variables or local styles, so these cached frame
+  values are the implementation source.
+- Phase 10A now also includes the Figma Gold/Grey design-token alignment slice:
+  semantic brand colors, border/chrome colors, radius, shadow, Work Sans
+  typography roles, and action tokens are centralized in
+  `libs/shared/design-tokens/src/index.ts`.
+- Phase 10A now includes the mobile auth-entry screen foundation and first
+  Figma-matched auth styling slice: `Login` is a real public route with a
+  Gold/Grey Sign In screen model and React Native screen, and Idle Firebase
+  approval users can navigate to a dedicated public-only `IdleApproval` screen
+  using the same auth shell. These screens expose only safe approval state/copy,
+  keep public navigation available, and do not grant private roles or scopes
+  client-side. Owner direction now clarifies V1 Sign In is Google/Gmail through
+  Firebase only; the Sign In Figma frame is the Gold/Grey shell baseline, not
+  approval for email/password credentials. The actual native Google/Firebase
+  credential flow remains pending.
+- Phase 10A now includes the first Figma-driven private mobile screen slice:
+  `/api/candidate/events` list items expose the signed-in candidate's own
+  `currentUserParticipation` intent for list badges/actions, without exposing
+  participant lists or changing server-side event visibility filters. Mobile now
+  mounts a dedicated Gold/Grey `CandidateEventsScreen.tsx` for the Figma
+  `Candidate Events` frame with RSVP-needed/planning/not-attending card states,
+  detail navigation, and list-level RSVP actions routed through the existing
+  candidate event participation API.
 - Phase 10A now also has a component boundary contract in
   [docs/agent/component-boundary-contracts.md](agent/component-boundary-contracts.md).
   Future screen, route-surface, API/demo, and reusable component work must
@@ -470,12 +484,11 @@ Implementation is complete through Phase 9 Events, Announcements, and Push. The 
   explicitly includes the localization foundation for `NFR-LOC-001`: shared
   translation keys, a default English catalog, lookup helpers, fallback tests,
   and replacing UI copy touched by roadmap work.
-- Phase 10A implementation should next extract exact Figma Gold/Grey color/font
-  values when access is available, wire provider sign-in when the mobile auth
-  provider flow is selected, replace generic private renderers on pilot-critical
-  Candidate/Brother screens, add missing V1 mobile surfaces for already
-  implemented contracts such as Brother Prayer Library and Organization Unit
-  Detail, and restyle Figma-covered Admin Lite routes as responsive web.
+- Phase 10A implementation should next wire Google/Firebase sign-in, replace the
+  remaining generic Brother Today private renderer, add missing V1 mobile
+  surfaces for already implemented contracts such as Brother Prayer Library and
+  Organization Unit Detail, and restyle Figma-covered Admin Lite routes as
+  responsive web.
 - Phase 10B Formation Roadmap, Phase 11 Silent Prayer, Phase 12 privacy/security
   hardening, and Phase 13 pilot readiness are not implemented yet unless
   explicitly listed above.
@@ -517,7 +530,7 @@ Implementation is complete through Phase 9 Events, Announcements, and Push. The 
 | FR-ADMIN-008 Candidate Profile Management  | `GET /admin/candidates`, `GET/PATCH /admin/candidates/:id`; `POST /admin/candidates/:id/convert-to-brother` pending brother lifecycle | candidate list/detail                        | candidate_profiles, users, user_roles, audit_logs; memberships pending brother lifecycle | officer scope, profile update audit, admin client/shell API/demo states, Next.js list/detail route smoke tests, brother conversion deferred to brother lifecycle             |
 | FR-CANDIDATE-001 Candidate Dashboard       | `GET /candidate/dashboard`                                                                                                            | candidate dashboard                          | candidate_profiles, events; roadmap_assignments/announcements pending later phases       | active profile required, scoped event visibility, mobile API/client state mapping and Expo route mounting, no brother content                                               |
 | FR-ROADMAP-001 Candidate Roadmap           | `GET /candidate/roadmap`                                                                                                              | candidate roadmap                            | roadmap_definitions, assignments                                                         | assigned candidate only                                                                                                                                                     |
-| FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`, `GET /candidate/events/:id`                                                                                  | CandidateEvents and CandidateEventDetail screen models mounted in Expo | events, event_participation                                                              | active candidate profile required, shared DTO validation, published/non-cancelled visibility filtering, own participation intent only on detail, mobile API/demo model tests and mounted private renderer, no participant lists |
+| FR-CANDIDATE-002 Candidate Events          | `GET /candidate/events`, `GET /candidate/events/:id`                                                                                  | dedicated Figma-aligned CandidateEvents screen and CandidateEventDetail screen model mounted in Expo | events, event_participation                                                              | active candidate profile required, shared DTO validation, published/non-cancelled visibility filtering, own participation intent on list/detail, mobile API/demo model tests, no participant lists |
 | FR-CANDIDATE-003 Candidate Announcements   | `GET /candidate/announcements`                                                                                                        | CandidateAnnouncements screen model mounted in Expo | announcements                                                                            | active profile required, shared DTO/OpenAPI schemas, pinned sort, published public/family/candidate/own organization-unit filtering, mobile API/demo state handling, no brother/officer/admin/unrelated-scope announcements |
 | FR-BROTHER-001 Brother Today               | `GET /brother/today`                                                                                                                  | brother today                                | users, memberships, organization_units, events; announcements/roadmap pending later      | personalized profile cards, own organization units, brother-safe event visibility, mobile API/demo states and Expo route mounting                                           |
 | FR-BROTHER-002 Brother Profile             | `GET /brother/profile`                                                                                                                | brother profile                              | users, user_roles, memberships, organization_units                                       | self only, active membership required, critical data read-only, mobile API/demo states                                                                                      |

@@ -9,7 +9,7 @@
 
 ## Idle Firebase Sign-In
 
-- Can authenticate with an enabled Firebase provider, such as Google/Gmail, email, or another configured provider, and keep a local provider identity for review.
+- Can authenticate with the V1 Google/Gmail Firebase provider and keep a local provider identity for review.
 - Remains public-only for up to 30 days until approved.
 - Cannot read candidate, brother, officer, admin, membership, roadmap, private event, private announcement, or audit data.
 - Cannot receive roles, memberships, candidate profiles, or officer assignments without an audited country/region approver or Super Admin confirmation.

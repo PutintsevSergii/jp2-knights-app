@@ -1,0 +1,78 @@
+{
+  "sourceFile": "figma.com/design/Byh7E8Yev3jEm0Zg9SgZoJ/jp-project",
+  "extractedAt": "2026-05-08",
+  "localVariables": [],
+  "localStyles": [],
+  "priorityFrames": [
+    {
+      "nodeId": "1:2",
+      "name": "Sign In (Gold/Grey)",
+      "size": { "width": 390, "height": 899.14 },
+      "screenshot": "screenshots/sign-in-1-2.png"
+    },
+    {
+      "nodeId": "1:47",
+      "name": "Candidate Events (Gold/Grey)",
+      "size": { "width": 390, "height": 1188.32 },
+      "screenshot": "screenshots/candidate-events-1-47.png"
+    },
+    {
+      "nodeId": "1:177",
+      "name": "Brother Today (Gold/Grey)",
+      "size": { "width": 390, "height": 1368.96 },
+      "screenshot": "screenshots/brother-today-1-177.png"
+    },
+    {
+      "nodeId": "1:1635",
+      "name": "Candidate Requests (Gold/Grey)",
+      "size": { "width": 390, "height": 1299 },
+      "screenshot": "screenshots/candidate-requests-1-1635.png"
+    }
+  ],
+  "colors": {
+    "backgroundApp": "#FBF8FF",
+    "surface": "#FFFFFF",
+    "textPrimary": "#1A1B22",
+    "textMuted": "#4E4632",
+    "textSubdued": "#80765F",
+    "gold": "#FECC00",
+    "goldPressed": "#F0C100",
+    "goldDark": "#745C00",
+    "goldDarker": "#6E5700",
+    "goldDeep": "#574500",
+    "border": "#D1C5AB",
+    "chromeBorder": "#E3E1EC",
+    "softBorder": "#EEEDF7",
+    "success": "#15803D",
+    "warning": "#A16207",
+    "danger": "#B91C1C"
+  },
+  "typography": {
+    "fontFamily": "Work Sans",
+    "display": { "fontSize": 48, "lineHeight": 53, "weight": 700, "letterSpacing": -1.2 },
+    "screenTitle": { "fontSize": 32, "lineHeight": 38, "weight": 600, "letterSpacing": -0.32 },
+    "sectionTitle": { "fontSize": 24, "lineHeight": 31, "weight": 600 },
+    "cardTitle": { "fontSize": 18, "lineHeight": 29, "weight": 700 },
+    "body": { "fontSize": 16, "lineHeight": 24, "weight": 400 },
+    "secondary": { "fontSize": 14, "lineHeight": 20, "weight": 400 },
+    "label": { "fontSize": 12, "lineHeight": 12, "weight": 600, "letterSpacing": 1.2 },
+    "compactLabel": { "fontSize": 12, "lineHeight": 16, "weight": 700, "letterSpacing": 0.6 },
+    "button": { "fontSize": 14, "lineHeight": 14, "weight": 600, "letterSpacing": 0.28 }
+  },
+  "shape": {
+    "radiusSm": 4,
+    "radiusMd": 8,
+    "radiusLg": 12,
+    "radiusPill": 9999,
+    "cardShadow": { "color": "#000000", "opacity": 0.05, "offsetX": 0, "offsetY": 1, "radius": 2 },
+    "raisedShadow": { "color": "#000000", "opacity": 0.1, "offsetX": 0, "offsetY": 4, "radius": 6 }
+  },
+  "spacing": {
+    "outerMobileX": 32,
+    "sectionGap": 48,
+    "cardPadding": 24,
+    "formPadding": 48,
+    "badgePaddingX": 12,
+    "badgePaddingY": 4
+  }
+}

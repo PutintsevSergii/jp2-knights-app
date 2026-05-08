@@ -4,7 +4,7 @@
 | ------ | ------------------------------------- | ---- | --------- | --------------------------------- | ---------------------------------------------------------------- | ----------------- | ---------------------------------- | --------------------------- |
 | GET    | `/candidate/dashboard`                | Yes  | Candidate | none                              | next step, contact, events, announcements                        | 401 invalid token, 403 missing/forbidden/idle | candidate/public filtered          | No brother content          |
 | GET    | `/candidate/roadmap`                  | Yes  | Candidate | none                              | assigned roadmap stages/steps/submissions                        | 404 if none       | own assignment                     | Candidate sees guided path  |
-| GET    | `/candidate/events`                   | Yes  | Candidate | filters/pagination                | visible event list                                               | 400               | public/family/candidate/own scoped | Brother-only hidden         |
+| GET    | `/candidate/events`                   | Yes  | Candidate | filters/pagination                | visible event list with own RSVP intent                          | 400               | public/family/candidate/own scoped | Brother-only hidden; no participant list |
 | GET    | `/candidate/events/:id`               | Yes  | Candidate | none                              | event detail with own participation intent                       | 403,404           | public/family/candidate/own scoped | No participant list         |
 | POST   | `/candidate/events/:id/participation` | Yes  | Candidate | none                              | participation intent                                             | 403,404           | visible candidate event only       | Intent only, duplicate updates existing |
 | DELETE | `/candidate/events/:id/participation` | Yes  | Candidate | none                              | cancelled participation                                          | 403,404           | own intent only                    | Cancels own intent only     |
@@ -42,6 +42,9 @@ Candidate roadmap screens are read-only in default V1. A candidate response may 
   non-archived `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or assigned
   `ORGANIZATION_UNIT` events. Brother-only and unrelated organization-unit
   events are hidden server-side.
+- `GET /candidate/events` list items include only the current user's own
+  `currentUserParticipation` intent for RSVP list state. They never return
+  participant lists or unrelated user ids.
 - `GET /candidate/events/:id` returns candidate-visible event detail with
   description and only the current user's own active participation intent. It
   never returns participant lists or unrelated user ids.

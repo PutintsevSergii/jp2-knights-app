@@ -37,7 +37,9 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 
 - `GET /candidate/events` supports `from`, `type`, `limit`, and `offset`
   filters, requires an active candidate profile, and returns currently
-  published, non-cancelled, non-archived candidate-visible events only.
+  published, non-cancelled, non-archived candidate-visible events only. List
+  items include only the current user's own `currentUserParticipation` intent
+  for RSVP badges/actions, never participant lists.
 - `GET /candidate/events/:id` returns candidate-visible event detail with
   description and only the current user's own active participation intent. It
   never returns participant lists or other user ids.

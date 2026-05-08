@@ -102,7 +102,7 @@ describe("mobile shell", () => {
 
   it("uses shared design tokens", () => {
     expect(getMobileThemePreview().surface).toBeDefined();
-    expect(getMobileThemePreview().screenTitleSize).toBe(28);
+    expect(getMobileThemePreview().screenTitleSize).toBe(32);
   });
 
   it("exports the public launch resolver", () => {

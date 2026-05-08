@@ -281,7 +281,16 @@ describe("PrismaCandidateDashboardRepository", () => {
         startAt: new Date("2026-06-01T10:00:00.000Z"),
         endAt: null,
         locationLabel: "Riga",
-        visibility: "CANDIDATE"
+        visibility: "CANDIDATE",
+        participations: [
+          {
+            id: "77777777-7777-4777-8777-777777777777",
+            eventId: "55555555-5555-4555-8555-555555555555",
+            intentStatus: "planning_to_attend",
+            createdAt: new Date("2026-05-06T12:00:00.000Z"),
+            cancelledAt: null
+          }
+        ]
       }
     ]);
 
@@ -293,7 +302,8 @@ describe("PrismaCandidateDashboardRepository", () => {
           limit: 10,
           offset: 5
         },
-        "33333333-3333-4333-8333-333333333333"
+        "33333333-3333-4333-8333-333333333333",
+        "22222222-2222-4222-8222-222222222222"
       )
     ).resolves.toEqual([
       {
@@ -303,11 +313,29 @@ describe("PrismaCandidateDashboardRepository", () => {
         startAt: "2026-06-01T10:00:00.000Z",
         endAt: null,
         locationLabel: "Riga",
-        visibility: "CANDIDATE"
+        visibility: "CANDIDATE",
+        currentUserParticipation: {
+          id: "77777777-7777-4777-8777-777777777777",
+          eventId: "55555555-5555-4555-8555-555555555555",
+          intentStatus: "planning_to_attend",
+          createdAt: "2026-05-06T12:00:00.000Z",
+          cancelledAt: null
+        }
       }
     ]);
     expect(eventFindMany).toHaveBeenCalledWith({
       where: expect.any(Object) as unknown,
+      include: {
+        participations: {
+          where: {
+            userId: "22222222-2222-4222-8222-222222222222"
+          },
+          take: 1,
+          orderBy: {
+            createdAt: "desc"
+          }
+        }
+      },
       orderBy: [{ startAt: "asc" }, { title: "asc" }],
       take: 10,
       skip: 5

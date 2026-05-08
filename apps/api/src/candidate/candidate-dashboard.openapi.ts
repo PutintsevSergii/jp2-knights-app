@@ -67,6 +67,28 @@ const ownEventParticipationOpenApiSchema = {
   }
 };
 
+const candidateEventSummaryOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "title",
+    "type",
+    "startAt",
+    "endAt",
+    "locationLabel",
+    "visibility",
+    "currentUserParticipation"
+  ],
+  additionalProperties: false,
+  properties: {
+    ...candidateDashboardEventSummaryOpenApiSchema.properties,
+    currentUserParticipation: {
+      nullable: true,
+      oneOf: [ownEventParticipationOpenApiSchema]
+    }
+  }
+};
+
 export const candidateEventListResponseOpenApiSchema = {
   type: "object",
   required: ["events", "pagination"],
@@ -74,7 +96,7 @@ export const candidateEventListResponseOpenApiSchema = {
   properties: {
     events: {
       type: "array",
-      items: candidateDashboardEventSummaryOpenApiSchema
+      items: candidateEventSummaryOpenApiSchema
     },
     pagination: candidatePaginationOpenApiSchema
   }
@@ -100,12 +122,8 @@ export const candidateEventDetailResponseOpenApiSchema = {
       ],
       additionalProperties: false,
       properties: {
-        ...candidateDashboardEventSummaryOpenApiSchema.properties,
+        ...candidateEventSummaryOpenApiSchema.properties,
         description: { type: "string", nullable: true, minLength: 1, maxLength: 8000 },
-        currentUserParticipation: {
-          nullable: true,
-          oneOf: [ownEventParticipationOpenApiSchema]
-        }
       }
     }
   }

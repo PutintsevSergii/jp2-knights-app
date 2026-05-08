@@ -39,7 +39,8 @@ export class CandidateDashboardService {
     const profile = await this.loadProfile(principal);
     const events = await this.candidateDashboardRepository.findVisibleCandidateEvents(
       query,
-      profile.assignedOrganizationUnit?.id ?? null
+      profile.assignedOrganizationUnit?.id ?? null,
+      principal.id
     );
 
     return {

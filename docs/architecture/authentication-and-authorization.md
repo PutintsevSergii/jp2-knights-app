@@ -24,9 +24,8 @@ tables after provider token verification.
 Firebase Authentication provider sign-in must authenticate identity only. It must never grant
 Candidate, Brother, Officer, Admin Lite, or Super Admin access by itself.
 
-When a person signs in with an enabled Firebase provider, such as Google/Gmail,
-email, or another Firebase-supported provider, and no already-approved local
-access exists:
+When a person signs in with the V1 Google/Gmail Firebase provider and no
+already-approved local access exists:
 
 1. The API creates or links a local identity-provider account.
 2. The local user is placed in Idle mode for 30 days.

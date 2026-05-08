@@ -52,7 +52,14 @@ export function buildSignInScreen(options: BuildSignInScreenOptions): SignInScre
         body: "Approved private access is resolved through the configured authentication provider and local JP2 approval state."
       }
     ],
-    actions: [homeAction],
+    actions: [
+      {
+        id: "create-account",
+        label: "Create Account",
+        targetRoute: "JoinRequestForm"
+      },
+      homeAction
+    ],
     demoChromeVisible: options.runtimeMode === "demo",
     theme: publicScreenTheme
   };

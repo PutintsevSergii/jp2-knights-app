@@ -184,10 +184,11 @@ Application authorization comes from local tables, not Firebase custom claims. F
 
 ## Firebase Sign-In Idle Gate
 
-Firebase sign-in must use the configured Firebase Authentication providers, such
-as Google/Gmail, email, or any other provider enabled for the project. A future
-adapter may emit the same normalized `ExternalIdentity`. The provider choice does
-not change the access rule: a verified Firebase ID token proves identity only.
+Firebase sign-in must use the configured Google/Gmail Firebase Authentication
+provider for V1. Email/password and other Firebase provider buttons are not V1
+surfaces unless the owner explicitly expands scope. A future adapter may emit the
+same normalized `ExternalIdentity`. The provider choice does not change the
+access rule: a verified Firebase ID token proves identity only.
 
 If a Firebase-authenticated identity has no already-approved local access:
 
