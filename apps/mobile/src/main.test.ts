@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   buildAboutOrderScreen,
@@ -139,6 +139,32 @@ describe("mobile shell", () => {
 
       expect(source).not.toMatch(/export function build[A-Za-z]+Screen/);
       expect(source).not.toMatch(/export interface [A-Za-z]+Screen/);
+    }
+  });
+
+  it("keeps React Native component files one-component-per-file with shared inventory", () => {
+    const screensDir = join(process.cwd(), "apps/mobile/src/screens");
+    const sharedDir = join(screensDir, "shared");
+    const componentFiles = [
+      ...readdirSync(screensDir)
+        .filter((fileName) => fileName.endsWith(".tsx") && !fileName.endsWith(".test.tsx"))
+        .map((fileName) => join(screensDir, fileName)),
+      ...readdirSync(sharedDir)
+        .filter((fileName) => fileName.endsWith(".tsx"))
+        .map((fileName) => join(sharedDir, fileName))
+    ];
+
+    for (const filePath of componentFiles) {
+      const source = readFileSync(filePath, "utf8");
+      const exportedComponents = source.match(/^export function [A-Z][A-Za-z0-9]+/gm) ?? [];
+
+      expect(exportedComponents.length, filePath).toBeLessThanOrEqual(1);
+    }
+
+    const inventory = readFileSync(join(sharedDir, "README.md"), "utf8");
+
+    for (const fileName of readdirSync(sharedDir).filter((name) => name.endsWith(".tsx"))) {
+      expect(inventory, fileName).toContain(fileName);
     }
   });
 
@@ -298,10 +324,7 @@ describe("mobile shell", () => {
       "https://api.example.test/brother/announcements"
     );
     expect(
-      buildBrotherEventDetailUrl(
-        "44444444-4444-4444-8444-444444444444",
-        "https://api.example.test"
-      )
+      buildBrotherEventDetailUrl("44444444-4444-4444-8444-444444444444", "https://api.example.test")
     ).toBe("https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444");
     expect(
       buildBrotherEventParticipationUrl(

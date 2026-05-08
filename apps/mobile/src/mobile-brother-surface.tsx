@@ -38,6 +38,7 @@ import {
 import type { BrotherRoute } from "./brother-screens.js";
 import { isBrotherRoute } from "./mobile-routes.js";
 import type { MobileScreenState } from "./navigation.js";
+import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
 export interface MobileBrotherSurfaceProps {
@@ -67,8 +68,9 @@ export function MobileBrotherSurface({
   const [brotherProfile, setBrotherProfile] = useState<BrotherProfileResponseDto | undefined>(() =>
     runtimeMode === "demo" ? fallbackBrotherProfile : undefined
   );
-  const [myOrganizationUnitsState, setMyOrganizationUnitsState] =
-    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [myOrganizationUnitsState, setMyOrganizationUnitsState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
   const [myOrganizationUnits, setMyOrganizationUnits] = useState<
     MyOrganizationUnitsResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackMyOrganizationUnits : undefined));
@@ -78,8 +80,9 @@ export function MobileBrotherSurface({
   const [brotherEvents, setBrotherEvents] = useState<BrotherEventListResponseDto | undefined>(() =>
     runtimeMode === "demo" ? fallbackBrotherEvents : undefined
   );
-  const [brotherAnnouncementsState, setBrotherAnnouncementsState] =
-    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [brotherAnnouncementsState, setBrotherAnnouncementsState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
   const [brotherAnnouncements, setBrotherAnnouncements] = useState<
     BrotherAnnouncementListResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackBrotherAnnouncements : undefined));
@@ -424,7 +427,7 @@ export function MobileBrotherSurface({
   }
 
   return (
-    <PrivateContentScreen
+    <BrotherTodayScreen
       screen={buildBrotherTodayScreen({
         state: brotherTodayState,
         response: brotherToday,

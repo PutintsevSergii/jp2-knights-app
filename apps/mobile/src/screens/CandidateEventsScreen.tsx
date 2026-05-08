@@ -2,6 +2,14 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { CandidateEventsScreen as CandidateEventsScreenModel } from "../candidate-screens.js";
 import type { CandidateScreenAction } from "../candidate-screen-contracts.js";
+import { CalendarIcon } from "./shared/CalendarIcon.js";
+import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { FilterIcon } from "./shared/FilterIcon.js";
+import { MobileBottomNav } from "./shared/MobileBottomNav.js";
+import { MobileTopBar } from "./shared/MobileTopBar.js";
+import { PinIcon } from "./shared/PinIcon.js";
+import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
+import { StatusDot } from "./shared/StatusDot.js";
 
 export interface CandidateEventsScreenProps {
   screen: CandidateEventsScreenModel;
@@ -12,18 +20,12 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
-        <View style={styles.topBar}>
-          <MenuIcon />
-          <Text style={styles.brand}>JP2 Knights</Text>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>JP</Text>
-          </View>
-        </View>
+        <MobileTopBar title="JP2 Knights" avatarText="JP" />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {screen.demoChromeVisible ? (
-            <View style={styles.demoBanner} accessibilityRole="text">
-              <Text style={styles.demoText}>Demo mode</Text>
+            <View style={styles.bannerOffset}>
+              <DemoModeBanner />
             </View>
           ) : null}
 
@@ -32,7 +34,11 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
               <Text style={styles.title}>{screen.title}</Text>
               <Text style={styles.subtitle}>Formation and action for candidates.</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Filter events" style={styles.filterButton}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Filter events"
+              style={styles.filterButton}
+            >
               <FilterIcon />
               <Text style={styles.filterText}>Filter</Text>
             </Pressable>
@@ -89,131 +95,68 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
               ))}
             </View>
           ) : (
-            <View style={styles.statePanel}>
-              <Text style={styles.stateTitle}>{screen.title}</Text>
-              <Text style={styles.stateBody}>{screen.body}</Text>
+            <View style={styles.statePanelOffset}>
+              <ScreenStatePanel title={screen.title} body={screen.body} />
             </View>
           )}
         </ScrollView>
 
-        <View style={styles.bottomNav}>
-          <NavItem
-            label="Dashboard"
-            active={false}
-            onPress={() =>
-              onAction?.({
-                id: "dashboard",
-                label: "Dashboard",
-                targetRoute: "CandidateDashboard"
-              })
+        <MobileBottomNav
+          items={[
+            {
+              id: "dashboard",
+              label: "Dashboard",
+              active: false,
+              onPress: () =>
+                onAction?.({
+                  id: "dashboard",
+                  label: "Dashboard",
+                  targetRoute: "CandidateDashboard"
+                })
+            },
+            {
+              id: "events",
+              label: "Events",
+              active: true
+            },
+            {
+              id: "prayer",
+              label: "Prayer",
+              active: false,
+              onPress: () =>
+                onAction?.({
+                  id: "dashboard",
+                  label: "Dashboard",
+                  targetRoute: "CandidateDashboard"
+                })
+            },
+            {
+              id: "choragiew",
+              label: "Choragiew",
+              active: false,
+              onPress: () =>
+                onAction?.({
+                  id: "dashboard",
+                  label: "Dashboard",
+                  targetRoute: "CandidateDashboard"
+                })
+            },
+            {
+              id: "account",
+              label: "Account",
+              active: false,
+              onPress: () =>
+                onAction?.({
+                  id: "dashboard",
+                  label: "Dashboard",
+                  targetRoute: "CandidateDashboard"
+                })
             }
-          />
-          <NavItem label="Events" active />
-          <NavItem
-            label="Prayer"
-            active={false}
-            onPress={() =>
-              onAction?.({
-                id: "dashboard",
-                label: "Dashboard",
-                targetRoute: "CandidateDashboard"
-              })
-            }
-          />
-          <NavItem
-            label="Choragiew"
-            active={false}
-            onPress={() =>
-              onAction?.({
-                id: "dashboard",
-                label: "Dashboard",
-                targetRoute: "CandidateDashboard"
-              })
-            }
-          />
-          <NavItem
-            label="Account"
-            active={false}
-            onPress={() =>
-              onAction?.({
-                id: "dashboard",
-                label: "Dashboard",
-                targetRoute: "CandidateDashboard"
-              })
-            }
-          />
-        </View>
+          ]}
+        />
       </View>
     </SafeAreaView>
   );
-}
-
-function NavItem({
-  label,
-  active,
-  onPress
-}: {
-  label: string;
-  active: boolean;
-  onPress?: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected: active }}
-      onPress={onPress}
-      style={styles.navItem}
-    >
-      <View style={[styles.navIcon, active ? styles.navIconActive : styles.navIconIdle]}>
-        <View style={[styles.navIconMark, active ? styles.navIconMarkActive : styles.navIconMarkIdle]} />
-      </View>
-      <Text style={[styles.navLabel, active ? styles.navLabelActive : styles.navLabelIdle]}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.menuIcon}>
-      <View style={styles.menuLine} />
-      <View style={styles.menuLine} />
-      <View style={styles.menuLine} />
-    </View>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.filterIcon}>
-      <View style={styles.filterLineWide} />
-      <View style={styles.filterLineNarrow} />
-    </View>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.calendarIcon}>
-      <View style={styles.calendarTop} />
-      <View style={styles.calendarBody} />
-    </View>
-  );
-}
-
-function PinIcon() {
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.pinIcon}>
-      <View style={styles.pinCircle} />
-      <View style={styles.pinStem} />
-    </View>
-  );
-}
-
-function StatusDot({ tone }: { tone: "planning" | "needed" | "cancelled" }) {
-  return <View style={[styles.statusDot, statusDotStyle[tone]]} />;
 }
 
 const colors = designTokens.color;
@@ -259,18 +202,6 @@ const statusTextStyle = StyleSheet.create({
   }
 });
 
-const statusDotStyle = StyleSheet.create({
-  planning: {
-    backgroundColor: colors.brand.goldDark
-  },
-  needed: {
-    backgroundColor: colors.brand.taupe
-  },
-  cancelled: {
-    backgroundColor: colors.status.danger
-  }
-});
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -280,65 +211,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.app
   },
-  topBar: {
-    alignItems: "center",
-    backgroundColor: colors.background.app,
-    borderBottomColor: colors.border.chrome,
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    height: 56,
-    justifyContent: "space-between",
-    paddingHorizontal: designTokens.space[6]
-  },
-  brand: {
-    color: colors.text.primary,
-    flex: 1,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: 21,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: 28,
-    marginLeft: designTokens.space[6]
-  },
-  avatar: {
-    alignItems: "center",
-    backgroundColor: colors.text.primary,
-    borderColor: colors.border.subtle,
-    borderRadius: 15,
-    borderWidth: 2,
-    height: 30,
-    justifyContent: "center",
-    width: 30
-  },
-  avatarText: {
-    color: colors.text.inverse,
-    fontSize: 10,
-    fontWeight: designTokens.typography.weight.bold
-  },
   scrollContent: {
     paddingBottom: 112
   },
-  demoBanner: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.brand.gold,
-    borderRadius: designTokens.radius.pill,
+  bannerOffset: {
     marginLeft: designTokens.space[8],
-    marginTop: designTokens.space[4],
-    paddingHorizontal: designTokens.space[3],
-    paddingVertical: designTokens.space[1]
-  },
-  demoText: {
-    color: colors.text.primary,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.semibold
+    marginTop: designTokens.space[4]
   },
   hero: {
     alignItems: "flex-end",
     flexDirection: "row",
     gap: designTokens.space[4],
     justifyContent: "space-between",
+    paddingBottom: 42,
     paddingHorizontal: designTokens.space[8],
-    paddingTop: designTokens.space[8],
-    paddingBottom: 42
+    paddingTop: designTokens.space[8]
   },
   heroCopy: {
     flex: 1,
@@ -417,11 +304,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: designTokens.space[2],
     paddingVertical: designTokens.space[1]
   },
-  statusDot: {
-    borderRadius: 4,
-    height: 7,
-    width: 7
-  },
   statusText: {
     flexShrink: 1,
     fontFamily: designTokens.typography.fontFamily.mobile,
@@ -456,8 +338,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.text.primary,
     borderRadius: designTokens.radius.sm,
-    minHeight: 28,
     justifyContent: "center",
+    minHeight: 28,
     paddingHorizontal: designTokens.space[4]
   },
   rsvpText: {
@@ -467,8 +349,8 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.semibold
   },
   detailButton: {
-    minHeight: 28,
-    justifyContent: "center"
+    justifyContent: "center",
+    minHeight: 28
   },
   detailText: {
     color: colors.brand.goldDark,
@@ -477,140 +359,7 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.bold,
     letterSpacing: designTokens.typography.letterSpacing.compactLabel
   },
-  statePanel: {
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderRadius: designTokens.radius.md,
-    borderWidth: 1,
-    gap: designTokens.space[2],
-    marginHorizontal: designTokens.space[8],
-    padding: designTokens.space[6]
-  },
-  stateTitle: {
-    color: colors.text.primary,
-    fontSize: designTokens.typography.size.sectionTitle,
-    fontWeight: designTokens.typography.weight.semibold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle
-  },
-  stateBody: {
-    color: colors.text.muted,
-    fontSize: designTokens.typography.size.body,
-    lineHeight: designTokens.typography.lineHeight.body
-  },
-  bottomNav: {
-    alignItems: "center",
-    backgroundColor: colors.background.surface,
-    borderTopColor: colors.border.chrome,
-    borderTopWidth: 1,
-    bottom: 0,
-    flexDirection: "row",
-    height: 74,
-    justifyContent: "space-around",
-    left: 0,
-    paddingBottom: designTokens.space[2],
-    paddingHorizontal: designTokens.space[2],
-    position: "absolute",
-    right: 0
-  },
-  navItem: {
-    alignItems: "center",
-    flex: 1,
-    gap: 3,
-    minWidth: 0
-  },
-  navIcon: {
-    alignItems: "center",
-    borderRadius: designTokens.radius.md,
-    height: 30,
-    justifyContent: "center",
-    width: 52
-  },
-  navIconActive: {
-    backgroundColor: colors.brand.gold
-  },
-  navIconIdle: {
-    backgroundColor: colors.background.surface
-  },
-  navIconMark: {
-    borderRadius: 4,
-    height: 12,
-    width: 12
-  },
-  navIconMarkActive: {
-    backgroundColor: colors.text.primary
-  },
-  navIconMarkIdle: {
-    borderColor: colors.brand.brown,
-    borderWidth: 2
-  },
-  navLabel: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: 10,
-    fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: 1,
-    lineHeight: 12
-  },
-  navLabelActive: {
-    color: colors.text.primary
-  },
-  navLabelIdle: {
-    color: colors.brand.brown
-  },
-  menuIcon: {
-    gap: 3,
-    width: 18
-  },
-  menuLine: {
-    backgroundColor: colors.text.primary,
-    height: 2,
-    width: 16
-  },
-  filterIcon: {
-    gap: 3,
-    width: 12
-  },
-  filterLineWide: {
-    backgroundColor: colors.text.primary,
-    height: 1,
-    width: 12
-  },
-  filterLineNarrow: {
-    alignSelf: "center",
-    backgroundColor: colors.text.primary,
-    height: 1,
-    width: 6
-  },
-  calendarIcon: {
-    borderColor: colors.brand.taupe,
-    borderRadius: 2,
-    borderWidth: 1,
-    height: 14,
-    overflow: "hidden",
-    width: 14
-  },
-  calendarTop: {
-    backgroundColor: colors.brand.taupe,
-    height: 3
-  },
-  calendarBody: {
-    flex: 1
-  },
-  pinIcon: {
-    alignItems: "center",
-    height: 16,
-    justifyContent: "center",
-    width: 14
-  },
-  pinCircle: {
-    borderColor: colors.brand.taupe,
-    borderRadius: 5,
-    borderWidth: 1,
-    height: 10,
-    width: 10
-  },
-  pinStem: {
-    backgroundColor: colors.brand.taupe,
-    height: 5,
-    width: 1
+  statePanelOffset: {
+    marginHorizontal: designTokens.space[8]
   }
 });

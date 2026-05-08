@@ -1,47 +1,58 @@
 import { describe, expect, it, vi } from "vitest";
-import { fallbackCandidateEvents } from "../candidate-dashboard.js";
-import { buildCandidateEventsScreen } from "../candidate-screens.js";
-import { CandidateEventsScreen } from "./CandidateEventsScreen.js";
+import { fallbackBrotherToday } from "../brother-companion.js";
+import { buildBrotherTodayScreen } from "../brother-screens.js";
+import { BrotherTodayScreen } from "./BrotherTodayScreen.js";
 
-describe("CandidateEventsScreen", () => {
-  it("renders Figma event card state and forwards RSVP/detail actions", () => {
+describe("BrotherTodayScreen", () => {
+  it("renders the Figma dashboard structure and forwards quick/event actions", () => {
     const onAction = vi.fn();
-    const screen = buildCandidateEventsScreen({
+    const screen = buildBrotherTodayScreen({
       state: "ready",
-      response: {
-        ...fallbackCandidateEvents,
-        events: [
-          {
-            ...fallbackCandidateEvents.events[0]!,
-            currentUserParticipation: null
-          }
-        ]
-      },
-      runtimeMode: "api"
+      response: fallbackBrotherToday,
+      runtimeMode: "demo"
     });
-    const element = CandidateEventsScreen({ screen, onAction });
+    const element = BrotherTodayScreen({ screen, onAction });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Upcoming Events")).toBe(true);
-    expect(findText(element, "RSVP needed")).toBe(true);
-    expect(findText(element, "RSVP Now")).toBe(true);
-    expect(findText(element, "View Details")).toBe(true);
+    expect(findText(element, "Good morning, Brother")).toBe(true);
+    expect(findText(element, "Demo Brother")).toBe(true);
+    expect(findText(element, "First Degree")).toBe(true);
+    expect(findText(element, "Upcoming Action")).toBe(true);
+    expect(findText(element, "Brother Gathering")).toBe(true);
+    expect(findText(element, "Announcements")).toBe(true);
 
-    findPressableByLabel(element, "RSVP Now")?.props.onPress?.();
-    findPressableByLabel(element, "View Details")?.props.onPress?.();
+    findPressableByLabel(element, "Review profile")?.props.onPress?.();
+    findPressableByLabel(element, "Open event")?.props.onPress?.();
+    findPressableByLabel(element, "View all brother events")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
-      id: "plan-to-attend",
-      label: "RSVP Now",
-      targetRoute: "CandidateEvents",
-      targetId: fallbackCandidateEvents.events[0]!.id
+      id: "profile",
+      label: "Review profile",
+      targetRoute: "BrotherProfile"
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
-      id: "view-event-detail",
-      label: "View Details",
-      targetRoute: "CandidateEventDetail",
-      targetId: fallbackCandidateEvents.events[0]!.id
+      id: "open-event",
+      label: "Open event",
+      targetRoute: "BrotherEventDetail",
+      targetId: fallbackBrotherToday.upcomingEvents[0]!.id
     });
+    expect(onAction).toHaveBeenNthCalledWith(3, {
+      id: "view-all-events",
+      label: "View All",
+      targetRoute: "BrotherEvents"
+    });
+  });
+
+  it("renders non-ready state copy without private dashboard cards", () => {
+    const screen = buildBrotherTodayScreen({
+      state: "forbidden",
+      runtimeMode: "api"
+    });
+    const element = BrotherTodayScreen({ screen });
+
+    expect(findText(element, "Access Denied")).toBe(true);
+    expect(findText(element, "An active brother profile is required.")).toBe(true);
+    expect(findText(element, "Good morning, Brother")).toBe(false);
   });
 });
 

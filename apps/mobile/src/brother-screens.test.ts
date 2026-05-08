@@ -27,13 +27,40 @@ describe("brother screen models", () => {
     expect(screen.route).toBe("BrotherToday");
     expect(screen.demoChromeVisible).toBe(true);
     expect(screen.body).toContain("First Degree");
+    expect(screen.profileSummary).toEqual({
+      displayName: "Demo Brother",
+      currentDegreeLabel: "First Degree",
+      organizationUnitLabel: "Pilot Choragiew",
+      initials: "DB"
+    });
+    expect(screen.quickActions.map((action) => action.targetRoute)).toEqual([
+      "BrotherProfile",
+      "MyOrganizationUnits",
+      "BrotherEvents",
+      "BrotherAnnouncements"
+    ]);
+    expect(screen.upcomingEventCards).toEqual([
+      expect.objectContaining({
+        title: "Brother Gathering",
+        dateMonth: "JUN",
+        dateDay: "01",
+        locationLabel: "Riga",
+        detailAction: {
+          id: "open-event",
+          label: "Open event",
+          targetRoute: "BrotherEventDetail",
+          targetId: fallbackBrotherToday.upcomingEvents[0]!.id
+        }
+      })
+    ]);
     expect(screen.sections.map((section) => section.id)).toContain(
       `organization-unit-${fallbackBrotherToday.organizationUnits[0]!.id}`
     );
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
       "BrotherProfile",
       "MyOrganizationUnits",
-      "BrotherEvents"
+      "BrotherEvents",
+      "BrotherAnnouncements"
     ]);
   });
 

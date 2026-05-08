@@ -10,20 +10,20 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ## Executive Summary
 
-| Phase    | Status         | Progress | Completeness         | Key Outputs                                                                                                           | Next Step                    |
-| -------- | -------------- | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **0**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                                                              | —                            |
-| **1**    | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                                             | —                            |
-| **2**    | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                      | —                            |
-| **3**    | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                               | Phase 4 public content views |
-| **4**    | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                      | —                            |
-| **5**    | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                            | —                            |
-| **6**    | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                       | —                            |
-| **7**    | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles | —                            |
-| **8**    | ✅ COMPLETE    | 100%    | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening | Phase 9 |
-| **9**    | ✅ COMPLETE    | 100%    | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch | Phase 10 |
-| **10** | 🟡 IN PROGRESS | 29%      | ██████░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, and Candidate Events Figma screen/API gap complete; formation roadmap next in same phase | Implement Brother Today Figma screen and Google/Firebase sign-in |
-| **11–13** | ⏳ PENDING    | 0%      | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                   | After Phase 10               |
+| Phase     | Status         | Progress | Completeness         | Key Outputs                                                                                                                                                                                                       | Next Step                                                              |
+| --------- | -------------- | -------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **0**     | ✅ COMPLETE    | 100%     | ████████████████████ | Scope, roles, visibility                                                                                                                                                                                          | —                                                                      |
+| **1**     | ✅ COMPLETE    | 100%     | ████████████████████ | Monorepo, apps, CI, gates                                                                                                                                                                                         | —                                                                      |
+| **2**     | ✅ COMPLETE    | 100%     | ████████████████████ | Prisma, auth helpers, filters, visibility matrix                                                                                                                                                                  | —                                                                      |
+| **3**     | ✅ COMPLETE    | 100%     | ████████████████████ | `/api/public/home`, public content pages, live PublicHome/About loading                                                                                                                                           | Phase 4 public content views                                           |
+| **4**     | ✅ COMPLETE    | 100%     | ████████████████████ | Public APIs, mobile views, admin APIs, audit, admin shell routes                                                                                                                                                  | —                                                                      |
+| **5**     | ✅ COMPLETE    | 100%     | ████████████████████ | Provider adapter, Firebase verifier, provider links, auth session API, Idle approval gate                                                                                                                         | —                                                                      |
+| **6**     | ✅ COMPLETE    | 100%     | ████████████████████ | Scoped dashboard API, sign-in review workflow, org-unit routes/audit, mounted Admin Lite shell                                                                                                                    | —                                                                      |
+| **7**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles                                                                                             | —                                                                      |
+| **8**     | ✅ COMPLETE    | 100%     | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening                                                                            | Phase 9                                                                |
+| **9**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch  | Phase 10                                                               |
+| **10**    | 🟡 IN PROGRESS | 32%      | ██████░░░░░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, Candidate Events, and Brother Today Figma screens complete; formation roadmap next in same phase | Wire Google/Firebase sign-in and restyle Admin Lite Candidate Requests |
+| **11–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                                                                                                                                  | After Phase 10                                                         |
 
 ---
 
@@ -52,6 +52,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Applied the extracted Gold/Grey auth shell to mobile Sign In and Idle Approval; owner direction now clarifies V1 Sign In should adapt the Figma form into Google/Gmail Firebase provider entry rather than email/password credentials
 - ✅ Extended `/api/candidate/events` list items with the signed-in candidate's own `currentUserParticipation` intent only, keeping server-side candidate visibility filters and no participant-list exposure
 - ✅ Replaced the generic Candidate Events mobile renderer with a dedicated Gold/Grey React Native screen matching the Figma event-card/header/bottom-nav structure and routing RSVP actions through the existing participation API
+- ✅ Replaced the generic Brother Today mobile renderer with a dedicated Gold/Grey React Native screen matching the Figma profile summary, quick-action grid, upcoming action cards, organization-unit cards, and brother bottom-nav structure over the existing guarded `/api/brother/today` contract
+- ✅ Extracted repeated Candidate Events/Brother Today mobile chrome into `apps/mobile/src/screens/shared` with one exported React Native component per file and an inventory README to prevent duplicated headers, nav, state panels, icons, and status components
 - ✅ Added `docs/agent/component-boundary-contracts.md` so new Phase 10A screens, route surfaces, API/demo sources, and reusable components declare ownership before root or shell files grow
 - ✅ Split mobile screen model builders into one file per screen and reduced `public-screens.ts`, `candidate-screens.ts`, and `brother-screens.ts` to re-export barrels with regression coverage
 - ✅ Split Admin Lite multi-screen model files into one file per list/detail/editor screen and reduced the old aggregate files to compatibility barrels with regression coverage
@@ -59,7 +61,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 **In Progress**:
 
 - 🟡 Wire the actual native/provider sign-in flow once the mobile provider UX is selected
-- 🟡 Replace remaining generic private mobile renderers with Figma-specific Brother Today, event detail, and announcement screens
+- 🟡 Replace remaining generic private mobile renderers with Figma-specific event detail and announcement screens
 - 🟡 Restyle Admin Lite Candidate Requests against the Figma `1:1635` frame while preserving server-side officer scope
 - 🟡 Add V1 launchable mobile screens for already implemented contracts that are still model/API-only, especially Brother Prayer Library and Organization Unit Detail
 
@@ -356,34 +358,34 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phases 4–13: Roadmap
 
-| Phase  | Name                             | Status         | Timeline        |
-| ------ | -------------------------------- | -------------- | --------------- |
-| **4**  | Public Content: Prayers & Events | ✅ Complete    | Completed May 4 |
-| **5**  | Authentication & Modes           | ✅ Complete    | Completed May 4 |
-| **6**  | Admin Lite Foundation            | ✅ Complete    | Completed May 5 |
-| **7**  | Candidate Funnel                 | ✅ Complete    | Completed May 5 |
-| **8**  | Brother Companion Core           | ✅ Complete    | Completed May 6 |
-| **9**  | Events/Announcements/Push        | ✅ Complete    | Completed May 7 |
+| Phase  | Name                                     | Status         | Timeline        |
+| ------ | ---------------------------------------- | -------------- | --------------- |
+| **4**  | Public Content: Prayers & Events         | ✅ Complete    | Completed May 4 |
+| **5**  | Authentication & Modes                   | ✅ Complete    | Completed May 4 |
+| **6**  | Admin Lite Foundation                    | ✅ Complete    | Completed May 5 |
+| **7**  | Candidate Funnel                         | ✅ Complete    | Completed May 5 |
+| **8**  | Brother Companion Core                   | ✅ Complete    | Completed May 6 |
+| **9**  | Events/Announcements/Push                | ✅ Complete    | Completed May 7 |
 | **10** | Figma/RBAC Alignment + Formation Roadmap | 🟡 In progress | Current         |
-| **11** | Silent Online Prayer             | ⏳ Not started | After Phase 10  |
-| **12** | Privacy/Security/Audit           | ⏳ Not started | After Phase 11  |
-| **13** | Release Hardening & Pilot        | ⏳ Not started | After Phase 12  |
+| **11** | Silent Online Prayer                     | ⏳ Not started | After Phase 10  |
+| **12** | Privacy/Security/Audit                   | ⏳ Not started | After Phase 11  |
+| **13** | Release Hardening & Pilot                | ⏳ Not started | After Phase 12  |
 
 ---
 
 ## Quality Gate Status
 
-| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                       |
-| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm lint`                                  |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm typecheck`                             |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.03% statements / 81.93% branches / 92.66% functions / 91.71% lines     |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Candidate Events Figma/API slice passed `pnpm build`                                 |
-| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
-| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints |
-| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation, announcement, and notification migrations validate                       |
-| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Launch smoke passed after localhost bind escalation                                           |
+| Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                                                                                                                                                                            |
+| ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Brother Today Figma renderer slice passed `pnpm lint`                                                                                                                                                                                  |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Brother Today Figma renderer slice passed `pnpm typecheck`                                                                                                                                                                             |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 91.30% statements / 81.91% branches / 93.12% functions / 91.96% lines                                                                                                                                                       |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, Brother Today renderer/model, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Brother Today Figma renderer slice passed `pnpm build`                                                                                                                                                                                 |
+| **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints                                                                                               |
+| **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check requires candidate/brother event reads, participation, announcement reads, admin announcements, and auth notification endpoints                                                                                                   |
+| **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Event participation, announcement, and notification migrations validate                                                                                                                                                                          |
+| **Demo mode smoke test** | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Launch smoke passed after localhost bind escalation                                                                                                                                                                                              |
 
 ---
 
@@ -501,6 +503,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Shared typography and Gold/Grey semantic tokens now cover display, screen title, section title, body, secondary, label, button, action, border, radius, and shadow roles
 - Mobile Sign In and Idle Approval screen foundations are now mounted in the public route surface with the extracted Gold/Grey auth shell; Idle users can inspect approval state without private roles/scopes, and provider credential submission remains explicitly pending
 - Candidate Events now has a dedicated Figma-aligned mobile screen. Its list API returns only the current user's own participation intent for RSVP badge/action state and does not expose participant lists.
+- Brother Today now has a dedicated Figma-aligned mobile screen over the existing guarded `/api/brother/today` contract, including profile summary, quick actions, brother-visible event cards, organization-unit cards, and no roster/participant-list exposure.
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
@@ -560,7 +563,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Build Figma-matched Sign In and Idle approval shell styling once exact visual values are available
    - [ ] Wire native/provider sign-in submission
    - [x] Replace generic Candidate Events renderer with a dedicated RN screen backed by list-level own RSVP state
-   - [ ] Replace generic Brother Today renderer with a dedicated RN screen
+   - [x] Replace generic Brother Today renderer with a dedicated RN screen
    - [ ] Apply shared header/card/bottom-nav system to candidate/brother private surfaces
    - [ ] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
 
