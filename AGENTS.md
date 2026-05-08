@@ -14,6 +14,7 @@ This file is the operating contract for coding agents working in this repository
 - ✅ Keep APIs server-side filtered (never client-side only)
 - ✅ Update OpenAPI/DTOs if changing contracts
 - ✅ Add tests for new logic (80% coverage minimum)
+- ✅ Follow [docs/agent/solid-clean-architecture-rules.md](docs/agent/solid-clean-architecture-rules.md) for SOLID, Clean Code, aggregation, and Clean Architecture boundaries
 - ✅ Update [docs/traceability.md](docs/traceability.md) as you complete requirements
 
 **Before submitting work**:
@@ -52,6 +53,7 @@ This file is the operating contract for coding agents working in this repository
 - Approved Figma screens are functional requirements, not visual references only. If a Figma screen requires data, state, actions, filters, counts, or workflow behavior that current APIs/DTOs do not support, document the gap, verify V1 scope/RBAC/privacy, and update backend APIs, shared DTOs/OpenAPI, demo fixtures, clients, tests, and docs in the same change.
 - Provider integrations belong behind adapters.
 - Mobile/admin support `api` and backend-free `demo` runtime modes. Demo mode is for local development, CI smoke checks, and controlled demos only; production builds must reject it.
+- SOLID and Clean Architecture are implementation requirements: keep modules focused, keep aggregation shallow, depend on adapters at boundaries, reuse shared policy/client seams, and avoid duplicated role, visibility, DTO, error, status, audit, runtime, or API request logic. See [docs/agent/solid-clean-architecture-rules.md](docs/agent/solid-clean-architecture-rules.md).
 
 ## ⛔ Non-Negotiables (Hard Rules)
 

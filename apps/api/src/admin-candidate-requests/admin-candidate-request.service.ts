@@ -1,8 +1,12 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { hasRole } from "@jp2/shared-auth";
+import {
+  adminScopeFor,
+  requireAdminLite,
+  requireAdminOrganizationUnitScope
+} from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminCandidateRequestRepository } from "./admin-candidate-request.repository.js";
 import type {
   AdminCandidateRequestDetail,
@@ -25,14 +29,11 @@ export class AdminCandidateRequestService {
   async listCandidateRequests(
     principal: CurrentUserPrincipal
   ): Promise<AdminCandidateRequestListResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     return {
       candidateRequests: await this.candidateRequestRepository.listCandidateRequests(
-        scopeFor(principal)
+        adminScopeFor(principal)
       )
     };
   }
@@ -41,14 +42,11 @@ export class AdminCandidateRequestService {
     principal: CurrentUserPrincipal,
     id: string
   ): Promise<AdminCandidateRequestDetailResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     const candidateRequest = await this.candidateRequestRepository.findCandidateRequest(
       id,
-      scopeFor(principal)
+      adminScopeFor(principal)
     );
 
     if (!candidateRequest) {
@@ -65,7 +63,7 @@ export class AdminCandidateRequestService {
   ): Promise<AdminCandidateRequestDetailResponse> {
     assertCanUpdateCandidateRequest(principal, data);
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const beforeCandidateRequest = await this.candidateRequestRepository.findCandidateRequest(
       id,
       scopeOrganizationUnitIds
@@ -107,7 +105,7 @@ export class AdminCandidateRequestService {
   ): Promise<AdminCandidateProfileDetailResponse> {
     assertCanConvertCandidateRequest(principal, data);
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const candidateRequest = await this.candidateRequestRepository.findCandidateRequest(
       id,
       scopeOrganizationUnitIds
@@ -169,10 +167,6 @@ export class AdminCandidateRequestService {
   }
 }
 
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
-}
-
 function assertAllowedCandidateRequestUpdate(
   candidateRequest: AdminCandidateRequestDetail,
   data: UpdateAdminCandidateRequest
@@ -213,10 +207,7 @@ function assertCanUpdateCandidateRequest(
   principal: CurrentUserPrincipal,
   data: UpdateAdminCandidateRequest
 ): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
+  requireAdminLite(principal);
 
   if (hasRole(principal, "SUPER_ADMIN")) {
     return;
@@ -242,10 +233,7 @@ function assertCanConvertCandidateRequest(
   principal: CurrentUserPrincipal,
   data: ConvertCandidateRequest
 ): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
+  requireAdminLite(principal);
 
   if (!hasRole(principal, "SUPER_ADMIN") && data.responsibleOfficerId !== undefined) {
     if (data.responsibleOfficerId !== null && data.responsibleOfficerId !== principal.id) {
@@ -262,15 +250,9 @@ function assertCanUseOrganizationUnit(
   principal: CurrentUserPrincipal,
   organizationUnitId: string
 ): void {
-  if (hasRole(principal, "SUPER_ADMIN")) {
-    return;
-  }
-
-  if ((principal.officerOrganizationUnitIds ?? []).includes(organizationUnitId)) {
-    return;
-  }
-
-  throw new ForbiddenException(
+  requireAdminOrganizationUnitScope(
+    principal,
+    organizationUnitId,
     "Officer candidate request assignment must stay within assigned organization units."
   );
 }

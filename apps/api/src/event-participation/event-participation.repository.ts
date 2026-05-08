@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import {
+  memberScopedVisibilityWhere,
+  publishedAtNowOrUnset
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type { EventParticipationSummary } from "./event-participation.types.js";
 
@@ -189,16 +193,10 @@ export function candidateParticipationEventWhere(
   assignedOrganizationUnitId: string | null,
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
-  ];
-
-  if (assignedOrganizationUnitId) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: assignedOrganizationUnitId
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "CANDIDATE",
+    assignedOrganizationUnitId
+  );
 
   return publishedOpenEventWhere(eventId, now, visibilityWhere);
 }
@@ -208,18 +206,10 @@ export function brotherParticipationEventWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
-  ];
-
-  if (organizationUnitIds.length > 0) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: {
-        in: [...organizationUnitIds]
-      }
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "BROTHER",
+    organizationUnitIds
+  );
 
   return publishedOpenEventWhere(eventId, now, visibilityWhere);
 }
@@ -235,7 +225,7 @@ function publishedOpenEventWhere(
     archivedAt: null,
     cancelledAt: null,
     startAt: { gte: now },
-    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    OR: publishedAtNowOrUnset(now),
     AND: [
       {
         OR: visibilityWhere

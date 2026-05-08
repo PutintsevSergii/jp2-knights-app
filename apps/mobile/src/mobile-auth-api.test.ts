@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildCurrentUserUrl,
   currentUserLoadFailureState,
@@ -33,6 +33,9 @@ describe("mobile auth API", () => {
     expect(buildCurrentUserUrl("https://api.example.test")).toBe(
       "https://api.example.test/auth/me"
     );
+    expect(buildCurrentUserUrl("https://api.example.test/")).toBe(
+      "https://api.example.test/auth/me"
+    );
   });
 
   it("fetches and validates the current user with a bearer token", async () => {
@@ -60,6 +63,30 @@ describe("mobile auth API", () => {
     ]);
   });
 
+  it("fetches the current user without credentials for public-only launch checks", async () => {
+    const seen: Array<{ input: string; authorization: string | undefined }> = [];
+    const response = await fetchCurrentUser({
+      baseUrl: "https://api.example.test",
+      fetchImpl: (input, init) => {
+        seen.push({ input, authorization: init?.headers?.authorization });
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(currentUser)
+        });
+      }
+    });
+
+    expect(response.access.mobileMode).toBe("candidate");
+    expect(seen).toEqual([
+      {
+        input: "https://api.example.test/auth/me",
+        authorization: undefined
+      }
+    ]);
+  });
+
   it("maps current-user responses into mobile principals", () => {
     expect(toMobilePrincipal(currentUser)).toMatchObject({
       id: "user-1",
@@ -75,11 +102,46 @@ describe("mobile auth API", () => {
         APP_AUTH_TOKEN: "generic-token"
       })
     ).toBe("expo-token");
+    expect(
+      readMobileAuthToken({
+        EXPO_PUBLIC_AUTH_TOKEN: " ",
+        APP_AUTH_TOKEN: " generic-token "
+      })
+    ).toBe("generic-token");
+    expect(
+      readMobileAuthToken({
+        EXPO_PUBLIC_AUTH_TOKEN: 42,
+        APP_AUTH_TOKEN: "generic-token"
+      })
+    ).toBe("generic-token");
   });
 
   it("maps auth failures into launch fallback states", () => {
     expect(currentUserLoadFailureState(new TypeError("network"))).toBe("offline");
     expect(currentUserLoadFailureState(new MobileAuthHttpError(401))).toBe("ready");
+    expect(currentUserLoadFailureState(new MobileAuthHttpError(403))).toBe("ready");
     expect(currentUserLoadFailureState(new MobileAuthHttpError(500))).toBe("error");
+  });
+
+  it("uses the global fetch implementation when one is available", async () => {
+    const previousFetch = globalThis.fetch;
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(currentUser)
+      })
+    );
+
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+
+    try {
+      await expect(fetchCurrentUser({ baseUrl: "https://api.example.test" })).resolves.toEqual(
+        currentUser
+      );
+      expect(fetchMock).toHaveBeenCalledWith("https://api.example.test/auth/me", { headers: {} });
+    } finally {
+      globalThis.fetch = previousFetch;
+    }
   });
 });

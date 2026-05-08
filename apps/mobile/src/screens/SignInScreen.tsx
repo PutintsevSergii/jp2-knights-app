@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.display,
     fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: -1.2,
+    letterSpacing: 0,
     lineHeight: designTokens.typography.lineHeight.display,
     textAlign: "center"
   },

@@ -123,6 +123,21 @@ describe("brother screen models", () => {
       })
     ]);
     expect(screen.sections[0]?.body).toContain("Riga");
+    expect(screen.eventCards).toEqual([
+      expect.objectContaining({
+        id: fallbackBrotherEvents.events[0]!.id,
+        title: "Brother Gathering",
+        typeLabel: "Formation",
+        locationLabel: "Riga",
+        visibilityLabel: "Choragiew",
+        detailAction: {
+          id: "view-event-detail",
+          label: "View Details",
+          targetRoute: "BrotherEventDetail",
+          targetId: fallbackBrotherEvents.events[0]!.id
+        }
+      })
+    ]);
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
       "BrotherEventDetail",
       "BrotherToday",

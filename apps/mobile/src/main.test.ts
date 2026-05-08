@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import {
   buildAboutOrderScreen,
   buildCurrentUserUrl,
@@ -145,26 +145,43 @@ describe("mobile shell", () => {
   it("keeps React Native component files one-component-per-file with shared inventory", () => {
     const screensDir = join(process.cwd(), "apps/mobile/src/screens");
     const sharedDir = join(screensDir, "shared");
-    const componentFiles = [
-      ...readdirSync(screensDir)
-        .filter((fileName) => fileName.endsWith(".tsx") && !fileName.endsWith(".test.tsx"))
-        .map((fileName) => join(screensDir, fileName)),
-      ...readdirSync(sharedDir)
-        .filter((fileName) => fileName.endsWith(".tsx"))
-        .map((fileName) => join(sharedDir, fileName))
-    ];
+    const componentFiles = mobileComponentFiles();
 
     for (const filePath of componentFiles) {
       const source = readFileSync(filePath, "utf8");
-      const exportedComponents = source.match(/^export function [A-Z][A-Za-z0-9]+/gm) ?? [];
+      const expectedComponentName = basename(filePath, ".tsx");
+      const exportedFunctionComponents = [
+        ...source.matchAll(/^export function ([A-Z][A-Za-z0-9]+)/gm)
+      ].map((match) => match[1]);
+      const exportedConstComponents = [
+        ...source.matchAll(/^export const ([A-Z][A-Za-z0-9]+)\s*=/gm)
+      ].map((match) => match[1]);
+      const localFunctionComponents = [
+        ...source.matchAll(/^(?!export )function ([A-Z][A-Za-z0-9]+)/gm)
+      ].map((match) => match[1]);
+      const localConstComponents = [
+        ...source.matchAll(/^(?!export )const ([A-Z][A-Za-z0-9]+)\s*=/gm)
+      ].map((match) => match[1]);
 
-      expect(exportedComponents.length, filePath).toBeLessThanOrEqual(1);
+      expect(exportedFunctionComponents, filePath).toEqual([expectedComponentName]);
+      expect(exportedConstComponents, filePath).toEqual([]);
+      expect(localFunctionComponents, filePath).toEqual([]);
+      expect(localConstComponents, filePath).toEqual([]);
     }
 
     const inventory = readFileSync(join(sharedDir, "README.md"), "utf8");
 
     for (const fileName of readdirSync(sharedDir).filter((name) => name.endsWith(".tsx"))) {
       expect(inventory, fileName).toContain(fileName);
+    }
+  });
+
+  it("keeps mobile React Native components from using nonzero letter spacing", () => {
+    for (const filePath of mobileComponentFiles()) {
+      const source = readFileSync(filePath, "utf8");
+      const nonzeroLetterSpacing = source.match(/letterSpacing:\s*(?!0[,}\n])[-0-9.]+/g) ?? [];
+
+      expect(nonzeroLetterSpacing, filePath).toEqual([]);
     }
   });
 
@@ -381,3 +398,17 @@ describe("mobile shell", () => {
     ).toBe("BrotherAnnouncements");
   });
 });
+
+function mobileComponentFiles(): string[] {
+  const screensDir = join(process.cwd(), "apps/mobile/src/screens");
+  const sharedDir = join(screensDir, "shared");
+
+  return [
+    ...readdirSync(screensDir)
+      .filter((fileName) => fileName.endsWith(".tsx") && !fileName.endsWith(".test.tsx"))
+      .map((fileName) => join(screensDir, fileName)),
+    ...readdirSync(sharedDir)
+      .filter((fileName) => fileName.endsWith(".tsx"))
+      .map((fileName) => join(sharedDir, fileName))
+  ];
+}

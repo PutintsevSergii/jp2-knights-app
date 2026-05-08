@@ -1,8 +1,11 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { Injectable } from "@nestjs/common";
+import {
+  adminScopeFor,
+  requireAdminLite,
+  requireSuperAdmin
+} from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminPrayerRepository } from "./admin-prayer.repository.js";
 import type {
   AdminPrayerDetailResponse,
@@ -19,15 +22,10 @@ export class AdminPrayerService {
   ) {}
 
   async listAdminPrayers(principal: CurrentUserPrincipal): Promise<AdminPrayerListResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     return {
-      prayers: await this.adminPrayerRepository.listManageablePrayers(
-        hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? [])
-      )
+      prayers: await this.adminPrayerRepository.listManageablePrayers(adminScopeFor(principal))
     };
   }
 
@@ -75,13 +73,6 @@ export class AdminPrayerService {
     return {
       prayer
     };
-  }
-}
-
-function requireSuperAdmin(principal: CurrentUserPrincipal): void {
-  if (!hasRole(principal, "SUPER_ADMIN")) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Super Admin access is required.");
   }
 }
 

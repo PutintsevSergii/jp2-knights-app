@@ -1,8 +1,8 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { hasRole } from "@jp2/shared-auth";
+import { adminScopeFor, requireAdminLite } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminIdentityAccessRepository } from "./admin-identity-access.repository.js";
 import type {
   AdminIdentityAccessReviewDetailResponse,
@@ -22,10 +22,10 @@ export class AdminIdentityAccessService {
   async listReviews(
     principal: CurrentUserPrincipal
   ): Promise<AdminIdentityAccessReviewListResponse> {
-    assertCanUseAdminLite(principal);
+    requireAdminLite(principal);
 
     return {
-      identityAccessReviews: await this.repository.listReviews(scopeFor(principal))
+      identityAccessReviews: await this.repository.listReviews(adminScopeFor(principal))
     };
   }
 
@@ -33,9 +33,9 @@ export class AdminIdentityAccessService {
     principal: CurrentUserPrincipal,
     id: string
   ): Promise<AdminIdentityAccessReviewDetailResponse> {
-    assertCanUseAdminLite(principal);
+    requireAdminLite(principal);
 
-    const review = await this.repository.findReview(id, scopeFor(principal));
+    const review = await this.repository.findReview(id, adminScopeFor(principal));
 
     if (!review) {
       throw new NotFoundException("Identity access review was not found in the current scope.");
@@ -51,7 +51,7 @@ export class AdminIdentityAccessService {
   ): Promise<AdminIdentityAccessReviewDetailResponse> {
     await this.assertCanDecideReview(principal, data.organizationUnitId);
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const before = await this.repository.findReview(id, scopeOrganizationUnitIds);
 
     if (!before) {
@@ -83,9 +83,9 @@ export class AdminIdentityAccessService {
     id: string,
     data: RejectIdentityAccessReview
   ): Promise<AdminIdentityAccessReviewDetailResponse> {
-    assertCanUseAdminLite(principal);
+    requireAdminLite(principal);
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const before = await this.repository.findReview(id, scopeOrganizationUnitIds);
 
     if (!before) {
@@ -123,7 +123,7 @@ export class AdminIdentityAccessService {
     principal: CurrentUserPrincipal,
     organizationUnitId: string | null
   ): Promise<void> {
-    assertCanUseAdminLite(principal);
+    requireAdminLite(principal);
 
     if (hasRole(principal, "SUPER_ADMIN")) {
       return;
@@ -160,17 +160,6 @@ export class AdminIdentityAccessService {
       afterSummary: summarizeReview(after)
     });
   }
-}
-
-function assertCanUseAdminLite(principal: CurrentUserPrincipal): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
-}
-
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
 }
 
 function summarizeReview(review: AdminIdentityAccessReviewSummary): AuditSummary {

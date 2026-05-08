@@ -1,8 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  adminScopeFor,
+  requireAdminLite,
+  requireScopedAdminWrite
+} from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminEventRepository } from "./admin-event.repository.js";
 import type {
   AdminEventDetailResponse,
@@ -19,13 +22,10 @@ export class AdminEventService {
   ) {}
 
   async listAdminEvents(principal: CurrentUserPrincipal): Promise<AdminEventListResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     return {
-      events: await this.adminEventRepository.listManageableEvents(scopeFor(principal))
+      events: await this.adminEventRepository.listManageableEvents(adminScopeFor(principal))
     };
   }
 
@@ -33,7 +33,11 @@ export class AdminEventService {
     principal: CurrentUserPrincipal,
     data: CreateAdminEventRequest
   ): Promise<AdminEventDetailResponse> {
-    assertCanWriteEvent(principal, data.targetOrganizationUnitId ?? null);
+    requireScopedAdminWrite(
+      principal,
+      data.targetOrganizationUnitId ?? null,
+      "Officer event writes must stay within assigned organization units."
+    );
 
     const event = await this.adminEventRepository.createEvent(data);
     await this.auditLog.record({
@@ -57,13 +61,16 @@ export class AdminEventService {
     data: UpdateAdminEventRequest
   ): Promise<AdminEventDetailResponse> {
     if (data.targetOrganizationUnitId !== undefined) {
-      assertCanWriteEvent(principal, data.targetOrganizationUnitId);
-    } else if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
+      requireScopedAdminWrite(
+        principal,
+        data.targetOrganizationUnitId,
+        "Officer event writes must stay within assigned organization units."
+      );
+    } else {
+      requireAdminLite(principal);
     }
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const beforeEvent = await this.adminEventRepository.findEventForAudit(
       id,
       scopeOrganizationUnitIds
@@ -86,33 +93,6 @@ export class AdminEventService {
 
     return { event };
   }
-}
-
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
-}
-
-function assertCanWriteEvent(
-  principal: CurrentUserPrincipal,
-  targetOrganizationUnitId: string | null
-): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
-
-  if (hasRole(principal, "SUPER_ADMIN")) {
-    return;
-  }
-
-  if (
-    targetOrganizationUnitId &&
-    (principal.officerOrganizationUnitIds ?? []).includes(targetOrganizationUnitId)
-  ) {
-    return;
-  }
-
-  throw new ForbiddenException("Officer event writes must stay within assigned organization units.");
 }
 
 function summarizeEventForAudit(event: AdminEventDetailResponse["event"]): AuditSummary {

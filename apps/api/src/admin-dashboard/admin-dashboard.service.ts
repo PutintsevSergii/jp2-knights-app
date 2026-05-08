@@ -1,7 +1,7 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { Injectable } from "@nestjs/common";
+import { hasRole } from "@jp2/shared-auth";
+import { adminScopeFor, requireAdminLite } from "../admin/admin-access.policy.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminDashboardRepository } from "./admin-dashboard.repository.js";
 import type { AdminDashboardCounts, AdminDashboardResponse } from "./admin-dashboard.types.js";
 
@@ -10,12 +10,9 @@ export class AdminDashboardService {
   constructor(private readonly adminDashboardRepository: AdminDashboardRepository) {}
 
   async getDashboard(principal: CurrentUserPrincipal): Promise<AdminDashboardResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const counts = await this.adminDashboardRepository.loadCounts(scopeOrganizationUnitIds);
 
     return {
@@ -27,10 +24,6 @@ export class AdminDashboardService {
       tasks: buildTasks(counts)
     };
   }
-}
-
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
 }
 
 function buildTasks(counts: AdminDashboardCounts): AdminDashboardResponse["tasks"] {

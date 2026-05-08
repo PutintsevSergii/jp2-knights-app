@@ -1,8 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  adminScopeFor,
+  requireAdminLite,
+  requireScopedAdminWrite
+} from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AnnouncementPushRecipientRepository } from "../notifications/announcement-push-recipient.repository.js";
 import { PushNotificationAdapter } from "../notifications/push-notification.adapter.js";
 import { AdminAnnouncementRepository } from "./admin-announcement.repository.js";
@@ -25,14 +28,11 @@ export class AdminAnnouncementService {
   async listAdminAnnouncements(
     principal: CurrentUserPrincipal
   ): Promise<AdminAnnouncementListResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     return {
       announcements: await this.adminAnnouncementRepository.listManageableAnnouncements(
-        scopeFor(principal)
+        adminScopeFor(principal)
       )
     };
   }
@@ -41,7 +41,11 @@ export class AdminAnnouncementService {
     principal: CurrentUserPrincipal,
     data: CreateAdminAnnouncementRequest
   ): Promise<AdminAnnouncementDetailResponse> {
-    assertCanWriteAnnouncement(principal, data.targetOrganizationUnitId ?? null);
+    requireScopedAdminWrite(
+      principal,
+      data.targetOrganizationUnitId ?? null,
+      "Officer announcement writes must stay within assigned organization units."
+    );
 
     const announcement = await this.adminAnnouncementRepository.createAnnouncement(data);
     await this.dispatchAnnouncementPushIfNeeded(principal, null, announcement);
@@ -64,13 +68,16 @@ export class AdminAnnouncementService {
     data: UpdateAdminAnnouncementRequest
   ): Promise<AdminAnnouncementDetailResponse> {
     if (data.targetOrganizationUnitId !== undefined) {
-      assertCanWriteAnnouncement(principal, data.targetOrganizationUnitId);
-    } else if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
+      requireScopedAdminWrite(
+        principal,
+        data.targetOrganizationUnitId,
+        "Officer announcement writes must stay within assigned organization units."
+      );
+    } else {
+      requireAdminLite(principal);
     }
 
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const beforeAnnouncement = await this.adminAnnouncementRepository.findAnnouncementForAudit(
       id,
       scopeOrganizationUnitIds
@@ -155,35 +162,6 @@ export class AdminAnnouncementService {
       }
     });
   }
-}
-
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
-}
-
-function assertCanWriteAnnouncement(
-  principal: CurrentUserPrincipal,
-  targetOrganizationUnitId: string | null
-): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
-
-  if (hasRole(principal, "SUPER_ADMIN")) {
-    return;
-  }
-
-  if (
-    targetOrganizationUnitId &&
-    (principal.officerOrganizationUnitIds ?? []).includes(targetOrganizationUnitId)
-  ) {
-    return;
-  }
-
-  throw new ForbiddenException(
-    "Officer announcement writes must stay within assigned organization units."
-  );
 }
 
 function summarizeAnnouncementForAudit(

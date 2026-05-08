@@ -16,6 +16,21 @@ During implementation:
 
 - Split by responsibility first, not by file length after the fact.
 - Prefer the existing package/module pattern over inventing a new framework.
+- Apply SOLID as an implementation requirement, not an after-the-fact cleanup:
+  keep each file and exported type focused on one reason to change, depend on
+  interfaces/adapters at module boundaries, keep shared contracts small enough
+  that consumers do not import unrelated domains, and extend behavior through
+  focused helpers or modules instead of editing repeated condition blocks.
+- Follow [solid-clean-architecture-rules.md](solid-clean-architecture-rules.md)
+  before adding new policy, API client, DTO, shell, route, or screen-model code.
+- Keep aggregation explicit and shallow. Composition roots may assemble modules,
+  routes, hooks, or renderers, but they must not also own domain filtering,
+  network effects, persistence clients, DTO mapping, or screen-specific form
+  workflows.
+- Shared infrastructure such as database clients, audit logging, auth providers,
+  push adapters, and runtime config must be provided through a single module or
+  adapter boundary. Do not re-register infrastructure clients independently in
+  each feature module.
 - Keep server-side filtering on the backend. Client components may hide unavailable routes, but they must not become the privacy boundary.
 - For React and React Native, keep exported components one-per-file. If a new
   component needs to be exported, create a dedicated component file for it
@@ -104,8 +119,8 @@ Use this shape when adding a new boundary entry:
 
 | File pattern                               | Contract                                                                                                                                                                                                                                                                          |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/mobile/src/screens/*.tsx`            | React Native rendering for a provided screen model, callbacks, and theme tokens. Screen files should compose components, not define reusable local component functions. No direct fetch calls, direct storage, role filtering, DTO parsing, or duplicated design-token constants. |
-| `apps/mobile/src/screens/shared/*.tsx`     | Shared React Native components. One exported component per file. Update `apps/mobile/src/screens/shared/README.md` in the same change whenever a shared component is added, renamed, or removed.                                                                                  |
+| `apps/mobile/src/screens/*.tsx`            | React Native rendering for a provided screen model, callbacks, and theme tokens. Exactly one exported component per file, exported as `function ComponentName` with the component name matching the filename. Screen files should compose components, not define reusable local component functions. No direct fetch calls, direct storage, role filtering, DTO parsing, or duplicated design-token constants. |
+| `apps/mobile/src/screens/shared/*.tsx`     | Shared React Native components. Exactly one exported component per file, exported as `function ComponentName` with the component name matching the filename; do not add local PascalCase function or const components in the same file. Update `apps/mobile/src/screens/shared/README.md` in the same change whenever a shared component is added, renamed, or removed.                                       |
 | `apps/mobile/src/screens/shared/README.md` | Required inventory of all shared mobile screen components. Check this before adding screen chrome, nav, icon, state, badge, card, action-row, or form-field components. Each shared component row must document file/component, purpose, key props/variants, and reuse guidance.  |
 | `apps/mobile/src/screens/*.test.tsx`       | Visible-state and callback coverage for render components. Prefer model/surface tests for non-visual behavior.                                                                                                                                                                    |
 
@@ -151,11 +166,25 @@ Use this shape when adding a new boundary entry:
 | Data/API source            | Candidate events API client and demo fixtures                                                                                                              |
 | Screen model               | `apps/mobile/src/candidate-events-screen.ts`; `apps/mobile/src/candidate-screens.ts` remains a barrel only                                                 |
 | Route/surface owner        | `apps/mobile/src/mobile-candidate-surface.tsx`; extract candidate event controller/hook if loader/action logic grows past the surface boundary             |
-| Renderer components        | New `apps/mobile/src/screens/CandidateEventsScreen.tsx` and detail renderer when replacing the generic private renderer                                    |
+| Renderer components        | `apps/mobile/src/screens/CandidateEventsScreen.tsx` and `apps/mobile/src/screens/CandidateEventDetailScreen.tsx`                                           |
 | Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, metadata icons, filter icon, and status dot components |
 | Tests                      | Model tests, candidate surface route/action tests, renderer tests, and existing API visibility/participation tests                                         |
 | Forbidden responsibilities | No brother-only content, officer workflows, client-side visibility filtering, or chat/comments/read receipts                                               |
 | Scope guard                | Candidate event discovery and participation only; broader social or messaging behavior is V2/out of scope                                                  |
+
+### Candidate Announcements
+
+| Field                      | Contract                                                                                                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement/phase          | FR-CANDIDATE-003, Phase 10A                                                                                                                                      |
+| Data/API source            | Candidate announcements API client and demo fixtures                                                                                                             |
+| Screen model               | `apps/mobile/src/candidate-announcements-screen.ts`; `apps/mobile/src/candidate-screens.ts` remains a barrel only                                                |
+| Route/surface owner        | `apps/mobile/src/mobile-candidate-surface.tsx`; add a detail route only if a product-approved detail contract exists                                             |
+| Renderer components        | `apps/mobile/src/screens/CandidateAnnouncementsScreen.tsx`                                                                                                       |
+| Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, and one-way announcement icon                                |
+| Tests                      | Model tests, renderer tests, route/action tests, and existing API visibility tests                                                                                |
+| Forbidden responsibilities | No chat, comments, read receipts, push delivery state, officer/admin workflows, unrelated-scope announcements, brother-only content, or client-side filtering     |
+| Scope guard                | Candidate-visible one-way announcements only; separate announcement detail routes/contracts require product need and server-side visibility before implementation |
 
 ### Brother Today
 
@@ -170,6 +199,20 @@ Use this shape when adding a new boundary entry:
 | Tests                      | Model tests, brother surface route/action tests, renderer tests, and existing brother API visibility tests                                                |
 | Forbidden responsibilities | No candidate-only onboarding, officer/admin management, brother rosters, private participant lists for prayer, or client-side permission filtering        |
 | Scope guard                | Brother companion summary only; extended hierarchy, analytics, and social features remain out of scope                                                    |
+
+### Brother Events
+
+| Field                      | Contract                                                                                                                                                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement/phase          | FR-EVENT-002, Phase 10A                                                                                                                                     |
+| Data/API source            | Brother events API client and demo fixtures                                                                                                                 |
+| Screen model               | `apps/mobile/src/brother-events-screen.ts`; `apps/mobile/src/brother-screens.ts` remains a barrel only                                                       |
+| Route/surface owner        | `apps/mobile/src/mobile-brother-surface.tsx`; detail/participation actions stay on the existing brother event detail route                                  |
+| Renderer components        | `apps/mobile/src/screens/BrotherEventsScreen.tsx`                                                                                                           |
+| Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, metadata icons, filter icon, and token-backed card chrome |
+| Tests                      | Model tests, renderer tests, route/action coverage through existing brother surface tests, and existing brother API visibility tests                         |
+| Forbidden responsibilities | No attendee lists, brother roster exposure, candidate-only content, officer/admin workflows, chat/comments/read receipts, or client-side filtering           |
+| Scope guard                | Brother-visible event discovery only; event participation mutations remain on detail/intent contracts                                                       |
 
 ### Admin Lite Candidate Requests
 

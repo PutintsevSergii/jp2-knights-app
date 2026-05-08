@@ -15,6 +15,16 @@ export interface BrotherEventDetailScreen {
   state: MobileScreenState;
   title: string;
   body: string;
+  typeLabel: string;
+  dateLabel: string;
+  timeLabel: string;
+  locationLabel: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "planning" | "needed" | "cancelled";
+  primaryAction: BrotherScreenAction | null;
+  backAction: BrotherScreenAction | null;
+  todayAction: BrotherScreenAction | null;
   sections: BrotherScreenSection[];
   actions: BrotherScreenAction[];
   demoChromeVisible: boolean;
@@ -39,6 +49,22 @@ export function buildBrotherEventDetailScreen(options: {
     state: "ready",
     title: options.response.event.title,
     body: brotherEventDetailBody(options.response.event),
+    typeLabel: formatEventType(options.response.event.type),
+    dateLabel: formatEventDate(options.response.event.startAt),
+    timeLabel: formatEventTimeRange(options.response.event.startAt, options.response.event.endAt),
+    locationLabel: options.response.event.locationLabel ?? "Location to be confirmed",
+    description: options.response.event.description ?? "No event description is recorded yet.",
+    ...brotherParticipationState(options.response),
+    backAction: {
+      id: "events",
+      label: "Brother Events",
+      targetRoute: "BrotherEvents"
+    },
+    todayAction: {
+      id: "today",
+      label: "Brother Today",
+      targetRoute: "BrotherToday"
+    },
     sections: buildBrotherEventDetailSections(options.response),
     actions: [
       participationAction(options.response),
@@ -69,6 +95,16 @@ function stateOnlyBrotherEventDetail(
     state,
     title: copy.title,
     body: copy.body,
+    typeLabel: "",
+    dateLabel: "",
+    timeLabel: "",
+    locationLabel: "",
+    description: copy.body,
+    statusLabel: "",
+    statusTone: "needed",
+    primaryAction: null,
+    backAction: null,
+    todayAction: null,
     sections: [],
     actions: [],
     demoChromeVisible,
@@ -121,4 +157,67 @@ function participationAction(response: BrotherEventDetailResponseDto): BrotherSc
     targetRoute: "BrotherEventDetail",
     targetId: response.event.id
   };
+}
+
+function brotherParticipationState(
+  response: BrotherEventDetailResponseDto
+): Pick<BrotherEventDetailScreen, "statusLabel" | "statusTone" | "primaryAction"> {
+  if (response.event.currentUserParticipation?.intentStatus === "planning_to_attend") {
+    return {
+      statusLabel: "Planning to attend",
+      statusTone: "planning",
+      primaryAction: participationAction(response)
+    };
+  }
+
+  if (response.event.currentUserParticipation?.intentStatus === "cancelled") {
+    return {
+      statusLabel: "Not attending",
+      statusTone: "cancelled",
+      primaryAction: participationAction(response)
+    };
+  }
+
+  return {
+    statusLabel: "RSVP needed",
+    statusTone: "needed",
+    primaryAction: participationAction(response)
+  };
+}
+
+function formatEventType(type: string): string {
+  return type
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+function formatEventDate(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(value));
+}
+
+function formatEventTimeRange(startAt: string, endAt: string | null): string {
+  const start = formatEventTime(new Date(startAt));
+
+  if (!endAt) {
+    return start;
+  }
+
+  return `${start} - ${formatEventTime(new Date(endAt))}`;
+}
+
+function formatEventTime(date: Date): string {
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "UTC"
+  }).format(date);
 }

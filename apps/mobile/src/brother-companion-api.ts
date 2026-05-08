@@ -15,25 +15,24 @@ import {
   type MyOrganizationUnitsResponseDto
 } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
-import { DEFAULT_PUBLIC_API_BASE_URL } from "./public-home-api.js";
+import {
+  DEFAULT_PUBLIC_API_BASE_URL,
+  buildMobileApiUrl,
+  normalizeBaseUrl,
+  requestMobileApi,
+  setOptionalNumberParam,
+  setOptionalParam,
+  type MobileApiFetch,
+  type MobileApiFetchInit,
+  type MobileApiFetchResponse,
+  type MobilePrivateAccessErrorCode
+} from "./mobile-api-client.js";
 
-export interface BrotherCompanionFetchResponse {
-  ok: boolean;
-  status: number;
-  json: () => Promise<unknown>;
-}
+export type BrotherCompanionFetchResponse = MobileApiFetchResponse;
 
-type MobilePrivateAccessErrorCode = "IDLE_APPROVAL_REQUIRED";
+export type BrotherCompanionFetchInit = MobileApiFetchInit;
 
-export interface BrotherCompanionFetchInit {
-  method?: "GET" | "POST" | "DELETE";
-  headers?: Record<string, string>;
-}
-
-export type BrotherCompanionFetch = (
-  input: string,
-  init?: BrotherCompanionFetchInit
-) => Promise<BrotherCompanionFetchResponse>;
+export type BrotherCompanionFetch = MobileApiFetch;
 
 export interface FetchBrotherCompanionOptions {
   baseUrl?: string;
@@ -146,25 +145,22 @@ export function buildBrotherEventDetailUrl(
   id: string,
   baseUrl = DEFAULT_PUBLIC_API_BASE_URL
 ): string {
-  return new URL(`brother/events/${encodeURIComponent(id)}`, normalizeBaseUrl(baseUrl)).toString();
+  return buildMobileApiUrl(`brother/events/${encodeURIComponent(id)}`, baseUrl);
 }
 
 export function buildBrotherEventParticipationUrl(
   id: string,
   baseUrl = DEFAULT_PUBLIC_API_BASE_URL
 ): string {
-  return new URL(
-    `brother/events/${encodeURIComponent(id)}/participation`,
-    normalizeBaseUrl(baseUrl)
-  ).toString();
+  return buildMobileApiUrl(`brother/events/${encodeURIComponent(id)}/participation`, baseUrl);
 }
 
 export function buildBrotherProfileUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
-  return new URL("brother/profile", normalizeBaseUrl(baseUrl)).toString();
+  return buildMobileApiUrl("brother/profile", baseUrl);
 }
 
 export function buildBrotherTodayUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
-  return new URL("brother/today", normalizeBaseUrl(baseUrl)).toString();
+  return buildMobileApiUrl("brother/today", baseUrl);
 }
 
 export function buildBrotherEventsUrl(
@@ -192,7 +188,7 @@ export function buildBrotherAnnouncementsUrl(
 }
 
 export function buildMyOrganizationUnitsUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
-  return new URL("brother/my-organization-units", normalizeBaseUrl(baseUrl)).toString();
+  return buildMobileApiUrl("brother/my-organization-units", baseUrl);
 }
 
 export function brotherCompanionLoadFailureState(error: unknown): MobileScreenState {
@@ -235,74 +231,10 @@ async function fetchBrotherCompanion(
   options: FetchBrotherCompanionOptions,
   method: BrotherCompanionFetchInit["method"] = "GET"
 ): Promise<BrotherCompanionFetchResponse> {
-  const fetcher = options.fetchImpl ?? getGlobalFetch();
-  const headers: Record<string, string> = {};
-
-  if (options.authToken) {
-    headers.authorization = `Bearer ${options.authToken}`;
-  }
-
-  const response = await fetcher(url, {
+  return requestMobileApi<BrotherCompanionFetchResponse>(
+    url,
+    options,
     method,
-    headers
-  });
-
-  if (!response.ok) {
-    throw new BrotherCompanionHttpError(response.status, await readPrivateAccessErrorCode(response));
-  }
-
-  return response;
-}
-
-async function readPrivateAccessErrorCode(
-  response: BrotherCompanionFetchResponse
-): Promise<MobilePrivateAccessErrorCode | null> {
-  try {
-    const value = await response.json();
-    return parsePrivateAccessErrorCode(value);
-  } catch {
-    return null;
-  }
-}
-
-function parsePrivateAccessErrorCode(value: unknown): MobilePrivateAccessErrorCode | null {
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  const error = value.error;
-
-  if (!isRecord(error)) {
-    return null;
-  }
-
-  return error.code === "IDLE_APPROVAL_REQUIRED" ? "IDLE_APPROVAL_REQUIRED" : null;
-}
-
-function setOptionalParam(url: URL, key: string, value: string | undefined) {
-  if (value) {
-    url.searchParams.set(key, value);
-  }
-}
-
-function setOptionalNumberParam(url: URL, key: string, value: number | undefined) {
-  if (typeof value === "number") {
-    url.searchParams.set(key, String(value));
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-}
-
-function getGlobalFetch(): BrotherCompanionFetch {
-  if (typeof globalThis.fetch !== "function") {
-    throw new Error("Fetch is not available in this runtime.");
-  }
-
-  return (input, init) => globalThis.fetch(input, init);
+    (status, code) => new BrotherCompanionHttpError(status, code)
+  );
 }

@@ -42,6 +42,11 @@ describe("CandidateEventsScreen", () => {
       targetRoute: "CandidateEventDetail",
       targetId: fallbackCandidateEvents.events[0]!.id
     });
+
+    expect(findPressableByLabel(element, "Dashboard")?.props.disabled).toBeUndefined();
+    expect(findPressableByLabel(element, "Prayer")?.props.disabled).toBe(true);
+    expect(findPressableByLabel(element, "Choragiew")?.props.disabled).toBe(true);
+    expect(findPressableByLabel(element, "Account")?.props.disabled).toBe(true);
   });
 });
 
@@ -50,6 +55,7 @@ interface TestElement {
   props: {
     accessibilityLabel?: string;
     children?: TestNode;
+    disabled?: boolean;
     onPress?: () => void;
   };
 }

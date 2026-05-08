@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuditLogService } from "../audit/audit-log.service.js";
 import { AuthModule } from "../auth/auth.module.js";
-import { PrismaService } from "../database/prisma.service.js";
+import { DatabaseModule } from "../database/database.module.js";
 import {
   AnnouncementPushRecipientRepository,
   PrismaAnnouncementPushRecipientRepository
@@ -24,10 +24,9 @@ import { AdminPrayerRepository, PrismaAdminPrayerRepository } from "./admin-pray
 import { AdminPrayerService } from "./admin-prayer.service.js";
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, DatabaseModule],
   controllers: [AdminAnnouncementController, AdminEventController, AdminPrayerController],
   providers: [
-    PrismaService,
     AuditLogService,
     AdminAnnouncementService,
     {

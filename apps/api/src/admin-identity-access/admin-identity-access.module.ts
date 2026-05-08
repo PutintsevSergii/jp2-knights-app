@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuditLogService } from "../audit/audit-log.service.js";
 import { AuthModule } from "../auth/auth.module.js";
-import { PrismaService } from "../database/prisma.service.js";
+import { DatabaseModule } from "../database/database.module.js";
 import { AdminIdentityAccessController } from "./admin-identity-access.controller.js";
 import {
   AdminIdentityAccessRepository,
@@ -10,10 +10,9 @@ import {
 import { AdminIdentityAccessService } from "./admin-identity-access.service.js";
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, DatabaseModule],
   controllers: [AdminIdentityAccessController],
   providers: [
-    PrismaService,
     AuditLogService,
     AdminIdentityAccessService,
     {

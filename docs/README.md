@@ -42,6 +42,7 @@ This is not a full ERP for the whole Order. Implementation agents must build pha
 | [RISK_AND_MITIGATION.md](delivery/RISK_AND_MITIGATION.md) | 15 identified risks with mitigations (5 high-priority) |
 | [ACCESSIBILITY_AND_INCLUSION.md](product/ACCESSIBILITY_AND_INCLUSION.md) | WCAG 2.1 AA compliance requirements and testing |
 | [API_VERSIONING_AND_DEPRECATION.md](api/API_VERSIONING_AND_DEPRECATION.md) | API evolution strategy, backwards compatibility, breaking changes |
+| [SOLID/Clean Architecture Rules](agent/solid-clean-architecture-rules.md) | Required SOLID, Clean Code, aggregation, and Clean Architecture implementation rules |
 
 ## Single Source of Truth for Implementation Progress
 
@@ -100,6 +101,7 @@ The non-negotiable constraints remain:
 - Technology stack changes require a short architecture decision entry with the reason, tradeoffs, and migration impact.
 - Coding tasks must satisfy [agent/quality-gates.md](agent/quality-gates.md) before completion.
 - New reusable logic must follow [agent/no-duplicate-policy.md](agent/no-duplicate-policy.md).
+- New code and refactors must follow [agent/solid-clean-architecture-rules.md](agent/solid-clean-architecture-rules.md).
 - New screens, route groups, and reusable components must declare or follow [agent/component-boundary-contracts.md](agent/component-boundary-contracts.md) before adding more code to a root or shell file.
 - Approved scope expansion must update scope, backlog, traceability, and affected implementation docs before or with the code change.
 

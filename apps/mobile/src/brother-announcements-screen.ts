@@ -9,11 +9,22 @@ import {
   type BrotherScreenTheme
 } from "./brother-screen-contracts.js";
 
+type BrotherAnnouncementListItem = BrotherAnnouncementListResponseDto["announcements"][number];
+
+export interface BrotherAnnouncementCard {
+  id: string;
+  title: string;
+  body: string;
+  publishedLabel: string;
+  pinned: boolean;
+}
+
 export interface BrotherAnnouncementsScreen {
   route: "BrotherAnnouncements";
   state: MobileScreenState;
   title: string;
   body: string;
+  announcementCards: BrotherAnnouncementCard[];
   sections: BrotherScreenSection[];
   actions: BrotherScreenAction[];
   demoChromeVisible: boolean;
@@ -38,6 +49,7 @@ export function buildBrotherAnnouncementsScreen(options: {
     state: "ready",
     title: "Brother Announcements",
     body: announcementCountBody(options.response.announcements.length),
+    announcementCards: options.response.announcements.map(buildBrotherAnnouncementCard),
     sections: options.response.announcements.map((announcement) => ({
       id: `announcement-${announcement.id}`,
       title: announcement.pinned ? `${announcement.title} (Pinned)` : announcement.title,
@@ -66,6 +78,7 @@ function stateOnlyBrotherAnnouncements(
     state,
     title: copy.title,
     body: copy.body,
+    announcementCards: [],
     sections: [],
     actions: [],
     demoChromeVisible,
@@ -80,8 +93,24 @@ function announcementCountBody(count: number): string {
 }
 
 function brotherAnnouncementBody(
-  announcement: BrotherAnnouncementListResponseDto["announcements"][number]
+  announcement: BrotherAnnouncementListItem
 ): string {
+  return `${formatAnnouncementPublishedAt(announcement.publishedAt)}\n${announcement.body}`;
+}
+
+function buildBrotherAnnouncementCard(
+  announcement: BrotherAnnouncementListItem
+): BrotherAnnouncementCard {
+  return {
+    id: announcement.id,
+    title: announcement.title,
+    body: announcement.body,
+    publishedLabel: formatAnnouncementPublishedAt(announcement.publishedAt),
+    pinned: announcement.pinned
+  };
+}
+
+function formatAnnouncementPublishedAt(value: string): string {
   const formatted = new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
@@ -90,7 +119,7 @@ function brotherAnnouncementBody(
     minute: "2-digit",
     hour12: false,
     timeZone: "UTC"
-  }).format(new Date(announcement.publishedAt));
+  }).format(new Date(value));
 
-  return `${formatted}\n${announcement.body}`;
+  return formatted;
 }

@@ -1,42 +1,8 @@
-import { useEffect, useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
-import type {
-  PublicCandidateRequestResponseDto,
-  PublicContentPageResponseDto,
-  PublicEventDetailResponseDto,
-  PublicEventListResponseDto,
-  PublicPrayerDetailResponseDto,
-  PublicPrayerListResponseDto
-} from "@jp2/shared-validation";
-import { fetchPublicContentPage, publicContentPageLoadFailureState } from "./public-content-api.js";
-import {
-  fetchPublicEvent,
-  fetchPublicPrayer,
-  publicContentDetailLoadFailureState
-} from "./public-content-detail-api.js";
-import {
-  fetchPublicEvents,
-  fetchPublicPrayers,
-  publicContentListLoadFailureState
-} from "./public-content-list-api.js";
-import {
-  fallbackAboutOrderContentPage,
-  fallbackPublicEventDetail,
-  fallbackPublicEvents,
-  fallbackPublicPrayerDetail,
-  fallbackPublicPrayers
-} from "./public-content.js";
-import {
-  emptyJoinRequestFormDraft,
-  fallbackPublicCandidateRequestResponse,
-  submitDemoPublicCandidateRequest,
-  type JoinRequestFormDraft
-} from "./public-candidate-request.js";
-import {
-  publicCandidateRequestSubmitFailureState,
-  submitPublicCandidateRequest
-} from "./public-candidate-request-api.js";
-import type { MobileLaunchState, MobileScreenState } from "./navigation.js";
+import { fallbackPublicCandidateRequestResponse } from "./public-candidate-request.js";
+import type { MobileLaunchState } from "./navigation.js";
+import { useMobilePublicContentController } from "./mobile-public-content-controller.js";
+import { useMobilePublicFormController } from "./mobile-public-form-controller.js";
 import {
   buildAboutOrderScreen,
   buildIdleApprovalScreen,
@@ -47,10 +13,9 @@ import {
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
-  buildSignInScreen,
-  JOIN_REQUEST_CONSENT_TEXT_VERSION
+  buildSignInScreen
 } from "./public-screens.js";
-import type { JoinRequestFieldId, PublicRoute, SignInFieldId } from "./public-screens.js";
+import type { PublicRoute } from "./public-screens.js";
 import { AboutOrderScreen } from "./screens/AboutOrderScreen.js";
 import { IdleApprovalScreen } from "./screens/IdleApprovalScreen.js";
 import { JoinRequestConfirmationScreen } from "./screens/JoinRequestConfirmationScreen.js";
@@ -75,274 +40,27 @@ export function MobilePublicSurface({
   launchState,
   onRouteChange
 }: MobilePublicSurfaceProps) {
-  const [aboutOrderState, setAboutOrderState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [aboutOrderPage, setAboutOrderPage] = useState<
-    PublicContentPageResponseDto["page"] | undefined
-  >(() => (runtimeMode === "demo" ? fallbackAboutOrderContentPage : undefined));
-  const [publicPrayersState, setPublicPrayersState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [publicPrayers, setPublicPrayers] = useState<PublicPrayerListResponseDto | undefined>(() =>
-    runtimeMode === "demo" ? fallbackPublicPrayers : undefined
-  );
-  const [publicEventsState, setPublicEventsState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [publicEvents, setPublicEvents] = useState<PublicEventListResponseDto | undefined>(() =>
-    runtimeMode === "demo" ? fallbackPublicEvents : undefined
-  );
-  const [selectedPublicPrayerId, setSelectedPublicPrayerId] = useState<string | undefined>();
-  const [selectedPublicEventId, setSelectedPublicEventId] = useState<string | undefined>();
-  const [publicPrayerDetailState, setPublicPrayerDetailState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [publicPrayerDetail, setPublicPrayerDetail] = useState<
-    PublicPrayerDetailResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackPublicPrayerDetail : undefined));
-  const [publicEventDetailState, setPublicEventDetailState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [publicEventDetail, setPublicEventDetail] = useState<
-    PublicEventDetailResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackPublicEventDetail : undefined));
-  const [joinRequestState, setJoinRequestState] = useState<MobileScreenState>("ready");
-  const [joinRequestDraft, setJoinRequestDraft] = useState<JoinRequestFormDraft>({
-    ...emptyJoinRequestFormDraft
+  const publicContent = useMobilePublicContentController({
+    route,
+    runtimeMode,
+    publicApiBaseUrl,
+    onRouteChange
   });
-  const [joinRequestConsentAccepted, setJoinRequestConsentAccepted] = useState(false);
-  const [joinRequestErrorMessage, setJoinRequestErrorMessage] = useState<string | undefined>();
-  const [joinRequestResponse, setJoinRequestResponse] = useState<
-    PublicCandidateRequestResponseDto | undefined
-  >();
-  const [signInValues, setSignInValues] = useState<Record<SignInFieldId, string>>({
-    email: "",
-    password: ""
+  const publicForms = useMobilePublicFormController({
+    runtimeMode,
+    publicApiBaseUrl,
+    onRouteChange
   });
-  const [signInErrorMessage, setSignInErrorMessage] = useState<string | undefined>();
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "AboutOrder") {
-      return;
-    }
-
-    let cancelled = false;
-    setAboutOrderState("loading");
-
-    fetchPublicContentPage({ slug: "about-order", baseUrl: publicApiBaseUrl })
-      .then((response) => {
-        if (!cancelled) {
-          setAboutOrderPage(response.page);
-          setAboutOrderState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setAboutOrderPage(undefined);
-          setAboutOrderState(publicContentPageLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "PublicPrayerCategories") {
-      return;
-    }
-
-    let cancelled = false;
-    setPublicPrayersState("loading");
-
-    fetchPublicPrayers({ baseUrl: publicApiBaseUrl })
-      .then((response) => {
-        if (!cancelled) {
-          setPublicPrayers(response);
-          setPublicPrayersState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setPublicPrayers(undefined);
-          setPublicPrayersState(publicContentListLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "PublicEventsList") {
-      return;
-    }
-
-    let cancelled = false;
-    setPublicEventsState("loading");
-
-    fetchPublicEvents({ baseUrl: publicApiBaseUrl })
-      .then((response) => {
-        if (!cancelled) {
-          setPublicEvents(response);
-          setPublicEventsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setPublicEvents(undefined);
-          setPublicEventsState(publicContentListLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "PublicPrayerDetail" || !selectedPublicPrayerId) {
-      return;
-    }
-
-    let cancelled = false;
-    setPublicPrayerDetailState("loading");
-
-    fetchPublicPrayer({ id: selectedPublicPrayerId, baseUrl: publicApiBaseUrl })
-      .then((response) => {
-        if (!cancelled) {
-          setPublicPrayerDetail(response);
-          setPublicPrayerDetailState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setPublicPrayerDetail(undefined);
-          setPublicPrayerDetailState(publicContentDetailLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicApiBaseUrl, route, runtimeMode, selectedPublicPrayerId]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "PublicEventDetail" || !selectedPublicEventId) {
-      return;
-    }
-
-    let cancelled = false;
-    setPublicEventDetailState("loading");
-
-    fetchPublicEvent({ id: selectedPublicEventId, baseUrl: publicApiBaseUrl })
-      .then((response) => {
-        if (!cancelled) {
-          setPublicEventDetail(response);
-          setPublicEventDetailState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setPublicEventDetail(undefined);
-          setPublicEventDetailState(publicContentDetailLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publicApiBaseUrl, route, runtimeMode, selectedPublicEventId]);
-
-  function handlePublicRoute(nextRoute: PublicRoute, targetId?: string) {
-    if (nextRoute === "PublicPrayerDetail") {
-      setSelectedPublicPrayerId(targetId);
-      if (runtimeMode === "demo") {
-        setPublicPrayerDetail(fallbackPublicPrayerDetail);
-        setPublicPrayerDetailState(targetId ? "ready" : "empty");
-      }
-    }
-
-    if (nextRoute === "PublicEventDetail") {
-      setSelectedPublicEventId(targetId);
-      if (runtimeMode === "demo") {
-        setPublicEventDetail(fallbackPublicEventDetail);
-        setPublicEventDetailState(targetId ? "ready" : "empty");
-      }
-    }
-
-    onRouteChange(nextRoute);
-  }
-
-  function handleJoinRequestFieldChange(field: JoinRequestFieldId, value: string) {
-    setJoinRequestDraft((current) => ({
-      ...current,
-      [field]: value
-    }));
-    setJoinRequestErrorMessage(undefined);
-  }
-
-  function handleJoinRequestConsentAcceptedChange(accepted: boolean) {
-    setJoinRequestConsentAccepted(accepted);
-    setJoinRequestErrorMessage(undefined);
-  }
-
-  function handleSignInFieldChange(field: SignInFieldId, value: string) {
-    setSignInValues((current) => ({
-      ...current,
-      [field]: value
-    }));
-    setSignInErrorMessage(undefined);
-  }
-
-  function handleSignInSubmit() {
-    setSignInErrorMessage(
-      "Provider sign-in is not configured in this Expo shell yet. Use an approved bearer token for API-mode development."
-    );
-  }
-
-  async function handleJoinRequestSubmit() {
-    setJoinRequestState("loading");
-    setJoinRequestErrorMessage(undefined);
-
-    try {
-      const request = buildJoinRequestPayload(
-        joinRequestDraft,
-        joinRequestConsentAccepted,
-        createJoinRequestIdempotencyKey()
-      );
-      const response =
-        runtimeMode === "demo"
-          ? await submitDemoPublicCandidateRequest(request)
-          : await submitPublicCandidateRequest({
-              baseUrl: publicApiBaseUrl,
-              request
-            });
-
-      setJoinRequestResponse(response);
-      setJoinRequestState("ready");
-      setJoinRequestDraft({ ...emptyJoinRequestFormDraft });
-      setJoinRequestConsentAccepted(false);
-      onRouteChange("JoinRequestConfirmation");
-    } catch (error: unknown) {
-      const failureState = publicCandidateRequestSubmitFailureState(error);
-      setJoinRequestState(failureState === "offline" ? "offline" : "ready");
-      setJoinRequestErrorMessage(joinRequestSubmitErrorMessage(error));
-    }
-  }
 
   if (route === "AboutOrder") {
     return (
       <AboutOrderScreen
         screen={buildAboutOrderScreen({
-          state: aboutOrderState,
-          page: aboutOrderPage,
+          state: publicContent.aboutOrderState,
+          page: publicContent.aboutOrderPage,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -351,11 +69,11 @@ export function MobilePublicSurface({
     return (
       <PublicContentListScreen
         screen={buildPublicPrayerCategoriesScreen({
-          state: publicPrayersState,
-          response: publicPrayers,
+          state: publicContent.publicPrayersState,
+          response: publicContent.publicPrayers,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -364,11 +82,11 @@ export function MobilePublicSurface({
     return (
       <PublicContentListScreen
         screen={buildPublicEventsListScreen({
-          state: publicEventsState,
-          response: publicEvents,
+          state: publicContent.publicEventsState,
+          response: publicContent.publicEvents,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -377,11 +95,11 @@ export function MobilePublicSurface({
     return (
       <PublicContentDetailScreen
         screen={buildPublicPrayerDetailScreen({
-          state: publicPrayerDetailState,
-          response: publicPrayerDetail,
+          state: publicContent.publicPrayerDetailState,
+          response: publicContent.publicPrayerDetail,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -390,11 +108,11 @@ export function MobilePublicSurface({
     return (
       <PublicContentDetailScreen
         screen={buildPublicEventDetailScreen({
-          state: publicEventDetailState,
-          response: publicEventDetail,
+          state: publicContent.publicEventDetailState,
+          response: publicContent.publicEventDetail,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -403,18 +121,18 @@ export function MobilePublicSurface({
     return (
       <JoinRequestFormScreen
         screen={buildJoinRequestFormScreen({
-          state: joinRequestState,
+          state: publicForms.joinRequestState,
           runtimeMode,
-          errorMessage: joinRequestErrorMessage
+          errorMessage: publicForms.joinRequestErrorMessage
         })}
-        draft={joinRequestDraft}
-        consentAccepted={joinRequestConsentAccepted}
-        onChangeField={handleJoinRequestFieldChange}
-        onConsentAcceptedChange={handleJoinRequestConsentAcceptedChange}
+        draft={publicForms.joinRequestDraft}
+        consentAccepted={publicForms.joinRequestConsentAccepted}
+        onChangeField={publicForms.handleJoinRequestFieldChange}
+        onConsentAcceptedChange={publicForms.handleJoinRequestConsentAcceptedChange}
         onSubmit={() => {
-          void handleJoinRequestSubmit();
+          void publicForms.handleJoinRequestSubmit();
         }}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -425,12 +143,12 @@ export function MobilePublicSurface({
         screen={buildSignInScreen({
           state: "ready",
           runtimeMode,
-          errorMessage: signInErrorMessage
+          errorMessage: publicForms.signInErrorMessage
         })}
-        values={signInValues}
-        onChangeField={handleSignInFieldChange}
-        onSubmit={handleSignInSubmit}
-        onNavigate={handlePublicRoute}
+        values={publicForms.signInValues}
+        onChangeField={publicForms.handleSignInFieldChange}
+        onSubmit={publicForms.handleSignInSubmit}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -439,7 +157,7 @@ export function MobilePublicSurface({
     return (
       <IdleApprovalScreen
         screen={buildIdleApprovalScreen({ launchState })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
@@ -450,55 +168,20 @@ export function MobilePublicSurface({
         screen={buildJoinRequestConfirmationScreen({
           state: "ready",
           response:
-            runtimeMode === "demo" && !joinRequestResponse
+            runtimeMode === "demo" && !publicForms.joinRequestResponse
               ? fallbackPublicCandidateRequestResponse
-              : joinRequestResponse,
+              : publicForms.joinRequestResponse,
           runtimeMode
         })}
-        onNavigate={handlePublicRoute}
+        onNavigate={publicContent.handlePublicRoute}
       />
     );
   }
 
   return (
-    <PublicHomeScreen screen={buildPublicHomeScreen(launchState)} onNavigate={handlePublicRoute} />
+    <PublicHomeScreen
+      screen={buildPublicHomeScreen(launchState)}
+      onNavigate={publicContent.handlePublicRoute}
+    />
   );
-}
-
-function buildJoinRequestPayload(
-  draft: JoinRequestFormDraft,
-  consentAccepted: boolean,
-  idempotencyKey: string
-) {
-  return {
-    firstName: draft.firstName,
-    lastName: draft.lastName,
-    email: draft.email,
-    phone: optionalNullable(draft.phone),
-    country: draft.country,
-    city: draft.city,
-    preferredLanguage: optionalNullable(draft.preferredLanguage),
-    message: optionalNullable(draft.message),
-    consentAccepted,
-    consentTextVersion: JOIN_REQUEST_CONSENT_TEXT_VERSION,
-    idempotencyKey
-  };
-}
-
-function optionalNullable(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function createJoinRequestIdempotencyKey() {
-  return `mobile-${Date.now()}`;
-}
-
-function joinRequestSubmitErrorMessage(error: unknown) {
-  if (publicCandidateRequestSubmitFailureState(error) === "offline") {
-    return "Reconnect to submit your interest request.";
-  }
-
-  return "Check the required fields and consent, then try again.";
 }

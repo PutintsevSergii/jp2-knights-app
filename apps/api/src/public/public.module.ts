@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { PrismaService } from "../database/prisma.service.js";
+import { DatabaseModule } from "../database/database.module.js";
 import {
   InMemoryPublicCandidateRequestRateLimiter,
   PublicCandidateRequestRateLimiter
@@ -18,9 +18,9 @@ import { PublicController } from "./public.controller.js";
 import { PublicHomeService } from "./public-home.service.js";
 
 @Module({
+  imports: [DatabaseModule],
   controllers: [PublicController],
   providers: [
-    PrismaService,
     PublicHomeService,
     PublicContentService,
     PublicCandidateRequestService,

@@ -38,6 +38,9 @@ import {
 import type { BrotherRoute } from "./brother-screens.js";
 import { isBrotherRoute } from "./mobile-routes.js";
 import type { MobileScreenState } from "./navigation.js";
+import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
+import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
+import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
@@ -377,7 +380,7 @@ export function MobileBrotherSurface({
 
   if (route === "BrotherEvents") {
     return (
-      <PrivateContentScreen
+      <BrotherEventsScreen
         screen={buildBrotherEventsScreen({
           state: brotherEventsState,
           response: brotherEvents,
@@ -394,7 +397,7 @@ export function MobileBrotherSurface({
 
   if (route === "BrotherAnnouncements") {
     return (
-      <PrivateContentScreen
+      <BrotherAnnouncementsScreen
         screen={buildBrotherAnnouncementsScreen({
           state: brotherAnnouncementsState,
           response: brotherAnnouncements,
@@ -411,7 +414,7 @@ export function MobileBrotherSurface({
 
   if (route === "BrotherEventDetail") {
     return (
-      <PrivateContentScreen
+      <BrotherEventDetailScreen
         screen={buildBrotherEventDetailScreen({
           state: brotherEventDetailState,
           response: brotherEventDetail,

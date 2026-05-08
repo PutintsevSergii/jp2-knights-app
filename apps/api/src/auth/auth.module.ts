@@ -16,9 +16,10 @@ import { EXTERNAL_AUTH_PROVIDER } from "./auth.tokens.js";
 import { CurrentUserController } from "./current-user.controller.js";
 import { CurrentUserGuard } from "./current-user.guard.js";
 import { CurrentUserService } from "./current-user.service.js";
-import { PrismaService } from "../database/prisma.service.js";
+import { DatabaseModule } from "../database/database.module.js";
 
 @Module({
+  imports: [DatabaseModule],
   controllers: [AuthNotificationController, AuthSessionController, CurrentUserController],
   providers: [
     {
@@ -33,7 +34,6 @@ import { PrismaService } from "../database/prisma.service.js";
       provide: AuthNotificationRepository,
       useClass: PrismaAuthNotificationRepository
     },
-    PrismaService,
     AuthNotificationService,
     AuthSessionService,
     CurrentUserGuard,

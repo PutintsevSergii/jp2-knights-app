@@ -3,22 +3,20 @@ import {
   type CurrentUserResponseDto
 } from "@jp2/shared-validation";
 import type { MobilePrincipal, MobileScreenState } from "./navigation.js";
-import { DEFAULT_PUBLIC_API_BASE_URL } from "./public-home-api.js";
+import {
+  DEFAULT_PUBLIC_API_BASE_URL,
+  buildMobileApiUrl,
+  requestMobileApi,
+  type MobileApiFetch,
+  type MobileApiFetchInit,
+  type MobileApiFetchResponse
+} from "./mobile-api-client.js";
 
-export interface MobileAuthFetchResponse {
-  ok: boolean;
-  status: number;
-  json: () => Promise<unknown>;
-}
+export type MobileAuthFetchResponse = MobileApiFetchResponse;
 
-export interface MobileAuthFetchInit {
-  headers?: Record<string, string>;
-}
+export type MobileAuthFetchInit = MobileApiFetchInit;
 
-export type MobileAuthFetch = (
-  input: string,
-  init?: MobileAuthFetchInit
-) => Promise<MobileAuthFetchResponse>;
+export type MobileAuthFetch = MobileApiFetch;
 
 export interface FetchCurrentUserOptions {
   baseUrl?: string;
@@ -29,24 +27,18 @@ export interface FetchCurrentUserOptions {
 export async function fetchCurrentUser(
   options: FetchCurrentUserOptions = {}
 ): Promise<CurrentUserResponseDto> {
-  const fetcher = options.fetchImpl ?? getGlobalFetch();
-  const headers: Record<string, string> = {};
-
-  if (options.authToken) {
-    headers.authorization = `Bearer ${options.authToken}`;
-  }
-
-  const response = await fetcher(buildCurrentUserUrl(options.baseUrl), { headers });
-
-  if (!response.ok) {
-    throw new MobileAuthHttpError(response.status);
-  }
+  const response = await requestMobileApi<MobileAuthFetchResponse>(
+    buildCurrentUserUrl(options.baseUrl),
+    options,
+    undefined,
+    (status) => new MobileAuthHttpError(status)
+  );
 
   return currentUserResponseSchema.parse(await response.json());
 }
 
 export function buildCurrentUserUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
-  return new URL("auth/me", normalizeBaseUrl(baseUrl)).toString();
+  return buildMobileApiUrl("auth/me", baseUrl);
 }
 
 export function currentUserLoadFailureState(error: unknown): MobileScreenState {
@@ -83,10 +75,6 @@ export class MobileAuthHttpError extends Error {
   }
 }
 
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-}
-
 function readEnvString(env: Record<string, unknown>, key: string): string | undefined {
   const value = env[key];
 
@@ -97,12 +85,4 @@ function readEnvString(env: Record<string, unknown>, key: string): string | unde
   const trimmed = value.trim();
 
   return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function getGlobalFetch(): MobileAuthFetch {
-  if (typeof globalThis.fetch !== "function") {
-    throw new Error("Fetch is not available in this runtime.");
-  }
-
-  return (input, init) => globalThis.fetch(input, init);
 }

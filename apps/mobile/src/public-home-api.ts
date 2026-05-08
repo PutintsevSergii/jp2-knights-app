@@ -1,15 +1,18 @@
 import { publicHomeResponseSchema, type PublicHomeResponseDto } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
+import {
+  DEFAULT_PUBLIC_API_BASE_URL as DEFAULT_MOBILE_API_BASE_URL,
+  normalizeBaseUrl,
+  requestPublicMobileApi,
+  type MobileApiFetchResponse,
+  type MobilePublicFetch
+} from "./mobile-api-client.js";
 
-export const DEFAULT_PUBLIC_API_BASE_URL = "http://localhost:3000";
+export { DEFAULT_PUBLIC_API_BASE_URL } from "./mobile-api-client.js";
 
-export interface PublicHomeFetchResponse {
-  ok: boolean;
-  status: number;
-  json: () => Promise<unknown>;
-}
+export type PublicHomeFetchResponse = MobileApiFetchResponse;
 
-export type PublicHomeFetch = (input: string) => Promise<PublicHomeFetchResponse>;
+export type PublicHomeFetch = MobilePublicFetch;
 
 export interface FetchPublicHomeOptions {
   baseUrl?: string;
@@ -20,17 +23,16 @@ export interface FetchPublicHomeOptions {
 export async function fetchPublicHome(
   options: FetchPublicHomeOptions = {}
 ): Promise<PublicHomeResponseDto> {
-  const fetcher = options.fetchImpl ?? getGlobalFetch();
-  const response = await fetcher(buildPublicHomeUrl(options.baseUrl, options.language));
-
-  if (!response.ok) {
-    throw new PublicHomeHttpError(response.status);
-  }
+  const response = await requestPublicMobileApi<PublicHomeFetchResponse>(
+    buildPublicHomeUrl(options.baseUrl, options.language),
+    options.fetchImpl,
+    (status) => new PublicHomeHttpError(status)
+  );
 
   return publicHomeResponseSchema.parse(await response.json());
 }
 
-export function buildPublicHomeUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL, language?: string) {
+export function buildPublicHomeUrl(baseUrl = DEFAULT_MOBILE_API_BASE_URL, language?: string) {
   const url = new URL("public/home", normalizeBaseUrl(baseUrl));
 
   if (language) {
@@ -44,7 +46,7 @@ export function readPublicApiBaseUrl(env: Record<string, unknown> = process.env)
   const expoUrl = readEnvString(env, "EXPO_PUBLIC_API_BASE_URL");
   const genericUrl = readEnvString(env, "API_BASE_URL");
 
-  return expoUrl ?? genericUrl ?? DEFAULT_PUBLIC_API_BASE_URL;
+  return expoUrl ?? genericUrl ?? DEFAULT_MOBILE_API_BASE_URL;
 }
 
 export function publicHomeLoadFailureState(error: unknown): MobileScreenState {
@@ -57,10 +59,6 @@ export class PublicHomeHttpError extends Error {
   }
 }
 
-function normalizeBaseUrl(baseUrl: string) {
-  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-}
-
 function readEnvString(env: Record<string, unknown>, key: string) {
   const value = env[key];
 
@@ -71,12 +69,4 @@ function readEnvString(env: Record<string, unknown>, key: string) {
   const trimmed = value.trim();
 
   return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function getGlobalFetch(): PublicHomeFetch {
-  if (typeof globalThis.fetch !== "function") {
-    throw new Error("Fetch is not available in this runtime.");
-  }
-
-  return (input) => globalThis.fetch(input);
 }

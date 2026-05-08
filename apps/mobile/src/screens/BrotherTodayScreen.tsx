@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: 10,
     fontWeight: designTokens.typography.weight.medium,
-    letterSpacing: 0.6,
+    letterSpacing: 0,
     lineHeight: 12
   },
   quickGrid: {

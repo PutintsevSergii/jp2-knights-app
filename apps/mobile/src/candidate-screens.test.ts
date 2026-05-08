@@ -168,6 +168,15 @@ describe("mobile candidate screen models", () => {
       body: "1 candidate-visible announcement",
       demoChromeVisible: false
     });
+    expect(screen.announcementCards).toEqual([
+      {
+        id: fallbackCandidateAnnouncements.announcements[0]!.id,
+        title: "Candidate Formation Update",
+        body: "The next candidate formation note is available from your responsible officer.",
+        publishedLabel: "May 7, 2026, 12:00",
+        pinned: true
+      }
+    ]);
     expect(screen.sections).toEqual([
       expect.objectContaining({
         id: `announcement-${fallbackCandidateAnnouncements.announcements[0]!.id}`,

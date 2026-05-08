@@ -3,15 +3,17 @@ import {
   type PublicContentPageResponseDto
 } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
-import { DEFAULT_PUBLIC_API_BASE_URL } from "./public-home-api.js";
+import {
+  DEFAULT_PUBLIC_API_BASE_URL,
+  buildMobileApiUrl,
+  requestPublicMobileApi,
+  type MobileApiFetchResponse,
+  type MobilePublicFetch
+} from "./mobile-api-client.js";
 
-export interface PublicContentPageFetchResponse {
-  ok: boolean;
-  status: number;
-  json: () => Promise<unknown>;
-}
+export type PublicContentPageFetchResponse = MobileApiFetchResponse;
 
-export type PublicContentPageFetch = (input: string) => Promise<PublicContentPageFetchResponse>;
+export type PublicContentPageFetch = MobilePublicFetch;
 
 export interface FetchPublicContentPageOptions {
   slug: string;
@@ -23,14 +25,11 @@ export interface FetchPublicContentPageOptions {
 export async function fetchPublicContentPage(
   options: FetchPublicContentPageOptions
 ): Promise<PublicContentPageResponseDto> {
-  const fetcher = options.fetchImpl ?? getGlobalFetch();
-  const response = await fetcher(
-    buildPublicContentPageUrl(options.slug, options.baseUrl, options.language)
+  const response = await requestPublicMobileApi<PublicContentPageFetchResponse>(
+    buildPublicContentPageUrl(options.slug, options.baseUrl, options.language),
+    options.fetchImpl,
+    (status) => new PublicContentPageHttpError(status)
   );
-
-  if (!response.ok) {
-    throw new PublicContentPageHttpError(response.status);
-  }
 
   return publicContentPageResponseSchema.parse(await response.json());
 }
@@ -40,10 +39,7 @@ export function buildPublicContentPageUrl(
   baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
   language?: string
 ) {
-  const url = new URL(
-    `public/content-pages/${encodeURIComponent(slug)}`,
-    normalizeBaseUrl(baseUrl)
-  );
+  const url = new URL(buildMobileApiUrl(`public/content-pages/${encodeURIComponent(slug)}`, baseUrl));
 
   if (language) {
     url.searchParams.set("language", language);
@@ -60,16 +56,4 @@ export class PublicContentPageHttpError extends Error {
   constructor(readonly status: number) {
     super(`Public content page request failed with HTTP ${status}.`);
   }
-}
-
-function normalizeBaseUrl(baseUrl: string) {
-  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-}
-
-function getGlobalFetch(): PublicContentPageFetch {
-  if (typeof globalThis.fetch !== "function") {
-    throw new Error("Fetch is not available in this runtime.");
-  }
-
-  return (input) => globalThis.fetch(input);
 }

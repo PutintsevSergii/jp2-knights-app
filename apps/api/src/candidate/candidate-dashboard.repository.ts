@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import {
+  memberScopedVisibilityWhere,
+  publishedAtNowOrUnset
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   CandidateAnnouncementListQuery,
@@ -215,16 +219,10 @@ export function candidateEventWhere(
   assignedOrganizationUnitId: string | null,
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
-  ];
-
-  if (assignedOrganizationUnitId) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: assignedOrganizationUnitId
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "CANDIDATE",
+    assignedOrganizationUnitId
+  );
 
   return {
     status: "published",
@@ -232,7 +230,7 @@ export function candidateEventWhere(
     cancelledAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
     ...(query.type ? { type: query.type } : {}),
-    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    OR: publishedAtNowOrUnset(now),
     AND: [
       {
         OR: visibilityWhere
@@ -246,23 +244,17 @@ export function candidateEventDetailWhere(
   assignedOrganizationUnitId: string | null,
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
-  ];
-
-  if (assignedOrganizationUnitId) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: assignedOrganizationUnitId
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "CANDIDATE",
+    assignedOrganizationUnitId
+  );
 
   return {
     id,
     status: "published",
     archivedAt: null,
     cancelledAt: null,
-    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    OR: publishedAtNowOrUnset(now),
     AND: [
       {
         OR: visibilityWhere
@@ -275,16 +267,10 @@ export function candidateAnnouncementWhere(
   assignedOrganizationUnitId: string | null,
   now: Date
 ): Prisma.AnnouncementWhereInput {
-  const visibilityWhere: Prisma.AnnouncementWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } }
-  ];
-
-  if (assignedOrganizationUnitId) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: assignedOrganizationUnitId
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.AnnouncementWhereInput>(
+    "CANDIDATE",
+    assignedOrganizationUnitId
+  );
 
   return {
     status: "PUBLISHED",

@@ -1,8 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, hasRole } from "@jp2/shared-auth";
+import { hasRole } from "@jp2/shared-auth";
+import { adminScopeFor, requireAdminLite } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
-import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { AdminCandidateRepository } from "./admin-candidate.repository.js";
 import type {
   AdminCandidateProfileDetail,
@@ -24,7 +24,9 @@ export class AdminCandidateService {
     assertCanReadCandidates(principal);
 
     return {
-      candidateProfiles: await this.candidateRepository.listCandidateProfiles(scopeFor(principal))
+      candidateProfiles: await this.candidateRepository.listCandidateProfiles(
+        adminScopeFor(principal)
+      )
     };
   }
 
@@ -36,7 +38,7 @@ export class AdminCandidateService {
 
     const candidateProfile = await this.candidateRepository.findCandidateProfile(
       id,
-      scopeFor(principal)
+      adminScopeFor(principal)
     );
 
     if (!candidateProfile) {
@@ -52,7 +54,7 @@ export class AdminCandidateService {
     data: UpdateAdminCandidateProfile
   ): Promise<AdminCandidateProfileDetailResponse> {
     assertCanUpdateCandidates(principal, data);
-    const scopeOrganizationUnitIds = scopeFor(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
     const beforeCandidateProfile = await this.candidateRepository.findCandidateProfile(
       id,
       scopeOrganizationUnitIds
@@ -83,15 +85,8 @@ export class AdminCandidateService {
   }
 }
 
-function scopeFor(principal: CurrentUserPrincipal): readonly string[] | null {
-  return hasRole(principal, "SUPER_ADMIN") ? null : (principal.officerOrganizationUnitIds ?? []);
-}
-
 function assertCanReadCandidates(principal: CurrentUserPrincipal): void {
-  if (!canAccessAdminLite(principal)) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Admin Lite access is required.");
-  }
+  requireAdminLite(principal);
 }
 
 function assertCanUpdateCandidates(

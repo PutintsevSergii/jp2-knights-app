@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import {
+  memberScopedVisibilityWhere,
+  publishedAtNowOrUnset
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   BrotherAnnouncementListQuery,
@@ -299,25 +303,17 @@ export function brotherEventWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
-  ];
-
-  if (organizationUnitIds.length > 0) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: {
-        in: [...organizationUnitIds]
-      }
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "BROTHER",
+    organizationUnitIds
+  );
 
   return {
     status: "published",
     archivedAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
     ...(query.type ? { type: query.type } : {}),
-    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    OR: publishedAtNowOrUnset(now),
     AND: [
       {
         OR: visibilityWhere
@@ -331,25 +327,17 @@ export function brotherEventDetailWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.EventWhereInput {
-  const visibilityWhere: Prisma.EventWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
-  ];
-
-  if (organizationUnitIds.length > 0) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: {
-        in: [...organizationUnitIds]
-      }
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
+    "BROTHER",
+    organizationUnitIds
+  );
 
   return {
     id,
     status: "published",
     archivedAt: null,
     cancelledAt: null,
-    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+    OR: publishedAtNowOrUnset(now),
     AND: [
       {
         OR: visibilityWhere
@@ -362,18 +350,10 @@ export function brotherAnnouncementWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.AnnouncementWhereInput {
-  const visibilityWhere: Prisma.AnnouncementWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
-  ];
-
-  if (organizationUnitIds.length > 0) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: {
-        in: [...organizationUnitIds]
-      }
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.AnnouncementWhereInput>(
+    "BROTHER",
+    organizationUnitIds
+  );
 
   return {
     status: "PUBLISHED",
@@ -408,22 +388,14 @@ export function brotherPrayerWhere(
   organizationUnitIds: readonly string[],
   now: Date
 ): Prisma.PrayerWhereInput {
-  const visibilityWhere: Prisma.PrayerWhereInput[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
-  ];
-
-  if (organizationUnitIds.length > 0) {
-    visibilityWhere.push({
-      visibility: "ORGANIZATION_UNIT",
-      targetOrganizationUnitId: {
-        in: [...organizationUnitIds]
-      }
-    });
-  }
+  const visibilityWhere = memberScopedVisibilityWhere<Prisma.PrayerWhereInput>(
+    "BROTHER",
+    organizationUnitIds
+  );
 
   const and: Prisma.PrayerWhereInput[] = [
     {
-      OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
+      OR: publishedAtNowOrUnset(now)
     },
     {
       OR: visibilityWhere

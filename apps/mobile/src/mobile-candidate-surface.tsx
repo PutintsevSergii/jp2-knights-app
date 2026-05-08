@@ -30,6 +30,8 @@ import {
 import type { CandidateRoute } from "./candidate-screens.js";
 import type { MobileScreenState } from "./navigation.js";
 import { isCandidateRoute } from "./mobile-routes.js";
+import { CandidateAnnouncementsScreen } from "./screens/CandidateAnnouncementsScreen.js";
+import { CandidateEventDetailScreen } from "./screens/CandidateEventDetailScreen.js";
 import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
@@ -301,7 +303,7 @@ export function MobileCandidateSurface({
 
   if (route === "CandidateAnnouncements") {
     return (
-      <PrivateContentScreen
+      <CandidateAnnouncementsScreen
         screen={buildCandidateAnnouncementsScreen({
           state: candidateAnnouncementsState,
           response: candidateAnnouncements,
@@ -318,7 +320,7 @@ export function MobileCandidateSurface({
 
   if (route === "CandidateEventDetail") {
     return (
-      <PrivateContentScreen
+      <CandidateEventDetailScreen
         screen={buildCandidateEventDetailScreen({
           state: candidateEventDetailState,
           response: candidateEventDetail,

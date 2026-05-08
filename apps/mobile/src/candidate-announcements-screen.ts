@@ -9,11 +9,22 @@ import {
   type CandidateScreenTheme
 } from "./candidate-screen-contracts.js";
 
+type CandidateAnnouncementListItem = CandidateAnnouncementListResponseDto["announcements"][number];
+
+export interface CandidateAnnouncementCard {
+  id: string;
+  title: string;
+  body: string;
+  publishedLabel: string;
+  pinned: boolean;
+}
+
 export interface CandidateAnnouncementsScreen {
   route: "CandidateAnnouncements";
   state: MobileScreenState;
   title: string;
   body: string;
+  announcementCards: CandidateAnnouncementCard[];
   sections: CandidateScreenSection[];
   actions: CandidateScreenAction[];
   demoChromeVisible: boolean;
@@ -38,6 +49,7 @@ export function buildCandidateAnnouncementsScreen(options: {
     state: "ready",
     title: "Candidate Announcements",
     body: candidateAnnouncementCountBody(options.response.announcements.length),
+    announcementCards: options.response.announcements.map(buildCandidateAnnouncementCard),
     sections: options.response.announcements.map((announcement) => ({
       id: `announcement-${announcement.id}`,
       title: announcement.pinned ? `${announcement.title} (Pinned)` : announcement.title,
@@ -66,6 +78,7 @@ function stateOnlyCandidateAnnouncements(
     state,
     title: copy.title,
     body: copy.body,
+    announcementCards: [],
     sections: [],
     actions: [],
     demoChromeVisible,
@@ -80,9 +93,25 @@ function candidateAnnouncementCountBody(count: number): string {
 }
 
 function candidateAnnouncementBody(
-  announcement: CandidateAnnouncementListResponseDto["announcements"][number]
+  announcement: CandidateAnnouncementListItem
 ): string {
-  const formatted = new Intl.DateTimeFormat("en", {
+  return `${formatAnnouncementPublishedAt(announcement.publishedAt)}\n${announcement.body}`;
+}
+
+function buildCandidateAnnouncementCard(
+  announcement: CandidateAnnouncementListItem
+): CandidateAnnouncementCard {
+  return {
+    id: announcement.id,
+    title: announcement.title,
+    body: announcement.body,
+    publishedLabel: formatAnnouncementPublishedAt(announcement.publishedAt),
+    pinned: announcement.pinned
+  };
+}
+
+function formatAnnouncementPublishedAt(value: string): string {
+  return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -90,7 +119,5 @@ function candidateAnnouncementBody(
     minute: "2-digit",
     hour12: false,
     timeZone: "UTC"
-  }).format(new Date(announcement.publishedAt));
-
-  return `${formatted}\n${announcement.body}`;
+  }).format(new Date(value));
 }

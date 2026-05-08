@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { canAccessAdminLite, canAccessBrotherMode, hasRole } from "@jp2/shared-auth";
+import { canAccessBrotherMode, hasRole } from "@jp2/shared-auth";
+import { requireAdminLite, requireSuperAdmin } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
@@ -40,10 +41,7 @@ export class OrganizationService {
   async listAdminOrganizationUnits(
     principal: CurrentUserPrincipal
   ): Promise<AdminOrganizationUnitListResponse> {
-    if (!canAccessAdminLite(principal)) {
-      assertNotIdleApprovalPrincipal(principal);
-      throw new ForbiddenException("Admin Lite access is required.");
-    }
+    requireAdminLite(principal);
 
     const organizationUnits = hasRole(principal, "SUPER_ADMIN")
       ? await this.organizationRepository.listActiveOrganizationUnits()
@@ -100,13 +98,6 @@ export class OrganizationService {
     return {
       organizationUnit
     };
-  }
-}
-
-function requireSuperAdmin(principal: CurrentUserPrincipal): void {
-  if (!hasRole(principal, "SUPER_ADMIN")) {
-    assertNotIdleApprovalPrincipal(principal);
-    throw new ForbiddenException("Super Admin access is required.");
   }
 }
 

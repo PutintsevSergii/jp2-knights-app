@@ -11,7 +11,7 @@ Duplication in this project is a product risk because roles, visibility, content
 | Content statuses     | shared content status enum/workflow helper                              |
 | API error shape      | common error contract and exception/response mapper                     |
 | DTO validation       | shared Zod schemas                                                      |
-| API client           | generated OpenAPI client                                                |
+| API client           | generated OpenAPI client where available; otherwise the app-level shared API client primitive plus shared DTO validation |
 | Permission checks    | `@jp2/shared-auth` helpers plus backend guards/services                 |
 | Date/time formatting | shared UI/domain formatter                                              |
 | Design tokens        | shared design-token package and platform adapters                       |
@@ -26,3 +26,4 @@ Duplication in this project is a product risk because roles, visibility, content
 - Use [component-boundary-contracts.md](component-boundary-contracts.md) before expanding root files, route surfaces, or render components with reusable behavior.
 - If duplication is temporary during a migration, add a cleanup note and keep it inside the same phase scope.
 - Duplicated security logic is not acceptable temporary debt.
+- Do not add new feature-local `fetch` wrappers, bearer-header builders, URL normalizers, or HTTP error parsers. Use `apps/admin/src/admin-api-client.ts` or `apps/mobile/src/mobile-api-client.ts` until generated clients fully replace handwritten app clients.

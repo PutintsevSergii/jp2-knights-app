@@ -123,34 +123,19 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
               id: "prayer",
               label: "Prayer",
               active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "dashboard",
-                  label: "Dashboard",
-                  targetRoute: "CandidateDashboard"
-                })
+              disabled: true
             },
             {
               id: "choragiew",
               label: "Choragiew",
               active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "dashboard",
-                  label: "Dashboard",
-                  targetRoute: "CandidateDashboard"
-                })
+              disabled: true
             },
             {
               id: "account",
               label: "Account",
               active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "dashboard",
-                  label: "Dashboard",
-                  targetRoute: "CandidateDashboard"
-                })
+              disabled: true
             }
           ]}
         />
@@ -309,7 +294,7 @@ const styles = StyleSheet.create({
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: 10,
     fontWeight: designTokens.typography.weight.medium,
-    letterSpacing: 1,
+    letterSpacing: 0,
     lineHeight: 11,
     textTransform: "uppercase"
   },

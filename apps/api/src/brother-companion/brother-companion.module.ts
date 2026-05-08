@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
-import { PrismaService } from "../database/prisma.service.js";
+import { DatabaseModule } from "../database/database.module.js";
 import { BrotherCompanionController } from "./brother-companion.controller.js";
 import {
   BrotherCompanionRepository,
@@ -9,10 +9,9 @@ import {
 import { BrotherCompanionService } from "./brother-companion.service.js";
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, DatabaseModule],
   controllers: [BrotherCompanionController],
   providers: [
-    PrismaService,
     BrotherCompanionService,
     {
       provide: BrotherCompanionRepository,
