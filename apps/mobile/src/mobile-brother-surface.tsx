@@ -4,6 +4,7 @@ import type {
   BrotherAnnouncementListResponseDto,
   BrotherEventDetailResponseDto,
   BrotherEventListResponseDto,
+  BrotherPrayerListResponseDto,
   BrotherProfileResponseDto,
   BrotherTodayResponseDto,
   MyOrganizationUnitsResponseDto
@@ -15,6 +16,7 @@ import {
   fetchBrotherEvent,
   fetchBrotherEvents,
   fetchBrotherProfile,
+  fetchBrotherPrayers,
   fetchBrotherToday,
   fetchMyOrganizationUnits,
   markBrotherEventParticipation
@@ -23,6 +25,7 @@ import {
   fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
   fallbackBrotherEvents,
+  fallbackBrotherPrayers,
   fallbackBrotherProfile,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
@@ -32,6 +35,7 @@ import {
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
+  buildBrotherPrayersScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
 } from "./brother-screens.js";
@@ -41,6 +45,7 @@ import type { MobileScreenState } from "./navigation.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
+import { BrotherPrayersScreen } from "./screens/BrotherPrayersScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
@@ -89,6 +94,12 @@ export function MobileBrotherSurface({
   const [brotherAnnouncements, setBrotherAnnouncements] = useState<
     BrotherAnnouncementListResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackBrotherAnnouncements : undefined));
+  const [brotherPrayersState, setBrotherPrayersState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
+  const [brotherPrayers, setBrotherPrayers] = useState<BrotherPrayerListResponseDto | undefined>(
+    () => (runtimeMode === "demo" ? fallbackBrotherPrayers : undefined)
+  );
   const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
   const [brotherEventDetailState, setBrotherEventDetailState] = useState<MobileScreenState>(
     runtimeMode === "demo" ? "ready" : "empty"
@@ -121,6 +132,38 @@ export function MobileBrotherSurface({
         if (!cancelled) {
           setBrotherToday(undefined);
           setBrotherTodayState(brotherCompanionLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
+
+  useEffect(() => {
+    if (runtimeMode === "demo" || route !== "BrotherPrayers") {
+      return;
+    }
+
+    if (!authToken) {
+      setBrotherPrayersState("forbidden");
+      return;
+    }
+
+    let cancelled = false;
+    setBrotherPrayersState("loading");
+
+    fetchBrotherPrayers({ baseUrl: publicApiBaseUrl, authToken })
+      .then((response) => {
+        if (!cancelled) {
+          setBrotherPrayers(response);
+          setBrotherPrayersState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setBrotherPrayers(undefined);
+          setBrotherPrayersState(brotherCompanionLoadFailureState(error));
         }
       });
 
@@ -290,7 +333,7 @@ export function MobileBrotherSurface({
   }, [authToken, publicApiBaseUrl, route, runtimeMode, selectedBrotherEventId]);
 
   async function handleBrotherRoute(nextRoute: BrotherRoute, targetId?: string, actionId?: string) {
-    if (nextRoute === "BrotherPrayers" || nextRoute === "SilentPrayer") {
+    if (nextRoute === "SilentPrayer") {
       onRouteChange("BrotherToday");
       return;
     }
@@ -401,6 +444,23 @@ export function MobileBrotherSurface({
         screen={buildBrotherAnnouncementsScreen({
           state: brotherAnnouncementsState,
           response: brotherAnnouncements,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isBrotherRoute(action.targetRoute)) {
+            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "BrotherPrayers") {
+    return (
+      <BrotherPrayersScreen
+        screen={buildBrotherPrayersScreen({
+          state: brotherPrayersState,
+          response: brotherPrayers,
           runtimeMode
         })}
         onAction={(action) => {

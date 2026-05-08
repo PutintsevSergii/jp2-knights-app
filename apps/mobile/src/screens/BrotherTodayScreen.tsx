@@ -162,7 +162,12 @@ export function BrotherTodayScreen({ screen, onAction }: BrotherTodayScreenProps
               id: "prayer",
               label: "Prayer",
               active: false,
-              disabled: true
+              onPress: () =>
+                onAction?.({
+                  id: "prayers",
+                  label: "Prayer",
+                  targetRoute: "BrotherPrayers"
+                })
             },
             {
               id: "choragiew",

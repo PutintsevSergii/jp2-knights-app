@@ -48,3 +48,10 @@
   ready/empty/loading/error/offline/forbidden/idle-approval states, and exposes
   no chat, replies, comments, read receipts, push delivery state, or participant
   lists.
+- `BrotherPrayers` now has an API/demo-backed mobile screen model and dedicated
+  React Native screen over `/api/brother/prayers`. It validates the shared DTO,
+  renders server-filtered categories and public/family/brother/own-chorągiew
+  prayer cards with visibility badges, handles ready/empty/loading/error/
+  offline/forbidden/idle-approval states, and exposes no prayer tracking,
+  participant lists, chat, replies, comments, or client-side visibility
+  filtering.

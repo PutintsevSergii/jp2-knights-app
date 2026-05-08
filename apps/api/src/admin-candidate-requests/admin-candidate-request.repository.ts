@@ -296,6 +296,7 @@ function toAdminCandidateRequestSummary(
     email: record.email,
     country: record.country,
     city: record.city,
+    messagePreview: candidateRequestMessagePreview(record.message),
     status: record.status,
     assignedOrganizationUnitId: record.assignedOrganizationUnitId,
     assignedOrganizationUnitName: record.assignedOrganizationUnit?.name ?? null,
@@ -303,6 +304,20 @@ function toAdminCandidateRequestSummary(
     updatedAt: record.updatedAt.toISOString(),
     archivedAt: record.archivedAt?.toISOString() ?? null
   };
+}
+
+function candidateRequestMessagePreview(message: string | null): string | null {
+  if (!message) {
+    return null;
+  }
+
+  const normalized = message.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= 160) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 157).trimEnd()}...`;
 }
 
 function toAdminCandidateRequestDetail(record: CandidateRequestRecord): AdminCandidateRequestDetail {

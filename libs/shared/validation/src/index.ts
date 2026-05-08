@@ -171,6 +171,7 @@ export const adminCandidateRequestSummarySchema = z.object({
   email: z.string().trim().email().max(320),
   country: z.string().trim().min(1).max(120),
   city: z.string().trim().min(1).max(120),
+  messagePreview: z.string().trim().max(160).nullable(),
   status: candidateRequestStatusSchema,
   assignedOrganizationUnitId: z.uuid().nullable(),
   assignedOrganizationUnitName: z.string().trim().min(1).max(200).nullable(),

@@ -2,6 +2,7 @@ export type {
   AdminCandidateRequestAction,
   AdminCandidateRequestActionId,
   AdminCandidateRequestField,
+  AdminCandidateRequestMetric,
   AdminCandidateRequestRoute,
   AdminCandidateRequestRow
 } from "./admin-candidate-request-screen-contracts.js";

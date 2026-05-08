@@ -24,6 +24,7 @@ describe("BrotherTodayScreen", () => {
     findPressableByLabel(element, "Review profile")?.props.onPress?.();
     findPressableByLabel(element, "Open event")?.props.onPress?.();
     findPressableByLabel(element, "View all brother events")?.props.onPress?.();
+    findPressableByLabel(element, "Prayer")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "profile",
@@ -40,6 +41,11 @@ describe("BrotherTodayScreen", () => {
       id: "view-all-events",
       label: "View All",
       targetRoute: "BrotherEvents"
+    });
+    expect(onAction).toHaveBeenNthCalledWith(4, {
+      id: "prayers",
+      label: "Prayer",
+      targetRoute: "BrotherPrayers"
     });
   });
 

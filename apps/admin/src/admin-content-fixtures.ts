@@ -85,6 +85,7 @@ export const fallbackAdminCandidateRequestDetails: AdminCandidateRequestDetailDt
     phone: "+371 2000 0000",
     country: "LV",
     city: "Riga",
+    messagePreview: "I would like to learn more about the Order.",
     status: "new",
     assignedOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
     assignedOrganizationUnitName: "Pilot Organization Unit",

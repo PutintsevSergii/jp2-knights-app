@@ -28,3 +28,7 @@ export {
   buildBrotherEventDetailScreen,
   type BrotherEventDetailScreen
 } from "./brother-event-detail-screen.js";
+export {
+  buildBrotherPrayersScreen,
+  type BrotherPrayersScreen
+} from "./brother-prayers-screen.js";

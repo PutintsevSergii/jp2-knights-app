@@ -20,6 +20,7 @@ describe("admin candidate request screens", () => {
             email: candidateRequest.email,
             country: candidateRequest.country,
             city: candidateRequest.city,
+            messagePreview: candidateRequest.messagePreview,
             status: candidateRequest.status,
             assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
             assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
@@ -44,6 +45,18 @@ describe("admin candidate request screens", () => {
       "contact",
       "reject"
     ]);
+    expect(screen.metrics.map((metric) => [metric.id, metric.count])).toEqual([
+      ["new", 1],
+      ["contacted", 0],
+      ["invited", 0],
+      ["rejected", 0]
+    ]);
+    expect(screen.rows[0]).toMatchObject({
+      initials: "JN",
+      locationMeta: "Riga, LV",
+      messagePreview: "I would like to learn more about the Order.",
+      statusLabel: "NEW"
+    });
 
     const contactedScreen = buildAdminCandidateRequestListScreen({
       state: "ready",
@@ -56,6 +69,7 @@ describe("admin candidate request screens", () => {
             email: candidateRequest.email,
             country: candidateRequest.country,
             city: candidateRequest.city,
+            messagePreview: candidateRequest.messagePreview,
             status: "contacted",
             assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
             assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,

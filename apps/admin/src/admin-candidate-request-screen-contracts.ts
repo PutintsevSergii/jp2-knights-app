@@ -22,12 +22,24 @@ export interface AdminCandidateRequestAction {
 export interface AdminCandidateRequestRow {
   id: string;
   title: string;
+  initials: string;
   primaryMeta: string;
   secondaryMeta: string;
+  locationMeta: string;
+  messagePreview: string;
   status: string;
+  statusLabel: string;
   assignedOrganizationUnitName: string;
   createdAt: string;
   actions: AdminCandidateRequestAction[];
+}
+
+export interface AdminCandidateRequestMetric {
+  id: "new" | "contacted" | "invited" | "rejected";
+  label: string;
+  count: number;
+  description: string;
+  tone: "attention" | "warning" | "success" | "danger";
 }
 
 export interface AdminCandidateRequestField {

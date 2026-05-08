@@ -22,6 +22,7 @@ describe("BrotherEventsScreen", () => {
 
     findPressableByLabel(element, "View Details")?.props.onPress?.();
     findPressableByLabel(element, "Dashboard")?.props.onPress?.();
+    findPressableByLabel(element, "Prayer")?.props.onPress?.();
     findPressableByLabel(element, "Account")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
@@ -36,11 +37,15 @@ describe("BrotherEventsScreen", () => {
       targetRoute: "BrotherToday"
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
+      id: "prayers",
+      label: "Prayer",
+      targetRoute: "BrotherPrayers"
+    });
+    expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "profile",
       label: "Account",
       targetRoute: "BrotherProfile"
     });
-    expect(findPressableByLabel(element, "Prayer")?.props.disabled).toBe(true);
   });
 
   it("renders non-ready state copy without brother event cards", () => {

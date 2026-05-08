@@ -2,12 +2,14 @@ import {
   brotherAnnouncementListResponseSchema,
   brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
+  brotherPrayerListResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
   myOrganizationUnitsResponseSchema,
   type BrotherAnnouncementListResponseDto,
   type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
+  type BrotherPrayerListResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
   type MyOrganizationUnitsResponseDto
@@ -113,6 +115,46 @@ export const fallbackBrotherAnnouncements = brotherAnnouncementListResponseSchem
     offset: 0
   }
 }) satisfies BrotherAnnouncementListResponseDto;
+
+export const fallbackBrotherPrayers = brotherPrayerListResponseSchema.parse({
+  categories: [
+    {
+      id: "99999999-9999-4999-8999-999999999999",
+      slug: "daily-brother-prayers",
+      title: "Daily Brother Prayers",
+      language: "en"
+    }
+  ],
+  prayers: [
+    {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      title: "Prayer for Fraternal Service",
+      excerpt: "Lord, guide our service in truth, fraternity, and charity.",
+      language: "en",
+      visibility: "BROTHER",
+      targetOrganizationUnitId: null,
+      category: {
+        id: "99999999-9999-4999-8999-999999999999",
+        slug: "daily-brother-prayers",
+        title: "Daily Brother Prayers",
+        language: "en"
+      }
+    },
+    {
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      title: "Pilot Choragiew Prayer",
+      excerpt: "Bless this local brotherhood and its service.",
+      language: "en",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: fallbackOrganizationUnit.id,
+      category: null
+    }
+  ],
+  pagination: {
+    limit: 20,
+    offset: 0
+  }
+}) satisfies BrotherPrayerListResponseDto;
 
 export const fallbackBrotherEventDetail = brotherEventDetailResponseSchema.parse({
   event: {

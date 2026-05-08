@@ -22,6 +22,7 @@ describe("admin candidate request shell", () => {
                 email: candidateRequest.email,
                 country: candidateRequest.country,
                 city: candidateRequest.city,
+                messagePreview: candidateRequest.messagePreview,
                 status: candidateRequest.status,
                 assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
                 assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
@@ -61,6 +62,9 @@ describe("admin candidate request shell", () => {
       statusCode: 200
     });
     expect(list.document).toContain("Jan Nowak");
+    expect(list.document).toContain('class="admin-content__metrics"');
+    expect(list.document).toContain('class="admin-content__card"');
+    expect(list.document).toContain("I would like to learn more about the Order.");
     expect(detail).toMatchObject({
       route: "AdminCandidateRequestDetail",
       state: "ready",

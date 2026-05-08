@@ -1,32 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
-import { fallbackBrotherAnnouncements } from "../brother-companion.js";
-import { buildBrotherAnnouncementsScreen } from "../brother-screens.js";
-import { BrotherAnnouncementsScreen } from "./BrotherAnnouncementsScreen.js";
+import { fallbackBrotherPrayers } from "../brother-companion.js";
+import { buildBrotherPrayersScreen } from "../brother-screens.js";
+import { BrotherPrayersScreen } from "./BrotherPrayersScreen.js";
 
-describe("BrotherAnnouncementsScreen", () => {
-  it("renders Figma-style one-way announcement cards and forwards navigation actions", () => {
+describe("BrotherPrayersScreen", () => {
+  it("renders brother-visible prayer cards and forwards navigation actions", () => {
     const onAction = vi.fn();
-    const screen = buildBrotherAnnouncementsScreen({
+    const screen = buildBrotherPrayersScreen({
       state: "ready",
-      response: fallbackBrotherAnnouncements,
-      runtimeMode: "api"
+      response: fallbackBrotherPrayers,
+      runtimeMode: "demo"
     });
-    const element = BrotherAnnouncementsScreen({ screen, onAction });
+    const element = BrotherPrayersScreen({ screen, onAction });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Brother Announcements")).toBe(true);
-    expect(findText(element, "1 brother-visible announcement")).toBe(true);
-    expect(findText(element, "Brother Formation Notice")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(true);
-    expect(findText(element, "May 7, 2026, 12:00")).toBe(true);
-    expect(findText(element, "One-way announcement")).toBe(true);
+    expect(findText(element, "Brother Prayers")).toBe(true);
+    expect(findText(element, "Daily Brother Prayers")).toBe(true);
+    expect(findText(element, "Prayer for Fraternal Service")).toBe(true);
+    expect(findText(element, "Pilot Choragiew Prayer")).toBe(true);
+    expect(findText(element, "Your choragiew")).toBe(true);
     expect(JSON.stringify(element)).not.toMatch(
-      /chat|comment|read receipt|delivery|participants|roster|candidate/i
+      /participant|attendee|tracking|complete|roster|chat|comment/i
     );
 
     findPressableByLabel(element, "Dashboard")?.props.onPress?.();
     findPressableByLabel(element, "Events")?.props.onPress?.();
-    findPressableByLabel(element, "Prayer")?.props.onPress?.();
+    findPressableByLabel(element, "Choragiew")?.props.onPress?.();
     findPressableByLabel(element, "Account")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
@@ -40,9 +39,9 @@ describe("BrotherAnnouncementsScreen", () => {
       targetRoute: "BrotherEvents"
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
-      id: "prayers",
-      label: "Prayer",
-      targetRoute: "BrotherPrayers"
+      id: "organization-units",
+      label: "Choragiew",
+      targetRoute: "MyOrganizationUnits"
     });
     expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "profile",
@@ -51,16 +50,16 @@ describe("BrotherAnnouncementsScreen", () => {
     });
   });
 
-  it("renders non-ready state copy without announcement cards", () => {
-    const screen = buildBrotherAnnouncementsScreen({
+  it("renders non-ready state copy without prayer cards", () => {
+    const screen = buildBrotherPrayersScreen({
       state: "offline",
       runtimeMode: "api"
     });
-    const element = BrotherAnnouncementsScreen({ screen });
+    const element = BrotherPrayersScreen({ screen });
 
     expect(findText(element, "Offline")).toBe(true);
-    expect(findText(element, "Reconnect to refresh brother announcements.")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(false);
+    expect(findText(element, "Reconnect to refresh brother prayers.")).toBe(true);
+    expect(findText(element, "Prayer for Fraternal Service")).toBe(false);
   });
 });
 

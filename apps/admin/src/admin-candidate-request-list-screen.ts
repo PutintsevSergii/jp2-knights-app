@@ -8,6 +8,7 @@ import { adminContentTheme, type AdminContentTheme } from "./admin-content-scree
 import {
   formatAdminCandidateRequestDateTime,
   type AdminCandidateRequestAction,
+  type AdminCandidateRequestMetric,
   type AdminCandidateRequestRow
 } from "./admin-candidate-request-screen-contracts.js";
 
@@ -16,6 +17,7 @@ export interface AdminCandidateRequestListScreen {
   state: AdminContentScreenState;
   title: string;
   body: string;
+  metrics: AdminCandidateRequestMetric[];
   rows: AdminCandidateRequestRow[];
   actions: AdminCandidateRequestAction[];
   demoChromeVisible: boolean;
@@ -40,14 +42,17 @@ export function buildAdminCandidateRequestListScreen(
     return stateOnlyCandidateRequestList("empty", options.runtimeMode);
   }
 
+  const rows = options.response.candidateRequests.map((request) =>
+    candidateRequestRow(request, options.canWrite)
+  );
+
   return {
     route: "AdminCandidateRequestList",
     state: "ready",
     title: "Candidate Requests",
     body: "Review join-interest requests, officer follow-up status, and scoped assignments.",
-    rows: options.response.candidateRequests.map((request) =>
-      candidateRequestRow(request, options.canWrite)
-    ),
+    metrics: buildStatusMetrics(options.response.candidateRequests),
+    rows,
     actions: buildListActions(),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: adminContentTheme
@@ -61,9 +66,13 @@ function candidateRequestRow(
   return {
     id: request.id,
     title: `${request.firstName} ${request.lastName}`,
-    primaryMeta: `${request.email} / ${request.city}, ${request.country}`,
+    initials: candidateInitials(request.firstName, request.lastName),
+    primaryMeta: request.email,
     secondaryMeta: `Updated ${formatAdminCandidateRequestDateTime(request.updatedAt)}`,
+    locationMeta: `${request.city}, ${request.country}`,
+    messagePreview: request.messagePreview ?? "No message provided.",
     status: request.status,
+    statusLabel: statusLabel(request.status),
     assignedOrganizationUnitName:
       request.assignedOrganizationUnitName ??
       request.assignedOrganizationUnitId ??
@@ -71,6 +80,56 @@ function candidateRequestRow(
     createdAt: formatAdminCandidateRequestDateTime(request.createdAt),
     actions: buildRowActions(request, canWrite)
   };
+}
+
+function buildStatusMetrics(
+  requests: readonly AdminCandidateRequestSummaryDto[]
+): AdminCandidateRequestMetric[] {
+  return [
+    {
+      id: "new",
+      label: "New",
+      count: countStatus(requests, "new"),
+      description: "Requires initial contact",
+      tone: "attention"
+    },
+    {
+      id: "contacted",
+      label: "Contacted",
+      count: countStatus(requests, "contacted"),
+      description: "Awaiting response",
+      tone: "warning"
+    },
+    {
+      id: "invited",
+      label: "Invited",
+      count: countStatus(requests, "invited"),
+      description: "To next formation meeting",
+      tone: "success"
+    },
+    {
+      id: "rejected",
+      label: "Rejected",
+      count: countStatus(requests, "rejected"),
+      description: "Declined applications",
+      tone: "danger"
+    }
+  ];
+}
+
+function countStatus(
+  requests: readonly AdminCandidateRequestSummaryDto[],
+  status: AdminCandidateRequestSummaryDto["status"]
+): number {
+  return requests.filter((request) => request.status === status).length;
+}
+
+function candidateInitials(firstName: string, lastName: string): string {
+  return `${firstName.at(0) ?? ""}${lastName.at(0) ?? ""}`.toUpperCase();
+}
+
+function statusLabel(status: AdminCandidateRequestSummaryDto["status"]): string {
+  return status.replaceAll("_", " ").toUpperCase();
 }
 
 function buildListActions(): AdminCandidateRequestAction[] {
@@ -139,6 +198,7 @@ function stateOnlyCandidateRequestList(
     state,
     title: copy.title,
     body: copy.body,
+    metrics: buildStatusMetrics([]),
     rows: [],
     actions: state === "forbidden" ? [] : buildListActions(),
     demoChromeVisible: runtimeMode === "demo",

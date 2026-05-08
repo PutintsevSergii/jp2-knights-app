@@ -52,11 +52,13 @@ export {
   buildBrotherEventDetailUrl,
   buildBrotherEventParticipationUrl,
   buildBrotherEventsUrl,
+  buildBrotherPrayersUrl,
   buildMyOrganizationUnitsUrl,
   buildBrotherProfileUrl,
   buildBrotherTodayUrl,
   cancelBrotherEventParticipation,
   fetchBrotherAnnouncements,
+  fetchBrotherPrayers,
   fetchMyOrganizationUnits,
   fetchBrotherEvent,
   fetchBrotherEvents,
@@ -69,6 +71,7 @@ export {
   fallbackBrotherEventDetail,
   fallbackBrotherProfile,
   fallbackBrotherEvents,
+  fallbackBrotherPrayers,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
@@ -113,12 +116,14 @@ export {
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
+  buildBrotherPrayersScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
 } from "./brother-screens.js";
 export type {
   BrotherAnnouncementsScreen,
   BrotherProfileScreen,
+  BrotherPrayersScreen,
   BrotherEventDetailScreen,
   BrotherEventsScreen,
   BrotherRoute,

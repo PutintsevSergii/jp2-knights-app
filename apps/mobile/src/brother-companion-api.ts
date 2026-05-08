@@ -2,6 +2,7 @@ import {
   brotherAnnouncementListResponseSchema,
   brotherEventDetailResponseSchema,
   brotherEventListResponseSchema,
+  brotherPrayerListResponseSchema,
   eventParticipationResponseSchema,
   brotherProfileResponseSchema,
   brotherTodayResponseSchema,
@@ -9,6 +10,7 @@ import {
   type BrotherAnnouncementListResponseDto,
   type BrotherEventDetailResponseDto,
   type BrotherEventListResponseDto,
+  type BrotherPrayerListResponseDto,
   type EventParticipationResponseDto,
   type BrotherProfileResponseDto,
   type BrotherTodayResponseDto,
@@ -52,6 +54,14 @@ export interface BrotherAnnouncementListUrlQuery {
   offset?: number;
 }
 
+export interface BrotherPrayerListUrlQuery {
+  categoryId?: string;
+  q?: string;
+  language?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface FetchBrotherEventsOptions
   extends FetchBrotherCompanionOptions,
     BrotherEventListUrlQuery {}
@@ -59,6 +69,10 @@ export interface FetchBrotherEventsOptions
 export interface FetchBrotherAnnouncementsOptions
   extends FetchBrotherCompanionOptions,
     BrotherAnnouncementListUrlQuery {}
+
+export interface FetchBrotherPrayersOptions
+  extends FetchBrotherCompanionOptions,
+    BrotherPrayerListUrlQuery {}
 
 export async function fetchBrotherProfile(
   options: FetchBrotherCompanionOptions = {}
@@ -96,6 +110,17 @@ export async function fetchBrotherAnnouncements(
   );
 
   return brotherAnnouncementListResponseSchema.parse(await response.json());
+}
+
+export async function fetchBrotherPrayers(
+  options: FetchBrotherPrayersOptions = {}
+): Promise<BrotherPrayerListResponseDto> {
+  const response = await fetchBrotherCompanion(
+    buildBrotherPrayersUrl(options.baseUrl, options),
+    options
+  );
+
+  return brotherPrayerListResponseSchema.parse(await response.json());
 }
 
 export async function fetchBrotherEvent(options: {
@@ -181,6 +206,20 @@ export function buildBrotherAnnouncementsUrl(
   query: BrotherAnnouncementListUrlQuery = {}
 ): string {
   const url = new URL("brother/announcements", normalizeBaseUrl(baseUrl));
+  setOptionalNumberParam(url, "limit", query.limit);
+  setOptionalNumberParam(url, "offset", query.offset);
+
+  return url.toString();
+}
+
+export function buildBrotherPrayersUrl(
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
+  query: BrotherPrayerListUrlQuery = {}
+): string {
+  const url = new URL("brother/prayers", normalizeBaseUrl(baseUrl));
+  setOptionalParam(url, "categoryId", query.categoryId);
+  setOptionalParam(url, "q", query.q);
+  setOptionalParam(url, "language", query.language);
   setOptionalNumberParam(url, "limit", query.limit);
   setOptionalNumberParam(url, "offset", query.offset);
 

@@ -80,14 +80,27 @@ export function brotherEventBody(event: BrotherTodayResponseDto["upcomingEvents"
 }
 
 export function brotherStateCopy(
-  screen: "today" | "profile" | "organizationUnits" | "events" | "announcements" | "eventDetail",
+  screen:
+    | "today"
+    | "profile"
+    | "organizationUnits"
+    | "events"
+    | "announcements"
+    | "eventDetail"
+    | "prayers",
   state: MobileScreenState
 ): { title: string; body: string } {
   return brotherStateCopies[screen][state];
 }
 
 const brotherStateCopies: Record<
-  "today" | "profile" | "organizationUnits" | "events" | "announcements" | "eventDetail",
+  | "today"
+  | "profile"
+  | "organizationUnits"
+  | "events"
+  | "announcements"
+  | "eventDetail"
+  | "prayers",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   today: {
@@ -268,6 +281,36 @@ const brotherStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh brother event detail."
+    }
+  },
+  prayers: {
+    ready: {
+      title: "Brother Prayers",
+      body: "Brother-visible prayers are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Brother prayers are loading."
+    },
+    empty: {
+      title: "Brother Prayers",
+      body: "No brother-visible prayers are listed yet."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Brother prayers could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active brother profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before brother prayers are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh brother prayers."
     }
   }
 };

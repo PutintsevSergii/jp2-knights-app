@@ -17,6 +17,7 @@ const candidateRequest: AdminCandidateRequestDetail = {
   phone: null,
   country: "Latvia",
   city: "Riga",
+  messagePreview: "I would like to learn more.",
   preferredLanguage: "en",
   message: "I would like to learn more.",
   consentTextVersion: "candidate-request-v1",

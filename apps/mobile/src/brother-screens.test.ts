@@ -3,6 +3,7 @@ import {
   fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
   fallbackBrotherEvents,
+  fallbackBrotherPrayers,
   fallbackBrotherProfile,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
@@ -12,6 +13,7 @@ import {
   buildBrotherProfileScreen,
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
+  buildBrotherPrayersScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
 } from "./brother-screens.js";
@@ -211,6 +213,42 @@ describe("brother screen models", () => {
     expect(JSON.stringify(screen)).not.toMatch(/chat|comment|reply|read receipt/i);
   });
 
+  it("builds Brother Prayers with visible scoped prayer cards and no tracking actions", () => {
+    const screen = buildBrotherPrayersScreen({
+      state: "ready",
+      response: fallbackBrotherPrayers,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("BrotherPrayers");
+    expect(screen.title).toBe("Brother Prayers");
+    expect(screen.body).toBe("2 brother-visible prayers");
+    expect(screen.categoryChips).toEqual([
+      {
+        id: fallbackBrotherPrayers.categories[0]!.id,
+        label: "Daily Brother Prayers"
+      }
+    ]);
+    expect(screen.prayerCards).toEqual([
+      expect.objectContaining({
+        title: "Prayer for Fraternal Service",
+        visibilityLabel: "Brother",
+        scopeLabel: "Shared library"
+      }),
+      expect.objectContaining({
+        title: "Pilot Choragiew Prayer",
+        visibilityLabel: "Choragiew",
+        scopeLabel: "Your choragiew"
+      })
+    ]);
+    expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "BrotherToday",
+      "BrotherEvents",
+      "MyOrganizationUnits"
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/participant|attendee|tracking|mark complete/i);
+  });
+
   it("builds Brother Event Detail plan action when the user has no active intent", () => {
     const response = {
       event: {
@@ -338,6 +376,19 @@ describe("brother screen models", () => {
         actions: []
       })
     );
+    expect(
+      buildBrotherPrayersScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherPrayers",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
   });
 
   it("builds empty and fallback detail copy for missing brother response fields", () => {
@@ -439,6 +490,19 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherAnnouncements",
+        state: "empty",
+        actions: []
+      })
+    );
+    expect(
+      buildBrotherPrayersScreen({
+        state: "ready",
+        response: { categories: [], prayers: [], pagination: { limit: 20, offset: 0 } },
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherPrayers",
         state: "empty",
         actions: []
       })

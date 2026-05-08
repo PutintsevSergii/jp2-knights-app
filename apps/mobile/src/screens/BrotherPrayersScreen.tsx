@@ -1,22 +1,18 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
-import type { BrotherAnnouncementsScreen as BrotherAnnouncementsScreenModel } from "../brother-screens.js";
+import type { BrotherPrayersScreen as BrotherPrayersScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
-import { MegaphoneIcon } from "./shared/MegaphoneIcon.js";
 import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
 
-export interface BrotherAnnouncementsScreenProps {
-  screen: BrotherAnnouncementsScreenModel;
+export interface BrotherPrayersScreenProps {
+  screen: BrotherPrayersScreenModel;
   onAction?: (action: BrotherScreenAction) => void;
 }
 
-export function BrotherAnnouncementsScreen({
-  screen,
-  onAction
-}: BrotherAnnouncementsScreenProps) {
+export function BrotherPrayersScreen({ screen, onAction }: BrotherPrayersScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
@@ -30,41 +26,49 @@ export function BrotherAnnouncementsScreen({
           ) : null}
 
           <View style={styles.hero}>
-            <View style={styles.heroIcon}>
-              <MegaphoneIcon emphasized={screen.announcementCards.some((card) => card.pinned)} />
-            </View>
-            <View style={styles.heroCopy}>
-              <Text style={styles.title}>{screen.title}</Text>
-              <Text style={styles.subtitle}>{screen.body}</Text>
-            </View>
+            <Text style={styles.title}>{screen.title}</Text>
+            <Text style={styles.subtitle}>
+              Public, brother, and own choragiew prayers visible to you.
+            </Text>
           </View>
 
           {screen.state === "ready" ? (
-            <View style={styles.cardStack}>
-              {screen.announcementCards.map((announcement) => (
-                <View
-                  key={announcement.id}
-                  style={[styles.card, announcement.pinned ? styles.pinnedCard : null]}
-                >
-                  <View style={styles.cardHeader}>
-                    <View style={styles.cardIcon}>
-                      <MegaphoneIcon emphasized={announcement.pinned} />
+            <>
+              {screen.categoryChips.length > 0 ? (
+                <View style={styles.categoryRow}>
+                  {screen.categoryChips.map((category) => (
+                    <View key={category.id} style={styles.categoryChip}>
+                      <Text style={styles.categoryText}>{category.label}</Text>
                     </View>
-                    <View style={styles.cardTitleGroup}>
-                      <Text style={styles.cardTitle}>{announcement.title}</Text>
-                      <Text style={styles.cardDate}>{announcement.publishedLabel}</Text>
-                    </View>
-                    {announcement.pinned ? (
-                      <View style={styles.pinBadge}>
-                        <Text style={styles.pinBadgeText}>Pinned</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={styles.cardBody}>{announcement.body}</Text>
-                  <Text style={styles.privacyText}>One-way announcement</Text>
+                  ))}
                 </View>
-              ))}
-            </View>
+              ) : null}
+
+              <View style={styles.cardStack}>
+                {screen.prayerCards.map((prayer) => (
+                  <View key={prayer.id} style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.titleStack}>
+                        <Text style={styles.cardTitle}>{prayer.title}</Text>
+                        <Text style={styles.categoryLabel}>{prayer.categoryLabel}</Text>
+                      </View>
+                      <View style={styles.languageBadge}>
+                        <Text style={styles.languageText}>{prayer.languageLabel}</Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.excerpt}>{prayer.excerpt}</Text>
+
+                    <View style={styles.metaRow}>
+                      <View style={styles.visibilityBadge}>
+                        <Text style={styles.visibilityText}>{prayer.visibilityLabel}</Text>
+                      </View>
+                      <Text style={styles.scopeText}>{prayer.scopeLabel}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
           ) : (
             <View style={styles.statePanelOffset}>
               <ScreenStatePanel title={screen.title} body={screen.body} />
@@ -99,18 +103,18 @@ export function BrotherAnnouncementsScreen({
             {
               id: "prayer",
               label: "Prayer",
+              active: true
+            },
+            {
+              id: "choragiew",
+              label: "Choragiew",
               active: false,
               onPress: () =>
                 onAction?.({
-                  id: "prayers",
-                  label: "Prayer",
-                  targetRoute: "BrotherPrayers"
+                  id: "organization-units",
+                  label: "Choragiew",
+                  targetRoute: "MyOrganizationUnits"
                 })
-            },
-            {
-              id: "announcements",
-              label: "News",
-              active: true
             },
             {
               id: "account",
@@ -151,23 +155,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start"
   },
   hero: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: designTokens.space[4]
-  },
-  heroIcon: {
-    alignItems: "center",
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderRadius: designTokens.radius.md,
-    borderWidth: 1,
-    height: 48,
-    justifyContent: "center",
-    width: 48
-  },
-  heroCopy: {
-    flex: 1,
-    gap: designTokens.space[1]
+    gap: designTokens.space[2]
   },
   title: {
     color: colors.text.primary,
@@ -184,15 +172,37 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.regular,
     lineHeight: designTokens.typography.lineHeight.body
   },
+  categoryRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.space[2]
+  },
+  categoryChip: {
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: designTokens.space[3],
+    paddingVertical: designTokens.space[2]
+  },
+  categoryText: {
+    color: colors.brand.goldDark,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    fontWeight: designTokens.typography.weight.semibold,
+    lineHeight: designTokens.typography.lineHeight.secondary
+  },
   cardStack: {
     gap: designTokens.space[4]
   },
   card: {
     backgroundColor: colors.background.surface,
     borderColor: colors.border.subtle,
+    borderLeftColor: colors.brand.gold,
+    borderLeftWidth: 4,
     borderRadius: designTokens.radius.md,
     borderWidth: 1,
-    gap: designTokens.space[3],
+    gap: designTokens.space[4],
     padding: designTokens.space[6],
     shadowColor: designTokens.elevation.subtle.color,
     shadowOffset: {
@@ -202,24 +212,13 @@ const styles = StyleSheet.create({
     shadowOpacity: designTokens.elevation.subtle.opacity,
     shadowRadius: designTokens.elevation.subtle.radius
   },
-  pinnedCard: {
-    borderLeftColor: colors.status.danger,
-    borderLeftWidth: 4
-  },
   cardHeader: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    gap: designTokens.space[3]
+    gap: designTokens.space[3],
+    justifyContent: "space-between"
   },
-  cardIcon: {
-    alignItems: "center",
-    backgroundColor: colors.brand.linen,
-    borderRadius: designTokens.radius.sm,
-    height: 40,
-    justifyContent: "center",
-    width: 40
-  },
-  cardTitleGroup: {
+  titleStack: {
     flex: 1,
     gap: designTokens.space[1]
   },
@@ -230,42 +229,55 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.bold,
     lineHeight: designTokens.typography.lineHeight.cardTitle
   },
-  cardDate: {
+  categoryLabel: {
     color: colors.text.subdued,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.medium,
-    lineHeight: designTokens.typography.lineHeight.label
+    fontSize: designTokens.typography.size.secondary,
+    lineHeight: designTokens.typography.lineHeight.secondary
   },
-  pinBadge: {
+  languageBadge: {
     backgroundColor: colors.brand.gold,
     borderRadius: designTokens.radius.sm,
     paddingHorizontal: designTokens.space[2],
     paddingVertical: designTokens.space[1]
   },
-  pinBadgeText: {
+  languageText: {
     color: colors.brand.goldDeep,
-    fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: 0,
-    lineHeight: designTokens.typography.lineHeight.label
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
-  cardBody: {
+  excerpt: {
     color: colors.brand.brown,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.regular,
     lineHeight: designTokens.typography.lineHeight.body
   },
-  privacyText: {
+  metaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.space[2]
+  },
+  visibilityBadge: {
+    backgroundColor: colors.border.soft,
+    borderRadius: designTokens.radius.pill,
+    paddingHorizontal: designTokens.space[3],
+    paddingVertical: designTokens.space[1]
+  },
+  visibilityText: {
+    color: colors.brand.goldDark,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
+  },
+  scopeText: {
     color: colors.text.subdued,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.medium,
-    lineHeight: designTokens.typography.lineHeight.label
+    fontSize: designTokens.typography.size.secondary,
+    lineHeight: designTokens.typography.lineHeight.secondary
   },
   statePanelOffset: {
-    paddingTop: designTokens.space[8]
+    marginTop: designTokens.space[4]
   }
 });

@@ -76,6 +76,7 @@
                           "email",
                           "country",
                           "city",
+                          "messagePreview",
                           "status",
                           "assignedOrganizationUnitId",
                           "assignedOrganizationUnitName",
@@ -112,6 +113,11 @@
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 120
+                          },
+                          "messagePreview": {
+                            "type": "string",
+                            "nullable": true,
+                            "maxLength": 160
                           },
                           "status": {
                             "type": "string",
@@ -243,6 +249,7 @@
                             "email",
                             "country",
                             "city",
+                            "messagePreview",
                             "status",
                             "assignedOrganizationUnitId",
                             "assignedOrganizationUnitName",
@@ -279,6 +286,11 @@
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 120
+                            },
+                            "messagePreview": {
+                              "type": "string",
+                              "nullable": true,
+                              "maxLength": 160
                             },
                             "status": {
                               "type": "string",
@@ -535,6 +547,7 @@
                             "email",
                             "country",
                             "city",
+                            "messagePreview",
                             "status",
                             "assignedOrganizationUnitId",
                             "assignedOrganizationUnitName",
@@ -571,6 +584,11 @@
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 120
+                            },
+                            "messagePreview": {
+                              "type": "string",
+                              "nullable": true,
+                              "maxLength": 160
                             },
                             "status": {
                               "type": "string",

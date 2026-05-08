@@ -7,6 +7,7 @@ const adminCandidateRequestSummaryOpenApiSchema = {
     "email",
     "country",
     "city",
+    "messagePreview",
     "status",
     "assignedOrganizationUnitId",
     "assignedOrganizationUnitName",
@@ -21,6 +22,7 @@ const adminCandidateRequestSummaryOpenApiSchema = {
     email: { type: "string", format: "email", maxLength: 320 },
     country: { type: "string", minLength: 1, maxLength: 120 },
     city: { type: "string", minLength: 1, maxLength: 120 },
+    messagePreview: { type: "string", nullable: true, maxLength: 160 },
     status: {
       type: "string",
       enum: ["new", "contacted", "invited", "rejected", "converted_to_candidate"]

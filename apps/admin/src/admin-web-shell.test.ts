@@ -284,6 +284,7 @@ describe("admin web shell", () => {
                 email: candidateRequest.email,
                 country: candidateRequest.country,
                 city: candidateRequest.city,
+                messagePreview: candidateRequest.messagePreview,
                 status: candidateRequest.status,
                 assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
                 assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
