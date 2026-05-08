@@ -10,6 +10,7 @@ export type BrotherRoute =
   | "BrotherAnnouncements"
   | "BrotherEventDetail"
   | "BrotherPrayers"
+  | "OrganizationUnitDetail"
   | "SilentPrayer";
 
 export interface BrotherScreenAction {
@@ -87,7 +88,8 @@ export function brotherStateCopy(
     | "events"
     | "announcements"
     | "eventDetail"
-    | "prayers",
+    | "prayers"
+    | "organizationUnitDetail",
   state: MobileScreenState
 ): { title: string; body: string } {
   return brotherStateCopies[screen][state];
@@ -100,7 +102,8 @@ const brotherStateCopies: Record<
   | "events"
   | "announcements"
   | "eventDetail"
-  | "prayers",
+  | "prayers"
+  | "organizationUnitDetail",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   today: {
@@ -311,6 +314,36 @@ const brotherStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh brother prayers."
+    }
+  },
+  organizationUnitDetail: {
+    ready: {
+      title: "Choragiew Detail",
+      body: "Organization-unit details are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Organization-unit details are loading."
+    },
+    empty: {
+      title: "Choragiew Detail",
+      body: "No active organization-unit detail is available."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Organization-unit details could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active brother profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before organization-unit details are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh organization-unit details."
     }
   }
 };

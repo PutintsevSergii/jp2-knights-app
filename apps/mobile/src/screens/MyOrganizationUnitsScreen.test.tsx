@@ -18,40 +18,53 @@ describe("MyOrganizationUnitsScreen", () => {
     expect(element.props.style).toBeDefined();
   });
 
-  it("shows demo chrome and invokes brother route navigation actions", () => {
-    const onNavigate = vi.fn();
+  it("shows demo chrome and invokes brother route actions", () => {
+    const onAction = vi.fn();
     const element = MyOrganizationUnitsScreen({
       screen: buildMyOrganizationUnitsScreen({
         state: "ready",
         response: fallbackMyOrganizationUnits,
         runtimeMode: "demo"
       }),
-      onNavigate
+      onAction
     });
-    const pressable = findElementByType(element, "Pressable");
+    const pressable = findPressableByLabel(element, "Open choragiew");
 
     expect(findText(element, "Demo mode")).toBe(true);
     expect(pressable).toBeDefined();
     pressable?.props.onPress?.();
-    expect(onNavigate).toHaveBeenCalledWith("BrotherToday");
+    expect(onAction).toHaveBeenCalledWith({
+      id: "open-organization-unit",
+      label: "Open choragiew",
+      targetRoute: "OrganizationUnitDetail",
+      targetId: fallbackMyOrganizationUnits.organizationUnits[0]!.id
+    });
   });
 });
 
 interface TestElement {
-  type: unknown;
+  type: string | TestComponent;
   props: {
     children?: TestNode;
+    accessibilityLabel?: string;
     onPress?: () => void;
     style?: unknown;
   };
 }
 
 type TestNode = TestElement | string | number | boolean | null | undefined | readonly TestNode[];
+type TestComponent = (props: TestElement["props"]) => TestNode;
 
-function findElementByType(node: TestNode, type: string): TestElement | undefined {
+function findPressableByLabel(node: TestNode, label: string): TestElement | undefined {
+  const resolved = resolveElement(node);
+
+  if (resolved !== node) {
+    return findPressableByLabel(resolved, label);
+  }
+
   if (isTestNodeArray(node)) {
     for (const child of node) {
-      const match = findElementByType(child, type);
+      const match = findPressableByLabel(child, label);
 
       if (match) {
         return match;
@@ -65,14 +78,20 @@ function findElementByType(node: TestNode, type: string): TestElement | undefine
     return undefined;
   }
 
-  if (node.type === type) {
+  if (node.type === "Pressable" && node.props.accessibilityLabel === label) {
     return node;
   }
 
-  return findElementByType(node.props.children, type);
+  return findPressableByLabel(node.props.children, label);
 }
 
 function findText(node: TestNode, text: string): boolean {
+  const resolved = resolveElement(node);
+
+  if (resolved !== node) {
+    return findText(resolved, text);
+  }
+
   if (isTestNodeArray(node)) {
     return node.some((child) => findText(child, text));
   }
@@ -94,4 +113,12 @@ function isTestElement(node: TestNode): node is TestElement {
 
 function isTestNodeArray(node: TestNode): node is readonly TestNode[] {
   return Array.isArray(node);
+}
+
+function resolveElement(node: TestNode): TestNode {
+  if (!isTestElement(node) || typeof node.type !== "function") {
+    return node;
+  }
+
+  return node.type(node.props);
 }

@@ -39,6 +39,7 @@ export function isBrotherRoute(route: MobileAppRoute): route is BrotherRoute {
     route === "BrotherAnnouncements" ||
     route === "BrotherEventDetail" ||
     route === "BrotherPrayers" ||
+    route === "OrganizationUnitDetail" ||
     route === "SilentPrayer"
   );
 }

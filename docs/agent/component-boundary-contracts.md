@@ -214,6 +214,20 @@ Use this shape when adding a new boundary entry:
 | Forbidden responsibilities | No attendee lists, brother roster exposure, candidate-only content, officer/admin workflows, chat/comments/read receipts, or client-side filtering           |
 | Scope guard                | Brother-visible event discovery only; event participation mutations remain on detail/intent contracts                                                       |
 
+### Brother Organization Units
+
+| Field                      | Contract                                                                                                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement/phase          | FR-ORG-001, Phase 10A                                                                                                                                                |
+| Data/API source            | Existing guarded `/api/brother/my-organization-units` client response and demo fixture                                                                                |
+| Screen model               | `apps/mobile/src/my-organization-units-screen.ts` and `apps/mobile/src/organization-unit-detail-screen.ts`; `apps/mobile/src/brother-screens.ts` remains a barrel only |
+| Route/surface owner        | `apps/mobile/src/mobile-brother-surface.tsx`; selected unit id and API/demo loading stay inside the brother route group                                               |
+| Renderer components        | `apps/mobile/src/screens/MyOrganizationUnitsScreen.tsx` and `apps/mobile/src/screens/OrganizationUnitDetailScreen.tsx`                                                |
+| Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, organization/location icons, and token-backed card chrome          |
+| Tests                      | Model tests, route guard/export tests, renderer tests, and existing API/server-side brother scope tests                                                               |
+| Forbidden responsibilities | No brother roster, member list, participant list, officer/admin management, hierarchy-derived scope expansion, or client-side visibility filtering                     |
+| Scope guard                | Brother read-only own organization-unit details only; roster, registry, and extended hierarchy behavior remain out of scope                                           |
+
 ### Admin Lite Candidate Requests
 
 | Field                      | Contract                                                                                                         |

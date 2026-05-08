@@ -28,6 +28,7 @@ import {
   buildBrotherTodayUrl,
   buildMyOrganizationUnitsScreen,
   buildMyOrganizationUnitsUrl,
+  buildOrganizationUnitDetailScreen,
   buildJoinRequestConfirmationScreen,
   buildJoinRequestFormScreen,
   buildIdleApprovalScreen,
@@ -118,6 +119,7 @@ describe("mobile shell", () => {
     expect(isPublicRoute("IdleApproval")).toBe(true);
     expect(isCandidateRoute("CandidateEvents")).toBe(true);
     expect(isBrotherRoute("BrotherToday")).toBe(true);
+    expect(isBrotherRoute("OrganizationUnitDetail")).toBe(true);
     expect(isPublicRoute("BrotherToday")).toBe(false);
     expect(isCandidateRoute("PublicHome")).toBe(false);
     expect(isBrotherRoute("CandidateDashboard")).toBe(false);
@@ -381,6 +383,14 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("MyOrganizationUnits");
+    expect(
+      buildOrganizationUnitDetailScreen({
+        state: "ready",
+        response: fallbackMyOrganizationUnits,
+        selectedOrganizationUnitId: fallbackMyOrganizationUnits.organizationUnits[0]!.id,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("OrganizationUnitDetail");
     expect(
       buildBrotherEventsScreen({
         state: "ready",

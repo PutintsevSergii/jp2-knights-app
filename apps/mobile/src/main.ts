@@ -118,7 +118,8 @@ export {
   buildBrotherProfileScreen,
   buildBrotherPrayersScreen,
   buildBrotherTodayScreen,
-  buildMyOrganizationUnitsScreen
+  buildMyOrganizationUnitsScreen,
+  buildOrganizationUnitDetailScreen
 } from "./brother-screens.js";
 export type {
   BrotherAnnouncementsScreen,
@@ -131,7 +132,9 @@ export type {
   BrotherScreenSection,
   BrotherScreenTheme,
   BrotherTodayScreen,
-  MyOrganizationUnitsScreen
+  MyOrganizationUnitsScreen,
+  OrganizationUnitDetailRow,
+  OrganizationUnitDetailScreen
 } from "./brother-screens.js";
 export type {
   CandidateAnnouncementsScreen,

@@ -16,9 +16,20 @@ export interface MyOrganizationUnitsScreen {
   title: string;
   body: string;
   sections: BrotherScreenSection[];
+  organizationUnitCards: MyOrganizationUnitCard[];
   actions: BrotherScreenAction[];
   demoChromeVisible: boolean;
   theme: BrotherScreenTheme;
+}
+
+export interface MyOrganizationUnitCard {
+  id: string;
+  title: string;
+  typeLabel: string;
+  locationLabel: string;
+  parishLabel: string;
+  body: string;
+  detailAction: BrotherScreenAction;
 }
 
 export function buildMyOrganizationUnitsScreen(options: {
@@ -42,7 +53,14 @@ export function buildMyOrganizationUnitsScreen(options: {
     sections: options.response.organizationUnits.map((organizationUnit) =>
       buildOrganizationUnitSection(organizationUnit)
     ),
+    organizationUnitCards: options.response.organizationUnits.map(buildMyOrganizationUnitCard),
     actions: [
+      {
+        id: "open-first-organization-unit",
+        label: "Open choragiew",
+        targetRoute: "OrganizationUnitDetail",
+        targetId: options.response.organizationUnits[0]!.id
+      },
       {
         id: "today",
         label: "Brother Today",
@@ -71,6 +89,7 @@ function stateOnlyMyOrganizationUnits(
     title: copy.title,
     body: copy.body,
     sections: [],
+    organizationUnitCards: [],
     actions: [],
     demoChromeVisible,
     theme: brotherScreenTheme
@@ -79,4 +98,23 @@ function stateOnlyMyOrganizationUnits(
 
 function organizationUnitCountBody(count: number): string {
   return count === 1 ? "1 active organization unit" : `${count} active organization units`;
+}
+
+function buildMyOrganizationUnitCard(
+  organizationUnit: MyOrganizationUnitsResponseDto["organizationUnits"][number]
+): MyOrganizationUnitCard {
+  return {
+    id: organizationUnit.id,
+    title: organizationUnit.name,
+    typeLabel: organizationUnit.type,
+    locationLabel: `${organizationUnit.city}, ${organizationUnit.country}`,
+    parishLabel: organizationUnit.parish ?? "Parish not recorded",
+    body: organizationUnit.publicDescription ?? "No public description is recorded yet.",
+    detailAction: {
+      id: "open-organization-unit",
+      label: "Open choragiew",
+      targetRoute: "OrganizationUnitDetail",
+      targetId: organizationUnit.id
+    }
+  };
 }

@@ -32,3 +32,8 @@ export {
   buildBrotherPrayersScreen,
   type BrotherPrayersScreen
 } from "./brother-prayers-screen.js";
+export {
+  buildOrganizationUnitDetailScreen,
+  type OrganizationUnitDetailScreen,
+  type OrganizationUnitDetailRow
+} from "./organization-unit-detail-screen.js";

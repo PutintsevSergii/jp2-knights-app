@@ -14,6 +14,7 @@ import {
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherPrayersScreen,
+  buildOrganizationUnitDetailScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
 } from "./brother-screens.js";
@@ -102,10 +103,49 @@ describe("brother screen models", () => {
       })
     ]);
     expect(screen.sections.map((section) => section.body).join("\n")).not.toContain("Brother:");
+    expect(screen.organizationUnitCards).toEqual([
+      expect.objectContaining({
+        id: fallbackMyOrganizationUnits.organizationUnits[0]!.id,
+        title: "Pilot Choragiew",
+        detailAction: {
+          id: "open-organization-unit",
+          label: "Open choragiew",
+          targetRoute: "OrganizationUnitDetail",
+          targetId: fallbackMyOrganizationUnits.organizationUnits[0]!.id
+        }
+      })
+    ]);
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "OrganizationUnitDetail",
       "BrotherToday",
       "BrotherProfile"
     ]);
+  });
+
+  it("builds Organization Unit Detail with read-only scoped data and no roster", () => {
+    const screen = buildOrganizationUnitDetailScreen({
+      state: "ready",
+      response: fallbackMyOrganizationUnits,
+      selectedOrganizationUnitId: fallbackMyOrganizationUnits.organizationUnits[0]!.id,
+      runtimeMode: "api"
+    });
+
+    expect(screen.route).toBe("OrganizationUnitDetail");
+    expect(screen.title).toBe("Pilot Choragiew");
+    expect(screen.body).toBe("CHORAGIEW - Riga, Latvia");
+    expect(screen.detailRows).toEqual([
+      { id: "type", label: "Type", value: "CHORAGIEW" },
+      { id: "status", label: "Status", value: "active" },
+      { id: "location", label: "Location", value: "Riga, Latvia" },
+      { id: "parish", label: "Parish", value: "Not recorded" }
+    ]);
+    expect(screen.description).toBe("Pilot community");
+    expect(screen.actions.map((action) => action.targetRoute)).toEqual([
+      "MyOrganizationUnits",
+      "BrotherToday",
+      "BrotherProfile"
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/roster|member list|brother list|participant/i);
   });
 
   it("builds Brother Events with visible event summaries and navigation actions", () => {
@@ -384,6 +424,19 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherPrayers",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
+    expect(
+      buildOrganizationUnitDetailScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "OrganizationUnitDetail",
         state: "idleApproval",
         title: "Account Approval Pending",
         actions: []

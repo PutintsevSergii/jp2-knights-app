@@ -37,7 +37,8 @@ import {
   buildBrotherProfileScreen,
   buildBrotherPrayersScreen,
   buildBrotherTodayScreen,
-  buildMyOrganizationUnitsScreen
+  buildMyOrganizationUnitsScreen,
+  buildOrganizationUnitDetailScreen
 } from "./brother-screens.js";
 import type { BrotherRoute } from "./brother-screens.js";
 import { isBrotherRoute } from "./mobile-routes.js";
@@ -47,6 +48,8 @@ import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js"
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
 import { BrotherPrayersScreen } from "./screens/BrotherPrayersScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
+import { MyOrganizationUnitsScreen } from "./screens/MyOrganizationUnitsScreen.js";
+import { OrganizationUnitDetailScreen } from "./screens/OrganizationUnitDetailScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
 export interface MobileBrotherSurfaceProps {
@@ -82,6 +85,9 @@ export function MobileBrotherSurface({
   const [myOrganizationUnits, setMyOrganizationUnits] = useState<
     MyOrganizationUnitsResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackMyOrganizationUnits : undefined));
+  const [selectedOrganizationUnitId, setSelectedOrganizationUnitId] = useState<
+    string | undefined
+  >(() => fallbackMyOrganizationUnits.organizationUnits[0]?.id);
   const [brotherEventsState, setBrotherEventsState] = useState<MobileScreenState>(
     runtimeMode === "demo" ? "ready" : "empty"
   );
@@ -205,7 +211,10 @@ export function MobileBrotherSurface({
   }, [authToken, publicApiBaseUrl, route, runtimeMode]);
 
   useEffect(() => {
-    if (runtimeMode === "demo" || route !== "MyOrganizationUnits") {
+    if (
+      runtimeMode === "demo" ||
+      (route !== "MyOrganizationUnits" && route !== "OrganizationUnitDetail")
+    ) {
       return;
     }
 
@@ -384,6 +393,15 @@ export function MobileBrotherSurface({
       }
     }
 
+    if (nextRoute === "OrganizationUnitDetail") {
+      setSelectedOrganizationUnitId(targetId);
+
+      if (runtimeMode === "demo") {
+        setMyOrganizationUnits(fallbackMyOrganizationUnits);
+        setMyOrganizationUnitsState(targetId ? "ready" : "empty");
+      }
+    }
+
     onRouteChange(nextRoute);
   }
 
@@ -406,10 +424,28 @@ export function MobileBrotherSurface({
 
   if (route === "MyOrganizationUnits") {
     return (
-      <PrivateContentScreen
+      <MyOrganizationUnitsScreen
         screen={buildMyOrganizationUnitsScreen({
           state: myOrganizationUnitsState,
           response: myOrganizationUnits,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isBrotherRoute(action.targetRoute)) {
+            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "OrganizationUnitDetail") {
+    return (
+      <OrganizationUnitDetailScreen
+        screen={buildOrganizationUnitDetailScreen({
+          state: myOrganizationUnitsState,
+          response: myOrganizationUnits,
+          selectedOrganizationUnitId,
           runtimeMode
         })}
         onAction={(action) => {

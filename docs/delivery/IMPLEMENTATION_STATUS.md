@@ -22,7 +22,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles                                                                                             | —                                                                      |
 | **8**     | ✅ COMPLETE    | 100%     | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening                                                                            | Phase 9                                                                |
 | **9**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch  | Phase 10                                                               |
-| **10**    | 🟡 IN PROGRESS | 50%      | ██████████░░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, and responsive Admin Lite Candidate Requests complete; formation roadmap next in same phase | Continue native/provider sign-in and Organization Unit Detail |
+| **10**    | 🟡 IN PROGRESS | 55%      | ███████████░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, and responsive Admin Lite Candidate Requests complete; formation roadmap next in same phase | Continue native/provider sign-in |
 | **11–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                                                                                                                                  | After Phase 10                                                         |
 
 ---
@@ -65,11 +65,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Added SOLID/Clean Architecture implementation rules and centralized Admin Lite access/scope plus admin/mobile API request primitives to reduce duplicated policy and client plumbing during Phase 10A growth
 - ✅ Restyled Admin Lite Candidate Requests from the Figma `1:1635` frame as responsive web, including scoped status metric cards, candidate cards, message previews from the server-side admin list contract, status badges, and Gold/Grey detail forms
 - ✅ Added a launchable Brother Prayer Library mobile screen over `/api/brother/prayers`, with API/demo loading, shared DTO validation, Gold/Grey prayer cards, categories, visibility badges, and no prayer tracking or participant-list behavior
+- ✅ Added the V1 launchable Organization Unit Detail mobile surface over the existing server-filtered `/api/brother/my-organization-units` response, with Gold/Grey read-only detail cards, API/demo loading, route action metadata, and no brother roster/member-list exposure
 
 **In Progress**:
 
 - 🟡 Wire the actual native/provider sign-in flow once the mobile provider UX is selected
-- 🟡 Add the remaining V1 launchable Organization Unit Detail mobile surface for already implemented organization-unit data
 
 **Scope guard**: This workstream is now V1 scope. It still does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
@@ -386,7 +386,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` lint                                                                                                                                                                        |
 | **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` typecheck                                                                                                                                                                   |
 | **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 92.64% statements / 82.55% branches / 94.92% functions / 93.03% lines                                                                                                                                                     |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, Brother Prayer Library mobile route/rendering, Admin Lite Candidate Requests responsive list/detail rendering, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, Brother Prayer Library and Organization Unit Detail mobile route/rendering, Admin Lite Candidate Requests responsive list/detail rendering, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
 | **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` build                                                                                                                                                                       |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes the Admin Candidate Request list `messagePreview` field plus existing candidate/brother event, participation, announcement, admin announcement, and auth notification endpoints                                      |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check passed after regenerating `generated/openapi.json`                                                                                                                                                                               |
@@ -516,6 +516,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile Phase 10A UI rule coverage now prevents nonzero React Native component letter-spacing and keeps Candidate Events bottom navigation honest by disabling unavailable destinations instead of faking routes.
 - Admin Lite Candidate Requests now uses responsive Gold/Grey metric cards, candidate cards, status badges, and detail follow-up forms over the existing server-scoped admin API. The list contract now includes a bounded `messagePreview`; no officer scope or private filtering moved client-side.
 - Brother Prayer Library now has API/demo mobile loading and a dedicated Gold/Grey React Native screen over the guarded `/api/brother/prayers` contract, rendering server-filtered categories and prayer cards without adding tracking, participant lists, chat/comments, or client-side visibility filtering.
+- Organization Unit Detail now has API/demo mobile loading through the existing guarded `/api/brother/my-organization-units` response, a dedicated Gold/Grey React Native detail screen, and route/model/renderer coverage for read-only scoped fields without brother roster or member-list exposure.
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
@@ -579,10 +580,10 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Replace generic Candidate Announcements renderer with a dedicated RN screen backed by candidate-visible one-way announcement state
    - [x] Replace generic Brother Today renderer with a dedicated RN screen
    - [x] Replace generic Brother Events renderer with a dedicated RN screen
-   - [x] Apply shared header/card/bottom-nav system to remaining brother detail/announcement surfaces
-   - [x] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
-   - [x] Add Brother Prayer Library mobile surface over the existing guarded prayer list contract
-   - [ ] Add Organization Unit Detail mobile surface without brother roster exposure
+  - [x] Apply shared header/card/bottom-nav system to remaining brother detail/announcement surfaces
+  - [x] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
+  - [x] Add Brother Prayer Library mobile surface over the existing guarded prayer list contract
+   - [x] Add Organization Unit Detail mobile surface without brother roster exposure
 
 6. **Start Phase 10B Formation Roadmap**
    - [ ] Add localization foundation: shared translation-key contract/adapter, default English catalog, and mobile/admin helpers so new Phase 10B UI copy is not hardcoded
