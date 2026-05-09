@@ -11,19 +11,30 @@ import {
   publicCandidateRequestSubmitFailureState,
   submitPublicCandidateRequest
 } from "./public-candidate-request-api.js";
-import type { JoinRequestFieldId, PublicRoute, SignInFieldId } from "./public-screens.js";
+import {
+  mobileProviderSignInFailureMessage,
+  submitMobileProviderSignIn,
+  unconfiguredGoogleSignInProvider,
+  type MobileProviderSession,
+  type MobileProviderSignIn
+} from "./mobile-provider-sign-in.js";
+import type { JoinRequestFieldId, PublicRoute } from "./public-screens.js";
 import { JOIN_REQUEST_CONSENT_TEXT_VERSION } from "./public-screens.js";
 
 export interface MobilePublicFormControllerOptions {
   runtimeMode: RuntimeMode;
   publicApiBaseUrl: string;
   onRouteChange: (route: PublicRoute) => void;
+  signInProvider?: MobileProviderSignIn;
+  onProviderSession?: (session: MobileProviderSession) => void;
 }
 
 export function useMobilePublicFormController({
   runtimeMode,
   publicApiBaseUrl,
-  onRouteChange
+  onRouteChange,
+  signInProvider = unconfiguredGoogleSignInProvider,
+  onProviderSession
 }: MobilePublicFormControllerOptions) {
   const [joinRequestState, setJoinRequestState] = useState<MobileScreenState>("ready");
   const [joinRequestDraft, setJoinRequestDraft] = useState<JoinRequestFormDraft>({
@@ -34,10 +45,7 @@ export function useMobilePublicFormController({
   const [joinRequestResponse, setJoinRequestResponse] = useState<
     PublicCandidateRequestResponseDto | undefined
   >();
-  const [signInValues, setSignInValues] = useState<Record<SignInFieldId, string>>({
-    email: "",
-    password: ""
-  });
+  const [signInState, setSignInState] = useState<MobileScreenState>("ready");
   const [signInErrorMessage, setSignInErrorMessage] = useState<string | undefined>();
 
   function handleJoinRequestFieldChange(field: JoinRequestFieldId, value: string) {
@@ -53,18 +61,22 @@ export function useMobilePublicFormController({
     setJoinRequestErrorMessage(undefined);
   }
 
-  function handleSignInFieldChange(field: SignInFieldId, value: string) {
-    setSignInValues((current) => ({
-      ...current,
-      [field]: value
-    }));
+  async function handleSignInSubmit() {
     setSignInErrorMessage(undefined);
-  }
+    setSignInState("loading");
 
-  function handleSignInSubmit() {
-    setSignInErrorMessage(
-      "Provider sign-in is not configured in this Expo shell yet. Use an approved bearer token for API-mode development."
-    );
+    try {
+      const session = await submitMobileProviderSignIn({
+        provider: signInProvider,
+        baseUrl: publicApiBaseUrl
+      });
+
+      setSignInState("ready");
+      onProviderSession?.(session);
+    } catch (error: unknown) {
+      setSignInState("ready");
+      setSignInErrorMessage(mobileProviderSignInFailureMessage(error));
+    }
   }
 
   async function handleJoinRequestSubmit() {
@@ -103,12 +115,11 @@ export function useMobilePublicFormController({
     joinRequestConsentAccepted,
     joinRequestErrorMessage,
     joinRequestResponse,
-    signInValues,
+    signInState,
     signInErrorMessage,
     handleJoinRequestFieldChange,
     handleJoinRequestConsentAcceptedChange,
     handleJoinRequestSubmit,
-    handleSignInFieldChange,
     handleSignInSubmit
   };
 }

@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 8, 2026
+Updated: May 9, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -22,7 +22,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles                                                                                             | —                                                                      |
 | **8**     | ✅ COMPLETE    | 100%     | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening                                                                            | Phase 9                                                                |
 | **9**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch  | Phase 10                                                               |
-| **10**    | 🟡 IN PROGRESS | 55%      | ███████████░░░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, auth-entry styling, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, and responsive Admin Lite Candidate Requests complete; formation roadmap next in same phase | Continue native/provider sign-in |
+| **10**    | 🟡 IN PROGRESS | 64%      | █████████████░░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, Google/Firebase auth-entry styling/session bridge/Expo adapter, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, responsive Admin Lite Candidate Requests, and Phase 10B localization foundation complete | Define roadmap data tables/contracts |
 | **11–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                                                                                                                                  | After Phase 10                                                         |
 
 ---
@@ -50,6 +50,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Added Figma-derived Gold/Grey semantic color, border, radius, shadow, action, and Work Sans typography tokens to shared design tokens
 - ✅ Added mobile Sign In and Idle Approval screen foundations as public routes with token-backed React Native screens, safe approval-state copy, and no client-side private role granting
 - ✅ Applied the extracted Gold/Grey auth shell to mobile Sign In and Idle Approval; owner direction now clarifies V1 Sign In should adapt the Figma form into Google/Gmail Firebase provider entry rather than email/password credentials
+- ✅ Replaced Sign In email/password controls with a Google/Firebase provider action, added a mobile provider sign-in adapter seam, validated `/api/auth/session` responses through shared schemas, and wired successful provider sessions into Candidate/Brother/Idle Approval routing without client-side role grants
+- ✅ Added the concrete Expo/Firebase Google provider adapter with `firebase`, `expo-auth-session`, and `expo-web-browser`; it reads Expo public Firebase/Google client configuration, exchanges Google ID tokens for Firebase ID tokens, and keeps the unconfigured fallback explicit when credentials are absent
 - ✅ Extended `/api/candidate/events` list items with the signed-in candidate's own `currentUserParticipation` intent only, keeping server-side candidate visibility filters and no participant-list exposure
 - ✅ Replaced the generic Candidate Events mobile renderer with a dedicated Gold/Grey React Native screen matching the Figma event-card/header/bottom-nav structure and routing RSVP actions through the existing participation API
 - ✅ Replaced the generic Brother Today mobile renderer with a dedicated Gold/Grey React Native screen matching the Figma profile summary, quick-action grid, upcoming action cards, organization-unit cards, and brother bottom-nav structure over the existing guarded `/api/brother/today` contract
@@ -69,7 +71,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **In Progress**:
 
-- 🟡 Wire the actual native/provider sign-in flow once the mobile provider UX is selected
+- 🟡 Add pilot Firebase/Google environment values and validate the provider flow on a native Expo target
+- 🟡 Start Phase 10B Formation Roadmap contracts after localization foundation
 
 **Scope guard**: This workstream is now V1 scope. It still does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
@@ -383,11 +386,11 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 | Gate                     | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 | Phase 8 | Phase 9 | Notes                                                                                                                                                                                                                                            |
 | ------------------------ | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` lint                                                                                                                                                                        |
-| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` typecheck                                                                                                                                                                   |
-| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 92.64% statements / 82.55% branches / 94.92% functions / 93.03% lines                                                                                                                                                     |
-| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, Brother Prayer Library and Organization Unit Detail mobile route/rendering, Admin Lite Candidate Requests responsive list/detail rendering, admin announcement API/list/editor UI, notification preference/device-token, and push recipient dispatch coverage |
-| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10A Admin Lite Candidate Requests slice passed `pnpm quality` build                                                                                                                                                                       |
+| **Lint**                 | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10B localization foundation passed `pnpm quality` lint                                                                                                                                                                                   |
+| **Typecheck**            | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10B localization foundation passed focused shared/mobile/admin typecheck                                                                                                                                                                  |
+| **Unit tests (80%)**     | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | `vitest --coverage`: 92.49% statements / 82.55% branches / 94.41% functions / 92.86% lines                                                                                                                                                     |
+| **Integration tests**    | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Candidate/brother event read, participation, announcement read, mobile private routing/renderer, provider sign-in session bridge, Expo/Firebase Google provider adapter/config parsing, Brother Prayer Library and Organization Unit Detail mobile route/rendering, Admin Lite Candidate Requests responsive list/detail rendering, admin announcement API/list/editor UI, notification preference/device-token, push recipient dispatch coverage, and Phase 10B mobile/admin localization adapter coverage |
+| **Build**                | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Phase 10B localization foundation passed `pnpm quality` build                                                                                                                                                                                  |
 | **OpenAPI generation**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Generated contract includes the Admin Candidate Request list `messagePreview` field plus existing candidate/brother event, participation, announcement, admin announcement, and auth notification endpoints                                      |
 | **Contract check**       | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Contract check passed after regenerating `generated/openapi.json`                                                                                                                                                                               |
 | **DB migration check**   | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | ✅      | Prisma schema and migration baseline validate                                                                                                                                                                                                   |
@@ -507,7 +510,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Mobile route-group guards and regression tests now keep candidate/brother/join-request orchestration out of the root composition component
 - Local Figma cache now stores priority-frame screenshots and extracted Gold/Grey colors, Work Sans typography, spacing, radius, and shadow values under `docs/design-updates/figma-cache`
 - Shared typography and Gold/Grey semantic tokens now cover display, screen title, section title, body, secondary, label, button, action, border, radius, and shadow roles
-- Mobile Sign In and Idle Approval screen foundations are now mounted in the public route surface with the extracted Gold/Grey auth shell; Idle users can inspect approval state without private roles/scopes, and provider credential submission remains explicitly pending
+- Mobile Sign In and Idle Approval screen foundations are now mounted in the public route surface with the extracted Gold/Grey auth shell; Idle users can inspect approval state without private roles/scopes. Sign In now uses a Google/Firebase provider action, a concrete Expo/Firebase provider adapter, and a shared-schema `/auth/session` exchange; real Firebase/Google client IDs are still deployment configuration.
 - Candidate Events now has a dedicated Figma-aligned mobile screen. Its list API returns only the current user's own participation intent for RSVP badge/action state and does not expose participant lists.
 - Candidate Event Detail now has a dedicated Figma-aligned mobile screen over the existing guarded detail and participation APIs, with date/time/location sections, safe description, and only the current user's own RSVP status/action.
 - Candidate Announcements now has a dedicated Figma-aligned mobile list screen over the existing guarded announcements API, with pinned one-way cards and no chat/comments/read receipts/push delivery state.
@@ -517,6 +520,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Admin Lite Candidate Requests now uses responsive Gold/Grey metric cards, candidate cards, status badges, and detail follow-up forms over the existing server-scoped admin API. The list contract now includes a bounded `messagePreview`; no officer scope or private filtering moved client-side.
 - Brother Prayer Library now has API/demo mobile loading and a dedicated Gold/Grey React Native screen over the guarded `/api/brother/prayers` contract, rendering server-filtered categories and prayer cards without adding tracking, participant lists, chat/comments, or client-side visibility filtering.
 - Organization Unit Detail now has API/demo mobile loading through the existing guarded `/api/brother/my-organization-units` response, a dedicated Gold/Grey React Native detail screen, and route/model/renderer coverage for read-only scoped fields without brother roster or member-list exposure.
+- Phase 10B localization foundation is in place: `@jp2/shared-i18n` defines stable UI translation keys, a default English catalog, locale fallback, interpolation, and mobile/Admin Lite helper adapters for roadmap UI copy.
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
 ---
@@ -586,7 +590,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Add Organization Unit Detail mobile surface without brother roster exposure
 
 6. **Start Phase 10B Formation Roadmap**
-   - [ ] Add localization foundation: shared translation-key contract/adapter, default English catalog, and mobile/admin helpers so new Phase 10B UI copy is not hardcoded
+   - [x] Add localization foundation: shared translation-key contract/adapter, default English catalog, and mobile/admin helpers so new Phase 10B UI copy is not hardcoded
    - [ ] Define roadmap data tables/contracts from the canonical phase scope
    - [ ] Add candidate/brother roadmap read APIs and screen models
    - [ ] Add admin roadmap submission review workflow
@@ -694,6 +698,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 7, 2026
-**Current Phase**: Phase 10A Figma/RBAC alignment in progress; Phases 0–9 complete
-**Next Major Milestone**: Implement V1 Figma/RBAC screen and token alignment
+**Last Updated**: May 9, 2026
+**Current Phase**: Phase 10 Figma/RBAC alignment and Formation Roadmap in progress; Phases 0–9 complete
+**Next Major Milestone**: Define roadmap data tables and contracts

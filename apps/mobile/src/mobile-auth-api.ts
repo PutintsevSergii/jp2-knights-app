@@ -1,11 +1,15 @@
 import {
+  authSessionResponseSchema,
   currentUserResponseSchema,
+  type AuthSessionRequestDto,
+  type AuthSessionResponseDto,
   type CurrentUserResponseDto
 } from "@jp2/shared-validation";
 import type { MobilePrincipal, MobileScreenState } from "./navigation.js";
 import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
+  requestPublicJsonMobileApi,
   requestMobileApi,
   type MobileApiFetch,
   type MobileApiFetchInit,
@@ -24,6 +28,12 @@ export interface FetchCurrentUserOptions {
   fetchImpl?: MobileAuthFetch;
 }
 
+export interface CreateAuthSessionOptions {
+  baseUrl?: string;
+  request: AuthSessionRequestDto;
+  fetchImpl?: MobileAuthFetch;
+}
+
 export async function fetchCurrentUser(
   options: FetchCurrentUserOptions = {}
 ): Promise<CurrentUserResponseDto> {
@@ -37,8 +47,25 @@ export async function fetchCurrentUser(
   return currentUserResponseSchema.parse(await response.json());
 }
 
+export async function createAuthSession(
+  options: CreateAuthSessionOptions
+): Promise<AuthSessionResponseDto> {
+  const response = await requestPublicJsonMobileApi<MobileAuthFetchResponse>(
+    buildAuthSessionUrl(options.baseUrl),
+    options.fetchImpl,
+    JSON.stringify(options.request),
+    (status) => new MobileAuthHttpError(status)
+  );
+
+  return authSessionResponseSchema.parse(await response.json());
+}
+
 export function buildCurrentUserUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return buildMobileApiUrl("auth/me", baseUrl);
+}
+
+export function buildAuthSessionUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
+  return buildMobileApiUrl("auth/session", baseUrl);
 }
 
 export function currentUserLoadFailureState(error: unknown): MobileScreenState {
@@ -51,6 +78,18 @@ export function currentUserLoadFailureState(error: unknown): MobileScreenState {
   }
 
   return "error";
+}
+
+export function authSessionFailureMessage(error: unknown): string {
+  if (error instanceof TypeError) {
+    return "Reconnect to sign in with Google.";
+  }
+
+  if (error instanceof MobileAuthHttpError && (error.status === 401 || error.status === 403)) {
+    return "Google sign-in was not accepted for private app access yet.";
+  }
+
+  return "Google sign-in could not be completed. Try again.";
 }
 
 export function toMobilePrincipal(response: CurrentUserResponseDto): MobilePrincipal {

@@ -13,9 +13,13 @@
     "@babel/runtime": "7.29.2",
     "@jp2/shared-auth": "workspace:*",
     "@jp2/shared-design-tokens": "workspace:*",
+    "@jp2/shared-i18n": "workspace:*",
     "@jp2/shared-types": "workspace:*",
     "@jp2/shared-validation": "workspace:*",
     "expo": "55.0.19",
+    "expo-auth-session": "^55.0.15",
+    "expo-web-browser": "^55.0.15",
+    "firebase": "^12.13.0",
     "react": "19.2.0",
     "react-native": "0.83.6"
   },

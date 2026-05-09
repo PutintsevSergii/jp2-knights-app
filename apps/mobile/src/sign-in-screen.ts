@@ -9,13 +9,11 @@ import {
   type PublicScreenTheme
 } from "./public-screen-contracts.js";
 
-export type SignInFieldId = "email" | "password";
-
-export interface SignInFormField {
-  id: SignInFieldId;
+export interface SignInProviderAction {
+  id: "firebase-google";
   label: string;
-  keyboardType: "default" | "email-address";
-  secureTextEntry: boolean;
+  accessibilityLabel: string;
+  provider: "firebase-google";
 }
 
 export interface SignInScreen {
@@ -23,7 +21,7 @@ export interface SignInScreen {
   state: MobileScreenState;
   title: string;
   body: string;
-  fields: SignInFormField[];
+  providerAction: SignInProviderAction | null;
   sections: PublicScreenSection[];
   actions: PublicScreenAction[];
   demoChromeVisible: boolean;
@@ -44,12 +42,12 @@ export function buildSignInScreen(options: BuildSignInScreenOptions): SignInScre
     state: options.state,
     title: copy.title,
     body: options.errorMessage ?? copy.body,
-    fields: options.state === "ready" ? signInFormFields : [],
+    providerAction: options.state === "ready" ? googleProviderAction : null,
     sections: [
       {
         id: "provider-sign-in",
-        title: "Account access",
-        body: "Approved private access is resolved through the configured authentication provider and local JP2 approval state."
+        title: "Google account access",
+        body: "Google verifies identity through Firebase. Private app access still depends on the local JP2 approval state."
       }
     ],
     actions: [
@@ -65,17 +63,9 @@ export function buildSignInScreen(options: BuildSignInScreenOptions): SignInScre
   };
 }
 
-const signInFormFields: SignInFormField[] = [
-  {
-    id: "email",
-    label: "Email",
-    keyboardType: "email-address",
-    secureTextEntry: false
-  },
-  {
-    id: "password",
-    label: "Password",
-    keyboardType: "default",
-    secureTextEntry: true
-  }
-];
+const googleProviderAction: SignInProviderAction = {
+  id: "firebase-google",
+  label: "Continue with Google",
+  accessibilityLabel: "Continue with Google",
+  provider: "firebase-google"
+};

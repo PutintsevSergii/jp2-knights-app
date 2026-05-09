@@ -8,6 +8,18 @@ import {
   readMobileAuthToken,
   toMobilePrincipal
 } from "./mobile-auth-api.js";
+import type { MobileProviderSession } from "./mobile-provider-sign-in.js";
+import {
+  unconfiguredGoogleSignInProvider,
+  type MobileProviderSignIn
+} from "./mobile-provider-sign-in.js";
+import {
+  readExpoFirebaseGoogleSignInConfig,
+  type ExpoFirebaseGoogleSignInConfig
+} from "./mobile-firebase-google-provider-core.js";
+import {
+  useExpoFirebaseGoogleSignInProvider
+} from "./mobile-firebase-google-provider.js";
 import { MobileBrotherSurface } from "./mobile-brother-surface.js";
 import { MobileCandidateSurface } from "./mobile-candidate-surface.js";
 import { isBrotherRoute, isCandidateRoute, type MobileAppRoute } from "./mobile-routes.js";
@@ -15,9 +27,34 @@ import { MobilePublicSurface } from "./mobile-public-surface.js";
 import { readMobileRuntimeMode } from "./runtime-config.js";
 
 export function App() {
+  const googleSignInConfig = useMemo(() => readExpoFirebaseGoogleSignInConfig(), []);
+
+  if (googleSignInConfig) {
+    return <ConfiguredMobileApp googleSignInConfig={googleSignInConfig} />;
+  }
+
+  return <MobileApp signInProvider={unconfiguredGoogleSignInProvider} />;
+}
+
+interface ConfiguredMobileAppProps {
+  googleSignInConfig: ExpoFirebaseGoogleSignInConfig;
+}
+
+function ConfiguredMobileApp({ googleSignInConfig }: ConfiguredMobileAppProps) {
+  const signInProvider = useExpoFirebaseGoogleSignInProvider(googleSignInConfig);
+
+  return <MobileApp signInProvider={signInProvider} />;
+}
+
+interface MobileAppProps {
+  signInProvider: MobileProviderSignIn;
+}
+
+function MobileApp({ signInProvider }: MobileAppProps) {
   const runtimeMode = useMemo(() => readMobileRuntimeMode(), []);
   const publicApiBaseUrl = useMemo(() => readPublicApiBaseUrl(), []);
-  const authToken = useMemo(() => readMobileAuthToken(), []);
+  const initialAuthToken = useMemo(() => readMobileAuthToken(), []);
+  const [authToken, setAuthToken] = useState<string | undefined>(initialAuthToken);
   const [currentRoute, setCurrentRoute] = useState<MobileAppRoute>("PublicHome");
   const [launchState, setLaunchState] = useState<MobileLaunchState>(() =>
     runtimeMode === "demo"
@@ -78,7 +115,9 @@ export function App() {
           useFallbackPublicHome: false
         });
         setLaunchState(nextLaunchState);
-        setCurrentRoute(nextLaunchState.initialRoute);
+        setCurrentRoute(
+          nextLaunchState.state === "idleApproval" ? "IdleApproval" : nextLaunchState.initialRoute
+        );
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -93,6 +132,20 @@ export function App() {
       cancelled = true;
     };
   }, [authToken, launchState.publicHome, publicApiBaseUrl, runtimeMode]);
+
+  function handleProviderSession(session: MobileProviderSession) {
+    const nextLaunchState = resolveMobileLaunchState(toMobilePrincipal(session.response.currentUser), {
+      runtimeMode,
+      ...(launchState.publicHome ? { publicHome: launchState.publicHome } : {}),
+      useFallbackPublicHome: false
+    });
+
+    setAuthToken(session.providerToken);
+    setLaunchState(nextLaunchState);
+    setCurrentRoute(
+      nextLaunchState.state === "idleApproval" ? "IdleApproval" : nextLaunchState.initialRoute
+    );
+  }
 
   if (isCandidateRoute(currentRoute)) {
     return (
@@ -125,6 +178,8 @@ export function App() {
       publicApiBaseUrl={publicApiBaseUrl}
       launchState={launchState}
       onRouteChange={setCurrentRoute}
+      signInProvider={signInProvider}
+      onProviderSession={handleProviderSession}
     />
   );
 }

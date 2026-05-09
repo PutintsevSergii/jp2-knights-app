@@ -1,25 +1,17 @@
 import { designTokens } from "@jp2/shared-design-tokens";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import type { SignInScreen as SignInScreenModel, SignInFieldId } from "../public-screens.js";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import type { SignInScreen as SignInScreenModel } from "../public-screens.js";
 
 export interface SignInScreenProps {
   screen: SignInScreenModel;
-  values: Record<SignInFieldId, string>;
-  onChangeField?: (field: SignInFieldId, value: string) => void;
   onSubmit?: () => void;
   onNavigate?: (route: SignInScreenModel["actions"][number]["targetRoute"]) => void;
-  passwordVisible?: boolean;
-  onTogglePasswordVisibility?: () => void;
 }
 
 export function SignInScreen({
   screen,
-  values,
-  onChangeField,
   onSubmit,
-  onNavigate,
-  passwordVisible = false,
-  onTogglePasswordVisibility
+  onNavigate
 }: SignInScreenProps) {
   const createAccountAction = screen.actions.find((action) => action.id === "create-account");
   const homeAction = screen.actions.find((action) => action.id === "home");
@@ -56,65 +48,10 @@ export function SignInScreen({
         </View>
 
         <View style={styles.formCard}>
-          {screen.fields.map((field) => (
-            <View key={field.id} style={styles.fieldGroup}>
-              <View style={styles.labelRow}>
-                <Text style={[styles.fieldLabel, { color: screen.theme.text }]}>
-                  {field.label.toUpperCase()}
-                </Text>
-                {field.id === "password" ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Forgot password"
-                    disabled
-                  >
-                    <Text style={[styles.forgotPassword, { color: screen.theme.text }]}>
-                      FORGOT PASSWORD?
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-              <View
-                style={[
-                  styles.inputShell,
-                  {
-                    borderColor: screen.theme.border,
-                    borderRadius: screen.theme.radius
-                  }
-                ]}
-              >
-                <Text style={styles.inputIcon}>{field.id === "email" ? "@" : "#"}</Text>
-                <TextInput
-                  accessibilityLabel={field.label}
-                  autoCapitalize="none"
-                  keyboardType={field.keyboardType}
-                  onChangeText={(value) => onChangeField?.(field.id, value)}
-                  placeholder={field.id === "email" ? "brother@domain.com" : "Password"}
-                  placeholderTextColor={designTokens.color.text.subdued}
-                  secureTextEntry={field.secureTextEntry && !passwordVisible}
-                  style={[styles.input, { color: screen.theme.text }]}
-                  value={values[field.id]}
-                />
-                {field.id === "password" ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={
-                      passwordVisible ? "Hide password" : "Show password"
-                    }
-                    onPress={onTogglePasswordVisibility}
-                    style={styles.passwordToggle}
-                  >
-                    <Text style={styles.inputIcon}>{passwordVisible ? "Hide" : "Show"}</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-          ))}
-
-          {screen.state === "ready" ? (
+          {screen.providerAction ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Sign in"
+              accessibilityLabel={screen.providerAction.accessibilityLabel}
               onPress={onSubmit}
               style={[
                 styles.action,
@@ -124,8 +61,11 @@ export function SignInScreen({
                 }
               ]}
             >
+              <View style={styles.providerMark}>
+                <Text style={styles.providerMarkText}>G</Text>
+              </View>
               <Text style={[styles.actionText, { color: screen.theme.primaryActionText }]}>
-                SIGN IN -&gt;
+                {screen.providerAction.label}
               </Text>
             </Pressable>
           ) : null}
@@ -242,64 +182,27 @@ const styles = StyleSheet.create({
     shadowRadius: designTokens.elevation.subtle.radius,
     width: "100%"
   },
-  fieldGroup: {
-    gap: designTokens.space[2]
-  },
-  labelRow: {
+  providerMark: {
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
+    backgroundColor: designTokens.color.background.app,
+    borderRadius: designTokens.radius.md,
+    height: 28,
+    justifyContent: "center",
+    width: 28
   },
-  sectionTitle: {
+  providerMarkText: {
+    color: designTokens.color.brand.ink,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
+    fontSize: designTokens.typography.size.body,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.secondary,
-    textAlign: "center"
-  },
-  fieldLabel: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.semibold,
-    letterSpacing: designTokens.typography.letterSpacing.label,
-    lineHeight: designTokens.typography.lineHeight.label
-  },
-  forgotPassword: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: designTokens.typography.letterSpacing.label,
-    lineHeight: designTokens.typography.lineHeight.label,
-    textDecorationLine: "underline"
-  },
-  inputShell: {
-    alignItems: "center",
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: designTokens.space[2],
-    minHeight: 56,
-    paddingHorizontal: designTokens.space[3]
-  },
-  inputIcon: {
-    color: designTokens.color.text.subdued,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
-    fontWeight: designTokens.typography.weight.medium
-  },
-  input: {
-    flex: 1,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: 18,
-    lineHeight: 24,
-    minWidth: 0
-  },
-  passwordToggle: {
-    padding: designTokens.space[1]
+    lineHeight: designTokens.typography.lineHeight.body
   },
   action: {
     alignItems: "center",
-    minHeight: 48,
+    flexDirection: "row",
+    gap: designTokens.space[2],
     justifyContent: "center",
+    minHeight: 56,
     paddingHorizontal: designTokens.space[4],
     paddingVertical: 14
   },
@@ -312,6 +215,13 @@ const styles = StyleSheet.create({
   },
   supportingCopy: {
     display: "none"
+  },
+  sectionTitle: {
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.secondary,
+    textAlign: "center"
   },
   footer: {
     alignItems: "center",

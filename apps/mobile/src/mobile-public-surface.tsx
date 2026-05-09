@@ -1,4 +1,5 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import type { MobileProviderSession, MobileProviderSignIn } from "./mobile-provider-sign-in.js";
 import { fallbackPublicCandidateRequestResponse } from "./public-candidate-request.js";
 import type { MobileLaunchState } from "./navigation.js";
 import { useMobilePublicContentController } from "./mobile-public-content-controller.js";
@@ -31,6 +32,8 @@ export interface MobilePublicSurfaceProps {
   publicApiBaseUrl: string;
   launchState: MobileLaunchState;
   onRouteChange: (route: PublicRoute) => void;
+  signInProvider?: MobileProviderSignIn;
+  onProviderSession?: (session: MobileProviderSession) => void;
 }
 
 export function MobilePublicSurface({
@@ -38,7 +41,9 @@ export function MobilePublicSurface({
   runtimeMode,
   publicApiBaseUrl,
   launchState,
-  onRouteChange
+  onRouteChange,
+  signInProvider,
+  onProviderSession
 }: MobilePublicSurfaceProps) {
   const publicContent = useMobilePublicContentController({
     route,
@@ -49,7 +54,9 @@ export function MobilePublicSurface({
   const publicForms = useMobilePublicFormController({
     runtimeMode,
     publicApiBaseUrl,
-    onRouteChange
+    onRouteChange,
+    ...(signInProvider ? { signInProvider } : {}),
+    ...(onProviderSession ? { onProviderSession } : {})
   });
 
   if (route === "AboutOrder") {
@@ -141,13 +148,13 @@ export function MobilePublicSurface({
     return (
       <SignInScreen
         screen={buildSignInScreen({
-          state: "ready",
+          state: publicForms.signInState,
           runtimeMode,
           errorMessage: publicForms.signInErrorMessage
         })}
-        values={publicForms.signInValues}
-        onChangeField={publicForms.handleSignInFieldChange}
-        onSubmit={publicForms.handleSignInSubmit}
+        onSubmit={() => {
+          void publicForms.handleSignInSubmit();
+        }}
         onNavigate={publicContent.handlePublicRoute}
       />
     );

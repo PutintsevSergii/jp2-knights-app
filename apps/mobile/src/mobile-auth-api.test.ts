@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  authSessionFailureMessage,
+  buildAuthSessionUrl,
   buildCurrentUserUrl,
+  createAuthSession,
   currentUserLoadFailureState,
   fetchCurrentUser,
   MobileAuthHttpError,
@@ -38,6 +41,12 @@ describe("mobile auth API", () => {
     );
   });
 
+  it("builds the auth-session URL from the configured API base", () => {
+    expect(buildAuthSessionUrl("https://api.example.test")).toBe(
+      "https://api.example.test/auth/session"
+    );
+  });
+
   it("fetches and validates the current user with a bearer token", async () => {
     const seen: Array<{ input: string; authorization?: string }> = [];
     const response = await fetchCurrentUser({
@@ -59,6 +68,51 @@ describe("mobile auth API", () => {
       {
         input: "https://api.example.test/auth/me",
         authorization: "Bearer provider-token"
+      }
+    ]);
+  });
+
+  it("creates an auth session by posting a provider ID token", async () => {
+    const seen: Array<{ input: string; method?: string; body?: string }> = [];
+    const response = await createAuthSession({
+      baseUrl: "https://api.example.test",
+      request: {
+        idToken: "firebase-id-token"
+      },
+      fetchImpl: (input, init) => {
+        const entry: { input: string; method?: string; body?: string } = { input };
+
+        if (init?.method) {
+          entry.method = init.method;
+        }
+
+        if (init?.body) {
+          entry.body = init.body;
+        }
+
+        seen.push(entry);
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              currentUser,
+              session: {
+                transport: "bearer",
+                expiresAt: null
+              }
+            })
+        });
+      }
+    });
+
+    expect(response.currentUser.user.id).toBe("user-1");
+    expect(seen).toEqual([
+      {
+        input: "https://api.example.test/auth/session",
+        method: "POST",
+        body: "{\"idToken\":\"firebase-id-token\"}"
       }
     ]);
   });
@@ -121,6 +175,18 @@ describe("mobile auth API", () => {
     expect(currentUserLoadFailureState(new MobileAuthHttpError(401))).toBe("ready");
     expect(currentUserLoadFailureState(new MobileAuthHttpError(403))).toBe("ready");
     expect(currentUserLoadFailureState(new MobileAuthHttpError(500))).toBe("error");
+  });
+
+  it("maps auth session failures into provider sign-in copy", () => {
+    expect(authSessionFailureMessage(new TypeError("network"))).toBe(
+      "Reconnect to sign in with Google."
+    );
+    expect(authSessionFailureMessage(new MobileAuthHttpError(401))).toBe(
+      "Google sign-in was not accepted for private app access yet."
+    );
+    expect(authSessionFailureMessage(new Error("bad"))).toBe(
+      "Google sign-in could not be completed. Try again."
+    );
   });
 
   it("uses the global fetch implementation when one is available", async () => {

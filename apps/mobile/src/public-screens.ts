@@ -55,8 +55,7 @@ export {
 export {
   buildSignInScreen,
   type BuildSignInScreenOptions,
-  type SignInFieldId,
-  type SignInFormField,
+  type SignInProviderAction,
   type SignInScreen
 } from "./sign-in-screen.js";
 export {

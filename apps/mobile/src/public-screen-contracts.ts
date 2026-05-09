@@ -440,15 +440,15 @@ const publicStateCopies: Record<
   signIn: {
     ready: {
       title: "Sign In",
-      body: "Use your approved account to access candidate or brother mode."
+      body: "Use Google sign-in to verify identity for candidate or brother mode."
     },
     loading: {
       title: "Signing In",
-      body: "Your sign-in is being checked."
+      body: "Google sign-in is being checked."
     },
     empty: {
       title: "Sign In",
-      body: "Sign-in fields are being prepared."
+      body: "Google sign-in is being prepared."
     },
     error: {
       title: "Unable to Sign In",

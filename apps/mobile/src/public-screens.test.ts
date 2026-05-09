@@ -254,9 +254,13 @@ describe("mobile public screen models", () => {
       title: "Sign In",
       demoChromeVisible: false
     });
-    expect(screen.fields.map((field) => field.id)).toEqual(["email", "password"]);
-    expect(screen.fields.find((field) => field.id === "password")?.secureTextEntry).toBe(true);
-    expect(screen.sections.at(0)?.body).toContain("configured authentication provider");
+    expect(screen.providerAction).toEqual({
+      id: "firebase-google",
+      label: "Continue with Google",
+      accessibilityLabel: "Continue with Google",
+      provider: "firebase-google"
+    });
+    expect(screen.sections.at(0)?.body).toContain("Firebase");
     expect(JSON.stringify(screen)).not.toMatch(/roles|membership|officer scope/i);
   });
 

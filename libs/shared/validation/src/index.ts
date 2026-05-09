@@ -927,6 +927,18 @@ export const currentUserResponseSchema = z
   })
   .strict();
 
+export const authSessionResponseSchema = z
+  .object({
+    currentUser: currentUserResponseSchema,
+    session: z
+      .object({
+        transport: z.enum(["bearer", "cookie"]),
+        expiresAt: z.iso.datetime().nullable()
+      })
+      .strict()
+  })
+  .strict();
+
 export const registerDeviceTokenRequestSchema = z
   .object({
     platform: deviceTokenPlatformSchema,
@@ -1087,6 +1099,7 @@ export type PublicCandidateRequestResponseDto = z.infer<
   typeof publicCandidateRequestResponseSchema
 >;
 export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
+export type AuthSessionResponseDto = z.infer<typeof authSessionResponseSchema>;
 export type CurrentUserResponseDto = z.infer<typeof currentUserResponseSchema>;
 export type RegisterDeviceTokenRequestDto = z.infer<typeof registerDeviceTokenRequestSchema>;
 export type DeviceTokenRegistrationResponseDto = z.infer<

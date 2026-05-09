@@ -3,25 +3,18 @@ import { buildSignInScreen } from "../public-screens.js";
 import { SignInScreen } from "./SignInScreen.js";
 
 describe("SignInScreen", () => {
-  it("renders controlled sign-in fields and submit action", () => {
-    const onChangeField = vi.fn();
+  it("renders the Google provider action without credential fields", () => {
     const onSubmit = vi.fn();
     const element = SignInScreen({
       screen: buildSignInScreen({ state: "ready", runtimeMode: "demo" }),
-      values: {
-        email: "candidate@example.test",
-        password: ""
-      },
-      onChangeField,
       onSubmit
     });
 
-    findElementByAccessibilityLabel(element, "Email")?.props.onChangeText?.("new@example.test");
-    expect(onChangeField).toHaveBeenCalledWith("email", "new@example.test");
-
-    findElementByAccessibilityLabel(element, "Sign in")?.props.onPress?.();
+    findElementByAccessibilityLabel(element, "Continue with Google")?.props.onPress?.();
     expect(onSubmit).toHaveBeenCalled();
     expect(findText(element, "Demo mode")).toBe(true);
+    expect(findElementByAccessibilityLabel(element, "Email")).toBeUndefined();
+    expect(findElementByAccessibilityLabel(element, "Show password")).toBeUndefined();
   });
 
   it("keeps public navigation available when sign-in feedback is shown", () => {
@@ -30,37 +23,24 @@ describe("SignInScreen", () => {
       screen: buildSignInScreen({
         state: "ready",
         runtimeMode: "api",
-        errorMessage: "Provider sign-in is not configured in this Expo shell yet."
+        errorMessage: "Google/Firebase sign-in provider is not configured in this Expo build."
       }),
-      values: {
-        email: "",
-        password: ""
-      },
       onNavigate
     });
 
-    expect(findText(element, "Provider sign-in is not configured in this Expo shell yet.")).toBe(
-      true
-    );
+    expect(
+      findText(element, "Google/Firebase sign-in provider is not configured in this Expo build.")
+    ).toBe(true);
     findElementByAccessibilityLabel(element, "Home")?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("PublicHome");
   });
 
   it("exposes Figma auth-shell actions without granting private access", () => {
     const onNavigate = vi.fn();
-    const onTogglePasswordVisibility = vi.fn();
     const element = SignInScreen({
       screen: buildSignInScreen({ state: "ready", runtimeMode: "api" }),
-      values: {
-        email: "",
-        password: ""
-      },
-      onNavigate,
-      onTogglePasswordVisibility
+      onNavigate
     });
-
-    findElementByAccessibilityLabel(element, "Show password")?.props.onPress?.();
-    expect(onTogglePasswordVisibility).toHaveBeenCalled();
 
     findElementByAccessibilityLabel(element, "Create Account")?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("JoinRequestForm");

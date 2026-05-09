@@ -89,12 +89,24 @@ export {
   fallbackPublicPrayers
 } from "./public-content.js";
 export {
+  authSessionFailureMessage,
+  buildAuthSessionUrl,
   buildCurrentUserUrl,
+  createAuthSession,
   currentUserLoadFailureState,
   fetchCurrentUser,
   readMobileAuthToken,
   toMobilePrincipal
 } from "./mobile-auth-api.js";
+export {
+  mobileProviderSignInFailureMessage,
+  submitMobileProviderSignIn,
+  unconfiguredGoogleSignInProvider
+} from "./mobile-provider-sign-in.js";
+export {
+  createExpoFirebaseGoogleSignInProvider,
+  readExpoFirebaseGoogleSignInConfig
+} from "./mobile-firebase-google-provider-core.js";
 export {
   buildPublicHomeUrl,
   fetchPublicHome,
@@ -181,10 +193,19 @@ export type {
   PublicScreenAction,
   PublicScreenSection,
   PublicScreenTheme,
-  SignInFieldId,
-  SignInFormField,
+  SignInProviderAction,
   SignInScreen
 } from "./public-screens.js";
+export type {
+  MobileProviderSession,
+  MobileProviderSignIn,
+  MobileProviderSignInResult
+} from "./mobile-provider-sign-in.js";
+export type {
+  ExpoFirebaseGoogleSignInConfig,
+  ExpoFirebaseOptions,
+  ExpoGoogleClientOptions
+} from "./mobile-firebase-google-provider-core.js";
 
 export function getMobileHealth(mode?: string, nodeEnv?: string): HealthStatus {
   return {

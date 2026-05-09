@@ -30,6 +30,13 @@ Production builds must default to `api` mode and must fail fast if configured fo
 
 - A developer can launch the mobile app without the backend and navigate public, candidate, and brother demo flows.
 - In `api` mode, mobile reads the public API base URL from `EXPO_PUBLIC_API_BASE_URL`, then `API_BASE_URL`, then falls back to `http://localhost:3000` for local development.
+- Mobile Google/Firebase sign-in is enabled only when the Expo build has
+  `EXPO_PUBLIC_FIREBASE_API_KEY`, `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`,
+  `EXPO_PUBLIC_FIREBASE_PROJECT_ID`, `EXPO_PUBLIC_FIREBASE_APP_ID`, and at
+  least one of `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`,
+  `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, or
+  `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`. `EXPO_PUBLIC_APP_SCHEME` may set the
+  auth redirect scheme for native builds.
 - Authenticated demo personas are selected through a development-only switch or fixture login, never through production auth code.
 - Demo mode must not weaken production auth, token, or visibility logic.
 

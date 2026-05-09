@@ -190,6 +190,14 @@ surfaces unless the owner explicitly expands scope. A future adapter may emit th
 same normalized `ExternalIdentity`. The provider choice does not change the
 access rule: a verified Firebase ID token proves identity only.
 
+Mobile obtains that Firebase ID token through the Expo/Firebase Google adapter:
+the user completes Google sign-in through `expo-auth-session`, the mobile client
+exchanges the Google ID token for a Firebase ID token with the Firebase client
+SDK, and the JP2 API verifies only the Firebase ID token. If Firebase or Google
+client IDs are not present in the Expo public environment, mobile keeps the
+provider action explicit but unconfigured; it must not fall back to
+email/password or grant local roles client-side.
+
 If a Firebase-authenticated identity has no already-approved local access:
 
 - create or link a local user in Idle mode;

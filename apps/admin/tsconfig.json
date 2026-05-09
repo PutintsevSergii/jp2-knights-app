@@ -8,6 +8,7 @@
   },
   "references": [
     { "path": "../../libs/shared/design-tokens" },
+    { "path": "../../libs/shared/i18n" },
     { "path": "../../libs/shared/types" },
     { "path": "../../libs/shared/validation" }
   ],

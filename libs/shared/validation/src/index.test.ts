@@ -12,6 +12,7 @@ import {
   adminOrganizationUnitListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
+  authSessionResponseSchema,
   attachmentStatusSchema,
   brotherEventDetailResponseSchema,
   brotherPrayerListQuerySchema,
@@ -110,6 +111,47 @@ describe("shared validation", () => {
         mobileMode: "brother"
       }
     });
+  });
+
+  it("validates auth session responses around the shared current-user contract", () => {
+    const response = {
+      currentUser: {
+        user: {
+          id: "user-1",
+          email: "candidate@example.test",
+          displayName: "Candidate User",
+          preferredLanguage: "en",
+          status: "active",
+          roles: ["CANDIDATE"]
+        },
+        access: {
+          mobileMode: "candidate",
+          adminLite: false,
+          candidateOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+          memberOrganizationUnitIds: [],
+          officerOrganizationUnitIds: [],
+          approval: null
+        }
+      },
+      session: {
+        transport: "bearer",
+        expiresAt: null
+      }
+    };
+
+    expect(authSessionResponseSchema.parse(response)).toEqual(response);
+    expect(
+      authSessionResponseSchema.safeParse({
+        ...response,
+        currentUser: {
+          ...response.currentUser,
+          user: {
+            ...response.currentUser.user,
+            roles: ["GUEST"]
+          }
+        }
+      }).success
+    ).toBe(false);
   });
 
   it("validates content status values from the shared contract", () => {
