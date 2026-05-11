@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: designTokens.typography.letterSpacing.compactLabel
+    letterSpacing: 0
   },
   statePanelOffset: {
     marginHorizontal: designTokens.space[8]

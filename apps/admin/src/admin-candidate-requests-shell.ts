@@ -195,6 +195,9 @@ function renderCandidateRequestDetailScreen(screen: AdminCandidateRequestDetailS
 }
 
 function renderStyle(): string {
+  const subtleShadow = cssBoxShadow(designTokens.elevation.subtle);
+  const raisedShadow = cssBoxShadow(designTokens.elevation.raised);
+
   return [
     "<style>",
     ".admin-content{",
@@ -209,13 +212,13 @@ function renderStyle(): string {
     `.admin-content__body{color:${designTokens.color.text.muted};font-size:${designTokens.typography.size.body}px;line-height:${designTokens.typography.lineHeight.body}px;margin:0;max-width:560px;}`,
     ".admin-content__actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}",
     ".admin-content__metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;max-width:1120px;margin:0 auto 28px;}",
-    `.admin-content__metric{background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.chrome};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[4]}px;box-shadow:0 1px 2px rgb(0 0 0 / 5%);}`,
+    `.admin-content__metric{background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.chrome};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[4]}px;box-shadow:${subtleShadow};}`,
     `.admin-content__metric--attention{background:${designTokens.color.brand.gold};border-color:${designTokens.color.brand.goldDark};}`,
     `.admin-content__metric-label{display:block;font-size:12px;line-height:16px;font-weight:700;color:${designTokens.color.brand.goldDarker};margin-bottom:8px;}`,
     `.admin-content__metric-count{display:block;font-size:32px;line-height:38px;font-weight:700;color:${designTokens.color.text.primary};margin-bottom:8px;}`,
     `.admin-content__metric-body{display:block;font-size:12px;line-height:16px;color:${designTokens.color.text.muted};}`,
     ".admin-content__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1120px;margin:0 auto;}",
-    `.admin-content__card{background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.subtle};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[4]}px;box-shadow:0 4px 6px rgb(0 0 0 / 10%);}`,
+    `.admin-content__card{background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.subtle};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[4]}px;box-shadow:${raisedShadow};}`,
     ".admin-content__card-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;margin-bottom:10px;}",
     `.admin-content__avatar{width:48px;height:48px;border-radius:${designTokens.radius.pill}px;background:${designTokens.color.brand.gold};display:grid;place-items:center;font-weight:700;color:${designTokens.color.text.primary};}`,
     `.admin-content__name{font-size:18px;line-height:25px;font-weight:700;margin:0;color:${designTokens.color.text.primary};}`,
@@ -229,7 +232,7 @@ function renderStyle(): string {
     `.admin-content__button{background:${designTokens.color.action.primary};color:${designTokens.color.action.primaryText};border:1px solid ${designTokens.color.action.primary};border-radius:${designTokens.radius.md}px;padding:8px 12px;font-size:14px;line-height:16px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:34px;}`,
     `.admin-content__button--secondary{background:${designTokens.color.background.surface};color:${designTokens.color.text.primary};border-color:${designTokens.color.border.subtle};}`,
     `.admin-content__button--danger{background:${designTokens.color.status.danger};border-color:${designTokens.color.status.danger};color:${designTokens.color.text.inverse};}`,
-    `.admin-content__empty,.admin-content__form{max-width:1120px;margin:0 auto;background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.subtle};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[6]}px;box-shadow:0 4px 6px rgb(0 0 0 / 10%);}`,
+    `.admin-content__empty,.admin-content__form{max-width:1120px;margin:0 auto;background:${designTokens.color.background.surface};border:1px solid ${designTokens.color.border.subtle};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[6]}px;box-shadow:${raisedShadow};}`,
     ".admin-content__form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}",
     ".admin-content__field{display:grid;gap:6px;}",
     ".admin-content__field--wide{grid-column:1 / -1;}",
@@ -241,6 +244,16 @@ function renderStyle(): string {
     "@media (max-width:430px){.admin-content{padding:32px 24px;}.admin-content__metrics{gap:14px;}.admin-content__metric{padding:14px;}.admin-content__cards{grid-template-columns:1fr;}.admin-content__card-head{grid-template-columns:auto 1fr;}.admin-content__badge{grid-column:2;justify-self:start;}.admin-content__button{flex:1 1 0;}}",
     "</style>"
   ].join("");
+}
+
+function cssBoxShadow(elevation: (typeof designTokens.elevation)[keyof typeof designTokens.elevation]) {
+  return `${elevation.offsetX}px ${elevation.offsetY}px ${elevation.radius}px ${elevation.color}${cssAlphaHex(elevation.opacity)}`;
+}
+
+function cssAlphaHex(opacity: number) {
+  return Math.round(opacity * 255)
+    .toString(16)
+    .padStart(2, "0");
 }
 
 function renderHeader(

@@ -149,12 +149,12 @@ Use this shape when adding a new boundary entry:
 | Field                      | Contract                                                                                                                                     |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Requirement/phase          | FR-AUTH-001, Phase 10A                                                                                                                       |
-| Data/API source            | Runtime auth state from `/api/auth/me`; V1 provider/native sign-in flow is Google/Gmail through Firebase only                                |
+| Data/API source            | Runtime auth state from `/api/auth/me`; V1 provider/native sign-in flow is Google/Gmail through Firebase only; `/api/auth/session` resolves local access from the provider ID token |
 | Screen model               | `apps/mobile/src/sign-in-screen.ts` and `apps/mobile/src/idle-approval-screen.ts`; `apps/mobile/src/public-screens.ts` remains a barrel only |
 | Route/surface owner        | `apps/mobile/src/mobile-public-surface.tsx`                                                                                                  |
 | Renderer components        | `apps/mobile/src/screens/SignInScreen.tsx`, `apps/mobile/src/screens/IdleApprovalScreen.tsx`                                                 |
 | Shared components/tokens   | Shared typography roles and existing mobile token-backed theme preview                                                                       |
-| Tests                      | `public-screens.test.ts`, `main.test.ts`, `SignInScreen.test.tsx`, `IdleApprovalScreen.test.tsx`                                             |
+| Tests                      | `public-screens.test.ts`, `main.test.ts`, `mobile-provider-sign-in.test.ts`, `mobile-firebase-google-provider.test.ts`, `SignInScreen.test.tsx`, `IdleApprovalScreen.test.tsx` |
 | Forbidden responsibilities | No private role granting, no officer/admin scope, no guessed Figma Gold/Grey values, no email/password credential flow in V1                 |
 | Scope guard                | Public auth-entry only; chat, payments, maps, analytics, and native officer/admin mode remain out of scope                                   |
 
@@ -194,7 +194,7 @@ Use this shape when adding a new boundary entry:
 | Data/API source            | Brother dashboard/companion API client and demo fixtures                                                                                                  |
 | Screen model               | `apps/mobile/src/brother-today-screen.ts`; `apps/mobile/src/brother-screens.ts` remains a barrel only                                                     |
 | Route/surface owner        | `apps/mobile/src/mobile-brother-surface.tsx`; extract brother dashboard controller/hook if repeated loaders/actions appear                                |
-| Renderer components        | New `apps/mobile/src/screens/BrotherTodayScreen.tsx` when replacing the generic dashboard renderer                                                        |
+| Renderer components        | `apps/mobile/src/screens/BrotherTodayScreen.tsx`                                                                                              |
 | Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, profile/action icons, metadata icons, and badge icons |
 | Tests                      | Model tests, brother surface route/action tests, renderer tests, and existing brother API visibility tests                                                |
 | Forbidden responsibilities | No candidate-only onboarding, officer/admin management, brother rosters, private participant lists for prayer, or client-side permission filtering        |
@@ -213,6 +213,20 @@ Use this shape when adding a new boundary entry:
 | Tests                      | Model tests, renderer tests, route/action coverage through existing brother surface tests, and existing brother API visibility tests                         |
 | Forbidden responsibilities | No attendee lists, brother roster exposure, candidate-only content, officer/admin workflows, chat/comments/read receipts, or client-side filtering           |
 | Scope guard                | Brother-visible event discovery only; event participation mutations remain on detail/intent contracts                                                       |
+
+### Brother Prayer Library
+
+| Field                      | Contract                                                                                                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement/phase          | FR-PRAYER-003, Phase 10A                                                                                                                                             |
+| Data/API source            | Guarded `/api/brother/prayers` client response and backend-free demo fixture                                                                                         |
+| Screen model               | `apps/mobile/src/brother-prayers-screen.ts`; `apps/mobile/src/brother-screens.ts` remains a barrel only                                                              |
+| Route/surface owner        | `apps/mobile/src/mobile-brother-surface.tsx`; prayer list loading and route actions stay inside the brother route group                                              |
+| Renderer components        | `apps/mobile/src/screens/BrotherPrayersScreen.tsx`                                                                                                                   |
+| Shared components/tokens   | Uses `apps/mobile/src/screens/shared` for top app bar, bottom navigation, demo banner, state panel, and token-backed card chrome                                     |
+| Tests                      | Model tests, route guard/export tests, renderer tests, and existing guarded brother prayer API visibility tests                                                       |
+| Forbidden responsibilities | No prayer tracking, participant lists, chat/comments, candidate/officer/admin-only prayer exposure, unrelated organization-unit content, or client-side filtering     |
+| Scope guard                | Brother-visible prayer library only; prayer detail, journaling, tracking, and broader spiritual analytics require separate product approval before implementation     |
 
 ### Brother Organization Units
 

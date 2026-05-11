@@ -65,6 +65,9 @@ describe("admin candidate request shell", () => {
     expect(list.document).toContain('class="admin-content__metrics"');
     expect(list.document).toContain('class="admin-content__card"');
     expect(list.document).toContain("I would like to learn more about the Order.");
+    expect(list.document).toContain("box-shadow:0px 1px 2px #0000000d");
+    expect(list.document).toContain("box-shadow:0px 4px 6px #0000001a");
+    expect(list.document).not.toContain("rgb(");
     expect(detail).toMatchObject({
       route: "AdminCandidateRequestDetail",
       state: "ready",

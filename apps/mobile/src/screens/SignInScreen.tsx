@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.button,
     fontWeight: designTokens.typography.weight.semibold,
-    letterSpacing: designTokens.typography.letterSpacing.button,
+    letterSpacing: 0,
     lineHeight: designTokens.typography.lineHeight.button
   },
   supportingCopy: {

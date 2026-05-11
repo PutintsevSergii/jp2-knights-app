@@ -1,7 +1,7 @@
 # Figma Design Implementation Plan
 
 Status: Approved V1 scope, in progress
-Last updated: May 7, 2026
+Last updated: May 9, 2026
 
 This document converts the design-update package and the inspected Figma file into a V1 implementation plan. It does not replace the canonical product, RBAC, visibility, or traceability docs.
 
@@ -39,14 +39,27 @@ shadow values.
 
 ## Current Design Gap
 
-The existing code has strong API/RBAC foundations through Phase 9, but the V1 launch UI is still mostly model-driven and generic:
+The existing code has strong API/RBAC foundations through Phase 9, and Phase
+10A has replaced the highest-priority generic member renderers with dedicated
+Gold/Grey React Native screens. The remaining launch UI work is concentrated in
+visual QA, remaining public/admin responsive parity, and Phase 10B roadmap
+contracts:
 
 - Public and selected dashboard screens have React Native screen components.
 - Candidate event list/detail, candidate announcement list, Brother Today, Brother Events, Brother Event Detail, and Brother Announcements now use dedicated Phase 10A React Native renderers.
 - The Expo root component (`apps/mobile/src/App.tsx`) has now been split for Phase 10A: it reads runtime/auth launch state and delegates to public, candidate, or brother route surfaces. Brother announcement/detail routes now render through dedicated Figma-aligned components instead of the generic private renderer.
-- Figma targets a Gold/Grey visual system, while the current shared design tokens still expose the older blue action palette.
+- Figma targets a Gold/Grey visual system, and shared design tokens now include
+  the extracted Gold/Grey semantic palette, radius, shadow, and Work Sans roles.
+  Remaining screen work should continue consuming those tokens instead of local
+  visual constants.
 - Officer/admin workflows are implemented in Admin Lite web routes, not as a V1 mobile officer app.
-- Candidate Contact, Candidate Roadmap, Brother Prayer Library, Silent Prayer, and several admin management screens must now be placed deliberately in V1 phases rather than left as open design debt. Roadmap remains Phase 10, Silent Prayer remains Phase 11, and final privacy/security/pilot hardening remains Phases 12-13.
+- Candidate Contact, Candidate Roadmap, Silent Prayer, and several admin
+  management screens must now be placed deliberately in V1 phases rather than
+  left as open design debt. Brother Prayer Library now has a launchable
+  Gold/Grey mobile surface over the existing guarded contract, though a direct
+  Figma frame and native visual QA are still pending. Roadmap remains Phase 10,
+  Silent Prayer remains Phase 11, and final privacy/security/pilot hardening
+  remains Phases 12-13.
 
 ## Implementation Principles
 
@@ -119,7 +132,7 @@ In-progress update target:
 | Status palette | Success/warning/danger tokens exist                                                                                    | Keep semantic status tokens; do not replace with decorative brand colors              |
 | Spacing        | 4/8/12/16/24/32 scale exists                                                                                           | Reuse for Figma frame spacing; add only if Figma requires a repeated missing token    |
 | Radius         | 4 and 8 exist                                                                                                          | Keep cards/buttons at 8px or less unless Figma frame proves otherwise                 |
-| Typography     | Shared roles now use extracted Work Sans frame specs for display, screen, section, card, body, label, and button roles | Load or package Work Sans in Expo only if pilot devices require bundled font fidelity |
+| Typography     | Shared roles now use extracted Work Sans frame specs for display, screen, section, card, body, label, and button roles; letter-spacing is normalized to `0` by the app UI rule | Load or package Work Sans in Expo only if pilot devices require bundled font fidelity |
 | Navigation     | Mode-specific action arrays                                                                                            | Add tab/header component tokens for Figma bottom nav/top app bar parity               |
 
 Exact Gold/Grey values are now cached locally and added to
@@ -233,8 +246,16 @@ Refactor sequence:
 
 1. ✅ Keep `App.tsx` as a thin composition root that reads runtime config/auth config and chooses the public, candidate, or brother app surface.
 2. ✅ Extract public, candidate, and brother route modules or hooks that own their route state, selected IDs, loaders, and action handlers.
-3. Start extracting shared mobile chrome tokens for top app bar, bottom navigation, demo banner, and common state views. Typography roles are now centralized; nav/header color values still require Figma extraction.
-4. Add Figma-specific screens on top of that split. Sign In/Idle approval now have token-backed foundations; exact visual parity and provider submission remain pending. Candidate Events list/detail, Candidate Announcements list, Brother Today, and Brother Events now have dedicated private renderers.
+3. ✅ Shared mobile chrome for top app bar, bottom navigation, demo banner, and
+   common state views now lives under `apps/mobile/src/screens/shared`, backed
+   by extracted Gold/Grey token roles.
+4. Add Figma-specific screens on top of that split. Sign In/Idle approval now
+   have token-backed foundations, provider-only submission, `/api/auth/session`
+   exchange, and a concrete Expo/Firebase Google adapter. Real pilot client IDs
+   and native-device validation remain pending. Candidate Events list/detail,
+   Candidate Announcements list, Brother Today, Brother Events list/detail,
+   Brother Announcements, Brother Prayer Library, and Organization Unit Detail
+   now have dedicated private renderers.
 5. Reassess React Navigation or Expo Router only after the route groups are clear. Add a navigation dependency if deep links, tab stacks, back behavior, or native navigation semantics become real requirements; do not add it just to hide a local organization problem.
 
 Acceptance checks for the refactor:
@@ -274,7 +295,7 @@ Visual QA should include screenshots for at least:
 5. ✅ Replace generic private renderer usage for Candidate Events list/detail, Candidate Announcements list, and Brother Today with dedicated Figma-matched RN screens.
 6. ✅ Apply the same card/nav/header system to remaining brother event and announcement screens. Brother Events list/detail and Brother Announcements are complete.
 7. ✅ Restyle Admin Lite Candidate Requests from the Figma `1:1635` frame while preserving web-first admin scope.
-8. Add Brother Prayer Library and Organization Unit Detail mobile surfaces so already implemented V1 contracts have launchable screens.
+8. ✅ Add Brother Prayer Library and Organization Unit Detail mobile surfaces so already implemented V1 contracts have launchable screens.
    - ✅ Brother Prayer Library mobile surface is implemented over `/api/brother/prayers`.
    - ✅ Organization Unit Detail mobile surface is implemented over `/api/brother/my-organization-units` without brother roster exposure.
 9. Update traceability, implementation status, and screenshot QA evidence after each screen lands.

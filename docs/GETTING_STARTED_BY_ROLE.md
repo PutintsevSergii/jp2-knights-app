@@ -15,7 +15,7 @@ This document provides role-specific onboarding paths for different team members
    - Skim [V1 Scope](product/v1-scope.md) and [Out of Scope](product/out-of-scope.md)
 
 2. **Learn the operating contract** (10 min)
-   - Read [AGENTS.md](AGENTS.md) — the rules for coding agents
+   - Read [AGENTS.md](../AGENTS.md) — the rules for coding agents
    - Review [Quality Gates](agent/quality-gates.md) — mandatory validation
    - Check [No Duplicate Policy](agent/no-duplicate-policy.md) — reuse shared contracts
 
@@ -62,7 +62,7 @@ After quick start, dive into:
 ### If You Need to Propose a Scope Change
 
 1. Read [ADR-001 in DECISION_LOG.md](delivery/DECISION_LOG.md) (Scope Control via Explicit Approval Gate)
-2. Follow the process in [AGENTS.md](AGENTS.md) — explain value, impact, and ask before coding
+2. Follow the process in [AGENTS.md](../AGENTS.md) — explain value, impact, and ask before coding
 3. Update [V1 Scope](product/v1-scope.md), [V2 Backlog](product/v2-backlog.md), and [Traceability](traceability.md) if approved
 
 ---
@@ -104,7 +104,7 @@ After quick start, dive into:
 
 3. **Managing scope and governance**
    - [Coding Agent Instructions](agent/coding-agent-instructions.md) — how we enforce discipline
-   - [AGENTS.md](AGENTS.md) — scope change process (what agents must do for approval)
+   - [AGENTS.md](../AGENTS.md) — scope change process (what agents must do for approval)
    - [Traceability](traceability.md) — requirement → implementation mapping
 
 ### If a Feature Seems Missing or Wrong
@@ -112,7 +112,7 @@ After quick start, dive into:
 1. Check [Traceability](traceability.md) — is it a V2 item or out-of-scope?
 2. Check [V2 Backlog](product/v2-backlog.md) — is it deferred?
 3. Check [Out of Scope](product/out-of-scope.md) — was it explicitly excluded?
-4. If you believe it should be in V1, work with engineering to document the case and request approval (see [AGENTS.md](AGENTS.md))
+4. If you believe it should be in V1, work with engineering to document the case and request approval (see [AGENTS.md](../AGENTS.md))
 
 ### Key Constraints to Communicate to Stakeholders
 
@@ -322,7 +322,7 @@ If you have questions about why a feature works the way it does, check [DECISION
 2. **Learn maintenance rules** (10 min)
    - [docs/README.md](README.md) "Documentation Maintenance Rules" section
    - [Coding Agent Instructions](agent/coding-agent-instructions.md) "Decision Documentation" section
-   - [AGENTS.md](AGENTS.md) "Documentation Rules" section
+   - [AGENTS.md](../AGENTS.md) "Documentation Rules" section
 
 ### Core Documentation Path (1-2 hours)
 

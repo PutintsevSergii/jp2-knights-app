@@ -59,7 +59,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Added `docs/agent/component-boundary-contracts.md` so new Phase 10A screens, route surfaces, API/demo sources, and reusable components declare ownership before root or shell files grow
 - ✅ Split mobile screen model builders into one file per screen and reduced `public-screens.ts`, `candidate-screens.ts`, and `brother-screens.ts` to re-export barrels with regression coverage
 - ✅ Split Admin Lite multi-screen model files into one file per list/detail/editor screen and reduced the old aggregate files to compatibility barrels with regression coverage
-- ✅ Removed nonzero mobile React Native component letter-spacing, added a regression rule for it, disabled unimplemented Candidate Events bottom-navigation destinations instead of routing them to Dashboard, and raised mobile branch coverage above 80%
+- ✅ Removed nonzero mobile React Native component letter-spacing, normalized shared typography letter-spacing tokens to zero, added regression coverage for the rule, disabled unimplemented Candidate Events bottom-navigation destinations instead of routing them to Dashboard, and raised mobile branch coverage above 80%
 - ✅ Replaced generic Candidate Event Detail rendering with a dedicated Gold/Grey React Native screen for type, date, time, location, safe description, own RSVP status, and plan/cancel intent actions with no participant-list exposure
 - ✅ Replaced generic Candidate Announcements rendering with a dedicated Gold/Grey React Native list screen for pinned one-way announcement cards, published dates, and body copy with no chat/comments/read receipts
 - ✅ Replaced generic Brother Events rendering with a dedicated Gold/Grey React Native list screen for brother-visible event cards, type/date/time/location/visibility metadata, bottom navigation, and detail actions with no attendee-list or roster exposure
@@ -516,7 +516,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Candidate Announcements now has a dedicated Figma-aligned mobile list screen over the existing guarded announcements API, with pinned one-way cards and no chat/comments/read receipts/push delivery state.
 - Brother Today now has a dedicated Figma-aligned mobile screen over the existing guarded `/api/brother/today` contract, including profile summary, quick actions, brother-visible event cards, organization-unit cards, and no roster/participant-list exposure.
 - Brother Events now has a dedicated Figma-aligned mobile list screen over the existing guarded `/api/brother/events` contract, including type/date/time/location/visibility metadata, detail navigation, and no attendee-list or roster exposure.
-- Mobile Phase 10A UI rule coverage now prevents nonzero React Native component letter-spacing and keeps Candidate Events bottom navigation honest by disabling unavailable destinations instead of faking routes.
+- Mobile Phase 10A UI rule coverage now prevents nonzero React Native component letter-spacing, shared typography letter-spacing tokens are normalized to zero, and Candidate Events bottom navigation stays honest by disabling unavailable destinations instead of faking routes.
 - Admin Lite Candidate Requests now uses responsive Gold/Grey metric cards, candidate cards, status badges, and detail follow-up forms over the existing server-scoped admin API. The list contract now includes a bounded `messagePreview`; no officer scope or private filtering moved client-side.
 - Brother Prayer Library now has API/demo mobile loading and a dedicated Gold/Grey React Native screen over the guarded `/api/brother/prayers` contract, rendering server-filtered categories and prayer cards without adding tracking, participant lists, chat/comments, or client-side visibility filtering.
 - Organization Unit Detail now has API/demo mobile loading through the existing guarded `/api/brother/my-organization-units` response, a dedicated Gold/Grey React Native detail screen, and route/model/renderer coverage for read-only scoped fields without brother roster or member-list exposure.
@@ -578,15 +578,15 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [x] Extract exact Figma Gold/Grey frame values/screenshots for priority frames and cache them locally
    - [x] Add shared Gold/Grey semantic color tokens
    - [x] Build Figma-matched Sign In and Idle approval shell styling once exact visual values are available
-   - [ ] Wire native/provider sign-in submission
+   - [x] Wire native/provider sign-in submission through the Google/Firebase provider seam, `/api/auth/session`, and server-resolved route handoff
    - [x] Replace generic Candidate Events renderer with a dedicated RN screen backed by list-level own RSVP state
    - [x] Replace generic Candidate Event Detail renderer with a dedicated RN screen backed by detail-level own RSVP state
    - [x] Replace generic Candidate Announcements renderer with a dedicated RN screen backed by candidate-visible one-way announcement state
    - [x] Replace generic Brother Today renderer with a dedicated RN screen
    - [x] Replace generic Brother Events renderer with a dedicated RN screen
-  - [x] Apply shared header/card/bottom-nav system to remaining brother detail/announcement surfaces
-  - [x] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
-  - [x] Add Brother Prayer Library mobile surface over the existing guarded prayer list contract
+   - [x] Apply shared header/card/bottom-nav system to remaining brother detail/announcement surfaces
+   - [x] Restyle Admin Lite Candidate Requests as responsive web from the Figma frame
+   - [x] Add Brother Prayer Library mobile surface over the existing guarded prayer list contract
    - [x] Add Organization Unit Detail mobile surface without brother roster exposure
 
 6. **Start Phase 10B Formation Roadmap**

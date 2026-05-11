@@ -512,12 +512,12 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   concrete list/detail/editor builders live in dedicated per-screen files with
   regression coverage.
 - Phase 10A mobile alignment now removes nonzero letter-spacing from React
-  Native component styles, adds regression coverage for that UI rule, and keeps
-  unimplemented Candidate Events bottom-navigation destinations disabled instead
-  of routing them to unrelated Dashboard behavior. Mobile auth API tests now
-  cover unauthenticated current-user launch checks, fallback token parsing, and
-  global fetch usage, raising the mobile branch coverage slice above the 80%
-  rule.
+  Native component styles, normalizes shared typography letter-spacing tokens to
+  zero, adds regression coverage for that UI rule, and keeps unimplemented
+  Candidate Events bottom-navigation destinations disabled instead of routing
+  them to unrelated Dashboard behavior. Mobile auth API tests now cover
+  unauthenticated current-user launch checks, fallback token parsing, and global
+  fetch usage, raising the mobile branch coverage slice above the 80% rule.
 - Phase 10A now replaces the generic Candidate Event Detail private renderer
   with a dedicated Gold/Grey React Native screen derived from the Candidate
   Events frame. It renders event type, date, time, location, safe description,

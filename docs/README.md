@@ -125,7 +125,7 @@ The non-negotiable constraints remain:
 
 **Making a code change?**
 1. Check [AGENTS.md](../AGENTS.md) — Operating contract
-2. Check [IMPLEMENTATION_STATUS.md](delivery/IMPLEMENTATION_STATUS.md) — What phase are we in?
+2. Check [traceability.md](traceability.md) — What phase are we in?
 3. Read phase-specific docs (product, API, data, screens)
 4. Check [DECISION_LOG.md](delivery/DECISION_LOG.md) — Why were key choices made?
 

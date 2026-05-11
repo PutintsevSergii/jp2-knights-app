@@ -105,10 +105,10 @@ export const designTokens = {
       bold: "700"
     },
     letterSpacing: {
-      tight: -0.32,
-      label: 1.2,
-      compactLabel: 0.6,
-      button: 0.28
+      tight: 0,
+      label: 0,
+      compactLabel: 0,
+      button: 0
     }
   }
 } as const;

@@ -14,6 +14,7 @@ describe("design tokens", () => {
     expect(designTokens.typography.size.body).toBe(16);
     expect(designTokens.typography.weight.semibold).toBe("600");
     expect(designTokens.typography.weight.medium).toBe("500");
+    expect(Object.values(designTokens.typography.letterSpacing)).toEqual([0, 0, 0, 0]);
   });
 
   it("centralizes the extracted Figma Gold/Grey palette", () => {

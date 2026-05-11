@@ -11,10 +11,10 @@ For current Figma-to-code status, route/component targets, and RBAC constraints,
 
 | Figma node | Screen | Requirement | Implementation status |
 | --- | --- | --- | --- |
-| `1:2` | Sign In | FR-AUTH-001 | In progress: auth APIs exist; Figma-matched Expo screen pending |
-| `1:47` | Candidate Events | FR-CANDIDATE-002 / FR-EVENT-003 | Partial: Figma-specific RN list screen implemented with list-level own RSVP state; detail screen remains generic |
-| `1:177` | Brother Today | FR-BROTHER-001 | Partial: API/model mounted; Figma-specific RN dashboard pending |
-| `1:1635` | Candidate Requests | FR-ADMIN-001 | Partial: Admin Lite web implemented; Figma responsive visual parity pending |
+| `1:2` | Sign In | FR-AUTH-001 | Implemented foundation: Gold/Grey Expo auth shell, Google/Firebase provider action, `/api/auth/session` exchange, Idle Approval routing; pilot environment values and native-device validation remain pending |
+| `1:47` | Candidate Events | FR-CANDIDATE-002 / FR-EVENT-003 | Implemented foundation: dedicated RN list and detail screens with own RSVP state/actions and no participant-list exposure; visual QA remains pending |
+| `1:177` | Brother Today | FR-BROTHER-001 | Implemented foundation: dedicated RN dashboard screen over the guarded Brother Today contract; visual QA remains pending |
+| `1:1635` | Candidate Requests | FR-ADMIN-001 | Implemented foundation: responsive Admin Lite web list/detail with Gold/Grey metric cards, candidate cards, bounded message previews, status badges, and scoped follow-up forms; visual QA remains pending |
 
 ---
 
@@ -178,6 +178,6 @@ Screens not yet designed:
 
 ---
 
-**Last Updated:** 2026-05-07  
+**Last Updated:** 2026-05-09  
 **Maintainer:** Design Team  
 **Next Review:** After design mockup creation
