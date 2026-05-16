@@ -16,6 +16,16 @@ import {
   type AdminCandidateRoute,
   type AdminCandidateRow
 } from "./admin-candidates-screen.js";
+import {
+  adminStatusCodeForState,
+  escapeAttribute,
+  escapeHtml,
+  renderAdminActionLink,
+  renderAdminDocument,
+  renderAdminEmptyState,
+  renderAdminFormField,
+  renderAdminHeader
+} from "./admin-render-primitives.js";
 
 export type AdminCandidateShellRoute = "/admin/candidates" | `/admin/candidates/${string}`;
 
@@ -67,8 +77,8 @@ export async function renderAdminCandidateRoute(
     path: options.path,
     route: screen.route,
     state: screen.state,
-    statusCode: statusCodeForState(screen.state),
-    document: renderDocument(html)
+    statusCode: adminStatusCodeForState(screen.state),
+    document: renderAdminDocument({ title: "Admin Candidates", body: html })
   };
 }
 
@@ -149,27 +159,17 @@ function toCandidateSummary(profile: AdminCandidateProfileDetailDto) {
   };
 }
 
-function renderDocument(html: string): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Admin Candidates</title>",
-    "</head>",
-    "<body>",
-    `<main>${html}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
-}
-
 function renderCandidateListScreen(screen: AdminCandidateListScreen): string {
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
     renderStyle(screen),
-    renderHeader(screen.title, screen.body, screen.actions, screen.demoChromeVisible),
+    renderAdminHeader({
+      title: screen.title,
+      body: screen.body,
+      actions: screen.actions,
+      demoChromeVisible: screen.demoChromeVisible,
+      renderAction
+    }),
     renderRows(screen),
     "</section>"
   ].join("");
@@ -179,7 +179,13 @@ function renderCandidateDetailScreen(screen: AdminCandidateDetailScreen): string
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
     renderStyle(screen),
-    renderHeader(screen.title, screen.body, screen.actions, screen.demoChromeVisible),
+    renderAdminHeader({
+      title: screen.title,
+      body: screen.body,
+      actions: screen.actions,
+      demoChromeVisible: screen.demoChromeVisible,
+      renderAction
+    }),
     renderDetailForm(screen),
     "</section>"
   ].join("");
@@ -215,36 +221,9 @@ function renderStyle(screen: AdminCandidateListScreen | AdminCandidateDetailScre
   ].join("");
 }
 
-function renderHeader(
-  title: string,
-  body: string,
-  actions: readonly AdminCandidateAction[],
-  demoChromeVisible: boolean
-): string {
-  const demoBadge = demoChromeVisible
-    ? '<span class="admin-content__demo" aria-label="Demo mode">Demo</span>'
-    : "";
-
-  return [
-    '<header class="admin-content__header">',
-    "<div>",
-    `<h1 class="admin-content__title">${escapeHtml(title)}</h1>`,
-    `<p class="admin-content__body">${escapeHtml(body)}</p>`,
-    demoBadge,
-    "</div>",
-    `<div class="admin-content__actions">${actions.map(renderAction).join("")}</div>`,
-    "</header>"
-  ].join("");
-}
-
 function renderRows(screen: AdminCandidateListScreen): string {
   if (screen.rows.length === 0) {
-    return [
-      '<div class="admin-content__empty" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p>${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body);
   }
 
   return [
@@ -280,12 +259,7 @@ function renderRow(row: AdminCandidateRow): string {
 
 function renderDetailForm(screen: AdminCandidateDetailScreen): string {
   if (screen.fields.length === 0) {
-    return [
-      '<div class="admin-content__empty" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p>${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body);
   }
 
   return [
@@ -296,21 +270,7 @@ function renderDetailForm(screen: AdminCandidateDetailScreen): string {
 }
 
 function renderField(field: AdminCandidateDetailScreen["fields"][number]): string {
-  const common = [
-    'class="admin-content__input"',
-    `name="${escapeAttribute(field.name)}"`,
-    field.required ? "required" : "",
-    field.readOnly ? "readonly" : ""
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return [
-    '<label class="admin-content__field">',
-    `<span class="admin-content__label">${escapeHtml(field.label)}</span>`,
-    `<input ${common} value="${escapeAttribute(field.value)}">`,
-    "</label>"
-  ].join("");
+  return renderAdminFormField(field);
 }
 
 function renderAction(action: AdminCandidateAction): string {
@@ -324,38 +284,13 @@ function renderAction(action: AdminCandidateAction): string {
         ? `/admin/candidates/${action.targetId}`
         : "/admin/candidates";
 
-  return [
-    `<a class="admin-content__button${modifier}${secondary}" href="${escapeAttribute(href)}"`,
-    ` data-action="${action.id}"`,
-    ` data-target-route="${action.targetRoute}"`,
-    action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
-    ">",
-    escapeHtml(action.label),
-    "</a>"
-  ].join("");
-}
-
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") return 403;
-  if (state === "empty") return 404;
-  if (state === "offline") return 503;
-  if (state === "error") return 500;
-  return 200;
+  return renderAdminActionLink(action, {
+    href,
+    danger: Boolean(modifier),
+    secondary: Boolean(secondary)
+  });
 }
 
 function candidateIdFromPath(path: AdminCandidateShellRoute): string {
   return path.slice("/admin/candidates/".length);
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
 }

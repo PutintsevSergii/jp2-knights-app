@@ -499,6 +499,13 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   `function` React/React Native component per file, rejects extra local
   PascalCase component definitions, and requires inventory updates for new
   shared components.
+- Phase 10A maintainability cleanup now centralizes role-specific mobile bottom
+  navigation through shared candidate/brother nav components and extracts event
+  status badges plus event detail metadata cards. Admin Lite candidate,
+  candidate-request, organization-unit, dashboard, identity-access, mounted
+  layout, and content renderer/shell surfaces now reuse shared HTML document,
+  status-code, escaping, header, action-link/button, empty-state, and form-field
+  primitives instead of local copies where their markup contracts match.
 - Phase 10A now enforces one screen model/builder per file for mobile screen
   models. `public-screens.ts`, `candidate-screens.ts`, and
   `brother-screens.ts` are barrels only, while concrete builders live in

@@ -5,6 +5,12 @@ import type { AdminContentFetch, AdminContentScreenState } from "./admin-content
 import { AdminContentHttpError } from "./admin-content-api.js";
 import { fallbackAdminIdentityAccessReviews } from "./admin-content-fixtures.js";
 import { fetchAdminIdentityAccessReviews } from "./admin-identity-access-api.js";
+import {
+  adminStatusCodeForStateWithOptions,
+  escapeAttribute,
+  escapeHtml,
+  renderAdminDocument
+} from "./admin-render-primitives.js";
 
 export interface AdminIdentityAccessScreen {
   route: "AdminIdentityAccessReviews";
@@ -42,7 +48,7 @@ export async function renderAdminIdentityAccessRoute(
     path: "/admin/identity-access-reviews",
     route: "AdminIdentityAccessReviews",
     state: screen.state,
-    statusCode: statusCodeForState(screen.state),
+    statusCode: adminStatusCodeForStateWithOptions(screen.state, { empty: 200, error: 503 }),
     document: renderIdentityAccessDocument(screen)
   };
 }
@@ -53,7 +59,7 @@ export function buildAdminIdentityAccessScreen(input: {
   runtimeMode: RuntimeMode;
   canWrite?: boolean;
 }): AdminIdentityAccessScreen {
-  const reviews = input.state === "ready" ? input.reviews ?? [] : [];
+  const reviews = input.state === "ready" ? (input.reviews ?? []) : [];
 
   return {
     route: "AdminIdentityAccessReviews",
@@ -107,19 +113,10 @@ async function resolveIdentityAccessScreen(
 }
 
 function renderIdentityAccessDocument(screen: AdminIdentityAccessScreen): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Identity Access Reviews</title>",
-    "</head>",
-    "<body>",
-    `<main>${renderIdentityAccessHtml(screen)}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
+  return renderAdminDocument({
+    title: "Identity Access Reviews",
+    body: renderIdentityAccessHtml(screen)
+  });
 }
 
 function renderIdentityAccessHtml(screen: AdminIdentityAccessScreen): string {
@@ -191,23 +188,4 @@ function renderStyle(): string {
     ".admin-identity__demo{font-size:12px;font-weight:700;text-transform:uppercase;}",
     "</style>"
   ].join("");
-}
-
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") return 403;
-  if (state === "error" || state === "offline") return 503;
-  return 200;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
 }

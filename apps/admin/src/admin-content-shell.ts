@@ -20,10 +20,16 @@ import {
   buildAdminEventListScreen,
   buildAdminPrayerListScreen
 } from "./admin-content-screens.js";
+import { renderAdminContentListScreen } from "./admin-content-render.js";
 import {
-  type RenderedAdminContentScreen,
-  renderAdminContentListScreen
-} from "./admin-content-render.js";
+  adminStatusCodeForState,
+  escapeAttribute,
+  escapeHtml,
+  renderAdminActionLink,
+  renderAdminDocument,
+  renderAdminEmptyState,
+  renderAdminHeader
+} from "./admin-render-primitives.js";
 
 export type AdminContentShellRoute =
   | "/admin/prayers"
@@ -47,12 +53,6 @@ export interface RenderAdminContentRouteOptions {
   baseUrl?: string;
   fetchImpl?: AdminContentFetch;
 }
-
-type RenderedAdminContentShellScreen = RenderedAdminContentScreen | {
-  route: AdminAnnouncementEditorScreen["route"];
-  state: AdminContentScreenState;
-  html: string;
-};
 
 export interface RenderedAdminContentRoute {
   path: AdminContentShellRoute;
@@ -100,25 +100,12 @@ export async function renderAdminContentRoute(
   return {
     ...rendered,
     path: options.path,
-    statusCode: statusCodeForState(rendered.state),
-    document: renderDocument(rendered)
+    statusCode: adminStatusCodeForState(rendered.state),
+    document: renderAdminDocument({
+      title: titleForRoute(rendered.route),
+      body: rendered.html
+    })
   };
-}
-
-function renderDocument(rendered: RenderedAdminContentShellScreen): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    `<title>${titleForRoute(rendered.route)}</title>`,
-    "</head>",
-    "<body>",
-    `<main>${rendered.html}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
 }
 
 async function resolvePrayerScreen(
@@ -251,27 +238,9 @@ async function resolveAnnouncementEditorScreen(
   }
 }
 
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") {
-    return 403;
-  }
-
-  if (state === "empty") {
-    return 404;
-  }
-
-  if (state === "offline") {
-    return 503;
-  }
-
-  if (state === "error") {
-    return 500;
-  }
-
-  return 200;
-}
-
-function titleForRoute(route: AdminContentListScreen["route"] | AdminAnnouncementEditorScreen["route"]): string {
+function titleForRoute(
+  route: AdminContentListScreen["route"] | AdminAnnouncementEditorScreen["route"]
+): string {
   if (route === "AdminPrayerList") {
     return "Admin Prayers";
   }
@@ -329,30 +298,18 @@ function renderEditorStyle(screen: AdminAnnouncementEditorScreen): string {
 }
 
 function renderEditorHeader(screen: AdminAnnouncementEditorScreen): string {
-  const demoBadge = screen.demoChromeVisible
-    ? '<span class="admin-content__demo" aria-label="Demo mode">Demo</span>'
-    : "";
-
-  return [
-    '<header class="admin-content__header">',
-    "<div>",
-    `<h1 class="admin-content__title">${escapeHtml(screen.title)}</h1>`,
-    `<p class="admin-content__body">${escapeHtml(screen.body)}</p>`,
-    demoBadge,
-    "</div>",
-    `<div class="admin-content__actions">${screen.actions.map(renderEditorAction).join("")}</div>`,
-    "</header>"
-  ].join("");
+  return renderAdminHeader({
+    title: screen.title,
+    body: screen.body,
+    actions: screen.actions,
+    demoChromeVisible: screen.demoChromeVisible,
+    renderAction: renderEditorAction
+  });
 }
 
 function renderEditorForm(screen: AdminAnnouncementEditorScreen): string {
   if (screen.fields.length === 0) {
-    return [
-      '<div class="admin-content__form" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p class="admin-content__meta">${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body, "admin-content__form");
   }
 
   return [
@@ -397,26 +354,9 @@ function renderEditorAction(action: AdminAnnouncementEditorScreen["actions"][num
           ? `/admin/announcements/${action.targetId}`
           : "/admin/announcements";
 
-  return [
-    `<a class="admin-content__button${modifier}${secondary}" href="${escapeAttribute(href)}"`,
-    ` data-action="${action.id}"`,
-    ` data-target-route="${action.targetRoute}"`,
-    action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
-    ">",
-    escapeHtml(action.label),
-    "</a>"
-  ].join("");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
+  return renderAdminActionLink(action, {
+    href,
+    danger: Boolean(modifier),
+    secondary: Boolean(secondary)
+  });
 }

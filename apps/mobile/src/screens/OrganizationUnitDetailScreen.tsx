@@ -2,9 +2,9 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { OrganizationUnitDetailScreen as OrganizationUnitDetailScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
+import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 import { FlagIcon } from "./shared/FlagIcon.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { PinIcon } from "./shared/PinIcon.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
@@ -76,64 +76,10 @@ export function OrganizationUnitDetailScreen({
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "today",
-                  label: "Dashboard",
-                  targetRoute: "BrotherToday"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "events",
-                  label: "Events",
-                  targetRoute: "BrotherEvents"
-                })
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "prayers",
-                  label: "Prayer",
-                  targetRoute: "BrotherPrayers"
-                })
-            },
-            {
-              id: "choragiew",
-              label: "Choragiew",
-              active: true,
-              onPress: () =>
-                onAction?.({
-                  id: "organization-units",
-                  label: "Choragiew",
-                  targetRoute: "MyOrganizationUnits"
-                })
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "profile",
-                  label: "Account",
-                  targetRoute: "BrotherProfile"
-                })
-            }
-          ]}
+        <BrotherBottomNav
+          active="choragiew"
+          choragiewAction={screen.actions[0] ?? undefined}
+          onAction={onAction}
         />
       </View>
     </SafeAreaView>

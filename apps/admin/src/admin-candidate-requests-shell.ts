@@ -20,6 +20,17 @@ import {
   type AdminCandidateRequestRoute,
   type AdminCandidateRequestRow
 } from "./admin-candidate-requests-screen.js";
+import {
+  adminStatusCodeForState,
+  cssBoxShadow,
+  escapeAttribute,
+  escapeHtml,
+  renderAdminActionLink,
+  renderAdminDocument,
+  renderAdminEmptyState,
+  renderAdminFormField,
+  renderAdminHeader
+} from "./admin-render-primitives.js";
 
 export type AdminCandidateRequestShellRoute =
   | "/admin/candidate-requests"
@@ -74,8 +85,8 @@ export async function renderAdminCandidateRequestRoute(
     path: options.path,
     route: screen.route,
     state: screen.state,
-    statusCode: statusCodeForState(screen.state),
-    document: renderDocument(html)
+    statusCode: adminStatusCodeForState(screen.state),
+    document: renderAdminDocument({ title: "Admin Candidate Requests", body: html })
   };
 }
 
@@ -157,27 +168,17 @@ async function resolveCandidateRequestDetailScreen(
   }
 }
 
-function renderDocument(html: string): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Admin Candidate Requests</title>",
-    "</head>",
-    "<body>",
-    `<main>${html}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
-}
-
 function renderCandidateRequestListScreen(screen: AdminCandidateRequestListScreen): string {
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
     renderStyle(),
-    renderHeader(screen.title, screen.body, screen.actions, screen.demoChromeVisible),
+    renderAdminHeader({
+      title: screen.title,
+      body: screen.body,
+      actions: screen.actions,
+      demoChromeVisible: screen.demoChromeVisible,
+      renderAction
+    }),
     renderMetrics(screen),
     renderRows(screen),
     "</section>"
@@ -188,7 +189,13 @@ function renderCandidateRequestDetailScreen(screen: AdminCandidateRequestDetailS
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
     renderStyle(),
-    renderHeader(screen.title, screen.body, screen.actions, screen.demoChromeVisible),
+    renderAdminHeader({
+      title: screen.title,
+      body: screen.body,
+      actions: screen.actions,
+      demoChromeVisible: screen.demoChromeVisible,
+      renderAction
+    }),
     renderDetailForm(screen),
     "</section>"
   ].join("");
@@ -246,38 +253,6 @@ function renderStyle(): string {
   ].join("");
 }
 
-function cssBoxShadow(elevation: (typeof designTokens.elevation)[keyof typeof designTokens.elevation]) {
-  return `${elevation.offsetX}px ${elevation.offsetY}px ${elevation.radius}px ${elevation.color}${cssAlphaHex(elevation.opacity)}`;
-}
-
-function cssAlphaHex(opacity: number) {
-  return Math.round(opacity * 255)
-    .toString(16)
-    .padStart(2, "0");
-}
-
-function renderHeader(
-  title: string,
-  body: string,
-  actions: readonly AdminCandidateRequestAction[],
-  demoChromeVisible: boolean
-): string {
-  const demoBadge = demoChromeVisible
-    ? '<span class="admin-content__demo" aria-label="Demo mode">Demo</span>'
-    : "";
-
-  return [
-    '<header class="admin-content__header">',
-    "<div>",
-    `<h1 class="admin-content__title">${escapeHtml(title)}</h1>`,
-    `<p class="admin-content__body">${escapeHtml(body)}</p>`,
-    demoBadge,
-    "</div>",
-    `<div class="admin-content__actions">${actions.map(renderAction).join("")}</div>`,
-    "</header>"
-  ].join("");
-}
-
 function renderMetrics(screen: AdminCandidateRequestListScreen): string {
   if (screen.state !== "ready") {
     return "";
@@ -286,8 +261,8 @@ function renderMetrics(screen: AdminCandidateRequestListScreen): string {
   return [
     '<div class="admin-content__metrics" aria-label="Candidate request status counts">',
     screen.metrics
-      .map(
-        (metric) => [
+      .map((metric) =>
+        [
           `<div class="admin-content__metric admin-content__metric--${metric.tone}">`,
           `<span class="admin-content__metric-label">${escapeHtml(metric.label)}</span>`,
           `<span class="admin-content__metric-count">${metric.count}</span>`,
@@ -302,19 +277,12 @@ function renderMetrics(screen: AdminCandidateRequestListScreen): string {
 
 function renderRows(screen: AdminCandidateRequestListScreen): string {
   if (screen.rows.length === 0) {
-    return [
-      '<div class="admin-content__empty" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p>${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body);
   }
 
-  return [
-    '<div class="admin-content__cards">',
-    screen.rows.map(renderRow).join(""),
-    "</div>"
-  ].join("");
+  return ['<div class="admin-content__cards">', screen.rows.map(renderRow).join(""), "</div>"].join(
+    ""
+  );
 }
 
 function renderRow(row: AdminCandidateRequestRow): string {
@@ -337,37 +305,12 @@ function renderRow(row: AdminCandidateRequestRow): string {
 
 function renderDetailForm(screen: AdminCandidateRequestDetailScreen): string {
   if (screen.fields.length === 0) {
-    return [
-      '<div class="admin-content__empty" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p>${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body);
   }
 
   return [
     `<form class="admin-content__form" data-candidate-request-id="${escapeAttribute(screen.candidateRequestId ?? "")}">`,
-    screen.fields
-      .map((field) => {
-        const common = [
-          `class="admin-content__input${field.multiline ? " admin-content__textarea" : ""}"`,
-          `name="${escapeAttribute(field.name)}"`,
-          field.required ? "required" : "",
-          field.readOnly ? "readonly" : ""
-        ]
-          .filter(Boolean)
-          .join(" ");
-
-        return [
-          `<label class="admin-content__field${field.multiline ? " admin-content__field--wide" : ""}">`,
-          `<span class="admin-content__label">${escapeHtml(field.label)}</span>`,
-          field.multiline
-            ? `<textarea ${common}>${escapeHtml(field.value)}</textarea>`
-            : `<input ${common} value="${escapeAttribute(field.value)}">`,
-          "</label>"
-        ].join("");
-      })
-      .join(""),
+    screen.fields.map(renderAdminFormField).join(""),
     "</form>"
   ].join("");
 }
@@ -383,42 +326,17 @@ function renderAction(action: AdminCandidateRequestAction): string {
         ? `/admin/candidate-requests/${action.targetId}`
         : "/admin/candidate-requests";
 
-  return [
-    `<a class="admin-content__button${modifier}${secondary}" href="${escapeAttribute(href)}"`,
-    ` data-action="${action.id}"`,
-    ` data-target-route="${action.targetRoute}"`,
-    action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
-    ">",
-    escapeHtml(action.label),
-    "</a>"
-  ].join("");
+  return renderAdminActionLink(action, {
+    href,
+    danger: Boolean(modifier),
+    secondary: Boolean(secondary)
+  });
 }
 
 function statusClass(status: string): string {
   return `admin-content__badge--${status.replaceAll("_", "-")}`;
 }
 
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") return 403;
-  if (state === "empty") return 404;
-  if (state === "offline") return 503;
-  if (state === "error") return 500;
-  return 200;
-}
-
 function candidateRequestIdFromPath(path: AdminCandidateRequestShellRoute): string {
   return path.slice("/admin/candidate-requests/".length);
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
 }

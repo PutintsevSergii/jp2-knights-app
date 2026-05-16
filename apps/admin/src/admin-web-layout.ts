@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import { adminShellRoutes } from "./admin-shell.js";
+import { escapeAttribute, escapeHtml } from "./admin-render-primitives.js";
 
 export const htmlHeaders = {
   "content-type": "text/html; charset=utf-8"
@@ -117,17 +118,4 @@ function extractMainHtml(document: string): string {
   const match = /<main[^>]*>([\s\S]*)<\/main>/i.exec(document);
 
   return match?.[1] ?? document;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
 }

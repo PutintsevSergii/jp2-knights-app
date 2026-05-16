@@ -3,6 +3,13 @@ import type {
   AdminContentListScreen,
   AdminContentRow
 } from "./admin-content-screens.js";
+import {
+  escapeAttribute,
+  escapeHtml,
+  renderAdminActionButton,
+  renderAdminEmptyState,
+  renderAdminHeader
+} from "./admin-render-primitives.js";
 
 export interface RenderedAdminContentScreen {
   route: AdminContentListScreen["route"];
@@ -55,30 +62,18 @@ function renderStyle(screen: AdminContentListScreen): string {
 }
 
 function renderHeader(screen: AdminContentListScreen): string {
-  const demoBadge = screen.demoChromeVisible
-    ? '<span class="admin-content__demo" aria-label="Demo mode">Demo</span>'
-    : "";
-
-  return [
-    '<header class="admin-content__header">',
-    "<div>",
-    `<h1 class="admin-content__title">${escapeHtml(screen.title)}</h1>`,
-    `<p class="admin-content__body">${escapeHtml(screen.body)}</p>`,
-    demoBadge,
-    "</div>",
-    `<div class="admin-content__actions">${screen.actions.map(renderAction).join("")}</div>`,
-    "</header>"
-  ].join("");
+  return renderAdminHeader({
+    title: screen.title,
+    body: screen.body,
+    actions: screen.actions,
+    demoChromeVisible: screen.demoChromeVisible,
+    renderAction
+  });
 }
 
 function renderRows(screen: AdminContentListScreen): string {
   if (screen.rows.length === 0) {
-    return [
-      '<div class="admin-content__empty" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p>${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body);
   }
 
   return [
@@ -118,26 +113,8 @@ function renderAction(action: AdminContentAction): string {
   const secondary =
     action.id === "refresh" || action.id === "edit" ? " admin-content__button--secondary" : "";
 
-  return [
-    `<button type="button" class="admin-content__button${modifier}${secondary}"`,
-    ` data-action="${action.id}"`,
-    ` data-target-route="${action.targetRoute}"`,
-    action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
-    ">",
-    escapeHtml(action.label),
-    "</button>"
-  ].join("");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
+  return renderAdminActionButton(action, {
+    danger: Boolean(modifier),
+    secondary: Boolean(secondary)
+  });
 }

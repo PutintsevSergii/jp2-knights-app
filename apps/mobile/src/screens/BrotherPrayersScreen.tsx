@@ -2,8 +2,8 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { BrotherPrayersScreen as BrotherPrayersScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
+import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
 
@@ -76,59 +76,7 @@ export function BrotherPrayersScreen({ screen, onAction }: BrotherPrayersScreenP
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "today",
-                  label: "Dashboard",
-                  targetRoute: "BrotherToday"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "events",
-                  label: "Events",
-                  targetRoute: "BrotherEvents"
-                })
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: true
-            },
-            {
-              id: "choragiew",
-              label: "Choragiew",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "organization-units",
-                  label: "Choragiew",
-                  targetRoute: "MyOrganizationUnits"
-                })
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "profile",
-                  label: "Account",
-                  targetRoute: "BrotherProfile"
-                })
-            }
-          ]}
-        />
+        <BrotherBottomNav active="prayer" onAction={onAction} />
       </View>
     </SafeAreaView>
   );

@@ -2,11 +2,11 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { BrotherEventsScreen as BrotherEventsScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
+import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { CalendarIcon } from "./shared/CalendarIcon.js";
 import { ClockIcon } from "./shared/ClockIcon.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 import { FilterIcon } from "./shared/FilterIcon.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { PinIcon } from "./shared/PinIcon.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
@@ -32,7 +32,9 @@ export function BrotherEventsScreen({ screen, onAction }: BrotherEventsScreenPro
           <View style={styles.hero}>
             <View style={styles.heroCopy}>
               <Text style={styles.title}>{screen.title}</Text>
-              <Text style={styles.subtitle}>Formation, meetings, and actions visible to brothers.</Text>
+              <Text style={styles.subtitle}>
+                Formation, meetings, and actions visible to brothers.
+              </Text>
             </View>
             <Pressable
               accessibilityRole="button"
@@ -94,59 +96,7 @@ export function BrotherEventsScreen({ screen, onAction }: BrotherEventsScreenPro
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "today",
-                  label: "Dashboard",
-                  targetRoute: "BrotherToday"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: true
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "prayers",
-                  label: "Prayer",
-                  targetRoute: "BrotherPrayers"
-                })
-            },
-            {
-              id: "choragiew",
-              label: "Choragiew",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "organization-units",
-                  label: "Choragiew",
-                  targetRoute: "MyOrganizationUnits"
-                })
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "profile",
-                  label: "Account",
-                  targetRoute: "BrotherProfile"
-                })
-            }
-          ]}
-        />
+        <BrotherBottomNav active="events" onAction={onAction} />
       </View>
     </SafeAreaView>
   );

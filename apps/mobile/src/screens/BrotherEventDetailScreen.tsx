@@ -2,24 +2,19 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { BrotherEventDetailScreen as BrotherEventDetailScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
-import { CalendarIcon } from "./shared/CalendarIcon.js";
-import { ClockIcon } from "./shared/ClockIcon.js";
+import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
+import { EventMetaCard } from "./shared/EventMetaCard.js";
+import { EventStatusBadge } from "./shared/EventStatusBadge.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
-import { PinIcon } from "./shared/PinIcon.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
-import { StatusDot } from "./shared/StatusDot.js";
 
 export interface BrotherEventDetailScreenProps {
   screen: BrotherEventDetailScreenModel;
   onAction?: (action: BrotherScreenAction) => void;
 }
 
-export function BrotherEventDetailScreen({
-  screen,
-  onAction
-}: BrotherEventDetailScreenProps) {
+export function BrotherEventDetailScreen({ screen, onAction }: BrotherEventDetailScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
@@ -39,36 +34,18 @@ export function BrotherEventDetailScreen({
                   <Text style={styles.typeBadgeText}>{screen.typeLabel}</Text>
                 </View>
                 <Text style={styles.title}>{screen.title}</Text>
-                <View style={[styles.statusBadge, statusBadgeStyle[screen.statusTone]]}>
-                  <StatusDot tone={screen.statusTone} />
-                  <Text style={[styles.statusText, statusTextStyle[screen.statusTone]]}>
-                    {screen.statusLabel}
-                  </Text>
-                </View>
+                <EventStatusBadge label={screen.statusLabel} tone={screen.statusTone} />
               </View>
 
               <View style={styles.metaGrid}>
-                <View style={styles.metaCard}>
-                  <CalendarIcon emphasized />
-                  <View style={styles.metaCopy}>
-                    <Text style={styles.metaLabel}>Date</Text>
-                    <Text style={styles.metaText}>{screen.dateLabel}</Text>
-                  </View>
-                </View>
-                <View style={styles.metaCard}>
-                  <ClockIcon />
-                  <View style={styles.metaCopy}>
-                    <Text style={styles.metaLabel}>Time</Text>
-                    <Text style={styles.metaText}>{screen.timeLabel}</Text>
-                  </View>
-                </View>
-                <View style={styles.metaCard}>
-                  <PinIcon tone="brown" />
-                  <View style={styles.metaCopy}>
-                    <Text style={styles.metaLabel}>Location</Text>
-                    <Text style={styles.metaText}>{screen.locationLabel}</Text>
-                  </View>
-                </View>
+                <EventMetaCard emphasized icon="date" label="Date" value={screen.dateLabel} />
+                <EventMetaCard icon="time" label="Time" value={screen.timeLabel} />
+                <EventMetaCard
+                  emphasized
+                  icon="location"
+                  label="Location"
+                  value={screen.locationLabel}
+                />
               </View>
 
               <View style={styles.descriptionCard}>
@@ -112,63 +89,10 @@ export function BrotherEventDetailScreen({
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "today",
-                  label: "Dashboard",
-                  targetRoute: "BrotherToday"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: true,
-              onPress: () => {
-                if (screen.backAction) {
-                  onAction?.(screen.backAction);
-                }
-              }
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "prayers",
-                  label: "Prayer",
-                  targetRoute: "BrotherPrayers"
-                })
-            },
-            {
-              id: "choragiew",
-              label: "Choragiew",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "organization-units",
-                  label: "Choragiew",
-                  targetRoute: "MyOrganizationUnits"
-                })
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "profile",
-                  label: "Account",
-                  targetRoute: "BrotherProfile"
-                })
-            }
-          ]}
+        <BrotherBottomNav
+          active="events"
+          eventsAction={screen.backAction ?? undefined}
+          onAction={onAction}
         />
       </View>
     </SafeAreaView>
@@ -176,32 +100,6 @@ export function BrotherEventDetailScreen({
 }
 
 const colors = designTokens.color;
-
-const statusBadgeStyle = StyleSheet.create({
-  planning: {
-    backgroundColor: colors.brand.gold
-  },
-  needed: {
-    backgroundColor: colors.brand.linen
-  },
-  cancelled: {
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderWidth: 1
-  }
-});
-
-const statusTextStyle = StyleSheet.create({
-  planning: {
-    color: colors.brand.goldDeep
-  },
-  needed: {
-    color: colors.brand.brown
-  },
-  cancelled: {
-    color: colors.brand.taupe
-  }
-});
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -249,56 +147,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     lineHeight: designTokens.typography.lineHeight.screenTitle
   },
-  statusBadge: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    borderRadius: designTokens.radius.sm,
-    flexDirection: "row",
-    gap: designTokens.space[1],
-    minHeight: 28,
-    paddingHorizontal: designTokens.space[2],
-    paddingVertical: designTokens.space[1]
-  },
-  statusText: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: 10,
-    fontWeight: designTokens.typography.weight.medium,
-    letterSpacing: 0,
-    lineHeight: 11,
-    textTransform: "uppercase"
-  },
   metaGrid: {
     gap: designTokens.space[3]
-  },
-  metaCard: {
-    alignItems: "center",
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderRadius: designTokens.radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: designTokens.space[3],
-    minHeight: 74,
-    padding: designTokens.space[4]
-  },
-  metaCopy: {
-    flex: 1,
-    gap: designTokens.space[1]
-  },
-  metaLabel: {
-    color: colors.text.subdued,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.medium,
-    lineHeight: designTokens.typography.lineHeight.label
-  },
-  metaText: {
-    color: colors.text.primary,
-    flexShrink: 1,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.regular,
-    lineHeight: designTokens.typography.lineHeight.body
   },
   descriptionCard: {
     backgroundColor: colors.background.surface,

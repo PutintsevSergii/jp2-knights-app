@@ -3,13 +3,13 @@ import { designTokens } from "@jp2/shared-design-tokens";
 import type { CandidateEventsScreen as CandidateEventsScreenModel } from "../candidate-screens.js";
 import type { CandidateScreenAction } from "../candidate-screen-contracts.js";
 import { CalendarIcon } from "./shared/CalendarIcon.js";
+import { CandidateBottomNav } from "./shared/CandidateBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { EventStatusBadge } from "./shared/EventStatusBadge.js";
 import { FilterIcon } from "./shared/FilterIcon.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { PinIcon } from "./shared/PinIcon.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
-import { StatusDot } from "./shared/StatusDot.js";
 
 export interface CandidateEventsScreenProps {
   screen: CandidateEventsScreenModel;
@@ -50,12 +50,11 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
                 <View key={event.id} style={[styles.card, statusBorderStyle[event.statusTone]]}>
                   <View style={styles.cardHeader}>
                     <Text style={styles.cardTitle}>{event.title}</Text>
-                    <View style={[styles.statusBadge, statusBadgeStyle[event.statusTone]]}>
-                      <StatusDot tone={event.statusTone} />
-                      <Text style={[styles.statusText, statusTextStyle[event.statusTone]]}>
-                        {event.statusLabel}
-                      </Text>
-                    </View>
+                    <EventStatusBadge
+                      label={event.statusLabel}
+                      tone={event.statusTone}
+                      style={styles.statusBadge}
+                    />
                   </View>
 
                   <View style={styles.metaRow}>
@@ -101,44 +100,7 @@ export function CandidateEventsScreen({ screen, onAction }: CandidateEventsScree
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "dashboard",
-                  label: "Dashboard",
-                  targetRoute: "CandidateDashboard"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: true
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              disabled: true
-            },
-            {
-              id: "choragiew",
-              label: "Choragiew",
-              active: false,
-              disabled: true
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              disabled: true
-            }
-          ]}
-        />
+        <CandidateBottomNav active="events" onAction={onAction} />
       </View>
     </SafeAreaView>
   );
@@ -158,32 +120,6 @@ const statusBorderStyle = StyleSheet.create({
   cancelled: {
     borderLeftColor: colors.status.danger,
     borderLeftWidth: 4
-  }
-});
-
-const statusBadgeStyle = StyleSheet.create({
-  planning: {
-    backgroundColor: colors.brand.gold
-  },
-  needed: {
-    backgroundColor: colors.brand.linen
-  },
-  cancelled: {
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderWidth: 1
-  }
-});
-
-const statusTextStyle = StyleSheet.create({
-  planning: {
-    color: colors.brand.goldDeep
-  },
-  needed: {
-    color: colors.brand.brown
-  },
-  cancelled: {
-    color: colors.brand.taupe
   }
 });
 
@@ -280,23 +216,7 @@ const styles = StyleSheet.create({
     lineHeight: 27
   },
   statusBadge: {
-    alignItems: "center",
-    borderRadius: designTokens.radius.sm,
-    flexDirection: "row",
-    gap: designTokens.space[1],
-    maxWidth: 96,
-    minHeight: 28,
-    paddingHorizontal: designTokens.space[2],
-    paddingVertical: designTokens.space[1]
-  },
-  statusText: {
-    flexShrink: 1,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: 10,
-    fontWeight: designTokens.typography.weight.medium,
-    letterSpacing: 0,
-    lineHeight: 11,
-    textTransform: "uppercase"
+    maxWidth: 96
   },
   metaRow: {
     alignItems: "center",

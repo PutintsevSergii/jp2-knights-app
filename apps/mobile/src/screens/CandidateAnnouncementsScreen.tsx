@@ -2,9 +2,9 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { CandidateAnnouncementsScreen as CandidateAnnouncementsScreenModel } from "../candidate-screens.js";
 import type { CandidateScreenAction } from "../candidate-screen-contracts.js";
+import { CandidateBottomNav } from "./shared/CandidateBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 import { MegaphoneIcon } from "./shared/MegaphoneIcon.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
 
@@ -71,48 +71,10 @@ export function CandidateAnnouncementsScreen({
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "dashboard",
-                  label: "Dashboard",
-                  targetRoute: "CandidateDashboard"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "events",
-                  label: "Events",
-                  targetRoute: "CandidateEvents"
-                })
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              disabled: true
-            },
-            {
-              id: "announcements",
-              label: "News",
-              active: true
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              disabled: true
-            }
-          ]}
+        <CandidateBottomNav
+          active="announcements"
+          onAction={onAction}
+          secondaryItem="announcements"
         />
       </View>
     </SafeAreaView>

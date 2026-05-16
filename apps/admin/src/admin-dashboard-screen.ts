@@ -4,6 +4,12 @@ import type { AdminDashboardResponseDto, AdminDashboardTaskDto } from "@jp2/shar
 import type { AdminContentScreenState, AdminContentFetch } from "./admin-content-api.js";
 import { adminDashboardFailureState, fetchAdminDashboard } from "./admin-dashboard-api.js";
 import { fallbackAdminDashboard } from "./admin-content-fixtures.js";
+import {
+  adminStatusCodeForStateWithOptions,
+  escapeAttribute,
+  escapeHtml,
+  renderAdminDocument
+} from "./admin-render-primitives.js";
 
 export interface AdminDashboardMetric {
   id: "identityAccessReviews" | "organizationUnits" | "prayers" | "events";
@@ -74,7 +80,7 @@ export async function renderAdminDashboardRoute(
     path: "/admin/dashboard",
     route: "AdminDashboard",
     state: screen.state,
-    statusCode: statusCodeForState(screen.state),
+    statusCode: adminStatusCodeForStateWithOptions(screen.state, { empty: 200 }),
     document: renderDashboardDocument(screen)
   };
 }
@@ -133,19 +139,7 @@ export function buildAdminDashboardScreen(
 }
 
 function renderDashboardDocument(screen: AdminDashboardScreen): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Admin Dashboard</title>",
-    "</head>",
-    "<body>",
-    `<main>${renderDashboardHtml(screen)}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
+  return renderAdminDocument({ title: "Admin Dashboard", body: renderDashboardHtml(screen) });
 }
 
 function renderDashboardHtml(screen: AdminDashboardScreen): string {
@@ -302,26 +296,6 @@ function stateOnlyDashboard(
     demoChromeVisible: runtimeMode === "demo",
     theme: adminDashboardTheme
   };
-}
-
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") return 403;
-  if (state === "offline") return 503;
-  if (state === "error") return 500;
-  return 200;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
 }
 
 const adminDashboardNavigation: AdminDashboardScreen["navigation"] = [

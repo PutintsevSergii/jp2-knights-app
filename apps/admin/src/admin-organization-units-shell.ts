@@ -14,6 +14,15 @@ import {
   type AdminOrganizationUnitRoute,
   type AdminOrganizationUnitListScreen
 } from "./admin-organization-units-screen.js";
+import {
+  adminStatusCodeForState,
+  escapeAttribute,
+  renderAdminActionLink,
+  renderAdminDocument,
+  renderAdminEmptyState,
+  renderAdminFormField,
+  renderAdminHeader
+} from "./admin-render-primitives.js";
 
 export type AdminOrganizationUnitShellRoute =
   | "/admin/organization-units"
@@ -69,8 +78,8 @@ export async function renderAdminOrganizationUnitRoute(
     path: options.path,
     route: screen.route,
     state: rendered.state,
-    statusCode: statusCodeForState(rendered.state),
-    document: renderDocument(rendered.html)
+    statusCode: adminStatusCodeForState(rendered.state),
+    document: renderAdminDocument({ title: "Admin Organization Units", body: rendered.html })
   };
 }
 
@@ -119,7 +128,9 @@ async function resolveOrganizationUnitEditorScreen(
   if (options.runtimeMode === "demo") {
     return buildAdminOrganizationUnitEditorScreen({
       state: "ready",
-      organizationUnit: fallbackAdminOrganizationUnits.organizationUnits.find((unit) => unit.id === id),
+      organizationUnit: fallbackAdminOrganizationUnits.organizationUnits.find(
+        (unit) => unit.id === id
+      ),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite,
       mode: "edit"
@@ -144,30 +155,6 @@ async function resolveOrganizationUnitEditorScreen(
       mode: "edit"
     });
   }
-}
-
-function renderDocument(html: string): string {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Admin Organization Units</title>",
-    "</head>",
-    "<body>",
-    `<main>${html}</main>`,
-    "</body>",
-    "</html>"
-  ].join("");
-}
-
-function statusCodeForState(state: AdminContentScreenState): number {
-  if (state === "forbidden") return 403;
-  if (state === "empty") return 404;
-  if (state === "offline") return 503;
-  if (state === "error") return 500;
-  return 200;
 }
 
 function organizationUnitIdFromPath(path: AdminOrganizationUnitShellRoute): string {
@@ -215,44 +202,23 @@ function renderEditorStyle(screen: AdminOrganizationUnitEditorScreen): string {
 }
 
 function renderEditorHeader(screen: AdminOrganizationUnitEditorScreen): string {
-  const demoBadge = screen.demoChromeVisible
-    ? '<span class="admin-content__demo" aria-label="Demo mode">Demo</span>'
-    : "";
-
-  return [
-    '<header class="admin-content__header">',
-    "<div>",
-    `<h1 class="admin-content__title">${escapeHtml(screen.title)}</h1>`,
-    `<p class="admin-content__body">${escapeHtml(screen.body)}</p>`,
-    demoBadge,
-    "</div>",
-    `<div class="admin-content__actions">${screen.actions.map(renderEditorAction).join("")}</div>`,
-    "</header>"
-  ].join("");
+  return renderAdminHeader({
+    title: screen.title,
+    body: screen.body,
+    actions: screen.actions,
+    demoChromeVisible: screen.demoChromeVisible,
+    renderAction: renderEditorAction
+  });
 }
 
 function renderEditorForm(screen: AdminOrganizationUnitEditorScreen): string {
   if (screen.fields.length === 0) {
-    return [
-      '<div class="admin-content__form" role="status">',
-      `<strong>${escapeHtml(screen.title)}</strong>`,
-      `<p class="admin-content__meta">${escapeHtml(screen.body)}</p>`,
-      "</div>"
-    ].join("");
+    return renderAdminEmptyState(screen.title, screen.body, "admin-content__form");
   }
 
   return [
     `<form class="admin-content__form" data-organization-unit-id="${escapeAttribute(screen.organizationUnitId ?? "")}" data-mode="${screen.mode}">`,
-    screen.fields
-      .map(
-        (field) => [
-          '<label class="admin-content__field">',
-          `<span class="admin-content__label">${escapeHtml(field.label)}</span>`,
-          `<input class="admin-content__input" name="${escapeAttribute(field.name)}" value="${escapeAttribute(field.value)}"${field.required ? " required" : ""}${field.readOnly ? " readonly" : ""}>`,
-          "</label>"
-        ].join("")
-      )
-      .join(""),
+    screen.fields.map(renderAdminFormField).join(""),
     "</form>"
   ].join("");
 }
@@ -269,26 +235,9 @@ function renderEditorAction(action: AdminOrganizationUnitEditorScreen["actions"]
           ? `/admin/organization-units/${action.targetId}`
           : "/admin/organization-units";
 
-  return [
-    `<a class="admin-content__button${modifier}${secondary}" href="${escapeAttribute(href)}"`,
-    ` data-action="${action.id}"`,
-    ` data-target-route="${action.targetRoute}"`,
-    action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
-    ">",
-    escapeHtml(action.label),
-    "</a>"
-  ].join("");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value);
+  return renderAdminActionLink(action, {
+    href,
+    danger: Boolean(modifier),
+    secondary: Boolean(secondary)
+  });
 }

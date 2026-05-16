@@ -2,9 +2,9 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { BrotherAnnouncementsScreen as BrotherAnnouncementsScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
+import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 import { MegaphoneIcon } from "./shared/MegaphoneIcon.js";
-import { MobileBottomNav } from "./shared/MobileBottomNav.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
 
@@ -13,10 +13,7 @@ export interface BrotherAnnouncementsScreenProps {
   onAction?: (action: BrotherScreenAction) => void;
 }
 
-export function BrotherAnnouncementsScreen({
-  screen,
-  onAction
-}: BrotherAnnouncementsScreenProps) {
+export function BrotherAnnouncementsScreen({ screen, onAction }: BrotherAnnouncementsScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
@@ -72,58 +69,10 @@ export function BrotherAnnouncementsScreen({
           )}
         </ScrollView>
 
-        <MobileBottomNav
-          items={[
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "today",
-                  label: "Dashboard",
-                  targetRoute: "BrotherToday"
-                })
-            },
-            {
-              id: "events",
-              label: "Events",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "events",
-                  label: "Events",
-                  targetRoute: "BrotherEvents"
-                })
-            },
-            {
-              id: "prayer",
-              label: "Prayer",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "prayers",
-                  label: "Prayer",
-                  targetRoute: "BrotherPrayers"
-                })
-            },
-            {
-              id: "announcements",
-              label: "News",
-              active: true
-            },
-            {
-              id: "account",
-              label: "Account",
-              active: false,
-              onPress: () =>
-                onAction?.({
-                  id: "profile",
-                  label: "Account",
-                  targetRoute: "BrotherProfile"
-                })
-            }
-          ]}
+        <BrotherBottomNav
+          active="announcements"
+          onAction={onAction}
+          secondaryItem="announcements"
         />
       </View>
     </SafeAreaView>
