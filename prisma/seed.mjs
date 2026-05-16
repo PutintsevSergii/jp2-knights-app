@@ -185,6 +185,66 @@ async function main() {
     }
   });
 
+  const existingBrother = await prisma.user.findFirst({
+    where: { email: "brother@example.test", archivedAt: null }
+  });
+
+  const brother =
+    existingBrother ??
+    (await prisma.user.create({
+      data: {
+        email: "brother@example.test",
+        displayName: "Demo Brother",
+        status: "active",
+        preferredLanguage: "en"
+      }
+    }));
+
+  await prisma.userRole.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000021"
+    },
+    update: {},
+    create: {
+      id: "00000000-0000-0000-0000-000000000021",
+      userId: brother.id,
+      role: "BROTHER",
+      createdBy: superAdmin.id
+    }
+  });
+
+  await linkExternalIdentity({
+    id: "00000000-0000-0000-0000-000000000022",
+    userId: brother.id,
+    provider: "firebase",
+    providerSubject: "demo-brother",
+    email: "brother@example.test",
+    emailVerified: true,
+    displayName: "Demo Brother"
+  });
+
+  await prisma.membership.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000023"
+    },
+    update: {
+      userId: brother.id,
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2026-01-15T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000023",
+      userId: brother.id,
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2026-01-15T00:00:00.000Z")
+    }
+  });
+
   await prisma.candidateRequest.upsert({
     where: {
       id: "00000000-0000-0000-0000-000000000012"
@@ -549,6 +609,8 @@ async function main() {
       publishedAt: new Date("2026-01-01T00:00:00.000Z")
     }
   });
+
+  await seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit });
 }
 
 async function findOrCreateOrganizationUnit(data) {
@@ -584,6 +646,237 @@ async function linkExternalIdentity(data) {
       revokedAt: null
     },
     create: data
+  });
+}
+
+async function seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit }) {
+  await prisma.roadmapDefinition.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000024"
+    },
+    update: {
+      title: "Candidate Onboarding Roadmap",
+      targetRole: "CANDIDATE",
+      status: "PUBLISHED",
+      language: "en",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-09T09:00:00.000Z"),
+      publishedAt: new Date("2026-05-09T09:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000024",
+      title: "Candidate Onboarding Roadmap",
+      targetRole: "CANDIDATE",
+      status: "PUBLISHED",
+      language: "en",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-09T09:00:00.000Z"),
+      publishedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapStage.upsert({
+    where: {
+      roadmapDefinitionId_sortOrder: {
+        roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+        sortOrder: 10
+      }
+    },
+    update: {
+      title: "Welcome",
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000025",
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+      title: "Welcome",
+      sortOrder: 10
+    }
+  });
+
+  await prisma.roadmapStep.upsert({
+    where: {
+      stageId_sortOrder: {
+        stageId: "00000000-0000-0000-0000-000000000025",
+        sortOrder: 10
+      }
+    },
+    update: {
+      title: "Meet your responsible officer",
+      description: "Confirm the first conversation and next formation meeting.",
+      requiresSubmission: false,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-05-09T09:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000026",
+      stageId: "00000000-0000-0000-0000-000000000025",
+      title: "Meet your responsible officer",
+      description: "Confirm the first conversation and next formation meeting.",
+      requiresSubmission: false,
+      sortOrder: 10,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000028"
+    },
+    update: {
+      userId: candidate.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      assignedBy: officer.id,
+      completedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000028",
+      userId: candidate.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      assignedBy: officer.id,
+      assignedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapDefinition.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000029"
+    },
+    update: {
+      title: "Brother Formation Roadmap",
+      targetRole: "BROTHER",
+      status: "PUBLISHED",
+      language: "en",
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-09T09:00:00.000Z"),
+      publishedAt: new Date("2026-05-09T09:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000029",
+      title: "Brother Formation Roadmap",
+      targetRole: "BROTHER",
+      status: "PUBLISHED",
+      language: "en",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-09T09:00:00.000Z"),
+      publishedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapStage.upsert({
+    where: {
+      roadmapDefinitionId_sortOrder: {
+        roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+        sortOrder: 10
+      }
+    },
+    update: {
+      title: "Formation",
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000030",
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      title: "Formation",
+      sortOrder: 10
+    }
+  });
+
+  await prisma.roadmapStep.upsert({
+    where: {
+      stageId_sortOrder: {
+        stageId: "00000000-0000-0000-0000-000000000030",
+        sortOrder: 10
+      }
+    },
+    update: {
+      title: "Submit monthly formation reflection",
+      description: "Share a short reflection for officer review.",
+      requiresSubmission: true,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-05-09T09:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000031",
+      stageId: "00000000-0000-0000-0000-000000000030",
+      title: "Submit monthly formation reflection",
+      description: "Share a short reflection for officer review.",
+      requiresSubmission: true,
+      sortOrder: 10,
+      status: "PUBLISHED",
+      publishedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000033"
+    },
+    update: {
+      userId: brother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      assignedBy: officer.id,
+      completedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000033",
+      userId: brother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: pilotUnit.id,
+      status: "active",
+      assignedBy: officer.id,
+      assignedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapSubmission.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000034"
+    },
+    update: {
+      assignmentId: "00000000-0000-0000-0000-000000000033",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: brother.id,
+      body: "Demo formation reflection awaiting scoped officer review.",
+      attachmentMeta: [],
+      status: "pending_review",
+      reviewedBy: null,
+      reviewComment: null,
+      reviewedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000034",
+      assignmentId: "00000000-0000-0000-0000-000000000033",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: brother.id,
+      body: "Demo formation reflection awaiting scoped officer review.",
+      attachmentMeta: [],
+      status: "pending_review"
+    }
   });
 }
 

@@ -15,6 +15,7 @@ const requiredInputs = [
   "prisma/migrations/000008_event_participation/migration.sql",
   "prisma/migrations/000009_announcements/migration.sql",
   "prisma/migrations/000010_notifications/migration.sql",
+  "prisma/migrations/000011_roadmap_foundation/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -291,6 +292,36 @@ if (missingNotificationsMigrationSnippets.length > 0) {
   );
 }
 
+const roadmapMigrationSql = readFileSync(
+  "prisma/migrations/000011_roadmap_foundation/migration.sql",
+  "utf8"
+);
+
+const requiredRoadmapMigrationSnippets = [
+  "CREATE TYPE roadmap_assignment_status AS ENUM",
+  "CREATE TYPE roadmap_submission_status AS ENUM",
+  "CREATE TABLE roadmap_definitions",
+  "CREATE TABLE roadmap_stages",
+  "CREATE TABLE roadmap_steps",
+  "CREATE TABLE roadmap_assignments",
+  "CREATE TABLE roadmap_submissions",
+  "attachment_meta jsonb",
+  "roadmap_assignments_user_definition_active_unique",
+  "WHERE status = 'active' AND archived_at IS NULL",
+  "roadmap_submissions_assignment_step_pending_unique",
+  "WHERE status = 'pending_review' AND archived_at IS NULL"
+];
+
+const missingRoadmapMigrationSnippets = requiredRoadmapMigrationSnippets.filter(
+  (snippet) => !roadmapMigrationSql.includes(snippet)
+);
+
+if (missingRoadmapMigrationSnippets.length > 0) {
+  throw new Error(
+    `Roadmap migration is missing required SQL: ${missingRoadmapMigrationSnippets.join(", ")}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -320,7 +351,16 @@ const requiredSeedSnippets = [
   "identityAccessReview",
   "announcement",
   "Candidate Welcome",
-  "Brother Update"
+  "Brother Update",
+  "demo-brother",
+  "membership",
+  "roadmapDefinition",
+  "roadmapStage",
+  "roadmapStep",
+  "roadmapAssignment",
+  "roadmapSubmission",
+  "Candidate Onboarding Roadmap",
+  "Brother Formation Roadmap"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -331,5 +371,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, and Phase 9 notification tables."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, Phase 9 notification tables, and Phase 10B roadmap data/contracts fixtures."
 );

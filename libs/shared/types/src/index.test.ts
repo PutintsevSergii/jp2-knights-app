@@ -7,6 +7,9 @@ import {
   ORGANIZATION_UNIT_STATUSES,
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
+  ROADMAP_ASSIGNMENT_STATUSES,
+  ROADMAP_SUBMISSION_STATUSES,
+  ROADMAP_TARGET_ROLES,
   RUNTIME_MODES,
   VISIBILITIES
 } from "./index.js";
@@ -42,5 +45,11 @@ describe("shared types", () => {
     expect(ORGANIZATION_UNIT_TYPES).toContain("CHORAGIEW");
     expect(ORGANIZATION_UNIT_STATUSES).toEqual(["active", "archived"]);
     expect(MEMBERSHIP_STATUSES).toEqual(["active", "inactive", "archived"]);
+  });
+
+  it("keeps roadmap lifecycle contracts explicit", () => {
+    expect(ROADMAP_TARGET_ROLES).toEqual(["CANDIDATE", "BROTHER"]);
+    expect(ROADMAP_ASSIGNMENT_STATUSES).toEqual(["active", "completed", "archived"]);
+    expect(ROADMAP_SUBMISSION_STATUSES).toEqual(["pending_review", "approved", "rejected"]);
   });
 });

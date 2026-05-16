@@ -123,6 +123,22 @@ enum NotificationCategory {
   @@map("notification_category")
 }
 
+enum RoadmapAssignmentStatus {
+  active
+  completed
+  archived
+
+  @@map("roadmap_assignment_status")
+}
+
+enum RoadmapSubmissionStatus {
+  pending_review
+  approved
+  rejected
+
+  @@map("roadmap_submission_status")
+}
+
 model User {
   id                String     @id @default(uuid()) @db.Uuid
   email             String     @db.Citext
@@ -135,22 +151,26 @@ model User {
   updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   archivedAt        DateTime?  @map("archived_at") @db.Timestamptz(6)
 
-  roles                    UserRole[]                @relation("UserRoles")
-  rolesCreated             UserRole[]                @relation("RoleCreator")
-  memberships              Membership[]
-  officerAssignments       OfficerAssignment[]       @relation("OfficerUser")
-  officerAssignmentsMade   OfficerAssignment[]       @relation("OfficerAssignmentCreator")
-  candidateProfiles        CandidateProfile[]        @relation("CandidateProfileUser")
-  responsibleCandidates    CandidateProfile[]        @relation("ResponsibleOfficer")
-  auditLogs                AuditLog[]                @relation("AuditActor")
-  eventParticipations      EventParticipation[]
-  identityProviderAccounts IdentityProviderAccount[]
-  identityAccessReviews    IdentityAccessReview[]    @relation("IdentityAccessReviewUser")
-  identityAccessDecisions  IdentityAccessReview[]    @relation("IdentityAccessReviewDecisionActor")
-  accessApproverPrivileges IdentityAccessApproverAssignment[] @relation("IdentityAccessApproverUser")
-  accessApproverGrants     IdentityAccessApproverAssignment[] @relation("IdentityAccessApproverCreator")
-  deviceTokens             DeviceToken[]
-  notificationPreferences  NotificationPreference[]
+  roles                     UserRole[]                         @relation("UserRoles")
+  rolesCreated              UserRole[]                         @relation("RoleCreator")
+  memberships               Membership[]
+  officerAssignments        OfficerAssignment[]                @relation("OfficerUser")
+  officerAssignmentsMade    OfficerAssignment[]                @relation("OfficerAssignmentCreator")
+  candidateProfiles         CandidateProfile[]                 @relation("CandidateProfileUser")
+  responsibleCandidates     CandidateProfile[]                 @relation("ResponsibleOfficer")
+  auditLogs                 AuditLog[]                         @relation("AuditActor")
+  eventParticipations       EventParticipation[]
+  identityProviderAccounts  IdentityProviderAccount[]
+  identityAccessReviews     IdentityAccessReview[]             @relation("IdentityAccessReviewUser")
+  identityAccessDecisions   IdentityAccessReview[]             @relation("IdentityAccessReviewDecisionActor")
+  accessApproverPrivileges  IdentityAccessApproverAssignment[] @relation("IdentityAccessApproverUser")
+  accessApproverGrants      IdentityAccessApproverAssignment[] @relation("IdentityAccessApproverCreator")
+  deviceTokens              DeviceToken[]
+  notificationPreferences   NotificationPreference[]
+  roadmapAssignments        RoadmapAssignment[]                @relation("RoadmapAssignmentUser")
+  roadmapAssignmentsCreated RoadmapAssignment[]                @relation("RoadmapAssignmentCreator")
+  roadmapSubmissions        RoadmapSubmission[]                @relation("RoadmapSubmissionUser")
+  roadmapReviews            RoadmapSubmission[]                @relation("RoadmapSubmissionReviewer")
 
   @@index([status])
   @@map("users")
@@ -204,7 +224,7 @@ model IdentityProviderAccount {
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
   accessReviews IdentityAccessReview[]
 
   @@index([userId])
@@ -288,15 +308,16 @@ model OrganizationUnit {
   updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
   archivedAt        DateTime?              @map("archived_at") @db.Timestamptz(6)
 
-  parent             OrganizationUnit?   @relation("OrganizationUnitHierarchy", fields: [parentUnitId], references: [id], onDelete: Restrict)
-  children           OrganizationUnit[]  @relation("OrganizationUnitHierarchy")
-  memberships        Membership[]
-  officerAssignments OfficerAssignment[]
-  candidateRequests  CandidateRequest[]
-  candidateProfiles  CandidateProfile[]
-  identityAccessReviews IdentityAccessReview[] @relation("IdentityAccessReviewScope")
+  parent                  OrganizationUnit?                  @relation("OrganizationUnitHierarchy", fields: [parentUnitId], references: [id], onDelete: Restrict)
+  children                OrganizationUnit[]                 @relation("OrganizationUnitHierarchy")
+  memberships             Membership[]
+  officerAssignments      OfficerAssignment[]
+  candidateRequests       CandidateRequest[]
+  candidateProfiles       CandidateProfile[]
+  identityAccessReviews   IdentityAccessReview[]             @relation("IdentityAccessReviewScope")
   identityAccessApprovers IdentityAccessApproverAssignment[] @relation("IdentityAccessApproverScope")
-  announcements      Announcement[]
+  announcements           Announcement[]
+  roadmapAssignments      RoadmapAssignment[]
 
   @@index([parentUnitId])
   @@index([type, status])
@@ -529,7 +550,7 @@ model CandidateRequest {
   updatedAt                  DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
   archivedAt                 DateTime?              @map("archived_at") @db.Timestamptz(6)
 
-  assignedOrganizationUnit OrganizationUnit? @relation(fields: [assignedOrganizationUnitId], references: [id], onDelete: SetNull)
+  assignedOrganizationUnit OrganizationUnit?  @relation(fields: [assignedOrganizationUnitId], references: [id], onDelete: SetNull)
   candidateProfiles        CandidateProfile[]
 
   @@index([status])
@@ -561,4 +582,118 @@ model CandidateProfile {
   @@index([userId])
   @@index([status])
   @@map("candidate_profiles")
+}
+
+model RoadmapDefinition {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  targetRole  Role          @map("target_role")
+  status      ContentStatus @default(DRAFT)
+  language    String
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  approvedBy  String?       @map("approved_by") @db.Uuid
+  publishedBy String?       @map("published_by") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  approvedAt  DateTime?     @map("approved_at") @db.Timestamptz(6)
+  publishedAt DateTime?     @map("published_at") @db.Timestamptz(6)
+  archivedAt  DateTime?     @map("archived_at") @db.Timestamptz(6)
+
+  stages      RoadmapStage[]
+  assignments RoadmapAssignment[]
+
+  @@index([targetRole, status])
+  @@index([status, publishedAt])
+  @@map("roadmap_definitions")
+}
+
+model RoadmapStage {
+  id                  String    @id @default(uuid()) @db.Uuid
+  roadmapDefinitionId String    @map("roadmap_definition_id") @db.Uuid
+  title               String
+  sortOrder           Int       @map("sort_order")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt          DateTime? @map("archived_at") @db.Timestamptz(6)
+
+  roadmapDefinition RoadmapDefinition @relation(fields: [roadmapDefinitionId], references: [id], onDelete: Restrict)
+  steps             RoadmapStep[]
+
+  @@unique([roadmapDefinitionId, sortOrder])
+  @@index([roadmapDefinitionId])
+  @@map("roadmap_stages")
+}
+
+model RoadmapStep {
+  id                 String        @id @default(uuid()) @db.Uuid
+  stageId            String        @map("stage_id") @db.Uuid
+  title              String
+  description        String?
+  requiresSubmission Boolean       @default(false) @map("requires_submission")
+  sortOrder          Int           @map("sort_order")
+  status             ContentStatus @default(DRAFT)
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  publishedAt        DateTime?     @map("published_at") @db.Timestamptz(6)
+  archivedAt         DateTime?     @map("archived_at") @db.Timestamptz(6)
+
+  stage       RoadmapStage        @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  submissions RoadmapSubmission[]
+
+  @@unique([stageId, sortOrder])
+  @@index([stageId, status])
+  @@map("roadmap_steps")
+}
+
+model RoadmapAssignment {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  userId              String                  @map("user_id") @db.Uuid
+  roadmapDefinitionId String                  @map("roadmap_definition_id") @db.Uuid
+  organizationUnitId  String?                 @map("organization_unit_id") @db.Uuid
+  status              RoadmapAssignmentStatus @default(active)
+  assignedBy          String?                 @map("assigned_by") @db.Uuid
+  assignedAt          DateTime                @default(now()) @map("assigned_at") @db.Timestamptz(6)
+  completedAt         DateTime?               @map("completed_at") @db.Timestamptz(6)
+  createdAt           DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt          DateTime?               @map("archived_at") @db.Timestamptz(6)
+
+  user              User                @relation("RoadmapAssignmentUser", fields: [userId], references: [id], onDelete: Restrict)
+  roadmapDefinition RoadmapDefinition   @relation(fields: [roadmapDefinitionId], references: [id], onDelete: Restrict)
+  organizationUnit  OrganizationUnit?   @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
+  assigner          User?               @relation("RoadmapAssignmentCreator", fields: [assignedBy], references: [id], onDelete: SetNull)
+  submissions       RoadmapSubmission[]
+
+  @@index([userId, status])
+  @@index([roadmapDefinitionId, status])
+  @@index([organizationUnitId, status])
+  @@map("roadmap_assignments")
+}
+
+model RoadmapSubmission {
+  id             String                  @id @default(uuid()) @db.Uuid
+  assignmentId   String                  @map("assignment_id") @db.Uuid
+  stepId         String                  @map("step_id") @db.Uuid
+  userId         String                  @map("user_id") @db.Uuid
+  body           String
+  attachmentMeta Json?                   @map("attachment_meta")
+  status         RoadmapSubmissionStatus @default(pending_review)
+  reviewedBy     String?                 @map("reviewed_by") @db.Uuid
+  reviewComment  String?                 @map("review_comment")
+  reviewedAt     DateTime?               @map("reviewed_at") @db.Timestamptz(6)
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt     DateTime?               @map("archived_at") @db.Timestamptz(6)
+
+  assignment RoadmapAssignment @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  step       RoadmapStep       @relation(fields: [stepId], references: [id], onDelete: Restrict)
+  user       User              @relation("RoadmapSubmissionUser", fields: [userId], references: [id], onDelete: Restrict)
+  reviewer   User?             @relation("RoadmapSubmissionReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([assignmentId])
+  @@index([userId, status])
+  @@index([stepId, status])
+  @@index([reviewedBy])
+  @@map("roadmap_submissions")
 }

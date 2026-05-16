@@ -45,16 +45,17 @@ High-growth or user-facing lists should use cursor pagination:
 
 These profiles are the minimum field groups expected before endpoint-specific schemas are generated. They do not replace Zod/OpenAPI schemas.
 
-| DTO profile               | Minimum public/client fields                                                                                                 | Fields never exposed outside admin/system              |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `PublicContentSummary`    | `id`, `title`, `language`, `visibility`, `publishedAt`                                                                       | draft body, approval notes, private admin notes        |
-| `EventSummary`            | `id`, `title`, `type`, `startAt`, `endAt`, `locationLabel`, `visibility`, `targetOrganizationUnitId`, `status`               | private address, internal planning notes               |
-| `ParticipationIntent`     | `eventId`, `userId` only for self/admin-scoped responses, `intentStatus`, `createdAt`, `cancelledAt`                         | unrelated participants, attendance verification        |
-| `CandidateProfileSummary` | `id`, `status`, `assignedOrganizationUnitId`, `responsibleOfficerId`, `createdAt`                                            | candidate request private message unless admin-scoped  |
-| `CandidateDashboard`      | active profile summary, assigned choragiew/contact fields, next step, candidate-visible upcoming events, announcements array | brother-only events, memberships, degrees, admin notes |
-| `BrotherProfileSummary`   | `id`, `displayName`, `membershipStatus`, `currentDegree`, `organizationUnitIds`, `joinedAt`                                  | unrelated brother records, audit summaries             |
-| `SilentPrayerSession`     | `id`, `title`, `intention`, `linkedPrayerId`, `startAt`, `endAt`, `visibility`, `counter`                                    | participant list, personal join history                |
-| `AuditLogSummary`         | `id`, `actorUserId`, `action`, `entityType`, `entityId`, `scopeOrganizationUnitId`, `requestId`, `createdAt`                 | unredacted sensitive before/after values               |
+| DTO profile               | Minimum public/client fields                                                                                                        | Fields never exposed outside admin/system                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `PublicContentSummary`    | `id`, `title`, `language`, `visibility`, `publishedAt`                                                                              | draft body, approval notes, private admin notes                    |
+| `EventSummary`            | `id`, `title`, `type`, `startAt`, `endAt`, `locationLabel`, `visibility`, `targetOrganizationUnitId`, `status`                      | private address, internal planning notes                           |
+| `ParticipationIntent`     | `eventId`, `userId` only for self/admin-scoped responses, `intentStatus`, `createdAt`, `cancelledAt`                                | unrelated participants, attendance verification                    |
+| `CandidateProfileSummary` | `id`, `status`, `assignedOrganizationUnitId`, `responsibleOfficerId`, `createdAt`                                                   | candidate request private message unless admin-scoped              |
+| `CandidateDashboard`      | active profile summary, assigned choragiew/contact fields, next step, candidate-visible upcoming events, announcements array        | brother-only events, memberships, degrees, admin notes             |
+| `BrotherProfileSummary`   | `id`, `displayName`, `membershipStatus`, `currentDegree`, `organizationUnitIds`, `joinedAt`                                         | unrelated brother records, audit summaries                         |
+| `AssignedRoadmap`         | `assignmentId`, assignment status/timestamps, target role, definition summary, ordered stages/steps, current user's own submissions | unrelated user ids, cross-unit rollups, automatic degree decisions |
+| `SilentPrayerSession`     | `id`, `title`, `intention`, `linkedPrayerId`, `startAt`, `endAt`, `visibility`, `counter`                                           | participant list, personal join history                            |
+| `AuditLogSummary`         | `id`, `actorUserId`, `action`, `entityType`, `entityId`, `scopeOrganizationUnitId`, `requestId`, `createdAt`                        | unredacted sensitive before/after values                           |
 
 ## Route Canonicalization
 

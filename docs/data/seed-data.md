@@ -6,11 +6,13 @@ Seed data grows with the implementation phase. The committed seed currently
 covers the identity and organization foundation needed for scope checks plus the
 Phase 3 public About content fallback, Phase 4 public content fixtures, the
 Phase 5/6 Idle access review fixture, and the first Phase 7 candidate
-request/profile fixtures, plus Phase 9 announcement fixtures:
+request/profile fixtures, Phase 9 announcement fixtures, and the first Phase
+10B roadmap fixtures:
 
 - one active Super Admin;
 - one active Officer scoped to the pilot organization unit;
-- local Firebase-provider identity links for `demo-admin`, `demo-officer`, and `demo-candidate`;
+- one active Brother scoped to the pilot organization unit;
+- local Firebase-provider identity links for `demo-admin`, `demo-officer`, `demo-candidate`, and `demo-brother`;
 - one scoped identity access approver assignment for the demo officer;
 - one pending `identity_access_reviews` fixture for `idle-review@example.test`;
 - two active organization units.
@@ -23,6 +25,9 @@ request/profile fixtures, plus Phase 9 announcement fixtures:
 - one published `BROTHER` announcement fixture that must remain hidden from candidates.
 - one active candidate profile assigned to the pilot organization unit.
 - one `new` candidate request assigned to the pilot organization unit with consent metadata and an idempotency key.
+- one published candidate onboarding roadmap assigned to the demo candidate.
+- one published brother formation roadmap assigned to the demo brother.
+- one pending brother roadmap submission fixture for scoped officer review.
 
 The full V1 local-development target is:
 

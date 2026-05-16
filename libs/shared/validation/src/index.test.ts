@@ -30,6 +30,7 @@ import {
   createAdminPrayerRequestSchema,
   createOrganizationUnitRequestSchema,
   createPublicCandidateRequestSchema,
+  createRoadmapSubmissionRequestSchema,
   currentUserResponseSchema,
   deviceTokenRegistrationResponseSchema,
   eventParticipationResponseSchema,
@@ -51,6 +52,8 @@ import {
   publicPrayerDetailResponseSchema,
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
+  assignedRoadmapResponseSchema,
+  reviewRoadmapSubmissionRequestSchema,
   roleSchema,
   registerDeviceTokenRequestSchema,
   updateAdminAnnouncementRequestSchema,
@@ -1012,6 +1015,111 @@ describe("shared validation", () => {
         }
       }).success
     ).toBe(false);
+  });
+
+  it("validates assigned roadmap contracts without exposing unrelated users", () => {
+    const response = {
+      roadmap: {
+        assignmentId: "11111111-1111-4111-8111-111111111111",
+        status: "active",
+        assignedAt: "2026-05-09T09:00:00.000Z",
+        completedAt: null,
+        organizationUnitId: "22222222-2222-4222-8222-222222222222",
+        definition: {
+          id: "33333333-3333-4333-8333-333333333333",
+          title: "Formation Roadmap",
+          targetRole: "BROTHER",
+          language: "en",
+          status: "PUBLISHED",
+          publishedAt: "2026-05-09T09:00:00.000Z"
+        },
+        stages: [
+          {
+            id: "44444444-4444-4444-8444-444444444444",
+            title: "Discernment",
+            sortOrder: 10,
+            steps: [
+              {
+                id: "55555555-5555-4555-8555-555555555555",
+                title: "Meet with officer",
+                description: "Record a short reflection after the meeting.",
+                requiresSubmission: true,
+                sortOrder: 10,
+                status: "PUBLISHED",
+                latestSubmission: {
+                  id: "66666666-6666-4666-8666-666666666666",
+                  assignmentId: "11111111-1111-4111-8111-111111111111",
+                  stepId: "55555555-5555-4555-8555-555555555555",
+                  status: "pending_review",
+                  body: "I completed the meeting.",
+                  attachmentMetadata: [],
+                  reviewComment: null,
+                  reviewedAt: null,
+                  createdAt: "2026-05-10T09:00:00.000Z",
+                  updatedAt: "2026-05-10T09:00:00.000Z"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    expect(assignedRoadmapResponseSchema.parse(response)).toEqual(response);
+    expect(
+      assignedRoadmapResponseSchema.safeParse({
+        roadmap: {
+          ...response.roadmap,
+          userId: "77777777-7777-4777-8777-777777777777"
+        }
+      }).success
+    ).toBe(false);
+  });
+
+  it("validates roadmap submission and review payloads", () => {
+    expect(
+      createRoadmapSubmissionRequestSchema.parse({
+        stepId: "55555555-5555-4555-8555-555555555555",
+        body: "A short formation reflection.",
+        attachmentMetadata: [
+          {
+            originalFilename: "reflection.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 1024
+          }
+        ]
+      })
+    ).toEqual({
+      stepId: "55555555-5555-4555-8555-555555555555",
+      body: "A short formation reflection.",
+      attachmentMetadata: [
+        {
+          originalFilename: "reflection.pdf",
+          mimeType: "application/pdf",
+          sizeBytes: 1024
+        }
+      ]
+    });
+    expect(
+      createRoadmapSubmissionRequestSchema.parse({
+        stepId: "55555555-5555-4555-8555-555555555555",
+        body: "A short formation reflection."
+      }).attachmentMetadata
+    ).toEqual([]);
+    expect(
+      reviewRoadmapSubmissionRequestSchema.safeParse({
+        status: "rejected"
+      }).success
+    ).toBe(false);
+    expect(
+      reviewRoadmapSubmissionRequestSchema.parse({
+        status: "rejected",
+        reviewComment: "Please add the meeting date."
+      })
+    ).toEqual({
+      status: "rejected",
+      reviewComment: "Please add the meeting date."
+    });
   });
 
   it("validates notification preference and device-token DTOs without returning token material", () => {

@@ -70,6 +70,12 @@ export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const ROADMAP_SUBMISSION_STATUSES = ["pending_review", "approved", "rejected"] as const;
 export type RoadmapSubmissionStatus = (typeof ROADMAP_SUBMISSION_STATUSES)[number];
 
+export const ROADMAP_ASSIGNMENT_STATUSES = ["active", "completed", "archived"] as const;
+export type RoadmapAssignmentStatus = (typeof ROADMAP_ASSIGNMENT_STATUSES)[number];
+
+export const ROADMAP_TARGET_ROLES = ["CANDIDATE", "BROTHER"] as const;
+export type RoadmapTargetRole = (typeof ROADMAP_TARGET_ROLES)[number];
+
 export const ATTACHMENT_STATUSES = ["active", "archived", "deleted"] as const;
 export type AttachmentStatus = (typeof ATTACHMENT_STATUSES)[number];
 
