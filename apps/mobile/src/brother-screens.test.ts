@@ -8,12 +8,14 @@ import {
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
+import { fallbackBrotherRoadmap } from "./roadmap.js";
 import {
   buildBrotherAnnouncementsScreen,
   buildBrotherProfileScreen,
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherPrayersScreen,
+  buildBrotherRoadmapScreen,
   buildOrganizationUnitDetailScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen
@@ -39,6 +41,7 @@ describe("brother screen models", () => {
     expect(screen.quickActions.map((action) => action.targetRoute)).toEqual([
       "BrotherProfile",
       "MyOrganizationUnits",
+      "BrotherRoadmap",
       "BrotherEvents",
       "BrotherAnnouncements"
     ]);
@@ -62,6 +65,7 @@ describe("brother screen models", () => {
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
       "BrotherProfile",
       "MyOrganizationUnits",
+      "BrotherRoadmap",
       "BrotherEvents",
       "BrotherAnnouncements"
     ]);
@@ -289,6 +293,42 @@ describe("brother screen models", () => {
     expect(JSON.stringify(screen)).not.toMatch(/participant|attendee|tracking|mark complete/i);
   });
 
+  it("builds Formation Roadmap with own latest submission state only", () => {
+    const screen = buildBrotherRoadmapScreen({
+      state: "ready",
+      response: fallbackBrotherRoadmap,
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "BrotherRoadmap",
+      state: "ready",
+      title: "Brother Formation Roadmap",
+      body: "1 roadmap stages - 1 roadmap steps"
+    });
+    expect(screen.sections).toEqual([
+      {
+        id: `stage-${fallbackBrotherRoadmap.roadmap!.stages[0]!.id}`,
+        title: "First Degree Formation",
+        body: "1 roadmap steps"
+      },
+      expect.objectContaining({
+        id: `step-${fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!.id}`,
+        title: "Submit a formation reflection"
+      })
+    ]);
+    expect(screen.sections[1]?.body).toContain("Submission required.");
+    expect(screen.sections[1]?.body).toContain("Pending review");
+    expect(screen.actions).toEqual([
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/roster|participant list|other brother/i);
+  });
+
   it("builds Brother Event Detail plan action when the user has no active intent", () => {
     const response = {
       event: {
@@ -424,6 +464,19 @@ describe("brother screen models", () => {
     ).toEqual(
       expect.objectContaining({
         route: "BrotherPrayers",
+        state: "idleApproval",
+        title: "Account Approval Pending",
+        actions: []
+      })
+    );
+    expect(
+      buildBrotherRoadmapScreen({
+        state: "idleApproval",
+        runtimeMode: "api"
+      })
+    ).toEqual(
+      expect.objectContaining({
+        route: "BrotherRoadmap",
         state: "idleApproval",
         title: "Account Approval Pending",
         actions: []

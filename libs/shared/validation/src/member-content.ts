@@ -159,6 +159,7 @@ export const brotherTodayCardSchema = z.object({
   body: z.string().trim().min(1).max(1000),
   targetRoute: z.enum([
     "BrotherProfile",
+    "BrotherRoadmap",
     "MyOrganizationUnits",
     "BrotherEvents",
     "BrotherPrayers",

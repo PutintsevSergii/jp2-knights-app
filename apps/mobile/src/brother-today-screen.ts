@@ -19,7 +19,7 @@ export interface BrotherTodayProfileSummary {
 }
 
 export interface BrotherTodayQuickAction extends BrotherScreenAction {
-  icon: "profile" | "organization" | "events" | "announcements";
+  icon: "profile" | "roadmap" | "organization" | "events" | "announcements";
   emphasized?: boolean | undefined;
 }
 
@@ -242,6 +242,10 @@ function quickActionIcon(
 
   if (targetRoute === "MyOrganizationUnits") {
     return "organization";
+  }
+
+  if (targetRoute === "BrotherRoadmap") {
+    return "roadmap";
   }
 
   if (targetRoute === "BrotherEvents") {

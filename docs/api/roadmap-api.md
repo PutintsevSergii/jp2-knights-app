@@ -10,8 +10,8 @@
 
 ## Shared Contract Foundation
 
-Phase 10B now defines the roadmap data and DTO contract foundation before route
-implementation:
+Phase 10B now defines the roadmap data and DTO contract foundation and the first
+candidate/brother read routes:
 
 - `roadmap_definitions` hold published candidate or brother roadmap roots with
   `target_role`, `language`, content status, and publish/approval metadata.
@@ -22,7 +22,9 @@ implementation:
   optional attachment metadata, review status, reviewer, comment, and timestamps.
 
 Assigned roadmap read responses use `assignedRoadmapResponseSchema` from
-`@jp2/shared-validation`:
+`@jp2/shared-validation`. The `roadmap` value is nullable so mobile can render a
+safe no-roadmap state without treating the absence of an assignment as a private
+data error:
 
 ```json
 {
@@ -71,6 +73,12 @@ Rejected submissions require `reviewComment`.
 ## Rules
 
 - Candidate and brother roadmaps may be separate definitions.
+- `GET /candidate/roadmap` requires an active candidate profile and returns only
+  the current user's assigned published candidate roadmap. Scoped assignments are
+  limited to the candidate's assigned organization unit.
+- `GET /brother/roadmap` requires active brother membership and returns only the
+  current user's assigned published brother roadmap. Scoped assignments are
+  limited to the brother's active organization-unit memberships.
 - Candidate roadmaps are read-only in default V1. Candidate-authored roadmap submissions are not implemented unless the human owner approves a scope expansion and this API contract is updated.
 - App never auto-awards degrees.
 - Officer decisions require comment for rejection and create audit logs.

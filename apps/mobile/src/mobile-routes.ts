@@ -34,6 +34,7 @@ export function isBrotherRoute(route: MobileAppRoute): route is BrotherRoute {
   return (
     route === "BrotherToday" ||
     route === "BrotherProfile" ||
+    route === "BrotherRoadmap" ||
     route === "MyOrganizationUnits" ||
     route === "BrotherEvents" ||
     route === "BrotherAnnouncements" ||

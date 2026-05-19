@@ -1,5 +1,6 @@
 import type { BrotherTodayQuickAction } from "../../brother-today-screen.js";
 import { CalendarIcon } from "./CalendarIcon.js";
+import { DegreeIcon } from "./DegreeIcon.js";
 import { GroupIcon } from "./GroupIcon.js";
 import { MegaphoneIcon } from "./MegaphoneIcon.js";
 import { PersonIcon } from "./PersonIcon.js";
@@ -16,6 +17,10 @@ export function QuickActionIcon({ icon, emphasized }: QuickActionIconProps) {
 
   if (icon === "events") {
     return <CalendarIcon emphasized={emphasized} size="regular" />;
+  }
+
+  if (icon === "roadmap") {
+    return <DegreeIcon />;
   }
 
   if (icon === "announcements") {

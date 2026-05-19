@@ -24,6 +24,11 @@
   renderer. Candidate event screens show only candidate-visible events, own
   intent state, plan/cancel action metadata, and
   ready/empty/loading/error/offline/forbidden/idle-approval states.
+- The current Candidate Roadmap foundation renders an API/demo screen model over
+  `GET /candidate/roadmap`. It validates the assigned-roadmap DTO, handles
+  ready/empty/loading/error/offline/forbidden/idle-approval states, renders
+  assigned stages/steps/status from the current user's roadmap only, and keeps
+  candidate roadmap read-only with no submission action.
 - The current Candidate Announcements foundation renders an API/demo
   `CandidateAnnouncements` screen model over `GET /candidate/announcements`.
   It validates the shared DTO, handles ready/empty/loading/error/offline/

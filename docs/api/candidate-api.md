@@ -3,7 +3,7 @@
 | Method | Path                                  | Auth | Role      | Request                           | Response                                                         | Errors            | Visibility                         | Acceptance                  |
 | ------ | ------------------------------------- | ---- | --------- | --------------------------------- | ---------------------------------------------------------------- | ----------------- | ---------------------------------- | --------------------------- |
 | GET    | `/candidate/dashboard`                | Yes  | Candidate | none                              | next step, contact, events, announcements                        | 401 invalid token, 403 missing/forbidden/idle | candidate/public filtered          | No brother content          |
-| GET    | `/candidate/roadmap`                  | Yes  | Candidate | none                              | assigned roadmap stages/steps/submissions                        | 404 if none       | own assignment                     | Candidate sees guided path  |
+| GET    | `/candidate/roadmap`                  | Yes  | Candidate | none                              | assigned roadmap stages/steps/submissions or `null`              | 403 missing/forbidden/idle | own assignment                     | Candidate sees guided path  |
 | GET    | `/candidate/events`                   | Yes  | Candidate | filters/pagination                | visible event list with own RSVP intent                          | 400               | public/family/candidate/own scoped | Brother-only hidden; no participant list |
 | GET    | `/candidate/events/:id`               | Yes  | Candidate | none                              | event detail with own participation intent                       | 403,404           | public/family/candidate/own scoped | No participant list         |
 | POST   | `/candidate/events/:id/participation` | Yes  | Candidate | none                              | participation intent                                             | 403,404           | visible candidate event only       | Intent only, duplicate updates existing |
@@ -21,7 +21,12 @@ events (`PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or own `ORGANIZATION_UNIT`), and a
 announcements array reserved for Phase 9. It must never return brother-only
 events, memberships, degrees, brother profiles, or admin notes.
 
-Candidate roadmap screens are read-only in default V1. A candidate response may include administrative step status or officer-provided notes when scoped to the candidate, but candidate-authored roadmap submissions are out of scope unless explicitly approved and documented.
+Candidate roadmap screens are read-only in default V1. `GET /candidate/roadmap`
+requires an active candidate profile, returns only the current user's assigned
+published candidate roadmap, and returns `roadmap: null` when no roadmap is
+assigned. Scoped roadmap assignments are filtered by the candidate's assigned
+organization unit server-side. Candidate-authored roadmap submissions are out
+of scope unless explicitly approved and documented.
 
 ## Implemented Phase 9 Candidate Announcements
 

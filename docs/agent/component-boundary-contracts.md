@@ -142,7 +142,7 @@ Use this shape when adding a new boundary entry:
 | Shared component modules                 | Add when two real call sites need the same behavior or visual structure, or when the next screen in the same approved workflow would otherwise copy it. Components should accept model/action props and avoid owning role-specific data access. |
 | Shared component inventories             | Every shared component folder must include a nearby Markdown inventory document listing available components, concise purpose, key props/variants, and reuse rules. New shared components must update that inventory in the same change.        |
 
-## Phase 10A Active Boundary Entries
+## Phase 10 Active Boundary Entries
 
 ### Sign In And Idle Approval
 
@@ -199,6 +199,20 @@ Use this shape when adding a new boundary entry:
 | Tests                      | Model tests, brother surface route/action tests, renderer tests, and existing brother API visibility tests                                                |
 | Forbidden responsibilities | No candidate-only onboarding, officer/admin management, brother rosters, private participant lists for prayer, or client-side permission filtering        |
 | Scope guard                | Brother companion summary only; extended hierarchy, analytics, and social features remain out of scope                                                    |
+
+### Candidate And Brother Roadmaps
+
+| Field                      | Contract                                                                                                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement/phase          | FR-ROADMAP-001 and FR-ROADMAP-002, Phase 10B                                                                                                                     |
+| Data/API source            | Guarded `GET /candidate/roadmap` and `GET /brother/roadmap` responses through `apps/mobile/src/roadmap-api.ts`; backend-free demo fixtures in `roadmap.ts`       |
+| Screen model               | `apps/mobile/src/candidate-roadmap-screen.ts` and `apps/mobile/src/brother-roadmap-screen.ts`; `candidate-screens.ts` and `brother-screens.ts` remain barrels only |
+| Route/surface owner        | `apps/mobile/src/mobile-candidate-surface.tsx` and `apps/mobile/src/mobile-brother-surface.tsx`; route groups own API/demo loading and auth-token gating         |
+| Renderer components        | Current slice uses `PrivateContentScreen`; add dedicated React Native roadmap renderers only when a Figma/product screen requires richer layout                  |
+| Shared components/tokens   | Uses shared candidate/brother themes, shared i18n roadmap keys, and existing private route resource loading                                                       |
+| Tests                      | API service/controller tests, mobile roadmap API tests, candidate/brother screen-model tests, route/export guard tests                                            |
+| Forbidden responsibilities | No candidate-authored submissions, auto-degree changes, officer review workflow, other-user submissions, brother rosters, participant lists, or client-side filtering |
+| Scope guard                | Read-only assigned roadmap display only; brother submission and Admin Lite review are separate Phase 10B slices                                                   |
 
 ### Brother Events
 

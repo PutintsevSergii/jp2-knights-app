@@ -5,6 +5,7 @@ import type {
   CandidateDashboardScreen,
   CandidateEventDetailScreen,
   CandidateEventsScreen,
+  CandidateRoadmapScreen,
   CandidateScreenAction
 } from "../candidate-screens.js";
 import type {
@@ -12,6 +13,7 @@ import type {
   BrotherEventDetailScreen,
   BrotherEventsScreen,
   BrotherProfileScreen,
+  BrotherRoadmapScreen,
   BrotherScreenAction,
   BrotherTodayScreen,
   MyOrganizationUnitsScreen
@@ -22,8 +24,10 @@ export type PrivateContentScreenModel =
   | CandidateEventsScreen
   | CandidateAnnouncementsScreen
   | CandidateEventDetailScreen
+  | CandidateRoadmapScreen
   | BrotherTodayScreen
   | BrotherProfileScreen
+  | BrotherRoadmapScreen
   | MyOrganizationUnitsScreen
   | BrotherEventsScreen
   | BrotherAnnouncementsScreen

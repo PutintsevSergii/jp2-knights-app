@@ -41,6 +41,13 @@ export {
   markCandidateEventParticipation
 } from "./candidate-dashboard-api.js";
 export {
+  buildBrotherRoadmapUrl,
+  buildCandidateRoadmapUrl,
+  fetchBrotherRoadmap,
+  fetchCandidateRoadmap,
+  roadmapLoadFailureState
+} from "./roadmap-api.js";
+export {
   fallbackCandidateAnnouncements,
   fallbackCandidateEventDetail,
   fallbackCandidateEvents,
@@ -75,6 +82,7 @@ export {
   fallbackBrotherToday,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
+export { fallbackBrotherRoadmap, fallbackCandidateRoadmap } from "./roadmap.js";
 export {
   emptyJoinRequestFormDraft,
   fallbackPublicCandidateRequestResponse,
@@ -121,6 +129,7 @@ export {
   buildCandidateAnnouncementsScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
+  buildCandidateRoadmapScreen,
   buildCandidateDashboardScreen
 } from "./candidate-screens.js";
 export {
@@ -129,6 +138,7 @@ export {
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
   buildBrotherPrayersScreen,
+  buildBrotherRoadmapScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen,
   buildOrganizationUnitDetailScreen
@@ -137,6 +147,7 @@ export type {
   BrotherAnnouncementsScreen,
   BrotherProfileScreen,
   BrotherPrayersScreen,
+  BrotherRoadmapScreen,
   BrotherEventDetailScreen,
   BrotherEventsScreen,
   BrotherRoute,
@@ -153,6 +164,7 @@ export type {
   CandidateDashboardScreen,
   CandidateEventDetailScreen,
   CandidateEventsScreen,
+  CandidateRoadmapScreen,
   CandidateRoute,
   CandidateScreenAction,
   CandidateScreenSection,

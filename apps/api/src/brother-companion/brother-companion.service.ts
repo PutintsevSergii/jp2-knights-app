@@ -177,6 +177,14 @@ function buildTodayCards(
   ];
 
   cards.push({
+    id: "roadmap",
+    label: "Formation roadmap",
+    body: "Review your assigned formation path and submitted steps.",
+    targetRoute: "BrotherRoadmap",
+    priority: "normal"
+  });
+
+  cards.push({
     id: "events",
     label: "Upcoming events",
     body: "Review public, brother, and own choragiew events visible to you.",

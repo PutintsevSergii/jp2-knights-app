@@ -6,11 +6,13 @@ import {
   fallbackCandidateEvents,
   fallbackCandidateDashboard
 } from "./candidate-dashboard.js";
+import { fallbackCandidateRoadmap } from "./roadmap.js";
 import {
   buildCandidateAnnouncementsScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
-  buildCandidateDashboardScreen
+  buildCandidateDashboardScreen,
+  buildCandidateRoadmapScreen
 } from "./candidate-screens.js";
 
 describe("mobile candidate screen models", () => {
@@ -214,6 +216,42 @@ describe("mobile candidate screen models", () => {
     });
   });
 
+  it("builds candidate roadmap sections from the assigned roadmap without submission actions", () => {
+    const screen = buildCandidateRoadmapScreen({
+      state: "ready",
+      response: fallbackCandidateRoadmap,
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateRoadmap",
+      state: "ready",
+      title: "Candidate Onboarding Roadmap",
+      body: "1 roadmap stages - 1 roadmap steps",
+      demoChromeVisible: false
+    });
+    expect(screen.sections).toEqual([
+      {
+        id: `stage-${fallbackCandidateRoadmap.roadmap!.stages[0]!.id}`,
+        title: "Discernment",
+        body: "1 roadmap steps"
+      },
+      expect.objectContaining({
+        id: `step-${fallbackCandidateRoadmap.roadmap!.stages[0]!.steps[0]!.id}`,
+        title: "Meet your officer"
+      })
+    ]);
+    expect(screen.sections[1]?.body).toContain("Read-only step.");
+    expect(screen.actions).toEqual([
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        targetRoute: "CandidateDashboard"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/brother|degree|submit reflection/i);
+  });
+
   it("maps forbidden and empty states without private sections", () => {
     expect(buildCandidateDashboardScreen({ state: "forbidden", runtimeMode: "api" })).toMatchObject(
       {
@@ -266,6 +304,13 @@ describe("mobile candidate screen models", () => {
     ).toMatchObject({
       route: "CandidateAnnouncements",
       state: "empty",
+      demoChromeVisible: true,
+      actions: []
+    });
+    expect(buildCandidateRoadmapScreen({ state: "ready", runtimeMode: "demo" })).toMatchObject({
+      route: "CandidateRoadmap",
+      state: "empty",
+      title: "Candidate Roadmap",
       demoChromeVisible: true,
       actions: []
     });

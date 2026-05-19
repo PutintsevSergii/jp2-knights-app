@@ -13,6 +13,7 @@ import { EventParticipationModule } from "./event-participation/event-participat
 import { OrganizationModule } from "./organization/organization.module.js";
 import { RequestIdMiddleware } from "./observability/request-id.middleware.js";
 import { PublicModule } from "./public/public.module.js";
+import { RoadmapModule } from "./roadmap/roadmap.module.js";
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { PublicModule } from "./public/public.module.js";
     CandidateDashboardModule,
     EventParticipationModule,
     OrganizationModule,
-    PublicModule
+    PublicModule,
+    RoadmapModule
   ],
   controllers: [AppController],
   providers: [AppService]

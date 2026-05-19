@@ -5,6 +5,7 @@ import type { MobileScreenState } from "./navigation.js";
 export type BrotherRoute =
   | "BrotherToday"
   | "BrotherProfile"
+  | "BrotherRoadmap"
   | "MyOrganizationUnits"
   | "BrotherEvents"
   | "BrotherAnnouncements"
@@ -84,6 +85,7 @@ export function brotherStateCopy(
   screen:
     | "today"
     | "profile"
+    | "roadmap"
     | "organizationUnits"
     | "events"
     | "announcements"
@@ -98,6 +100,7 @@ export function brotherStateCopy(
 const brotherStateCopies: Record<
   | "today"
   | "profile"
+  | "roadmap"
   | "organizationUnits"
   | "events"
   | "announcements"
@@ -164,6 +167,36 @@ const brotherStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh brother profile."
+    }
+  },
+  roadmap: {
+    ready: {
+      title: "Formation Roadmap",
+      body: "Formation roadmap is available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Formation roadmap is loading."
+    },
+    empty: {
+      title: "Formation Roadmap",
+      body: "No formation roadmap is assigned yet."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Formation roadmap could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active brother profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before formation roadmap is available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh formation roadmap."
     }
   },
   organizationUnits: {

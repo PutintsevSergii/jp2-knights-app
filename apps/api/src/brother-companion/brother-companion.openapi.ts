@@ -151,6 +151,7 @@ const brotherTodayCardOpenApiSchema = {
       type: "string",
       enum: [
         "BrotherProfile",
+        "BrotherRoadmap",
         "MyOrganizationUnits",
         "BrotherEvents",
         "BrotherPrayers",

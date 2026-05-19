@@ -13,6 +13,8 @@ import {
   buildCandidateEventsUrl,
   buildCandidateDashboardScreen,
   buildCandidateDashboardUrl,
+  buildCandidateRoadmapScreen,
+  buildCandidateRoadmapUrl,
   buildBrotherAnnouncementsScreen,
   buildBrotherAnnouncementsUrl,
   buildBrotherEventDetailScreen,
@@ -24,6 +26,8 @@ import {
   buildBrotherPrayersUrl,
   buildBrotherProfileScreen,
   buildBrotherProfileUrl,
+  buildBrotherRoadmapScreen,
+  buildBrotherRoadmapUrl,
   buildBrotherTodayScreen,
   buildBrotherTodayUrl,
   buildMyOrganizationUnitsScreen,
@@ -41,12 +45,14 @@ import {
   fallbackBrotherProfile,
   fallbackBrotherEvents,
   fallbackBrotherPrayers,
+  fallbackBrotherRoadmap,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits,
   fallbackCandidateAnnouncements,
   fallbackCandidateEventDetail,
   fallbackCandidateEvents,
   fallbackCandidateDashboard,
+  fallbackCandidateRoadmap,
   fallbackPublicCandidateRequestResponse,
   fallbackPublicEventDetail,
   fallbackPublicEvents,
@@ -118,7 +124,9 @@ describe("mobile shell", () => {
     expect(isPublicRoute("Login")).toBe(true);
     expect(isPublicRoute("IdleApproval")).toBe(true);
     expect(isCandidateRoute("CandidateEvents")).toBe(true);
+    expect(isCandidateRoute("CandidateRoadmap")).toBe(true);
     expect(isBrotherRoute("BrotherToday")).toBe(true);
+    expect(isBrotherRoute("BrotherRoadmap")).toBe(true);
     expect(isBrotherRoute("OrganizationUnitDetail")).toBe(true);
     expect(isPublicRoute("BrotherToday")).toBe(false);
     expect(isCandidateRoute("PublicHome")).toBe(false);
@@ -305,6 +313,9 @@ describe("mobile shell", () => {
     expect(buildCandidateAnnouncementsUrl("https://api.example.test")).toBe(
       "https://api.example.test/candidate/announcements"
     );
+    expect(buildCandidateRoadmapUrl("https://api.example.test")).toBe(
+      "https://api.example.test/candidate/roadmap"
+    );
     expect(
       buildCandidateEventDetailUrl(
         "55555555-5555-4555-8555-555555555555",
@@ -340,6 +351,13 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("CandidateAnnouncements");
+    expect(
+      buildCandidateRoadmapScreen({
+        state: "ready",
+        response: fallbackCandidateRoadmap,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("CandidateRoadmap");
   });
 
   it("exports brother companion helpers and screen model builders", () => {
@@ -357,6 +375,9 @@ describe("mobile shell", () => {
     );
     expect(buildBrotherPrayersUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/prayers"
+    );
+    expect(buildBrotherRoadmapUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/roadmap"
     );
     expect(
       buildBrotherEventDetailUrl("44444444-4444-4444-8444-444444444444", "https://api.example.test")
@@ -429,6 +450,13 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("BrotherPrayers");
+    expect(
+      buildBrotherRoadmapScreen({
+        state: "ready",
+        response: fallbackBrotherRoadmap,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("BrotherRoadmap");
   });
 });
 

@@ -20,7 +20,8 @@ import {
   buildCandidateAnnouncementsScreen,
   buildCandidateDashboardScreen,
   buildCandidateEventDetailScreen,
-  buildCandidateEventsScreen
+  buildCandidateEventsScreen,
+  buildCandidateRoadmapScreen
 } from "./candidate-screens.js";
 import type { CandidateRoute } from "./candidate-screens.js";
 import { isCandidateRoute } from "./mobile-routes.js";
@@ -28,6 +29,8 @@ import {
   requirePrivateAuthToken,
   usePrivateRouteResource
 } from "./mobile-private-resource.js";
+import { fetchCandidateRoadmap, roadmapLoadFailureState } from "./roadmap-api.js";
+import { fallbackCandidateRoadmap } from "./roadmap.js";
 import { CandidateAnnouncementsScreen } from "./screens/CandidateAnnouncementsScreen.js";
 import { CandidateEventDetailScreen } from "./screens/CandidateEventDetailScreen.js";
 import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
@@ -94,6 +97,21 @@ export function MobileCandidateSurface({
       }),
     failureState: candidateDashboardLoadFailureState
   });
+  const candidateRoadmap = usePrivateRouteResource({
+    route,
+    activeRoute: "CandidateRoadmap",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackCandidateRoadmap,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchCandidateRoadmap({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: roadmapLoadFailureState
+  });
   const candidateEventDetail = usePrivateRouteResource({
     route,
     activeRoute: "CandidateEventDetail",
@@ -117,7 +135,7 @@ export function MobileCandidateSurface({
     targetId?: string,
     actionId?: string
   ) {
-    if (nextRoute === "CandidateContact" || nextRoute === "CandidateRoadmap") {
+    if (nextRoute === "CandidateContact") {
       onRouteChange("CandidateDashboard");
       return;
     }
@@ -230,6 +248,23 @@ export function MobileCandidateSurface({
         screen={buildCandidateEventDetailScreen({
           state: candidateEventDetail.state,
           response: candidateEventDetail.data,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isCandidateRoute(action.targetRoute)) {
+            void handleCandidateRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "CandidateRoadmap") {
+    return (
+      <PrivateContentScreen
+        screen={buildCandidateRoadmapScreen({
+          state: candidateRoadmap.state,
+          response: candidateRoadmap.data,
           runtimeMode
         })}
         onAction={(action) => {

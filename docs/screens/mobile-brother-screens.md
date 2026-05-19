@@ -55,3 +55,9 @@
   offline/forbidden/idle-approval states, and exposes no prayer tracking,
   participant lists, chat, replies, comments, or client-side visibility
   filtering.
+- `FormationRoadmap` now has an API/demo-backed mobile screen model over
+  `/api/brother/roadmap`. It validates the assigned-roadmap DTO, renders the
+  current brother's assigned stages/steps/status plus latest own submission
+  state, handles ready/empty/loading/error/offline/forbidden/idle-approval
+  states, and exposes no other brother data, rosters, participant lists, or
+  auto-degree behavior.

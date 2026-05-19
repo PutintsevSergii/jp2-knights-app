@@ -27,6 +27,7 @@ import {
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
   buildBrotherPrayersScreen,
+  buildBrotherRoadmapScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen,
   buildOrganizationUnitDetailScreen
@@ -37,6 +38,8 @@ import {
   requirePrivateAuthToken,
   usePrivateRouteResource
 } from "./mobile-private-resource.js";
+import { fetchBrotherRoadmap, roadmapLoadFailureState } from "./roadmap-api.js";
+import { fallbackBrotherRoadmap } from "./roadmap.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
@@ -154,6 +157,21 @@ export function MobileBrotherSurface({
         authToken: requirePrivateAuthToken(authToken)
       }),
     failureState: brotherCompanionLoadFailureState
+  });
+  const brotherRoadmap = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherRoadmap",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherRoadmap,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherRoadmap({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: roadmapLoadFailureState
   });
   const brotherEventDetail = usePrivateRouteResource({
     route,
@@ -329,6 +347,23 @@ export function MobileBrotherSurface({
         screen={buildBrotherPrayersScreen({
           state: brotherPrayers.state,
           response: brotherPrayers.data,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isBrotherRoute(action.targetRoute)) {
+            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "BrotherRoadmap") {
+    return (
+      <PrivateContentScreen
+        screen={buildBrotherRoadmapScreen({
+          state: brotherRoadmap.state,
+          response: brotherRoadmap.data,
           runtimeMode
         })}
         onAction={(action) => {

@@ -76,14 +76,14 @@ export function candidateEventCountBody(count: number): string {
 }
 
 export function candidateStateCopy(
-  screen: "dashboard" | "events" | "announcements" | "eventDetail",
+  screen: "dashboard" | "events" | "announcements" | "eventDetail" | "roadmap",
   state: MobileScreenState
 ): { title: string; body: string } {
   return candidateStateCopies[screen][state];
 }
 
 const candidateStateCopies: Record<
-  "dashboard" | "events" | "announcements" | "eventDetail",
+  "dashboard" | "events" | "announcements" | "eventDetail" | "roadmap",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   dashboard: {
@@ -204,6 +204,36 @@ const candidateStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh candidate event detail."
+    }
+  },
+  roadmap: {
+    ready: {
+      title: "Candidate Roadmap",
+      body: "Candidate roadmap is available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Candidate roadmap is loading."
+    },
+    empty: {
+      title: "Candidate Roadmap",
+      body: "Your formation roadmap is being prepared."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Candidate roadmap could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active candidate profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before candidate roadmap is available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh candidate roadmap."
     }
   }
 };

@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 16, 2026
+Updated: May 19, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -22,14 +22,14 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **7**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate request API, mobile form, admin workflow, profile conversion, candidate dashboard, admin candidate profiles                                                                                                                                                                                                                                                                                                                                              | —                                       |
 | **8**     | ✅ COMPLETE    | 100%     | ████████████████████ | Brother profile, Brother Today, My Chorągiew, brother prayer/event APIs, Admin Lite Next runtime, request-id/lifecycle/smoke hardening                                                                                                                                                                                                                                                                                                                             | Phase 9                                 |
 | **9**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch                                                                                                                                                                                                                                                   | Phase 10                                |
-| **10**    | 🟡 IN PROGRESS | 68%      | ██████████████░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, Google/Firebase auth-entry styling/session bridge/Expo adapter, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, responsive Admin Lite Candidate Requests, Phase 10B localization foundation, and roadmap data/contracts complete | Add candidate/brother roadmap read APIs |
+| **10**    | 🟡 IN PROGRESS | 72%      | ██████████████░░░░░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, Google/Firebase auth-entry styling/session bridge/Expo adapter, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, responsive Admin Lite Candidate Requests, Phase 10B localization foundation, roadmap data/contracts, and candidate/brother roadmap read APIs/screen models complete | Add brother roadmap submission API and admin review workflow |
 | **11–13** | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Silent prayer, privacy/security hardening, pilot                                                                                                                                                                                                                                                                                                                                                                                                                   | After Phase 10                          |
 
 ---
 
 ## Phase 10: V1 Figma/RBAC Alignment + Formation Roadmap 🟡
 
-**Status**: IN PROGRESS (approved V1 scope; mobile shell split complete, roadmap data/contracts started)
+**Status**: IN PROGRESS (approved V1 scope; mobile shell split complete, roadmap read APIs/screens started)
 
 **Current source**: [docs/design-updates/06-figma-implementation-plan.md](../design-updates/06-figma-implementation-plan.md)
 
@@ -69,12 +69,13 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Added a launchable Brother Prayer Library mobile screen over `/api/brother/prayers`, with API/demo loading, shared DTO validation, Gold/Grey prayer cards, categories, visibility badges, and no prayer tracking or participant-list behavior
 - ✅ Added the V1 launchable Organization Unit Detail mobile surface over the existing server-filtered `/api/brother/my-organization-units` response, with Gold/Grey read-only detail cards, API/demo loading, route action metadata, and no brother roster/member-list exposure
 - ✅ Added the Phase 10B roadmap data/contracts foundation: Prisma models and migration for roadmap definitions/stages/steps/assignments/submissions, shared DTO schemas for assigned roadmap reads, submission create, and officer review decisions, plus local candidate/brother roadmap seed fixtures
+- ✅ Added Phase 10B candidate/brother roadmap read APIs and mobile screen models over the assigned-roadmap contract, with server-side active profile/membership checks, own assignment scoping, current-user latest submission summaries, typed mobile clients, demo fixtures, and route mounting
 - ✅ Split shared validation schemas into domain modules behind the stable `@jp2/shared-validation` barrel and extracted reusable private mobile route resource loading for candidate/brother surfaces before roadmap screens expand those route groups
 
 **In Progress**:
 
 - 🟡 Add pilot Firebase/Google environment values and validate the provider flow on a native Expo target
-- 🟡 Add candidate/brother roadmap read APIs and screen models over the new Phase 10B contracts
+- 🟡 Add brother roadmap step submission API and scoped Admin Lite submission review workflow
 
 **Scope guard**: This workstream is now V1 scope. It still does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
@@ -525,6 +526,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - Organization Unit Detail now has API/demo mobile loading through the existing guarded `/api/brother/my-organization-units` response, a dedicated Gold/Grey React Native detail screen, and route/model/renderer coverage for read-only scoped fields without brother roster or member-list exposure.
 - Phase 10B localization foundation is in place: `@jp2/shared-i18n` defines stable UI translation keys, a default English catalog, locale fallback, interpolation, and mobile/Admin Lite helper adapters for roadmap UI copy.
 - Phase 10B roadmap data/contracts are in place: `roadmap_definitions`, `roadmap_stages`, `roadmap_steps`, `roadmap_assignments`, and `roadmap_submissions` are modeled/migrated; shared assigned-roadmap, create-submission, and review DTO schemas exist; local seed fixtures include one candidate roadmap, one brother roadmap, and one pending brother submission.
+- Phase 10B candidate/brother roadmap read APIs are in place: guarded `GET /candidate/roadmap` and `GET /brother/roadmap` return only the current user's assigned published roadmap, enforce active candidate/brother access and scoped organization-unit assignment filtering server-side, and expose latest submission summaries only for the current user's own assignment.
+- Mobile Phase 10B roadmap screen models are mounted in the candidate and brother route surfaces with typed API clients, parsed demo fixtures, shared DTO validation, and ready/empty/loading/error/offline/forbidden/idle-approval states. Brother Today now links to the formation roadmap without adding auto-degree behavior.
 - Phase 10A maintainability cleanup now splits shared validation contracts into domain-owned modules behind the existing barrel and centralizes private candidate/brother mobile route resource loading so roadmap screens can reuse API/demo/auth/error/cancellation behavior instead of growing route surfaces with repeated effects.
 - Phase 10 is split operationally into 10A Figma/RBAC alignment and 10B Formation Roadmap so visual parity lands before pilot hardening
 
@@ -598,7 +601,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 6. **Start Phase 10B Formation Roadmap**
    - [x] Add localization foundation: shared translation-key contract/adapter, default English catalog, and mobile/admin helpers so new Phase 10B UI copy is not hardcoded
    - [x] Define roadmap data tables/contracts from the canonical phase scope
-   - [ ] Add candidate/brother roadmap read APIs and screen models
+   - [x] Add candidate/brother roadmap read APIs and screen models
+   - [ ] Add brother roadmap step submission API
    - [ ] Add admin roadmap submission review workflow
    - [x] Add smoke targets for API boot, Admin Lite mounted routes, mobile demo launch, and production-mode demo rejection
    - [x] Document V1 organization constraints explicitly: no hierarchy-derived permissions, no cross-unit rollups, no read replicas, and no `/v2` routes without owner approval

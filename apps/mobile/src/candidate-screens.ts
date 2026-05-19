@@ -21,3 +21,7 @@ export {
   buildCandidateEventDetailScreen,
   type CandidateEventDetailScreen
 } from "./candidate-event-detail-screen.js";
+export {
+  buildCandidateRoadmapScreen,
+  type CandidateRoadmapScreen
+} from "./candidate-roadmap-screen.js";

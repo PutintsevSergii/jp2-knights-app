@@ -69,6 +69,13 @@ export const fallbackBrotherToday = brotherTodayResponseSchema.parse({
       priority: "normal"
     },
     {
+      id: "roadmap",
+      label: "Formation roadmap",
+      body: "Review your assigned formation path and submitted steps.",
+      targetRoute: "BrotherRoadmap",
+      priority: "normal"
+    },
+    {
       id: "events",
       label: "Upcoming events",
       body: "Review public, brother, and own choragiew events visible to you.",
