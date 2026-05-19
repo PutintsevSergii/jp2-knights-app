@@ -1,3 +1,14 @@
+const roadmapAttachmentMetadataOpenApiSchema = {
+  type: "object",
+  required: ["originalFilename", "mimeType", "sizeBytes"],
+  additionalProperties: false,
+  properties: {
+    originalFilename: { type: "string", minLength: 1, maxLength: 240 },
+    mimeType: { type: "string", minLength: 1, maxLength: 120 },
+    sizeBytes: { type: "integer", minimum: 1, maximum: 10000000 }
+  }
+};
+
 const roadmapSubmissionSummaryOpenApiSchema = {
   type: "object",
   required: [
@@ -22,21 +33,37 @@ const roadmapSubmissionSummaryOpenApiSchema = {
     attachmentMetadata: {
       type: "array",
       maxItems: 5,
-      items: {
-        type: "object",
-        required: ["originalFilename", "mimeType", "sizeBytes"],
-        additionalProperties: false,
-        properties: {
-          originalFilename: { type: "string", minLength: 1, maxLength: 240 },
-          mimeType: { type: "string", minLength: 1, maxLength: 120 },
-          sizeBytes: { type: "integer", minimum: 1, maximum: 10000000 }
-        }
-      }
+      items: roadmapAttachmentMetadataOpenApiSchema
     },
     reviewComment: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
     reviewedAt: { type: "string", nullable: true, format: "date-time" },
     createdAt: { type: "string", format: "date-time" },
     updatedAt: { type: "string", format: "date-time" }
+  }
+};
+
+export const createRoadmapSubmissionRequestOpenApiSchema = {
+  type: "object",
+  required: ["stepId", "body"],
+  additionalProperties: false,
+  properties: {
+    stepId: { type: "string", format: "uuid" },
+    body: { type: "string", minLength: 1, maxLength: 4000 },
+    attachmentMetadata: {
+      type: "array",
+      maxItems: 5,
+      items: roadmapAttachmentMetadataOpenApiSchema,
+      default: []
+    }
+  }
+};
+
+export const roadmapSubmissionResponseOpenApiSchema = {
+  type: "object",
+  required: ["submission"],
+  additionalProperties: false,
+  properties: {
+    submission: roadmapSubmissionSummaryOpenApiSchema
   }
 };
 

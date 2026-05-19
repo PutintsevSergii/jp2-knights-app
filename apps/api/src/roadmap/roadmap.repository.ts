@@ -6,8 +6,13 @@ import { PrismaService } from "../database/prisma.service.js";
 import type {
   AssignedRoadmap,
   AssignedRoadmapLookup,
+  BrotherRoadmapSubmissionTargetLookup,
+  CreateRoadmapSubmissionInput,
+  PendingRoadmapSubmissionLookup,
   RoadmapBrotherAccessProfile,
-  RoadmapCandidateAccessProfile
+  RoadmapCandidateAccessProfile,
+  RoadmapSubmissionSummary,
+  RoadmapSubmissionTarget
 } from "./roadmap.types.js";
 
 export abstract class RoadmapRepository {
@@ -16,6 +21,15 @@ export abstract class RoadmapRepository {
   ): Promise<RoadmapCandidateAccessProfile | null>;
   abstract findActiveBrotherAccessProfile(userId: string): Promise<RoadmapBrotherAccessProfile | null>;
   abstract findAssignedRoadmap(lookup: AssignedRoadmapLookup): Promise<AssignedRoadmap | null>;
+  abstract findBrotherRoadmapSubmissionTarget(
+    lookup: BrotherRoadmapSubmissionTargetLookup
+  ): Promise<RoadmapSubmissionTarget | null>;
+  abstract findPendingRoadmapSubmission(
+    lookup: PendingRoadmapSubmissionLookup
+  ): Promise<RoadmapSubmissionSummary | null>;
+  abstract createRoadmapSubmission(
+    input: CreateRoadmapSubmissionInput
+  ): Promise<RoadmapSubmissionSummary>;
 }
 
 @Injectable()
@@ -119,6 +133,67 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
 
     return toAssignedRoadmap(assignment, submissions);
   }
+
+  async findBrotherRoadmapSubmissionTarget({
+    userId,
+    stepId,
+    organizationUnitIds,
+    now = new Date()
+  }: BrotherRoadmapSubmissionTargetLookup): Promise<RoadmapSubmissionTarget | null> {
+    const assignment = await this.prisma.roadmapAssignment.findFirst({
+      where: brotherRoadmapSubmissionTargetWhere(userId, stepId, organizationUnitIds, now),
+      select: {
+        id: true
+      },
+      orderBy: [{ assignedAt: "desc" }, { createdAt: "desc" }]
+    });
+
+    if (!assignment) {
+      return null;
+    }
+
+    return {
+      assignmentId: assignment.id,
+      stepId
+    };
+  }
+
+  async findPendingRoadmapSubmission({
+    assignmentId,
+    stepId
+  }: PendingRoadmapSubmissionLookup): Promise<RoadmapSubmissionSummary | null> {
+    const submission = await this.prisma.roadmapSubmission.findFirst({
+      where: {
+        assignmentId,
+        stepId,
+        status: "pending_review",
+        archivedAt: null
+      }
+    });
+
+    return submission ? toRoadmapSubmissionSummary(submission) : null;
+  }
+
+  async createRoadmapSubmission({
+    assignmentId,
+    stepId,
+    userId,
+    body,
+    attachmentMetadata
+  }: CreateRoadmapSubmissionInput): Promise<RoadmapSubmissionSummary> {
+    const submission = await this.prisma.roadmapSubmission.create({
+      data: {
+        assignmentId,
+        stepId,
+        userId,
+        body,
+        attachmentMeta: toInputAttachmentMetadata(attachmentMetadata),
+        status: "pending_review"
+      }
+    });
+
+    return toRoadmapSubmissionSummary(submission);
+  }
 }
 
 type RoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
@@ -159,6 +234,49 @@ export function assignedRoadmapWhere(
       status: "PUBLISHED",
       archivedAt: null,
       OR: publishedAtNowOrUnset(now)
+    },
+    AND: [
+      {
+        OR: scopeWhere
+      }
+    ]
+  };
+}
+
+export function brotherRoadmapSubmissionTargetWhere(
+  userId: string,
+  stepId: string,
+  organizationUnitIds: readonly string[],
+  now: Date
+): Prisma.RoadmapAssignmentWhereInput {
+  const scopeWhere: Prisma.RoadmapAssignmentWhereInput[] =
+    organizationUnitIds.length > 0
+      ? [{ organizationUnitId: null }, { organizationUnitId: { in: [...organizationUnitIds] } }]
+      : [{ organizationUnitId: null }];
+
+  return {
+    userId,
+    archivedAt: null,
+    status: "active",
+    roadmapDefinition: {
+      targetRole: "BROTHER",
+      status: "PUBLISHED",
+      archivedAt: null,
+      OR: publishedAtNowOrUnset(now),
+      stages: {
+        some: {
+          archivedAt: null,
+          steps: {
+            some: {
+              id: stepId,
+              requiresSubmission: true,
+              status: "PUBLISHED",
+              archivedAt: null,
+              OR: publishedAtNowOrUnset(now)
+            }
+          }
+        }
+      }
     },
     AND: [
       {
@@ -215,7 +333,7 @@ export function toAssignedRoadmap(
   };
 }
 
-function toRoadmapSubmissionSummary(submission: RoadmapSubmissionRecord) {
+function toRoadmapSubmissionSummary(submission: RoadmapSubmissionRecord): RoadmapSubmissionSummary {
   return {
     id: submission.id,
     assignmentId: submission.assignmentId,
@@ -228,6 +346,16 @@ function toRoadmapSubmissionSummary(submission: RoadmapSubmissionRecord) {
     createdAt: submission.createdAt.toISOString(),
     updatedAt: submission.updatedAt.toISOString()
   };
+}
+
+function toInputAttachmentMetadata(
+  attachmentMetadata: readonly RoadmapAttachmentMetadataDto[]
+): Prisma.InputJsonValue {
+  return attachmentMetadata.map((metadata) => ({
+    originalFilename: metadata.originalFilename,
+    mimeType: metadata.mimeType,
+    sizeBytes: metadata.sizeBytes
+  }));
 }
 
 function toAttachmentMetadata(value: Prisma.JsonValue | null): RoadmapAttachmentMetadataDto[] {

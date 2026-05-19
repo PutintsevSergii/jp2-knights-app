@@ -1,10 +1,20 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException
+} from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { RoadmapRepository } from "./roadmap.repository.js";
 import { RoadmapService } from "./roadmap.service.js";
-import type { AssignedRoadmap, RoadmapBrotherAccessProfile } from "./roadmap.types.js";
+import type {
+  AssignedRoadmap,
+  RoadmapBrotherAccessProfile,
+  RoadmapSubmissionSummary,
+  RoadmapSubmissionTarget
+} from "./roadmap.types.js";
 
 const organizationUnitId = "11111111-1111-4111-8111-111111111111";
 
@@ -106,6 +116,25 @@ const brotherRoadmap: AssignedRoadmap = {
   ]
 };
 
+const submission: RoadmapSubmissionSummary = {
+  id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  assignmentId: brotherRoadmap.assignmentId,
+  stepId: brotherRoadmap.stages[0]!.steps[0]!.id,
+  status: "pending_review",
+  body: "Reflection text.",
+  attachmentMetadata: [
+    {
+      originalFilename: "reflection.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: 512
+    }
+  ],
+  reviewComment: null,
+  reviewedAt: null,
+  createdAt: "2026-05-11T09:00:00.000Z",
+  updatedAt: "2026-05-11T09:00:00.000Z"
+};
+
 describe("RoadmapService", () => {
   it("returns the active candidate's own assigned roadmap", async () => {
     const repository = roadmapRepository({
@@ -178,18 +207,133 @@ describe("RoadmapService", () => {
       new RoadmapService(roadmapRepository({ brotherProfile: null })).getBrotherRoadmap(brother)
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it("creates a pending brother roadmap step submission for the brother's own submittable step", async () => {
+    const repository = roadmapRepository({
+      brotherProfile: { organizationUnitIds: [organizationUnitId] },
+      submissionTarget: {
+        assignmentId: brotherRoadmap.assignmentId,
+        stepId: submission.stepId
+      },
+      pendingSubmission: null,
+      createdSubmission: submission
+    });
+
+    await expect(
+      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+        stepId: submission.stepId,
+        body: " Reflection text. ",
+        attachmentMetadata: submission.attachmentMetadata
+      })
+    ).resolves.toEqual({ submission });
+    expect(repository.submissionTargetLookups).toEqual([
+      {
+        userId: brother.id,
+        stepId: submission.stepId,
+        organizationUnitIds: [organizationUnitId]
+      }
+    ]);
+    expect(repository.createdSubmissions).toEqual([
+      {
+        assignmentId: brotherRoadmap.assignmentId,
+        stepId: submission.stepId,
+        userId: brother.id,
+        body: " Reflection text. ",
+        attachmentMetadata: submission.attachmentMetadata
+      }
+    ]);
+  });
+
+  it("rejects brother roadmap submissions when the route and body step ids differ", async () => {
+    const repository = roadmapRepository({
+      brotherProfile: { organizationUnitIds: [organizationUnitId] }
+    });
+
+    await expect(
+      new RoadmapService(repository).submitBrotherRoadmapStep(
+        brother,
+        submission.stepId,
+        {
+          stepId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          body: "Reflection text.",
+          attachmentMetadata: []
+        }
+      )
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(repository.submissionTargetLookups).toEqual([]);
+    expect(repository.createdSubmissions).toEqual([]);
+  });
+
+  it("hides non-owned, non-submittable, or out-of-scope brother roadmap steps", async () => {
+    const repository = roadmapRepository({
+      brotherProfile: { organizationUnitIds: [organizationUnitId] },
+      submissionTarget: null
+    });
+
+    await expect(
+      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+        stepId: submission.stepId,
+        body: "Reflection text.",
+        attachmentMetadata: []
+      })
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(repository.createdSubmissions).toEqual([]);
+  });
+
+  it("prevents duplicate pending roadmap step submissions", async () => {
+    const repository = roadmapRepository({
+      brotherProfile: { organizationUnitIds: [organizationUnitId] },
+      submissionTarget: {
+        assignmentId: brotherRoadmap.assignmentId,
+        stepId: submission.stepId
+      },
+      pendingSubmission: submission
+    });
+
+    await expect(
+      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+        stepId: submission.stepId,
+        body: "Second reflection.",
+        attachmentMetadata: []
+      })
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(repository.createdSubmissions).toEqual([]);
+  });
 });
 
 function roadmapRepository(options: {
   candidateProfile?: { assignedOrganizationUnitId: string | null } | null | undefined;
   brotherProfile?: RoadmapBrotherAccessProfile | null | undefined;
   roadmap?: AssignedRoadmap | null | undefined;
+  submissionTarget?: RoadmapSubmissionTarget | null | undefined;
+  pendingSubmission?: RoadmapSubmissionSummary | null | undefined;
+  createdSubmission?: RoadmapSubmissionSummary | undefined;
 }) {
   class FakeRoadmapRepository implements RoadmapRepository {
     lookups: Array<{
       userId: string;
       targetRole: "CANDIDATE" | "BROTHER";
       organizationUnitIds: readonly string[];
+    }> = [];
+    submissionTargetLookups: Array<{
+      userId: string;
+      stepId: string;
+      organizationUnitIds: readonly string[];
+    }> = [];
+    pendingSubmissionLookups: Array<{
+      assignmentId: string;
+      stepId: string;
+    }> = [];
+    createdSubmissions: Array<{
+      assignmentId: string;
+      stepId: string;
+      userId: string;
+      body: string;
+      attachmentMetadata: readonly {
+        originalFilename: string;
+        mimeType: string;
+        sizeBytes: number;
+      }[];
     }> = [];
 
     findActiveCandidateAccessProfile() {
@@ -211,6 +355,48 @@ function roadmapRepository(options: {
         organizationUnitIds: [...lookup.organizationUnitIds]
       });
       return Promise.resolve(options.roadmap ?? null);
+    }
+
+    findBrotherRoadmapSubmissionTarget(lookup: {
+      userId: string;
+      stepId: string;
+      organizationUnitIds: readonly string[];
+    }) {
+      this.submissionTargetLookups.push({
+        userId: lookup.userId,
+        stepId: lookup.stepId,
+        organizationUnitIds: [...lookup.organizationUnitIds]
+      });
+      return Promise.resolve(options.submissionTarget ?? null);
+    }
+
+    findPendingRoadmapSubmission(lookup: { assignmentId: string; stepId: string }) {
+      this.pendingSubmissionLookups.push({
+        assignmentId: lookup.assignmentId,
+        stepId: lookup.stepId
+      });
+      return Promise.resolve(options.pendingSubmission ?? null);
+    }
+
+    createRoadmapSubmission(input: {
+      assignmentId: string;
+      stepId: string;
+      userId: string;
+      body: string;
+      attachmentMetadata: readonly {
+        originalFilename: string;
+        mimeType: string;
+        sizeBytes: number;
+      }[];
+    }) {
+      this.createdSubmissions.push({
+        assignmentId: input.assignmentId,
+        stepId: input.stepId,
+        userId: input.userId,
+        body: input.body,
+        attachmentMetadata: [...input.attachmentMetadata]
+      });
+      return Promise.resolve(options.createdSubmission ?? submission);
     }
   }
 

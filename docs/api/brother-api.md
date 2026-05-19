@@ -41,6 +41,13 @@
   Latest submission summaries are limited to the current user's own assignment;
   no other users, rosters, participant lists, or auto-degree decisions are
   exposed.
+- `POST /brother/roadmap/steps/:stepId/submissions` requires the same active
+  brother profile, validates the shared create-submission DTO, requires the
+  route and body `stepId` values to match, and creates a `pending_review`
+  submission only for the current user's own active assigned published brother
+  roadmap. The target step must be published and marked `requiresSubmission`.
+  Optional attachment metadata is bounded by the shared DTO contract; duplicate
+  pending submissions return `409`; no auto-degree behavior is triggered.
 - Missing active brother membership resolves as `404`; non-brother access
   resolves as `403`.
 

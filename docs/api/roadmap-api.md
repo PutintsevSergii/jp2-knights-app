@@ -10,8 +10,8 @@
 
 ## Shared Contract Foundation
 
-Phase 10B now defines the roadmap data and DTO contract foundation and the first
-candidate/brother read routes:
+Phase 10B now defines the roadmap data and DTO contract foundation, the first
+candidate/brother read routes, and the brother submission write route:
 
 - `roadmap_definitions` hold published candidate or brother roadmap roots with
   `target_role`, `language`, content status, and publish/approval metadata.
@@ -57,6 +57,12 @@ Submission create payloads use `createRoadmapSubmissionRequestSchema`:
 }
 ```
 
+The route `stepId` must match the body `stepId`. Submissions can only be created
+for the authenticated brother's own active assigned published brother roadmap,
+within their active organization-unit membership scope, and only for published
+steps marked `requiresSubmission`. Duplicate pending submissions return `409`.
+Approved or rejected historical submissions remain preserved.
+
 Officer review payloads use `reviewRoadmapSubmissionRequestSchema`.
 Rejected submissions require `reviewComment`.
 
@@ -79,6 +85,10 @@ Rejected submissions require `reviewComment`.
 - `GET /brother/roadmap` requires active brother membership and returns only the
   current user's assigned published brother roadmap. Scoped assignments are
   limited to the brother's active organization-unit memberships.
+- `POST /brother/roadmap/steps/:stepId/submissions` requires active brother
+  membership, validates the shared create-submission DTO, stores bounded
+  attachment metadata only, returns the created pending submission, and never
+  exposes other users' submissions or participant lists.
 - Candidate roadmaps are read-only in default V1. Candidate-authored roadmap submissions are not implemented unless the human owner approves a scope expansion and this API contract is updated.
 - App never auto-awards degrees.
 - Officer decisions require comment for rejection and create audit logs.
