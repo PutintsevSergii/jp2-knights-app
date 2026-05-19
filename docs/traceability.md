@@ -585,6 +585,12 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   assignment, submission, assigned-read, create-submission, and review DTO
   schemas; local seed fixtures for one candidate roadmap, one brother roadmap,
   and one pending brother submission. Route implementation is still pending.
+- Phase 10A maintainability cleanup now splits the shared validation contract
+  surface into domain modules behind the stable `@jp2/shared-validation`
+  barrel and centralizes private mobile route resource loading for candidate
+  and brother surfaces. This keeps DTO/schema ownership, API/demo loading,
+  auth-token gating, error-state mapping, and cancellation behavior reusable
+  before the Phase 10B roadmap screens expand the private mobile route groups.
 - Phase 10A implementation should next add pilot Firebase/Google environment
   values for mobile builds or continue restyling remaining Figma-covered Admin
   Lite routes as responsive web. Phase 10B should next add candidate/brother

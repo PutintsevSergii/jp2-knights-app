@@ -147,6 +147,16 @@ describe("mobile shell", () => {
     }
   });
 
+  it("keeps private route API loading in the shared resource helper", () => {
+    for (const fileName of ["mobile-candidate-surface.tsx", "mobile-brother-surface.tsx"]) {
+      const source = readFileSync(join(process.cwd(), "apps/mobile/src", fileName), "utf8");
+
+      expect(source).toContain("usePrivateRouteResource");
+      expect(source).toContain("requirePrivateAuthToken");
+      expect(source).not.toContain("useEffect");
+    }
+  });
+
   it("keeps React Native component files one-component-per-file with shared inventory", () => {
     const screensDir = join(process.cwd(), "apps/mobile/src/screens");
     const sharedDir = join(screensDir, "shared");

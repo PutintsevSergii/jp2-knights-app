@@ -1,11 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
-import type {
-  CandidateAnnouncementListResponseDto,
-  CandidateDashboardResponseDto,
-  CandidateEventDetailResponseDto,
-  CandidateEventListResponseDto
-} from "@jp2/shared-validation";
+import type { CandidateEventListResponseDto } from "@jp2/shared-validation";
 import {
   candidateDashboardLoadFailureState,
   cancelCandidateEventParticipation,
@@ -28,8 +23,11 @@ import {
   buildCandidateEventsScreen
 } from "./candidate-screens.js";
 import type { CandidateRoute } from "./candidate-screens.js";
-import type { MobileScreenState } from "./navigation.js";
 import { isCandidateRoute } from "./mobile-routes.js";
+import {
+  requirePrivateAuthToken,
+  usePrivateRouteResource
+} from "./mobile-private-resource.js";
 import { CandidateAnnouncementsScreen } from "./screens/CandidateAnnouncementsScreen.js";
 import { CandidateEventDetailScreen } from "./screens/CandidateEventDetailScreen.js";
 import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
@@ -50,161 +48,69 @@ export function MobileCandidateSurface({
   authToken,
   onRouteChange
 }: MobileCandidateSurfaceProps) {
-  const [candidateDashboardState, setCandidateDashboardState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "loading"
-  );
-  const [candidateDashboard, setCandidateDashboard] = useState<
-    CandidateDashboardResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackCandidateDashboard : undefined));
-  const [candidateEventsState, setCandidateEventsState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [candidateEvents, setCandidateEvents] = useState<
-    CandidateEventListResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackCandidateEvents : undefined));
-  const [candidateAnnouncementsState, setCandidateAnnouncementsState] =
-    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
-  const [candidateAnnouncements, setCandidateAnnouncements] = useState<
-    CandidateAnnouncementListResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackCandidateAnnouncements : undefined));
   const [selectedCandidateEventId, setSelectedCandidateEventId] = useState<string | undefined>();
-  const [candidateEventDetailState, setCandidateEventDetailState] =
-    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
-  const [candidateEventDetail, setCandidateEventDetail] = useState<
-    CandidateEventDetailResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackCandidateEventDetail : undefined));
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "CandidateDashboard") {
-      return;
-    }
-
-    if (!authToken) {
-      setCandidateDashboardState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setCandidateDashboardState("loading");
-
-    fetchCandidateDashboard({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setCandidateDashboard(response);
-          setCandidateDashboardState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setCandidateDashboard(undefined);
-          setCandidateDashboardState(candidateDashboardLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "CandidateEvents") {
-      return;
-    }
-
-    if (!authToken) {
-      setCandidateEventsState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setCandidateEventsState("loading");
-
-    fetchCandidateEvents({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setCandidateEvents(response);
-          setCandidateEventsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setCandidateEvents(undefined);
-          setCandidateEventsState(candidateDashboardLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "CandidateAnnouncements") {
-      return;
-    }
-
-    if (!authToken) {
-      setCandidateAnnouncementsState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setCandidateAnnouncementsState("loading");
-
-    fetchCandidateAnnouncements({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setCandidateAnnouncements(response);
-          setCandidateAnnouncementsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setCandidateAnnouncements(undefined);
-          setCandidateAnnouncementsState(candidateDashboardLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "CandidateEventDetail" || !selectedCandidateEventId) {
-      return;
-    }
-
-    if (!authToken) {
-      setCandidateEventDetailState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setCandidateEventDetailState("loading");
-
-    fetchCandidateEvent({
-      id: selectedCandidateEventId,
-      baseUrl: publicApiBaseUrl,
-      authToken
-    })
-      .then((response) => {
-        if (!cancelled) {
-          setCandidateEventDetail(response);
-          setCandidateEventDetailState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setCandidateEventDetail(undefined);
-          setCandidateEventDetailState(candidateDashboardLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode, selectedCandidateEventId]);
+  const candidateDashboard = usePrivateRouteResource({
+    route,
+    activeRoute: "CandidateDashboard",
+    runtimeMode,
+    authToken,
+    initialApiState: "loading",
+    demoData: fallbackCandidateDashboard,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchCandidateDashboard({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: candidateDashboardLoadFailureState
+  });
+  const candidateEvents = usePrivateRouteResource({
+    route,
+    activeRoute: "CandidateEvents",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackCandidateEvents,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchCandidateEvents({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: candidateDashboardLoadFailureState
+  });
+  const candidateAnnouncements = usePrivateRouteResource({
+    route,
+    activeRoute: "CandidateAnnouncements",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackCandidateAnnouncements,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchCandidateAnnouncements({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: candidateDashboardLoadFailureState
+  });
+  const candidateEventDetail = usePrivateRouteResource({
+    route,
+    activeRoute: "CandidateEventDetail",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackCandidateEventDetail,
+    loadKey: `${publicApiBaseUrl}:${selectedCandidateEventId ?? ""}`,
+    canLoad: Boolean(selectedCandidateEventId),
+    load: () =>
+      fetchCandidateEvent({
+        id: selectedCandidateEventId ?? "",
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: candidateDashboardLoadFailureState
+  });
 
   async function handleCandidateRoute(
     nextRoute: CandidateRoute,
@@ -218,19 +124,19 @@ export function MobileCandidateSurface({
 
     if (nextRoute === "CandidateEvents" && targetId && actionId === "plan-to-attend") {
       if (runtimeMode === "demo") {
-        setCandidateEvents((current) => markCandidateEventInList(current, targetId));
+        candidateEvents.setData((current) => markCandidateEventInList(current, targetId));
       } else if (authToken) {
         const response = await markCandidateEventParticipation({
           id: targetId,
           baseUrl: publicApiBaseUrl,
           authToken
         });
-        setCandidateEvents((current) =>
+        candidateEvents.setData((current) =>
           markCandidateEventInList(current, targetId, response.participation)
         );
       }
 
-      setCandidateEventsState("ready");
+      candidateEvents.setState("ready");
       onRouteChange("CandidateEvents");
       return;
     }
@@ -239,15 +145,15 @@ export function MobileCandidateSurface({
       setSelectedCandidateEventId(targetId);
 
       if (runtimeMode === "demo") {
-        setCandidateEventDetail(fallbackCandidateEventDetail);
-        setCandidateEventDetailState(targetId ? "ready" : "empty");
+        candidateEventDetail.setData(fallbackCandidateEventDetail);
+        candidateEventDetail.setState(targetId ? "ready" : "empty");
       } else if (targetId && authToken && actionId === "plan-to-attend") {
         const response = await markCandidateEventParticipation({
           id: targetId,
           baseUrl: publicApiBaseUrl,
           authToken
         });
-        setCandidateEventDetail((current) =>
+        candidateEventDetail.setData((current) =>
           current
             ? {
                 event: {
@@ -257,14 +163,14 @@ export function MobileCandidateSurface({
               }
             : current
         );
-        setCandidateEventDetailState("ready");
+        candidateEventDetail.setState("ready");
       } else if (targetId && authToken && actionId === "cancel-participation") {
         const response = await cancelCandidateEventParticipation({
           id: targetId,
           baseUrl: publicApiBaseUrl,
           authToken
         });
-        setCandidateEventDetail((current) =>
+        candidateEventDetail.setData((current) =>
           current
             ? {
                 event: {
@@ -277,7 +183,7 @@ export function MobileCandidateSurface({
               }
             : current
         );
-        setCandidateEventDetailState("ready");
+        candidateEventDetail.setState("ready");
       }
     }
 
@@ -288,8 +194,8 @@ export function MobileCandidateSurface({
     return (
       <CandidateEventsScreen
         screen={buildCandidateEventsScreen({
-          state: candidateEventsState,
-          response: candidateEvents,
+          state: candidateEvents.state,
+          response: candidateEvents.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -305,8 +211,8 @@ export function MobileCandidateSurface({
     return (
       <CandidateAnnouncementsScreen
         screen={buildCandidateAnnouncementsScreen({
-          state: candidateAnnouncementsState,
-          response: candidateAnnouncements,
+          state: candidateAnnouncements.state,
+          response: candidateAnnouncements.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -322,8 +228,8 @@ export function MobileCandidateSurface({
     return (
       <CandidateEventDetailScreen
         screen={buildCandidateEventDetailScreen({
-          state: candidateEventDetailState,
-          response: candidateEventDetail,
+          state: candidateEventDetail.state,
+          response: candidateEventDetail.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -338,8 +244,8 @@ export function MobileCandidateSurface({
   return (
     <PrivateContentScreen
       screen={buildCandidateDashboardScreen({
-        state: candidateDashboardState,
-        response: candidateDashboard,
+        state: candidateDashboard.state,
+        response: candidateDashboard.data,
         runtimeMode
       })}
       onAction={(action) => {

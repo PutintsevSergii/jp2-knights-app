@@ -1,14 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
-import type {
-  BrotherAnnouncementListResponseDto,
-  BrotherEventDetailResponseDto,
-  BrotherEventListResponseDto,
-  BrotherPrayerListResponseDto,
-  BrotherProfileResponseDto,
-  BrotherTodayResponseDto,
-  MyOrganizationUnitsResponseDto
-} from "@jp2/shared-validation";
 import {
   brotherCompanionLoadFailureState,
   cancelBrotherEventParticipation,
@@ -42,7 +33,10 @@ import {
 } from "./brother-screens.js";
 import type { BrotherRoute } from "./brother-screens.js";
 import { isBrotherRoute } from "./mobile-routes.js";
-import type { MobileScreenState } from "./navigation.js";
+import {
+  requirePrivateAuthToken,
+  usePrivateRouteResource
+} from "./mobile-private-resource.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
@@ -67,279 +61,117 @@ export function MobileBrotherSurface({
   authToken,
   onRouteChange
 }: MobileBrotherSurfaceProps) {
-  const [brotherTodayState, setBrotherTodayState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "loading"
-  );
-  const [brotherToday, setBrotherToday] = useState<BrotherTodayResponseDto | undefined>(() =>
-    runtimeMode === "demo" ? fallbackBrotherToday : undefined
-  );
-  const [brotherProfileState, setBrotherProfileState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [brotherProfile, setBrotherProfile] = useState<BrotherProfileResponseDto | undefined>(() =>
-    runtimeMode === "demo" ? fallbackBrotherProfile : undefined
-  );
-  const [myOrganizationUnitsState, setMyOrganizationUnitsState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [myOrganizationUnits, setMyOrganizationUnits] = useState<
-    MyOrganizationUnitsResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackMyOrganizationUnits : undefined));
   const [selectedOrganizationUnitId, setSelectedOrganizationUnitId] = useState<
     string | undefined
   >(() => fallbackMyOrganizationUnits.organizationUnits[0]?.id);
-  const [brotherEventsState, setBrotherEventsState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [brotherEvents, setBrotherEvents] = useState<BrotherEventListResponseDto | undefined>(() =>
-    runtimeMode === "demo" ? fallbackBrotherEvents : undefined
-  );
-  const [brotherAnnouncementsState, setBrotherAnnouncementsState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [brotherAnnouncements, setBrotherAnnouncements] = useState<
-    BrotherAnnouncementListResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackBrotherAnnouncements : undefined));
-  const [brotherPrayersState, setBrotherPrayersState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [brotherPrayers, setBrotherPrayers] = useState<BrotherPrayerListResponseDto | undefined>(
-    () => (runtimeMode === "demo" ? fallbackBrotherPrayers : undefined)
-  );
   const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
-  const [brotherEventDetailState, setBrotherEventDetailState] = useState<MobileScreenState>(
-    runtimeMode === "demo" ? "ready" : "empty"
-  );
-  const [brotherEventDetail, setBrotherEventDetail] = useState<
-    BrotherEventDetailResponseDto | undefined
-  >(() => (runtimeMode === "demo" ? fallbackBrotherEventDetail : undefined));
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherToday") {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherTodayState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherTodayState("loading");
-
-    fetchBrotherToday({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherToday(response);
-          setBrotherTodayState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherToday(undefined);
-          setBrotherTodayState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherPrayers") {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherPrayersState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherPrayersState("loading");
-
-    fetchBrotherPrayers({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherPrayers(response);
-          setBrotherPrayersState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherPrayers(undefined);
-          setBrotherPrayersState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherProfile") {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherProfileState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherProfileState("loading");
-
-    fetchBrotherProfile({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherProfile(response);
-          setBrotherProfileState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherProfile(undefined);
-          setBrotherProfileState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (
-      runtimeMode === "demo" ||
-      (route !== "MyOrganizationUnits" && route !== "OrganizationUnitDetail")
-    ) {
-      return;
-    }
-
-    if (!authToken) {
-      setMyOrganizationUnitsState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setMyOrganizationUnitsState("loading");
-
-    fetchMyOrganizationUnits({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setMyOrganizationUnits(response);
-          setMyOrganizationUnitsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setMyOrganizationUnits(undefined);
-          setMyOrganizationUnitsState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherEvents") {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherEventsState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherEventsState("loading");
-
-    fetchBrotherEvents({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherEvents(response);
-          setBrotherEventsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherEvents(undefined);
-          setBrotherEventsState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherAnnouncements") {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherAnnouncementsState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherAnnouncementsState("loading");
-
-    fetchBrotherAnnouncements({ baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherAnnouncements(response);
-          setBrotherAnnouncementsState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherAnnouncements(undefined);
-          setBrotherAnnouncementsState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode]);
-
-  useEffect(() => {
-    if (runtimeMode === "demo" || route !== "BrotherEventDetail" || !selectedBrotherEventId) {
-      return;
-    }
-
-    if (!authToken) {
-      setBrotherEventDetailState("forbidden");
-      return;
-    }
-
-    let cancelled = false;
-    setBrotherEventDetailState("loading");
-
-    fetchBrotherEvent({ id: selectedBrotherEventId, baseUrl: publicApiBaseUrl, authToken })
-      .then((response) => {
-        if (!cancelled) {
-          setBrotherEventDetail(response);
-          setBrotherEventDetailState("ready");
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setBrotherEventDetail(undefined);
-          setBrotherEventDetailState(brotherCompanionLoadFailureState(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authToken, publicApiBaseUrl, route, runtimeMode, selectedBrotherEventId]);
+  const brotherToday = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherToday",
+    runtimeMode,
+    authToken,
+    initialApiState: "loading",
+    demoData: fallbackBrotherToday,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherToday({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const brotherProfile = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherProfile",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherProfile,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherProfile({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const myOrganizationUnits = usePrivateRouteResource({
+    route,
+    activeRoute: route === "OrganizationUnitDetail" ? "OrganizationUnitDetail" : "MyOrganizationUnits",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackMyOrganizationUnits,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchMyOrganizationUnits({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const brotherEvents = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherEvents",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherEvents,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherEvents({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const brotherAnnouncements = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherAnnouncements",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherAnnouncements,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherAnnouncements({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const brotherPrayers = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherPrayers",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherPrayers,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherPrayers({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
+  const brotherEventDetail = usePrivateRouteResource({
+    route,
+    activeRoute: "BrotherEventDetail",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherEventDetail,
+    loadKey: `${publicApiBaseUrl}:${selectedBrotherEventId ?? ""}`,
+    canLoad: Boolean(selectedBrotherEventId),
+    load: () =>
+      fetchBrotherEvent({
+        id: selectedBrotherEventId ?? "",
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherCompanionLoadFailureState
+  });
 
   async function handleBrotherRoute(nextRoute: BrotherRoute, targetId?: string, actionId?: string) {
     if (nextRoute === "SilentPrayer") {
@@ -351,15 +183,15 @@ export function MobileBrotherSurface({
       setSelectedBrotherEventId(targetId);
 
       if (runtimeMode === "demo") {
-        setBrotherEventDetail(fallbackBrotherEventDetail);
-        setBrotherEventDetailState(targetId ? "ready" : "empty");
+        brotherEventDetail.setData(fallbackBrotherEventDetail);
+        brotherEventDetail.setState(targetId ? "ready" : "empty");
       } else if (targetId && authToken && actionId === "plan-to-attend") {
         const response = await markBrotherEventParticipation({
           id: targetId,
           baseUrl: publicApiBaseUrl,
           authToken
         });
-        setBrotherEventDetail((current) =>
+        brotherEventDetail.setData((current) =>
           current
             ? {
                 event: {
@@ -369,14 +201,14 @@ export function MobileBrotherSurface({
               }
             : current
         );
-        setBrotherEventDetailState("ready");
+        brotherEventDetail.setState("ready");
       } else if (targetId && authToken && actionId === "cancel-participation") {
         const response = await cancelBrotherEventParticipation({
           id: targetId,
           baseUrl: publicApiBaseUrl,
           authToken
         });
-        setBrotherEventDetail((current) =>
+        brotherEventDetail.setData((current) =>
           current
             ? {
                 event: {
@@ -389,7 +221,7 @@ export function MobileBrotherSurface({
               }
             : current
         );
-        setBrotherEventDetailState("ready");
+        brotherEventDetail.setState("ready");
       }
     }
 
@@ -397,8 +229,8 @@ export function MobileBrotherSurface({
       setSelectedOrganizationUnitId(targetId);
 
       if (runtimeMode === "demo") {
-        setMyOrganizationUnits(fallbackMyOrganizationUnits);
-        setMyOrganizationUnitsState(targetId ? "ready" : "empty");
+        myOrganizationUnits.setData(fallbackMyOrganizationUnits);
+        myOrganizationUnits.setState(targetId ? "ready" : "empty");
       }
     }
 
@@ -409,8 +241,8 @@ export function MobileBrotherSurface({
     return (
       <PrivateContentScreen
         screen={buildBrotherProfileScreen({
-          state: brotherProfileState,
-          response: brotherProfile,
+          state: brotherProfile.state,
+          response: brotherProfile.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -426,8 +258,8 @@ export function MobileBrotherSurface({
     return (
       <MyOrganizationUnitsScreen
         screen={buildMyOrganizationUnitsScreen({
-          state: myOrganizationUnitsState,
-          response: myOrganizationUnits,
+          state: myOrganizationUnits.state,
+          response: myOrganizationUnits.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -443,8 +275,8 @@ export function MobileBrotherSurface({
     return (
       <OrganizationUnitDetailScreen
         screen={buildOrganizationUnitDetailScreen({
-          state: myOrganizationUnitsState,
-          response: myOrganizationUnits,
+          state: myOrganizationUnits.state,
+          response: myOrganizationUnits.data,
           selectedOrganizationUnitId,
           runtimeMode
         })}
@@ -461,8 +293,8 @@ export function MobileBrotherSurface({
     return (
       <BrotherEventsScreen
         screen={buildBrotherEventsScreen({
-          state: brotherEventsState,
-          response: brotherEvents,
+          state: brotherEvents.state,
+          response: brotherEvents.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -478,8 +310,8 @@ export function MobileBrotherSurface({
     return (
       <BrotherAnnouncementsScreen
         screen={buildBrotherAnnouncementsScreen({
-          state: brotherAnnouncementsState,
-          response: brotherAnnouncements,
+          state: brotherAnnouncements.state,
+          response: brotherAnnouncements.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -495,8 +327,8 @@ export function MobileBrotherSurface({
     return (
       <BrotherPrayersScreen
         screen={buildBrotherPrayersScreen({
-          state: brotherPrayersState,
-          response: brotherPrayers,
+          state: brotherPrayers.state,
+          response: brotherPrayers.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -512,8 +344,8 @@ export function MobileBrotherSurface({
     return (
       <BrotherEventDetailScreen
         screen={buildBrotherEventDetailScreen({
-          state: brotherEventDetailState,
-          response: brotherEventDetail,
+          state: brotherEventDetail.state,
+          response: brotherEventDetail.data,
           runtimeMode
         })}
         onAction={(action) => {
@@ -528,8 +360,8 @@ export function MobileBrotherSurface({
   return (
     <BrotherTodayScreen
       screen={buildBrotherTodayScreen({
-        state: brotherTodayState,
-        response: brotherToday,
+        state: brotherToday.state,
+        response: brotherToday.data,
         runtimeMode
       })}
       onAction={(action) => {
