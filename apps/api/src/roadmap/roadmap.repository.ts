@@ -423,9 +423,18 @@ const adminRoadmapAssignmentInclude = {
     where: {
       archivedAt: null
     },
-    include: {
+    select: {
+      id: true,
+      stepId: true,
+      status: true,
+      attachmentMeta: true,
+      reviewComment: true,
+      reviewedAt: true,
+      createdAt: true,
+      updatedAt: true,
       step: {
-        include: {
+        select: {
+          title: true,
           stage: {
             select: {
               title: true
