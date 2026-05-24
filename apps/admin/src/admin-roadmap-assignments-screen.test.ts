@@ -52,6 +52,7 @@ describe("admin roadmap assignment screens", () => {
       statusLabel: "ACTIVE"
     });
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual(["view"]);
+    expect(screen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
   });
 
   it("builds detail sections without submission bodies", () => {

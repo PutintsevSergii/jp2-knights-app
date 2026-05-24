@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   brotherRoadmapSubmissionTargetWhere,
+  eligibleRoadmapAssignmentAssigneeWhere,
   scopedAdminRoadmapSubmissionWhere
 } from "./roadmap.repository.js";
 
@@ -71,6 +72,70 @@ describe("scopedAdminRoadmapSubmissionWhere", () => {
       archivedAt: null,
       assignment: {
         archivedAt: null
+      }
+    });
+  });
+});
+
+describe("eligibleRoadmapAssignmentAssigneeWhere", () => {
+  it("requires active candidate role and scoped active candidate profile", () => {
+    expect(
+      eligibleRoadmapAssignmentAssigneeWhere(
+        "11111111-1111-4111-8111-111111111111",
+        "CANDIDATE",
+        "33333333-3333-4333-8333-333333333333"
+      )
+    ).toEqual({
+      id: "11111111-1111-4111-8111-111111111111",
+      status: {
+        in: ["active", "invited"]
+      },
+      archivedAt: null,
+      roles: {
+        some: {
+          role: "CANDIDATE",
+          revokedAt: null
+        }
+      },
+      candidateProfiles: {
+        some: {
+          status: "active",
+          archivedAt: null,
+          assignedOrganizationUnitId: "33333333-3333-4333-8333-333333333333"
+        }
+      }
+    });
+  });
+
+  it("requires active brother role and active membership for scoped brother assignments", () => {
+    expect(
+      eligibleRoadmapAssignmentAssigneeWhere(
+        "11111111-1111-4111-8111-111111111111",
+        "BROTHER",
+        "33333333-3333-4333-8333-333333333333"
+      )
+    ).toEqual({
+      id: "11111111-1111-4111-8111-111111111111",
+      status: {
+        in: ["active", "invited"]
+      },
+      archivedAt: null,
+      roles: {
+        some: {
+          role: "BROTHER",
+          revokedAt: null
+        }
+      },
+      memberships: {
+        some: {
+          status: "active",
+          archivedAt: null,
+          organizationUnitId: "33333333-3333-4333-8333-333333333333",
+          organizationUnit: {
+            status: "active",
+            archivedAt: null
+          }
+        }
       }
     });
   });

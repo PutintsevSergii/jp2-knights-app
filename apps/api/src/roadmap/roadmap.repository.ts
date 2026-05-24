@@ -6,10 +6,13 @@ import { PrismaService } from "../database/prisma.service.js";
 import type {
   AssignedRoadmap,
   AssignedRoadmapLookup,
+  AdminRoadmapAssignmentAssigneeLookup,
+  AdminRoadmapAssignmentDuplicateLookup,
   AdminRoadmapAssignmentDetail,
   AdminRoadmapAssignmentLookup,
   AdminRoadmapAssignmentSummary,
   AdminRoadmapDefinitionDetail,
+  AdminRoadmapDefinitionAssignmentTarget,
   AdminRoadmapDefinitionLookup,
   AdminRoadmapDefinitionSummary,
   AdminRoadmapSubmissionDetail,
@@ -17,6 +20,7 @@ import type {
   AdminRoadmapSubmissionLookup,
   AdminRoadmapSubmissionSummary,
   BrotherRoadmapSubmissionTargetLookup,
+  CreateAdminRoadmapAssignmentInput,
   CreateRoadmapSubmissionInput,
   PendingRoadmapSubmissionLookup,
   ReviewRoadmapSubmissionInput,
@@ -54,6 +58,18 @@ export abstract class RoadmapRepository {
   abstract findAdminRoadmapAssignment(
     lookup: AdminRoadmapAssignmentLookup
   ): Promise<AdminRoadmapAssignmentDetail | null>;
+  abstract findPublishedRoadmapDefinitionAssignmentTarget(
+    id: string
+  ): Promise<AdminRoadmapDefinitionAssignmentTarget | null>;
+  abstract findEligibleRoadmapAssignmentAssignee(
+    lookup: AdminRoadmapAssignmentAssigneeLookup
+  ): Promise<{ id: string } | null>;
+  abstract findActiveRoadmapAssignmentDuplicate(
+    lookup: AdminRoadmapAssignmentDuplicateLookup
+  ): Promise<{ id: string } | null>;
+  abstract createAdminRoadmapAssignment(
+    input: CreateAdminRoadmapAssignmentInput
+  ): Promise<AdminRoadmapAssignmentDetail>;
   abstract listAdminRoadmapDefinitions(): Promise<AdminRoadmapDefinitionSummary[]>;
   abstract findAdminRoadmapDefinition(
     lookup: AdminRoadmapDefinitionLookup
@@ -336,6 +352,93 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
     });
 
     return record ? toAdminRoadmapAssignmentDetail(record) : null;
+  }
+
+  async findPublishedRoadmapDefinitionAssignmentTarget(
+    id: string
+  ): Promise<AdminRoadmapDefinitionAssignmentTarget | null> {
+    const record = await this.prisma.roadmapDefinition.findFirst({
+      where: {
+        id,
+        targetRole: {
+          in: ["CANDIDATE", "BROTHER"]
+        },
+        status: "PUBLISHED",
+        archivedAt: null,
+        OR: publishedAtNowOrUnset(new Date())
+      },
+      select: {
+        id: true,
+        title: true,
+        targetRole: true
+      }
+    });
+
+    return record
+      ? {
+          id: record.id,
+          title: record.title,
+          targetRole: record.targetRole as AdminRoadmapDefinitionAssignmentTarget["targetRole"]
+        }
+      : null;
+  }
+
+  async findEligibleRoadmapAssignmentAssignee({
+    userId,
+    targetRole,
+    organizationUnitId
+  }: AdminRoadmapAssignmentAssigneeLookup): Promise<{ id: string } | null> {
+    const record = await this.prisma.user.findFirst({
+      where: eligibleRoadmapAssignmentAssigneeWhere(userId, targetRole, organizationUnitId),
+      select: {
+        id: true
+      }
+    });
+
+    return record;
+  }
+
+  async findActiveRoadmapAssignmentDuplicate({
+    assigneeUserId,
+    roadmapDefinitionId,
+    organizationUnitId
+  }: AdminRoadmapAssignmentDuplicateLookup): Promise<{ id: string } | null> {
+    const record = await this.prisma.roadmapAssignment.findFirst({
+      where: {
+        userId: assigneeUserId,
+        roadmapDefinitionId,
+        organizationUnitId,
+        status: {
+          in: ["active", "completed"]
+        },
+        archivedAt: null
+      },
+      select: {
+        id: true
+      }
+    });
+
+    return record;
+  }
+
+  async createAdminRoadmapAssignment({
+    assigneeUserId,
+    roadmapDefinitionId,
+    organizationUnitId,
+    assignedByUserId
+  }: CreateAdminRoadmapAssignmentInput): Promise<AdminRoadmapAssignmentDetail> {
+    const record = await this.prisma.roadmapAssignment.create({
+      data: {
+        userId: assigneeUserId,
+        roadmapDefinitionId,
+        organizationUnitId,
+        assignedBy: assignedByUserId,
+        status: "active"
+      },
+      include: adminRoadmapAssignmentInclude
+    });
+
+    return toAdminRoadmapAssignmentDetail(record);
   }
 
   async listAdminRoadmapDefinitions(): Promise<AdminRoadmapDefinitionSummary[]> {
@@ -709,6 +812,49 @@ export function scopedAdminRoadmapSubmissionWhere(
       },
       archivedAt: null
     }
+  };
+}
+
+export function eligibleRoadmapAssignmentAssigneeWhere(
+  userId: string,
+  targetRole: "CANDIDATE" | "BROTHER",
+  organizationUnitId: string | null
+): Prisma.UserWhereInput {
+  return {
+    id: userId,
+    status: {
+      in: ["active", "invited"]
+    },
+    archivedAt: null,
+    roles: {
+      some: {
+        role: targetRole,
+        revokedAt: null
+      }
+    },
+    ...(targetRole === "CANDIDATE"
+      ? {
+          candidateProfiles: {
+            some: {
+              status: "active",
+              archivedAt: null,
+              ...(organizationUnitId ? { assignedOrganizationUnitId: organizationUnitId } : {})
+            }
+          }
+        }
+      : {
+          memberships: {
+            some: {
+              status: "active",
+              archivedAt: null,
+              ...(organizationUnitId ? { organizationUnitId } : {}),
+              organizationUnit: {
+                status: "active",
+                archivedAt: null
+              }
+            }
+          }
+        })
   };
 }
 

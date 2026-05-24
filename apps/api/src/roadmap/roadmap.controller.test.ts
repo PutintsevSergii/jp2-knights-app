@@ -206,6 +206,9 @@ describe("RoadmapController", () => {
       Promise.resolve(adminRoadmapAssignmentListResponse)
     );
     const getAdminRoadmapAssignment = vi.fn(() => Promise.resolve(adminRoadmapAssignmentResponse));
+    const createAdminRoadmapAssignment = vi.fn(() =>
+      Promise.resolve(adminRoadmapAssignmentResponse)
+    );
     const listAdminRoadmapDefinitions = vi.fn(() =>
       Promise.resolve(adminRoadmapDefinitionListResponse)
     );
@@ -219,6 +222,7 @@ describe("RoadmapController", () => {
       reviewAdminRoadmapSubmission,
       listAdminRoadmapAssignments,
       getAdminRoadmapAssignment,
+      createAdminRoadmapAssignment,
       listAdminRoadmapDefinitions,
       getAdminRoadmapDefinition
     } as unknown as RoadmapService);
@@ -252,6 +256,13 @@ describe("RoadmapController", () => {
         { principal },
         adminRoadmapAssignmentResponse.roadmapAssignment.id
       )
+    ).resolves.toBe(adminRoadmapAssignmentResponse);
+    await expect(
+      controller.createAdminRoadmapAssignment({ principal }, {
+        assigneeUserId: principal.id,
+        roadmapDefinitionId: adminRoadmapDefinitionResponse.roadmapDefinition.id,
+        organizationUnitId: null
+      })
     ).resolves.toBe(adminRoadmapAssignmentResponse);
     await expect(controller.listAdminRoadmapDefinitions({ principal })).resolves.toBe(
       adminRoadmapDefinitionListResponse
@@ -287,6 +298,11 @@ describe("RoadmapController", () => {
       principal,
       adminRoadmapAssignmentResponse.roadmapAssignment.id
     );
+    expect(createAdminRoadmapAssignment).toHaveBeenCalledWith(principal, {
+      assigneeUserId: principal.id,
+      roadmapDefinitionId: adminRoadmapDefinitionResponse.roadmapDefinition.id,
+      organizationUnitId: null
+    });
     expect(listAdminRoadmapDefinitions).toHaveBeenCalledWith(principal);
     expect(getAdminRoadmapDefinition).toHaveBeenCalledWith(
       principal,
@@ -304,6 +320,7 @@ describe("RoadmapController", () => {
       reviewAdminRoadmapSubmission: vi.fn(),
       listAdminRoadmapAssignments: vi.fn(),
       getAdminRoadmapAssignment: vi.fn(),
+      createAdminRoadmapAssignment: vi.fn(),
       listAdminRoadmapDefinitions: vi.fn(),
       getAdminRoadmapDefinition: vi.fn()
     } as unknown as RoadmapService);
@@ -341,6 +358,13 @@ describe("RoadmapController", () => {
         {},
         adminRoadmapAssignmentResponse.roadmapAssignment.id
       )
+    ).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() =>
+      controller.createAdminRoadmapAssignment({}, {
+        assigneeUserId: principal.id,
+        roadmapDefinitionId: adminRoadmapDefinitionResponse.roadmapDefinition.id,
+        organizationUnitId: null
+      })
     ).toThrow("CurrentUserGuard did not attach a principal.");
     expect(() => controller.listAdminRoadmapDefinitions({})).toThrow(
       "CurrentUserGuard did not attach a principal."

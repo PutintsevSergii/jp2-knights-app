@@ -20,6 +20,7 @@ import type {
   AdminRoadmapSubmissionDetailResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
+  CreateAdminRoadmapAssignmentRequest,
   CreateRoadmapSubmissionRequest,
   ReviewRoadmapSubmissionRequest,
   RoadmapSubmissionResponse
@@ -227,6 +228,64 @@ export class RoadmapService {
     return { roadmapAssignment };
   }
 
+  async createAdminRoadmapAssignment(
+    principal: CurrentUserPrincipal,
+    request: CreateAdminRoadmapAssignmentRequest
+  ): Promise<AdminRoadmapAssignmentDetailResponse> {
+    requireSuperAdmin(principal);
+
+    const organizationUnitId = request.organizationUnitId ?? null;
+    const roadmapDefinition =
+      await this.roadmapRepository.findPublishedRoadmapDefinitionAssignmentTarget(
+        request.roadmapDefinitionId
+      );
+
+    if (!roadmapDefinition) {
+      throw new NotFoundException("Published roadmap definition was not found.");
+    }
+
+    const assignee = await this.roadmapRepository.findEligibleRoadmapAssignmentAssignee({
+      userId: request.assigneeUserId,
+      targetRole: roadmapDefinition.targetRole,
+      organizationUnitId
+    });
+
+    if (!assignee) {
+      throw new NotFoundException(
+        "Eligible candidate or brother assignee was not found for this roadmap scope."
+      );
+    }
+
+    const duplicate = await this.roadmapRepository.findActiveRoadmapAssignmentDuplicate({
+      assigneeUserId: request.assigneeUserId,
+      roadmapDefinitionId: request.roadmapDefinitionId,
+      organizationUnitId
+    });
+
+    if (duplicate) {
+      throw new ConflictException("An active roadmap assignment already exists for this scope.");
+    }
+
+    const roadmapAssignment = await this.roadmapRepository.createAdminRoadmapAssignment({
+      assigneeUserId: request.assigneeUserId,
+      roadmapDefinitionId: request.roadmapDefinitionId,
+      organizationUnitId,
+      assignedByUserId: principal.id
+    });
+
+    await this.auditLog.record({
+      action: "admin.roadmapAssignment.create",
+      actorUserId: principal.id,
+      entityType: "roadmap_assignment",
+      entityId: roadmapAssignment.id,
+      scopeOrganizationUnitId: roadmapAssignment.organizationUnitId,
+      beforeSummary: null,
+      afterSummary: summarizeRoadmapAssignmentForAudit(roadmapAssignment)
+    });
+
+    return { roadmapAssignment };
+  }
+
   async listAdminRoadmapDefinitions(
     principal: CurrentUserPrincipal
   ): Promise<AdminRoadmapDefinitionListResponse> {
@@ -251,6 +310,22 @@ export class RoadmapService {
 
     return { roadmapDefinition };
   }
+}
+
+function summarizeRoadmapAssignmentForAudit(
+  assignment: AdminRoadmapAssignmentDetailResponse["roadmapAssignment"]
+): AuditSummary {
+  return {
+    assignmentId: assignment.id,
+    assigneeUserId: assignment.assigneeUserId,
+    roadmapDefinitionId: assignment.roadmapDefinitionId,
+    roadmapTargetRole: assignment.roadmapTargetRole,
+    organizationUnitId: assignment.organizationUnitId,
+    status: assignment.status,
+    assignedByUserId: assignment.assignedByUserId,
+    submissionCount: assignment.submissionCount,
+    pendingSubmissionCount: assignment.pendingSubmissionCount
+  };
 }
 
 function summarizeRoadmapSubmissionForAudit(

@@ -13,6 +13,7 @@ import type {
   AdminRoadmapSubmissionSummaryDto,
   AssignedRoadmapDto,
   AssignedRoadmapResponseDto,
+  CreateAdminRoadmapAssignmentRequestDto,
   CreateRoadmapSubmissionRequestDto,
   RoadmapAttachmentMetadataDto,
   RoadmapSubmissionResponseDto,
@@ -84,6 +85,29 @@ export interface AdminRoadmapAssignmentLookup {
   id: string;
 }
 
+export interface AdminRoadmapDefinitionAssignmentTarget {
+  id: string;
+  title: string;
+  targetRole: RoadmapTargetRole;
+}
+
+export interface AdminRoadmapAssignmentAssigneeLookup {
+  userId: string;
+  targetRole: RoadmapTargetRole;
+  organizationUnitId: string | null;
+}
+
+export interface AdminRoadmapAssignmentDuplicateLookup {
+  assigneeUserId: string;
+  roadmapDefinitionId: string;
+  organizationUnitId: string | null;
+}
+
+export interface CreateAdminRoadmapAssignmentInput
+  extends AdminRoadmapAssignmentDuplicateLookup {
+  assignedByUserId: string;
+}
+
 export type AssignedRoadmap = AssignedRoadmapDto;
 export type AssignedRoadmapResponse = AssignedRoadmapResponseDto;
 export type CreateRoadmapSubmissionRequest = CreateRoadmapSubmissionRequestDto;
@@ -102,3 +126,4 @@ export type AdminRoadmapAssignmentSummary = AdminRoadmapAssignmentSummaryDto;
 export type AdminRoadmapAssignmentDetail = AdminRoadmapAssignmentDetailDto;
 export type AdminRoadmapAssignmentListResponse = AdminRoadmapAssignmentListResponseDto;
 export type AdminRoadmapAssignmentDetailResponse = AdminRoadmapAssignmentDetailResponseDto;
+export type CreateAdminRoadmapAssignmentRequest = CreateAdminRoadmapAssignmentRequestDto;

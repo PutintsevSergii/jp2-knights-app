@@ -253,6 +253,14 @@ export const adminRoadmapAssignmentDetailResponseSchema = z
   })
   .strict();
 
+export const createAdminRoadmapAssignmentRequestSchema = z
+  .object({
+    assigneeUserId: z.uuid(),
+    roadmapDefinitionId: z.uuid(),
+    organizationUnitId: z.uuid().nullable().optional()
+  })
+  .strict();
+
 export const reviewRoadmapSubmissionRequestSchema = z
   .object({
     status: z.enum(["approved", "rejected"]),
@@ -311,6 +319,9 @@ export type AdminRoadmapAssignmentListResponseDto = z.infer<
 >;
 export type AdminRoadmapAssignmentDetailResponseDto = z.infer<
   typeof adminRoadmapAssignmentDetailResponseSchema
+>;
+export type CreateAdminRoadmapAssignmentRequestDto = z.infer<
+  typeof createAdminRoadmapAssignmentRequestSchema
 >;
 export type ReviewRoadmapSubmissionRequestDto = z.infer<
   typeof reviewRoadmapSubmissionRequestSchema

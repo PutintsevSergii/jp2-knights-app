@@ -13,7 +13,9 @@ import { RoadmapService } from "./roadmap.service.js";
 import type {
   AdminRoadmapAssignmentDetail,
   AdminRoadmapDefinitionDetail,
+  AdminRoadmapDefinitionAssignmentTarget,
   AssignedRoadmap,
+  CreateAdminRoadmapAssignmentInput,
   RoadmapBrotherAccessProfile,
   RoadmapSubmissionSummary,
   RoadmapSubmissionTarget
@@ -554,6 +556,110 @@ describe("RoadmapService", () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it("creates Super Admin roadmap assignments for eligible users with audit", async () => {
+    const repository = roadmapRepository({
+      adminAssignmentTarget: {
+        id: brotherRoadmap.definition.id,
+        title: brotherRoadmap.definition.title,
+        targetRole: "BROTHER"
+      },
+      eligibleAssignee: { id: brother.id },
+      duplicateAssignment: null,
+      createdAssignment: adminRoadmapAssignment
+    });
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository, auditLog).createAdminRoadmapAssignment(superAdmin, {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId
+      })
+    ).resolves.toEqual({ roadmapAssignment: adminRoadmapAssignment });
+    expect(repository.createdAssignments).toEqual([
+      {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId,
+        assignedByUserId: superAdmin.id
+      }
+    ]);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.roadmapAssignment.create",
+      actorUserId: superAdmin.id,
+      entityType: "roadmap_assignment",
+      entityId: adminRoadmapAssignment.id,
+      scopeOrganizationUnitId: organizationUnitId,
+      beforeSummary: null,
+      afterSummary: {
+        assignmentId: adminRoadmapAssignment.id,
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        roadmapTargetRole: "BROTHER",
+        organizationUnitId,
+        status: "active"
+      }
+    });
+    expect(auditLog.records[0]?.afterSummary).not.toHaveProperty("assigneeEmail");
+  });
+
+  it("blocks invalid roadmap assignment creation targets", async () => {
+    await expect(
+      service(roadmapRepository()).createAdminRoadmapAssignment(officer, {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId
+      })
+    ).rejects.toBeInstanceOf(ForbiddenException);
+
+    await expect(
+      service(
+        roadmapRepository({
+          adminAssignmentTarget: null
+        })
+      ).createAdminRoadmapAssignment(superAdmin, {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId
+      })
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    await expect(
+      service(
+        roadmapRepository({
+          adminAssignmentTarget: {
+            id: brotherRoadmap.definition.id,
+            title: brotherRoadmap.definition.title,
+            targetRole: "BROTHER"
+          },
+          eligibleAssignee: null
+        })
+      ).createAdminRoadmapAssignment(superAdmin, {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId
+      })
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    await expect(
+      service(
+        roadmapRepository({
+          adminAssignmentTarget: {
+            id: brotherRoadmap.definition.id,
+            title: brotherRoadmap.definition.title,
+            targetRole: "BROTHER"
+          },
+          eligibleAssignee: { id: brother.id },
+          duplicateAssignment: { id: adminRoadmapAssignment.id }
+        })
+      ).createAdminRoadmapAssignment(superAdmin, {
+        assigneeUserId: brother.id,
+        roadmapDefinitionId: brotherRoadmap.definition.id,
+        organizationUnitId
+      })
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
   it("returns not found for missing roadmap assignments", async () => {
     await expect(
       service(roadmapRepository({ adminAssignment: null })).getAdminRoadmapAssignment(
@@ -591,7 +697,11 @@ function roadmapRepository(options: {
   adminDefinition?: AdminRoadmapDefinitionDetail | null | undefined;
   adminAssignments?: AdminRoadmapAssignmentDetail[] | undefined;
   adminAssignment?: AdminRoadmapAssignmentDetail | null | undefined;
-}) {
+  adminAssignmentTarget?: AdminRoadmapDefinitionAssignmentTarget | null | undefined;
+  eligibleAssignee?: { id: string } | null | undefined;
+  duplicateAssignment?: { id: string } | null | undefined;
+  createdAssignment?: AdminRoadmapAssignmentDetail | undefined;
+} = {}) {
   class FakeRoadmapRepository implements RoadmapRepository {
     lookups: Array<{
       userId: string;
@@ -631,6 +741,7 @@ function roadmapRepository(options: {
     }> = [];
     adminAssignmentLookups: string[] = [];
     adminDefinitionLookups: string[] = [];
+    createdAssignments: CreateAdminRoadmapAssignmentInput[] = [];
 
     findActiveCandidateAccessProfile() {
       return Promise.resolve(options.candidateProfile ?? null);
@@ -743,6 +854,23 @@ function roadmapRepository(options: {
     findAdminRoadmapAssignment(lookup: { id: string }) {
       this.adminAssignmentLookups.push(`detail:${lookup.id}`);
       return Promise.resolve(options.adminAssignment ?? null);
+    }
+
+    findPublishedRoadmapDefinitionAssignmentTarget() {
+      return Promise.resolve(options.adminAssignmentTarget ?? null);
+    }
+
+    findEligibleRoadmapAssignmentAssignee() {
+      return Promise.resolve(options.eligibleAssignee ?? null);
+    }
+
+    findActiveRoadmapAssignmentDuplicate() {
+      return Promise.resolve(options.duplicateAssignment ?? null);
+    }
+
+    createAdminRoadmapAssignment(input: CreateAdminRoadmapAssignmentInput) {
+      this.createdAssignments.push(input);
+      return Promise.resolve(options.createdAssignment ?? adminRoadmapAssignment);
     }
 
     listAdminRoadmapDefinitions() {

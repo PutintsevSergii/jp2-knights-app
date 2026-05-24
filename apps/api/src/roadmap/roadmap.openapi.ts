@@ -274,6 +274,17 @@ export const adminRoadmapAssignmentDetailResponseOpenApiSchema = {
   }
 };
 
+export const createAdminRoadmapAssignmentRequestOpenApiSchema = {
+  type: "object",
+  required: ["assigneeUserId", "roadmapDefinitionId"],
+  additionalProperties: false,
+  properties: {
+    assigneeUserId: { type: "string", format: "uuid" },
+    roadmapDefinitionId: { type: "string", format: "uuid" },
+    organizationUnitId: { type: "string", nullable: true, format: "uuid" }
+  }
+};
+
 const adminRoadmapDefinitionStepOpenApiSchema = {
   type: "object",
   required: [

@@ -25,6 +25,7 @@ import {
   candidateDashboardResponseSchema,
   contentStatusSchema,
   convertCandidateRequestSchema,
+  createAdminRoadmapAssignmentRequestSchema,
   createAdminAnnouncementRequestSchema,
   createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
@@ -1077,6 +1078,17 @@ describe("shared validation", () => {
   });
 
   it("validates roadmap submission and review payloads", () => {
+    expect(
+      createAdminRoadmapAssignmentRequestSchema.parse({
+        assigneeUserId: "22222222-2222-4222-8222-222222222222",
+        roadmapDefinitionId: "33333333-3333-4333-8333-333333333333",
+        organizationUnitId: null
+      })
+    ).toEqual({
+      assigneeUserId: "22222222-2222-4222-8222-222222222222",
+      roadmapDefinitionId: "33333333-3333-4333-8333-333333333333",
+      organizationUnitId: null
+    });
     expect(
       createRoadmapSubmissionRequestSchema.parse({
         stepId: "55555555-5555-4555-8555-555555555555",

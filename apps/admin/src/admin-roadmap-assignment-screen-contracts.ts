@@ -2,7 +2,7 @@ export type AdminRoadmapAssignmentRoute =
   | "AdminRoadmapAssignmentList"
   | "AdminRoadmapAssignmentDetail";
 
-export type AdminRoadmapAssignmentActionId = "refresh" | "view";
+export type AdminRoadmapAssignmentActionId = "create" | "refresh" | "view";
 
 export interface AdminRoadmapAssignmentAction {
   id: AdminRoadmapAssignmentActionId;

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { AdminContentHttpError } from "./admin-content-api.js";
 import { fallbackAdminRoadmapAssignments } from "./admin-content-fixtures.js";
 import {
+  createAdminRoadmapAssignment,
   fetchAdminRoadmapAssignment,
   fetchAdminRoadmapAssignments
 } from "./admin-roadmap-assignments-api.js";
@@ -77,6 +78,38 @@ describe("admin roadmap assignments API client", () => {
         headers: { authorization: "Bearer token_1" }
       }
     );
+  });
+
+  it("posts and validates created assignment responses", async () => {
+    const createFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ roadmapAssignment })
+      })
+    );
+    const payload = {
+      assigneeUserId: roadmapAssignment.assigneeUserId,
+      roadmapDefinitionId: roadmapAssignment.roadmapDefinitionId,
+      organizationUnitId: roadmapAssignment.organizationUnitId
+    };
+
+    await expect(
+      createAdminRoadmapAssignment(payload, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: createFetch
+      })
+    ).resolves.toEqual({ roadmapAssignment });
+
+    expect(createFetch).toHaveBeenCalledWith("https://api.example.test/admin/roadmap-assignments", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer token_1",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
   });
 
   it("maps non-OK responses", async () => {

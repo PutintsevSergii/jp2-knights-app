@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
+  createAdminRoadmapAssignmentRequestSchema,
   createRoadmapSubmissionRequestSchema,
   reviewRoadmapSubmissionRequestSchema
 } from "@jp2/shared-validation";
@@ -16,6 +17,7 @@ import {
   adminRoadmapSubmissionDetailResponseOpenApiSchema,
   adminRoadmapSubmissionListResponseOpenApiSchema,
   assignedRoadmapResponseOpenApiSchema,
+  createAdminRoadmapAssignmentRequestOpenApiSchema,
   createRoadmapSubmissionRequestOpenApiSchema,
   reviewRoadmapSubmissionRequestOpenApiSchema,
   roadmapSubmissionResponseOpenApiSchema
@@ -29,6 +31,7 @@ import type {
   AdminRoadmapSubmissionDetailResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
+  CreateAdminRoadmapAssignmentRequest,
   CreateRoadmapSubmissionRequest,
   ReviewRoadmapSubmissionRequest,
   RoadmapSubmissionResponse
@@ -237,6 +240,43 @@ export class RoadmapController {
     @Req() request: RequestWithPrincipal
   ): Promise<AdminRoadmapAssignmentListResponse> {
     return this.roadmapService.listAdminRoadmapAssignments(requirePrincipal(request));
+  }
+
+  @Post("admin/roadmap-assignments")
+  @UseGuards(CurrentUserGuard)
+  @ApiBody({
+    schema: createAdminRoadmapAssignmentRequestOpenApiSchema
+  })
+  @ApiCreatedResponse({
+    description: "Created roadmap assignment for an eligible candidate or brother.",
+    schema: adminRoadmapAssignmentDetailResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 400,
+    description: "The roadmap assignment payload failed validation.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The published roadmap definition or eligible assignee was not found.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 409,
+    description: "An active roadmap assignment already exists for the same scope.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  createAdminRoadmapAssignment(
+    @Req() request: RequestWithPrincipal,
+    @Body(new ZodValidationPipe(createAdminRoadmapAssignmentRequestSchema))
+    body: CreateAdminRoadmapAssignmentRequest
+  ): Promise<AdminRoadmapAssignmentDetailResponse> {
+    return this.roadmapService.createAdminRoadmapAssignment(requirePrincipal(request), body);
   }
 
   @Get("admin/roadmap-assignments/:id")

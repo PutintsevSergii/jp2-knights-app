@@ -2,7 +2,8 @@ import {
   adminRoadmapAssignmentDetailResponseSchema,
   adminRoadmapAssignmentListResponseSchema,
   type AdminRoadmapAssignmentDetailResponseDto,
-  type AdminRoadmapAssignmentListResponseDto
+  type AdminRoadmapAssignmentListResponseDto,
+  type CreateAdminRoadmapAssignmentRequestDto
 } from "@jp2/shared-validation";
 import { requestAdminApi, type AdminContentRequestOptions } from "./admin-content-api.js";
 
@@ -19,6 +20,18 @@ export async function fetchAdminRoadmapAssignment(
   options: AdminContentRequestOptions = {}
 ): Promise<AdminRoadmapAssignmentDetailResponseDto> {
   const response = await requestAdminApi(`admin/roadmap-assignments/${id}`, options);
+
+  return adminRoadmapAssignmentDetailResponseSchema.parse(await response.json());
+}
+
+export async function createAdminRoadmapAssignment(
+  data: CreateAdminRoadmapAssignmentRequestDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminRoadmapAssignmentDetailResponseDto> {
+  const response = await requestAdminApi("admin/roadmap-assignments", options, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
 
   return adminRoadmapAssignmentDetailResponseSchema.parse(await response.json());
 }

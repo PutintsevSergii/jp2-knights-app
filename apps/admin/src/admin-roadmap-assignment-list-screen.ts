@@ -44,7 +44,7 @@ export function buildAdminRoadmapAssignmentListScreen(
     route: "AdminRoadmapAssignmentList",
     state: "ready",
     title: "Roadmap Assignments",
-    body: "Inspect who has an assigned candidate or brother roadmap. Assignment changes remain deferred.",
+    body: "Inspect and create assignments from already-published candidate or brother roadmaps.",
     rows: options.response.roadmapAssignments.map(roadmapAssignmentRow),
     actions: buildListActions(),
     demoChromeVisible: options.runtimeMode === "demo",
@@ -78,6 +78,11 @@ function roadmapAssignmentRow(
 
 function buildListActions(): AdminRoadmapAssignmentAction[] {
   return [
+    {
+      id: "create",
+      label: "Create Assignment",
+      targetRoute: "AdminRoadmapAssignmentList"
+    },
     {
       id: "refresh",
       label: "Refresh",
