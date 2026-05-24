@@ -2,6 +2,7 @@ import type { RuntimeMode } from "@jp2/shared-types";
 import type { AdminRoadmapAssignmentDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { formatAdminStatusLabel } from "./admin-status-labels.js";
 import {
   adminRoadmapAssignmentBackAction,
   formatAdminRoadmapAssignmentDateTime,
@@ -75,7 +76,7 @@ function buildSections(
           : assignment.submissions
               .map(
                 (submission) =>
-                  `${submission.stageTitle}: ${submission.stepTitle} · ${roadmapAssignmentStatusLabel(submission.status)} · ${submission.attachmentCount} attachments`
+                  `${submission.stageTitle}: ${submission.stepTitle} · ${formatAdminStatusLabel(submission.status)} · ${submission.attachmentCount} attachments`
               )
               .join(" | ")
     }

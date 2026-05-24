@@ -1,4 +1,5 @@
 import type { AdminRoadmapDefinitionDetailDto } from "@jp2/shared-validation";
+import { formatAdminStatusLabel } from "./admin-status-labels.js";
 
 export type AdminRoadmapDefinitionRoute =
   | "AdminRoadmapDefinitionList"
@@ -46,5 +47,5 @@ export function formatAdminRoadmapDefinitionDateTime(value: string | null): stri
 export function roadmapDefinitionStatusLabel(
   status: AdminRoadmapDefinitionDetailDto["status"]
 ): string {
-  return status.replaceAll("_", " ").toUpperCase();
+  return formatAdminStatusLabel(status);
 }

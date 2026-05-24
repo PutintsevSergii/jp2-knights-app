@@ -17,7 +17,7 @@ export interface AdminRoadmapAssignmentRow {
   assignee: string;
   roadmapMeta: string;
   organizationUnitName: string;
-  status: string;
+  status: AdminRoadmapAssignmentDetailDto["status"];
   statusLabel: string;
   countsLabel: string;
   assignedAt: string;
@@ -43,5 +43,7 @@ export function formatAdminRoadmapAssignmentDateTime(value: string | null): stri
 }
 
 export function roadmapAssignmentStatusLabel(status: string): string {
-  return status.replaceAll("_", " ").toUpperCase();
+  return formatAdminStatusLabel(status);
 }
+import type { AdminRoadmapAssignmentDetailDto } from "@jp2/shared-validation";
+import { formatAdminStatusLabel } from "./admin-status-labels.js";
