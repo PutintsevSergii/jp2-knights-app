@@ -290,11 +290,38 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
       where: {
         archivedAt: null
       },
-      include: adminRoadmapAssignmentInclude,
+      include: adminRoadmapAssignmentSummaryInclude,
       orderBy: [{ assignedAt: "desc" }, { createdAt: "desc" }]
     });
 
-    return records.map(toAdminRoadmapAssignmentSummary);
+    if (records.length === 0) {
+      return [];
+    }
+
+    const pendingCounts = await this.prisma.roadmapSubmission.groupBy({
+      by: ["assignmentId"],
+      where: {
+        assignmentId: {
+          in: records.map((record) => record.id)
+        },
+        archivedAt: null,
+        status: "pending_review"
+      },
+      _count: {
+        _all: true
+      }
+    });
+    const pendingCountByAssignmentId = new Map(
+      pendingCounts.map((count) => [count.assignmentId, count._count._all])
+    );
+
+    return records.map((record) =>
+      toAdminRoadmapAssignmentSummary(
+        record,
+        record._count.submissions,
+        pendingCountByAssignmentId.get(record.id) ?? 0
+      )
+    );
   }
 
   async findAdminRoadmapAssignment({
@@ -390,6 +417,48 @@ const adminRoadmapSubmissionInclude = {
 
 type AdminRoadmapSubmissionRecord = Prisma.RoadmapSubmissionGetPayload<{
   include: typeof adminRoadmapSubmissionInclude;
+}>;
+
+const adminRoadmapAssignmentSummaryInclude = {
+  user: {
+    select: {
+      id: true,
+      displayName: true,
+      email: true
+    }
+  },
+  roadmapDefinition: {
+    select: {
+      id: true,
+      title: true,
+      targetRole: true,
+      status: true
+    }
+  },
+  organizationUnit: {
+    select: {
+      name: true
+    }
+  },
+  assigner: {
+    select: {
+      id: true,
+      displayName: true
+    }
+  },
+  _count: {
+    select: {
+      submissions: {
+        where: {
+          archivedAt: null
+        }
+      }
+    }
+  }
+} as const;
+
+type AdminRoadmapAssignmentSummaryRecord = Prisma.RoadmapAssignmentGetPayload<{
+  include: typeof adminRoadmapAssignmentSummaryInclude;
 }>;
 
 const adminRoadmapAssignmentInclude = {
@@ -712,7 +781,9 @@ function toAdminRoadmapSubmissionDetail(
 }
 
 function toAdminRoadmapAssignmentSummary(
-  assignment: AdminRoadmapAssignmentRecord
+  assignment: AdminRoadmapAssignmentSummarySource,
+  submissionCount: number,
+  pendingSubmissionCount: number
 ): AdminRoadmapAssignmentSummary {
   return {
     id: assignment.id,
@@ -730,10 +801,8 @@ function toAdminRoadmapAssignmentSummary(
     assignedByName: assignment.assigner?.displayName ?? null,
     assignedAt: assignment.assignedAt.toISOString(),
     completedAt: assignment.completedAt?.toISOString() ?? null,
-    submissionCount: assignment.submissions.length,
-    pendingSubmissionCount: assignment.submissions.filter(
-      (submission) => submission.status === "pending_review"
-    ).length,
+    submissionCount,
+    pendingSubmissionCount,
     createdAt: assignment.createdAt.toISOString(),
     updatedAt: assignment.updatedAt.toISOString(),
     archivedAt: assignment.archivedAt?.toISOString() ?? null
@@ -744,7 +813,11 @@ function toAdminRoadmapAssignmentDetail(
   assignment: AdminRoadmapAssignmentRecord
 ): AdminRoadmapAssignmentDetail {
   return {
-    ...toAdminRoadmapAssignmentSummary(assignment),
+    ...toAdminRoadmapAssignmentSummary(
+      assignment,
+      assignment.submissions.length,
+      assignment.submissions.filter((submission) => submission.status === "pending_review").length
+    ),
     submissions: assignment.submissions.map((submission) => ({
       id: submission.id,
       stepId: submission.stepId,
@@ -759,6 +832,10 @@ function toAdminRoadmapAssignmentDetail(
     }))
   };
 }
+
+type AdminRoadmapAssignmentSummarySource =
+  | AdminRoadmapAssignmentSummaryRecord
+  | AdminRoadmapAssignmentRecord;
 
 function roadmapSubmissionBodyPreview(body: string): string | null {
   const normalized = body.replace(/\s+/g, " ").trim();
