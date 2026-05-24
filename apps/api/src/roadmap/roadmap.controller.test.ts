@@ -3,6 +3,10 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { RoadmapController } from "./roadmap.controller.js";
 import type { RoadmapService } from "./roadmap.service.js";
 import type {
+  AdminRoadmapAssignmentDetailResponse,
+  AdminRoadmapAssignmentListResponse,
+  AdminRoadmapDefinitionDetailResponse,
+  AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetailResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
@@ -81,6 +85,109 @@ const adminRoadmapSubmissionListResponse: AdminRoadmapSubmissionListResponse = {
   ]
 };
 
+const adminRoadmapDefinitionResponse: AdminRoadmapDefinitionDetailResponse = {
+  roadmapDefinition: {
+    id: "66666666-6666-4666-8666-666666666666",
+    title: "Brother Formation Roadmap",
+    targetRole: "BROTHER",
+    language: "en",
+    status: "PUBLISHED",
+    publishedAt: "2026-05-09T09:00:00.000Z",
+    stageCount: 1,
+    stepCount: 1,
+    assignmentCount: 1,
+    createdAt: "2026-05-09T09:00:00.000Z",
+    updatedAt: "2026-05-09T09:00:00.000Z",
+    archivedAt: null,
+    stages: []
+  }
+};
+
+const adminRoadmapDefinitionListResponse: AdminRoadmapDefinitionListResponse = {
+  roadmapDefinitions: [
+    {
+      id: adminRoadmapDefinitionResponse.roadmapDefinition.id,
+      title: adminRoadmapDefinitionResponse.roadmapDefinition.title,
+      targetRole: adminRoadmapDefinitionResponse.roadmapDefinition.targetRole,
+      language: adminRoadmapDefinitionResponse.roadmapDefinition.language,
+      status: adminRoadmapDefinitionResponse.roadmapDefinition.status,
+      publishedAt: adminRoadmapDefinitionResponse.roadmapDefinition.publishedAt,
+      stageCount: adminRoadmapDefinitionResponse.roadmapDefinition.stageCount,
+      stepCount: adminRoadmapDefinitionResponse.roadmapDefinition.stepCount,
+      assignmentCount: adminRoadmapDefinitionResponse.roadmapDefinition.assignmentCount,
+      createdAt: adminRoadmapDefinitionResponse.roadmapDefinition.createdAt,
+      updatedAt: adminRoadmapDefinitionResponse.roadmapDefinition.updatedAt,
+      archivedAt: adminRoadmapDefinitionResponse.roadmapDefinition.archivedAt
+    }
+  ]
+};
+
+const adminRoadmapAssignmentResponse: AdminRoadmapAssignmentDetailResponse = {
+  roadmapAssignment: {
+    id: adminRoadmapSubmissionResponse.roadmapSubmission.assignmentId,
+    assigneeUserId: principal.id,
+    assigneeName: principal.displayName,
+    assigneeEmail: principal.email,
+    roadmapDefinitionId: adminRoadmapDefinitionResponse.roadmapDefinition.id,
+    roadmapTitle: adminRoadmapDefinitionResponse.roadmapDefinition.title,
+    roadmapTargetRole: "BROTHER",
+    roadmapStatus: "PUBLISHED",
+    organizationUnitId: null,
+    organizationUnitName: null,
+    status: "active",
+    assignedByUserId: null,
+    assignedByName: null,
+    assignedAt: "2026-05-09T09:00:00.000Z",
+    completedAt: null,
+    submissionCount: 1,
+    pendingSubmissionCount: 1,
+    createdAt: "2026-05-09T09:00:00.000Z",
+    updatedAt: "2026-05-09T09:00:00.000Z",
+    archivedAt: null,
+    submissions: [
+      {
+        id: adminRoadmapSubmissionResponse.roadmapSubmission.id,
+        stepId: adminRoadmapSubmissionResponse.roadmapSubmission.stepId,
+        stageTitle: adminRoadmapSubmissionResponse.roadmapSubmission.stageTitle,
+        stepTitle: adminRoadmapSubmissionResponse.roadmapSubmission.stepTitle,
+        status: adminRoadmapSubmissionResponse.roadmapSubmission.status,
+        attachmentCount: adminRoadmapSubmissionResponse.roadmapSubmission.attachmentCount,
+        reviewComment: adminRoadmapSubmissionResponse.roadmapSubmission.reviewComment,
+        reviewedAt: adminRoadmapSubmissionResponse.roadmapSubmission.reviewedAt,
+        createdAt: adminRoadmapSubmissionResponse.roadmapSubmission.createdAt,
+        updatedAt: adminRoadmapSubmissionResponse.roadmapSubmission.updatedAt
+      }
+    ]
+  }
+};
+
+const adminRoadmapAssignmentListResponse: AdminRoadmapAssignmentListResponse = {
+  roadmapAssignments: [
+    {
+      id: adminRoadmapAssignmentResponse.roadmapAssignment.id,
+      assigneeUserId: adminRoadmapAssignmentResponse.roadmapAssignment.assigneeUserId,
+      assigneeName: adminRoadmapAssignmentResponse.roadmapAssignment.assigneeName,
+      assigneeEmail: adminRoadmapAssignmentResponse.roadmapAssignment.assigneeEmail,
+      roadmapDefinitionId: adminRoadmapAssignmentResponse.roadmapAssignment.roadmapDefinitionId,
+      roadmapTitle: adminRoadmapAssignmentResponse.roadmapAssignment.roadmapTitle,
+      roadmapTargetRole: adminRoadmapAssignmentResponse.roadmapAssignment.roadmapTargetRole,
+      roadmapStatus: adminRoadmapAssignmentResponse.roadmapAssignment.roadmapStatus,
+      organizationUnitId: adminRoadmapAssignmentResponse.roadmapAssignment.organizationUnitId,
+      organizationUnitName: adminRoadmapAssignmentResponse.roadmapAssignment.organizationUnitName,
+      status: adminRoadmapAssignmentResponse.roadmapAssignment.status,
+      assignedByUserId: adminRoadmapAssignmentResponse.roadmapAssignment.assignedByUserId,
+      assignedByName: adminRoadmapAssignmentResponse.roadmapAssignment.assignedByName,
+      assignedAt: adminRoadmapAssignmentResponse.roadmapAssignment.assignedAt,
+      completedAt: adminRoadmapAssignmentResponse.roadmapAssignment.completedAt,
+      submissionCount: adminRoadmapAssignmentResponse.roadmapAssignment.submissionCount,
+      pendingSubmissionCount: adminRoadmapAssignmentResponse.roadmapAssignment.pendingSubmissionCount,
+      createdAt: adminRoadmapAssignmentResponse.roadmapAssignment.createdAt,
+      updatedAt: adminRoadmapAssignmentResponse.roadmapAssignment.updatedAt,
+      archivedAt: adminRoadmapAssignmentResponse.roadmapAssignment.archivedAt
+    }
+  ]
+};
+
 describe("RoadmapController", () => {
   it("delegates candidate and brother roadmap reads using the guard-attached principal", async () => {
     const getCandidateRoadmap = vi.fn(() => Promise.resolve(response));
@@ -95,13 +202,25 @@ describe("RoadmapController", () => {
     const reviewAdminRoadmapSubmission = vi.fn(() =>
       Promise.resolve(adminRoadmapSubmissionResponse)
     );
+    const listAdminRoadmapAssignments = vi.fn(() =>
+      Promise.resolve(adminRoadmapAssignmentListResponse)
+    );
+    const getAdminRoadmapAssignment = vi.fn(() => Promise.resolve(adminRoadmapAssignmentResponse));
+    const listAdminRoadmapDefinitions = vi.fn(() =>
+      Promise.resolve(adminRoadmapDefinitionListResponse)
+    );
+    const getAdminRoadmapDefinition = vi.fn(() => Promise.resolve(adminRoadmapDefinitionResponse));
     const controller = new RoadmapController({
       getCandidateRoadmap,
       getBrotherRoadmap,
       submitBrotherRoadmapStep,
       listAdminRoadmapSubmissions,
       getAdminRoadmapSubmission,
-      reviewAdminRoadmapSubmission
+      reviewAdminRoadmapSubmission,
+      listAdminRoadmapAssignments,
+      getAdminRoadmapAssignment,
+      listAdminRoadmapDefinitions,
+      getAdminRoadmapDefinition
     } as unknown as RoadmapService);
 
     await expect(controller.getCandidateRoadmap({ principal })).resolves.toBe(response);
@@ -125,6 +244,24 @@ describe("RoadmapController", () => {
         reviewComment: "Approved."
       })
     ).resolves.toBe(adminRoadmapSubmissionResponse);
+    await expect(controller.listAdminRoadmapAssignments({ principal })).resolves.toBe(
+      adminRoadmapAssignmentListResponse
+    );
+    await expect(
+      controller.getAdminRoadmapAssignment(
+        { principal },
+        adminRoadmapAssignmentResponse.roadmapAssignment.id
+      )
+    ).resolves.toBe(adminRoadmapAssignmentResponse);
+    await expect(controller.listAdminRoadmapDefinitions({ principal })).resolves.toBe(
+      adminRoadmapDefinitionListResponse
+    );
+    await expect(
+      controller.getAdminRoadmapDefinition(
+        { principal },
+        adminRoadmapDefinitionResponse.roadmapDefinition.id
+      )
+    ).resolves.toBe(adminRoadmapDefinitionResponse);
     expect(getCandidateRoadmap).toHaveBeenCalledWith(principal);
     expect(getBrotherRoadmap).toHaveBeenCalledWith(principal);
     expect(submitBrotherRoadmapStep).toHaveBeenCalledWith(principal, stepId, {
@@ -145,6 +282,16 @@ describe("RoadmapController", () => {
         reviewComment: "Approved."
       }
     );
+    expect(listAdminRoadmapAssignments).toHaveBeenCalledWith(principal);
+    expect(getAdminRoadmapAssignment).toHaveBeenCalledWith(
+      principal,
+      adminRoadmapAssignmentResponse.roadmapAssignment.id
+    );
+    expect(listAdminRoadmapDefinitions).toHaveBeenCalledWith(principal);
+    expect(getAdminRoadmapDefinition).toHaveBeenCalledWith(
+      principal,
+      adminRoadmapDefinitionResponse.roadmapDefinition.id
+    );
   });
 
   it("fails closed if the guard did not attach a principal", () => {
@@ -154,7 +301,11 @@ describe("RoadmapController", () => {
       submitBrotherRoadmapStep: vi.fn(),
       listAdminRoadmapSubmissions: vi.fn(),
       getAdminRoadmapSubmission: vi.fn(),
-      reviewAdminRoadmapSubmission: vi.fn()
+      reviewAdminRoadmapSubmission: vi.fn(),
+      listAdminRoadmapAssignments: vi.fn(),
+      getAdminRoadmapAssignment: vi.fn(),
+      listAdminRoadmapDefinitions: vi.fn(),
+      getAdminRoadmapDefinition: vi.fn()
     } as unknown as RoadmapService);
 
     expect(() => controller.getCandidateRoadmap({})).toThrow(
@@ -181,6 +332,24 @@ describe("RoadmapController", () => {
         status: "approved",
         reviewComment: null
       })
+    ).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() => controller.listAdminRoadmapAssignments({})).toThrow(
+      "CurrentUserGuard did not attach a principal."
+    );
+    expect(() =>
+      controller.getAdminRoadmapAssignment(
+        {},
+        adminRoadmapAssignmentResponse.roadmapAssignment.id
+      )
+    ).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() => controller.listAdminRoadmapDefinitions({})).toThrow(
+      "CurrentUserGuard did not attach a principal."
+    );
+    expect(() =>
+      controller.getAdminRoadmapDefinition(
+        {},
+        adminRoadmapDefinitionResponse.roadmapDefinition.id
+      )
     ).toThrow("CurrentUserGuard did not attach a principal.");
   });
 });

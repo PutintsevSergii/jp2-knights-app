@@ -6,6 +6,8 @@ import {
   fallbackAdminDashboard,
   fallbackAdminIdentityAccessReviews,
   fallbackAdminOrganizationUnits,
+  fallbackAdminRoadmapAssignments,
+  fallbackAdminRoadmapDefinitions,
   fallbackAdminRoadmapSubmissions,
   fallbackAdminPrayers
 } from "./admin-content-fixtures.js";
@@ -397,6 +399,121 @@ describe("admin web shell", () => {
     expect(detailResponse.statusCode).toBe(200);
     expect(detailResponse.body).toContain("Roadmap Submission: Meet your officer");
     expect(detailResponse.body).toContain('href="/admin/roadmap-submissions" aria-current="page"');
+  });
+
+  it("mounts roadmap definition list and detail routes", async () => {
+    const roadmapDefinition = fallbackAdminRoadmapDefinitions[0]!;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            roadmapDefinitions: [
+              {
+                id: roadmapDefinition.id,
+                title: roadmapDefinition.title,
+                targetRole: roadmapDefinition.targetRole,
+                language: roadmapDefinition.language,
+                status: roadmapDefinition.status,
+                publishedAt: roadmapDefinition.publishedAt,
+                stageCount: roadmapDefinition.stageCount,
+                stepCount: roadmapDefinition.stepCount,
+                assignmentCount: roadmapDefinition.assignmentCount,
+                createdAt: roadmapDefinition.createdAt,
+                updatedAt: roadmapDefinition.updatedAt,
+                archivedAt: roadmapDefinition.archivedAt
+              }
+            ]
+          })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ roadmapDefinition })
+      });
+
+    const listResponse = await renderAdminWebRequest(
+      { path: "/admin/roadmap-definitions", headers: { authorization: "Bearer token_1" } },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
+    );
+    const detailResponse = await renderAdminWebRequest(
+      {
+        path: `/admin/roadmap-definitions/${roadmapDefinition.id}`,
+        headers: { authorization: "Bearer token_1" }
+      },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
+    );
+
+    expect(listResponse.statusCode).toBe(200);
+    expect(listResponse.body).toContain("Brother Formation Roadmap");
+    expect(listResponse.body).toContain('href="/admin/roadmap-definitions" aria-current="page"');
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body).toContain("Roadmap Definition: Brother Formation Roadmap");
+    expect(detailResponse.body).toContain('href="/admin/roadmap-definitions" aria-current="page"');
+  });
+
+  it("mounts roadmap assignment list and detail routes", async () => {
+    const roadmapAssignment = fallbackAdminRoadmapAssignments[0]!;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            roadmapAssignments: [
+              {
+                id: roadmapAssignment.id,
+                assigneeUserId: roadmapAssignment.assigneeUserId,
+                assigneeName: roadmapAssignment.assigneeName,
+                assigneeEmail: roadmapAssignment.assigneeEmail,
+                roadmapDefinitionId: roadmapAssignment.roadmapDefinitionId,
+                roadmapTitle: roadmapAssignment.roadmapTitle,
+                roadmapTargetRole: roadmapAssignment.roadmapTargetRole,
+                roadmapStatus: roadmapAssignment.roadmapStatus,
+                organizationUnitId: roadmapAssignment.organizationUnitId,
+                organizationUnitName: roadmapAssignment.organizationUnitName,
+                status: roadmapAssignment.status,
+                assignedByUserId: roadmapAssignment.assignedByUserId,
+                assignedByName: roadmapAssignment.assignedByName,
+                assignedAt: roadmapAssignment.assignedAt,
+                completedAt: roadmapAssignment.completedAt,
+                submissionCount: roadmapAssignment.submissionCount,
+                pendingSubmissionCount: roadmapAssignment.pendingSubmissionCount,
+                createdAt: roadmapAssignment.createdAt,
+                updatedAt: roadmapAssignment.updatedAt,
+                archivedAt: roadmapAssignment.archivedAt
+              }
+            ]
+          })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ roadmapAssignment })
+      });
+
+    const listResponse = await renderAdminWebRequest(
+      { path: "/admin/roadmap-assignments", headers: { authorization: "Bearer token_1" } },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
+    );
+    const detailResponse = await renderAdminWebRequest(
+      {
+        path: `/admin/roadmap-assignments/${roadmapAssignment.id}`,
+        headers: { authorization: "Bearer token_1" }
+      },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
+    );
+
+    expect(listResponse.statusCode).toBe(200);
+    expect(listResponse.body).toContain("Demo Brother");
+    expect(listResponse.body).toContain('href="/admin/roadmap-assignments" aria-current="page"');
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body).toContain("Roadmap Assignment: Demo Brother");
+    expect(detailResponse.body).not.toContain("Reflection text for officer review");
+    expect(detailResponse.body).toContain('href="/admin/roadmap-assignments" aria-current="page"');
   });
 
   it("mounts the organization-unit admin route", async () => {

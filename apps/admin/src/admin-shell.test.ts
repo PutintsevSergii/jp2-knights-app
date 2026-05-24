@@ -30,6 +30,16 @@ describe("admin shell routes", () => {
         screenRoute: "AdminOrganizationUnitList"
       },
       {
+        path: "/admin/roadmap-assignments",
+        label: "Roadmap Assignments",
+        screenRoute: "AdminRoadmapAssignmentList"
+      },
+      {
+        path: "/admin/roadmap-definitions",
+        label: "Roadmap Definitions",
+        screenRoute: "AdminRoadmapDefinitionList"
+      },
+      {
         path: "/admin/roadmap-submissions",
         label: "Roadmap Reviews",
         screenRoute: "AdminRoadmapSubmissionList"

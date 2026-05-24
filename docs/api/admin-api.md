@@ -26,8 +26,10 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | GET/PATCH      | `/admin/events/:id`                        | Officer/Super Admin      | edit/cancel/archive payload       | detail                     | 403,404,409 | Scope required                                                 |
 | GET/POST       | `/admin/announcements`                     | Officer/Super Admin      | filters/create payload            | list/detail                | 403,400     | Push audience-safe                                             |
 | GET/PATCH      | `/admin/announcements/:id`                 | Officer/Super Admin      | edit/publish/archive payload      | detail                     | 403,404,409 | Audience changes audited                                       |
-| GET/POST       | `/admin/roadmap-definitions`               | Super Admin or permitted | filters/create payload            | list/detail                | 403,400     | Requires content approval                                      |
-| GET/PATCH      | `/admin/roadmap-definitions/:id`           | Super Admin or permitted | edit/status payload               | detail                     | 403,404,409 | No auto degree                                                 |
+| GET            | `/admin/roadmap-definitions`               | Super Admin              | none                              | definition list           | 403         | Read-only inspection                                           |
+| GET            | `/admin/roadmap-definitions/:id`           | Super Admin              | none                              | definition detail         | 403,404     | Stages/steps only, no mutation                                 |
+| GET            | `/admin/roadmap-assignments`               | Super Admin              | none                              | assignment list           | 403         | Read-only inspection                                           |
+| GET            | `/admin/roadmap-assignments/:id`           | Super Admin              | none                              | assignment detail         | 403,404     | Status metadata only, no submitted bodies                      |
 | GET            | `/admin/roadmap-submissions`               | Officer/Super Admin      | filters/page                      | scoped review queue        | 403,400     | Officer scope                                                  |
 | GET/PATCH      | `/admin/roadmap-submissions/:id`           | Officer/Super Admin      | approve/reject/comment            | submission                 | 403,404,409 | Decision audited                                               |
 | GET/POST/PATCH | `/admin/silent-prayer-events`              | Officer/Super Admin      | session payload                   | list/detail                | 403,400     | Participant lists hidden                                       |
@@ -105,6 +107,18 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   and render no chat, comments, read receipts, or push delivery state. Detail
   editor rendering resolves the scoped announcement from the list contract until
   a dedicated admin detail read contract is introduced.
+- `GET /admin/roadmap-definitions` and
+  `GET /admin/roadmap-definitions/:id` require Super Admin access and support
+  read-only roadmap definition inspection through shared DTO validation and
+  mounted Admin Lite list/detail routes. Create, edit, status, and assignment
+  mutation workflows remain deferred until owner-confirmed formation wording is
+  available; these routes do not auto-award degrees.
+- `GET /admin/roadmap-assignments` and
+  `GET /admin/roadmap-assignments/:id` require Super Admin access and support
+  read-only roadmap assignment inspection through shared DTO validation and
+  mounted Admin Lite list/detail routes. Assignment detail exposes submission
+  status metadata and counts only, not submitted body text; create/update/archive
+  mutations remain deferred.
 
 ## Canonical Admin Route Names
 

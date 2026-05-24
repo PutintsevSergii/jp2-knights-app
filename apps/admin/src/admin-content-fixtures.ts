@@ -6,6 +6,8 @@ import type {
   AdminCandidateRequestDetailDto,
   AdminCandidateProfileDetailDto,
   AdminOrganizationUnitListResponseDto,
+  AdminRoadmapAssignmentDetailDto,
+  AdminRoadmapDefinitionDetailDto,
   AdminRoadmapSubmissionDetailDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
@@ -147,6 +149,80 @@ export const fallbackAdminRoadmapSubmissions: AdminRoadmapSubmissionDetailDto[] 
         originalFilename: "reflection.pdf",
         mimeType: "application/pdf",
         sizeBytes: 512
+      }
+    ]
+  }
+];
+
+export const fallbackAdminRoadmapDefinitions: AdminRoadmapDefinitionDetailDto[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000029",
+    title: "Brother Formation Roadmap",
+    targetRole: "BROTHER",
+    language: "en",
+    status: "PUBLISHED",
+    publishedAt: "2026-05-09T09:00:00.000Z",
+    stageCount: 1,
+    stepCount: 1,
+    assignmentCount: 1,
+    createdAt: "2026-05-09T09:00:00.000Z",
+    updatedAt: "2026-05-09T09:00:00.000Z",
+    archivedAt: null,
+    stages: [
+      {
+        id: "00000000-0000-4000-8000-000000000030",
+        title: "Discernment",
+        sortOrder: 1,
+        steps: [
+          {
+            id: "88888888-8888-4888-8888-888888888888",
+            title: "Meet your officer",
+            description: "Complete the required officer conversation.",
+            requiresSubmission: true,
+            sortOrder: 1,
+            status: "PUBLISHED",
+            publishedAt: "2026-05-09T09:00:00.000Z"
+          }
+        ]
+      }
+    ]
+  }
+];
+
+export const fallbackAdminRoadmapAssignments: AdminRoadmapAssignmentDetailDto[] = [
+  {
+    id: "99999999-9999-4999-8999-999999999999",
+    assigneeUserId: "33333333-3333-4333-8333-333333333333",
+    assigneeName: "Demo Brother",
+    assigneeEmail: "brother@example.test",
+    roadmapDefinitionId: fallbackAdminRoadmapDefinitions[0]!.id,
+    roadmapTitle: fallbackAdminRoadmapDefinitions[0]!.title,
+    roadmapTargetRole: "BROTHER",
+    roadmapStatus: "PUBLISHED",
+    organizationUnitId: "11111111-1111-4111-8111-111111111111",
+    organizationUnitName: "Pilot Organization Unit",
+    status: "active",
+    assignedByUserId: "3f3f3f3f-3333-4333-8333-333333333333",
+    assignedByName: "Demo Officer",
+    assignedAt: "2026-05-09T09:00:00.000Z",
+    completedAt: null,
+    submissionCount: 1,
+    pendingSubmissionCount: 1,
+    createdAt: "2026-05-09T09:00:00.000Z",
+    updatedAt: "2026-05-09T09:00:00.000Z",
+    archivedAt: null,
+    submissions: [
+      {
+        id: fallbackAdminRoadmapSubmissions[0]!.id,
+        stepId: fallbackAdminRoadmapSubmissions[0]!.stepId,
+        stageTitle: fallbackAdminRoadmapSubmissions[0]!.stageTitle,
+        stepTitle: fallbackAdminRoadmapSubmissions[0]!.stepTitle,
+        status: fallbackAdminRoadmapSubmissions[0]!.status,
+        attachmentCount: fallbackAdminRoadmapSubmissions[0]!.attachmentCount,
+        reviewComment: fallbackAdminRoadmapSubmissions[0]!.reviewComment,
+        reviewedAt: fallbackAdminRoadmapSubmissions[0]!.reviewedAt,
+        createdAt: fallbackAdminRoadmapSubmissions[0]!.createdAt,
+        updatedAt: fallbackAdminRoadmapSubmissions[0]!.updatedAt
       }
     ]
   }

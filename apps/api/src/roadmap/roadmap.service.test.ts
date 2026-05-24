@@ -11,6 +11,8 @@ import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js"
 import type { RoadmapRepository } from "./roadmap.repository.js";
 import { RoadmapService } from "./roadmap.service.js";
 import type {
+  AdminRoadmapAssignmentDetail,
+  AdminRoadmapDefinitionDetail,
   AssignedRoadmap,
   RoadmapBrotherAccessProfile,
   RoadmapSubmissionSummary,
@@ -44,6 +46,14 @@ const officer: CurrentUserPrincipal = {
   status: "active",
   roles: ["OFFICER"],
   officerOrganizationUnitIds: [organizationUnitId]
+};
+
+const superAdmin: CurrentUserPrincipal = {
+  id: "4f4f4f4f-4444-4444-8444-444444444444",
+  email: "super-admin@example.test",
+  displayName: "Super Admin",
+  status: "active",
+  roles: ["SUPER_ADMIN"]
 };
 
 const idleUser: CurrentUserPrincipal = {
@@ -158,6 +168,76 @@ const adminRoadmapSubmission = {
   organizationUnitName: "Pilot Organization Unit",
   bodyPreview: "Reflection text.",
   attachmentCount: 1
+};
+
+const adminRoadmapDefinition: AdminRoadmapDefinitionDetail = {
+  id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+  title: "Brother Formation Roadmap",
+  targetRole: "BROTHER",
+  language: "en",
+  status: "PUBLISHED",
+  publishedAt: "2026-05-09T09:00:00.000Z",
+  stageCount: 1,
+  stepCount: 1,
+  assignmentCount: 1,
+  createdAt: "2026-05-09T09:00:00.000Z",
+  updatedAt: "2026-05-09T09:00:00.000Z",
+  archivedAt: null,
+  stages: [
+    {
+      id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      title: "Discernment",
+      sortOrder: 1,
+      steps: [
+        {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          title: "Meet your officer",
+          description: "Complete the required officer conversation.",
+          requiresSubmission: true,
+          sortOrder: 1,
+          status: "PUBLISHED",
+          publishedAt: "2026-05-09T09:00:00.000Z"
+        }
+      ]
+    }
+  ]
+};
+
+const adminRoadmapAssignment: AdminRoadmapAssignmentDetail = {
+  id: brotherRoadmap.assignmentId,
+  assigneeUserId: brother.id,
+  assigneeName: brother.displayName,
+  assigneeEmail: brother.email,
+  roadmapDefinitionId: brotherRoadmap.definition.id,
+  roadmapTitle: brotherRoadmap.definition.title,
+  roadmapTargetRole: "BROTHER",
+  roadmapStatus: "PUBLISHED",
+  organizationUnitId,
+  organizationUnitName: "Pilot Organization Unit",
+  status: "active",
+  assignedByUserId: officer.id,
+  assignedByName: officer.displayName,
+  assignedAt: brotherRoadmap.assignedAt,
+  completedAt: null,
+  submissionCount: 1,
+  pendingSubmissionCount: 1,
+  createdAt: brotherRoadmap.assignedAt,
+  updatedAt: brotherRoadmap.assignedAt,
+  archivedAt: null,
+  submissions: [
+    {
+      id: adminRoadmapSubmission.id,
+      stepId: adminRoadmapSubmission.stepId,
+      stageTitle: adminRoadmapSubmission.stageTitle,
+      stepTitle: adminRoadmapSubmission.stepTitle,
+      status: adminRoadmapSubmission.status,
+      attachmentCount: adminRoadmapSubmission.attachmentCount,
+      reviewComment: adminRoadmapSubmission.reviewComment,
+      reviewedAt: adminRoadmapSubmission.reviewedAt,
+      createdAt: adminRoadmapSubmission.createdAt,
+      updatedAt: adminRoadmapSubmission.updatedAt
+    }
+  ]
 };
 
 describe("RoadmapService", () => {
@@ -424,6 +504,73 @@ describe("RoadmapService", () => {
         .listAdminRoadmapSubmissions(brother)
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
+
+  it("lists and reads roadmap definitions for Super Admin only", async () => {
+    const repository = roadmapRepository({
+      adminDefinitions: [adminRoadmapDefinition],
+      adminDefinition: adminRoadmapDefinition
+    });
+
+    await expect(service(repository).listAdminRoadmapDefinitions(superAdmin)).resolves.toEqual({
+      roadmapDefinitions: [definitionSummary(adminRoadmapDefinition)]
+    });
+    await expect(
+      service(repository).getAdminRoadmapDefinition(superAdmin, adminRoadmapDefinition.id)
+    ).resolves.toEqual({
+      roadmapDefinition: adminRoadmapDefinition
+    });
+    expect(repository.adminDefinitionLookups).toEqual([
+      "list",
+      `detail:${adminRoadmapDefinition.id}`
+    ]);
+
+    await expect(
+      service(repository).listAdminRoadmapDefinitions(officer)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("lists and reads roadmap assignments for Super Admin only without submission bodies", async () => {
+    const repository = roadmapRepository({
+      adminAssignments: [adminRoadmapAssignment],
+      adminAssignment: adminRoadmapAssignment
+    });
+
+    await expect(service(repository).listAdminRoadmapAssignments(superAdmin)).resolves.toEqual({
+      roadmapAssignments: [assignmentSummary(adminRoadmapAssignment)]
+    });
+    await expect(
+      service(repository).getAdminRoadmapAssignment(superAdmin, adminRoadmapAssignment.id)
+    ).resolves.toEqual({
+      roadmapAssignment: adminRoadmapAssignment
+    });
+    expect(repository.adminAssignmentLookups).toEqual([
+      "list",
+      `detail:${adminRoadmapAssignment.id}`
+    ]);
+    expect(adminRoadmapAssignment.submissions[0]).not.toHaveProperty("body");
+
+    await expect(
+      service(repository).listAdminRoadmapAssignments(officer)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("returns not found for missing roadmap assignments", async () => {
+    await expect(
+      service(roadmapRepository({ adminAssignment: null })).getAdminRoadmapAssignment(
+        superAdmin,
+        adminRoadmapAssignment.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it("returns not found for missing roadmap definitions", async () => {
+    await expect(
+      service(roadmapRepository({ adminDefinition: null })).getAdminRoadmapDefinition(
+        superAdmin,
+        adminRoadmapDefinition.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
 });
 
 function service(repository: RoadmapRepository, auditLog: TestAuditLog = auditLogRecorder()) {
@@ -440,6 +587,10 @@ function roadmapRepository(options: {
   adminSubmissions?: typeof adminRoadmapSubmission[] | undefined;
   adminSubmission?: typeof adminRoadmapSubmission | null | undefined;
   reviewedSubmission?: typeof adminRoadmapSubmission | undefined;
+  adminDefinitions?: AdminRoadmapDefinitionDetail[] | undefined;
+  adminDefinition?: AdminRoadmapDefinitionDetail | null | undefined;
+  adminAssignments?: AdminRoadmapAssignmentDetail[] | undefined;
+  adminAssignment?: AdminRoadmapAssignmentDetail | null | undefined;
 }) {
   class FakeRoadmapRepository implements RoadmapRepository {
     lookups: Array<{
@@ -478,6 +629,8 @@ function roadmapRepository(options: {
       status: "approved" | "rejected";
       reviewComment: string | null;
     }> = [];
+    adminAssignmentLookups: string[] = [];
+    adminDefinitionLookups: string[] = [];
 
     findActiveCandidateAccessProfile() {
       return Promise.resolve(options.candidateProfile ?? null);
@@ -579,9 +732,75 @@ function roadmapRepository(options: {
       });
       return Promise.resolve(options.reviewedSubmission ?? adminRoadmapSubmission);
     }
+
+    listAdminRoadmapAssignments() {
+      this.adminAssignmentLookups.push("list");
+      return Promise.resolve(
+        (options.adminAssignments ?? []).map((assignment) => assignmentSummary(assignment))
+      );
+    }
+
+    findAdminRoadmapAssignment(lookup: { id: string }) {
+      this.adminAssignmentLookups.push(`detail:${lookup.id}`);
+      return Promise.resolve(options.adminAssignment ?? null);
+    }
+
+    listAdminRoadmapDefinitions() {
+      this.adminDefinitionLookups.push("list");
+      return Promise.resolve(
+        (options.adminDefinitions ?? []).map((definition) => definitionSummary(definition))
+      );
+    }
+
+    findAdminRoadmapDefinition(lookup: { id: string }) {
+      this.adminDefinitionLookups.push(`detail:${lookup.id}`);
+      return Promise.resolve(options.adminDefinition ?? null);
+    }
   }
 
   return new FakeRoadmapRepository();
+}
+
+function assignmentSummary(assignment: AdminRoadmapAssignmentDetail) {
+  return {
+    id: assignment.id,
+    assigneeUserId: assignment.assigneeUserId,
+    assigneeName: assignment.assigneeName,
+    assigneeEmail: assignment.assigneeEmail,
+    roadmapDefinitionId: assignment.roadmapDefinitionId,
+    roadmapTitle: assignment.roadmapTitle,
+    roadmapTargetRole: assignment.roadmapTargetRole,
+    roadmapStatus: assignment.roadmapStatus,
+    organizationUnitId: assignment.organizationUnitId,
+    organizationUnitName: assignment.organizationUnitName,
+    status: assignment.status,
+    assignedByUserId: assignment.assignedByUserId,
+    assignedByName: assignment.assignedByName,
+    assignedAt: assignment.assignedAt,
+    completedAt: assignment.completedAt,
+    submissionCount: assignment.submissionCount,
+    pendingSubmissionCount: assignment.pendingSubmissionCount,
+    createdAt: assignment.createdAt,
+    updatedAt: assignment.updatedAt,
+    archivedAt: assignment.archivedAt
+  };
+}
+
+function definitionSummary(definition: AdminRoadmapDefinitionDetail) {
+  return {
+    id: definition.id,
+    title: definition.title,
+    targetRole: definition.targetRole,
+    language: definition.language,
+    status: definition.status,
+    publishedAt: definition.publishedAt,
+    stageCount: definition.stageCount,
+    stepCount: definition.stepCount,
+    assignmentCount: definition.assignmentCount,
+    createdAt: definition.createdAt,
+    updatedAt: definition.updatedAt,
+    archivedAt: definition.archivedAt
+  };
 }
 
 type TestAuditLog = Pick<AuditLogService, "record"> & {

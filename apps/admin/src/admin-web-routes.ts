@@ -10,8 +10,12 @@ import { renderAdminDashboardRoute } from "./admin-dashboard-screen.js";
 import { renderAdminIdentityAccessShellRoute } from "./admin-identity-access-shell.js";
 import type { AdminOrganizationUnitShellRoute } from "./admin-organization-units-shell.js";
 import { renderAdminOrganizationUnitRoute } from "./admin-organization-units-shell.js";
+import type { AdminRoadmapAssignmentShellRoute } from "./admin-roadmap-assignments-shell.js";
+import { renderAdminRoadmapAssignmentRoute } from "./admin-roadmap-assignments-shell.js";
 import type { AdminRoadmapSubmissionShellRoute } from "./admin-roadmap-submissions-shell.js";
 import { renderAdminRoadmapSubmissionRoute } from "./admin-roadmap-submissions-shell.js";
+import type { AdminRoadmapDefinitionShellRoute } from "./admin-roadmap-definitions-shell.js";
+import { renderAdminRoadmapDefinitionRoute } from "./admin-roadmap-definitions-shell.js";
 
 export interface AdminWebRouteContext {
   path: string;
@@ -86,6 +90,26 @@ const adminWebRouteDefinitions: readonly AdminWebRouteDefinition[] = [
       ...(await renderAdminOrganizationUnitRoute({
         ...routeOptions(context),
         path: context.path as AdminOrganizationUnitShellRoute
+      }))
+    })
+  },
+  {
+    matches: isAdminRoadmapAssignmentRoute,
+    render: async (context) => ({
+      title: "Admin Roadmap Assignments",
+      ...(await renderAdminRoadmapAssignmentRoute({
+        ...routeOptions(context),
+        path: context.path as AdminRoadmapAssignmentShellRoute
+      }))
+    })
+  },
+  {
+    matches: isAdminRoadmapDefinitionRoute,
+    render: async (context) => ({
+      title: "Admin Roadmap Definitions",
+      ...(await renderAdminRoadmapDefinitionRoute({
+        ...routeOptions(context),
+        path: context.path as AdminRoadmapDefinitionShellRoute
       }))
     })
   },
@@ -179,5 +203,21 @@ function isAdminRoadmapSubmissionRoute(path: string): boolean {
     path === "/admin/roadmap-submissions" ||
     (path.startsWith("/admin/roadmap-submissions/") &&
       path.length > "/admin/roadmap-submissions/".length)
+  );
+}
+
+function isAdminRoadmapAssignmentRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-assignments" ||
+    (path.startsWith("/admin/roadmap-assignments/") &&
+      path.length > "/admin/roadmap-assignments/".length)
+  );
+}
+
+function isAdminRoadmapDefinitionRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-definitions" ||
+    (path.startsWith("/admin/roadmap-definitions/") &&
+      path.length > "/admin/roadmap-definitions/".length)
   );
 }

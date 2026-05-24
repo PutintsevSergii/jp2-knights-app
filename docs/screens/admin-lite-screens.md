@@ -19,8 +19,10 @@
 | Event Editor               | `/admin/events/:id`               | Edit event                      | save/publish/cancel/archive          | validation          | Visibility explicit                            |
 | Announcement List          | `/admin/announcements`            | Messages                        | create/filter/open                   | empty               | Scoped                                         |
 | Announcement Editor        | `/admin/announcements/:id`        | Edit message                    | save/publish/archive                 | validation          | Audience-safe                                  |
-| Roadmap Definition List    | `/admin/roadmap-definitions`      | Roadmap configs                 | create/open                          | empty               | Super Admin/permitted                          |
-| Roadmap Definition Editor  | `/admin/roadmap-definitions/:id`  | Edit roadmap                    | stages/steps/status                  | validation          | Requires approved content                      |
+| Roadmap Definition List    | `/admin/roadmap-definitions`      | Roadmap configs                 | open                                 | empty/loading/error | Super Admin only                               |
+| Roadmap Definition Detail  | `/admin/roadmap-definitions/:id`  | Inspect roadmap                 | back/open stages                     | not found/forbidden | Super Admin only                               |
+| Roadmap Assignment List    | `/admin/roadmap-assignments`      | Assigned roadmaps               | open                                 | empty/loading/error | Super Admin only                               |
+| Roadmap Assignment Detail  | `/admin/roadmap-assignments/:id`  | Inspect assignment              | back/open statuses                   | not found/forbidden | Super Admin only                               |
 | Roadmap Request List       | `/admin/roadmap-submissions`      | Review queue                    | filter/open                          | empty               | Scoped                                         |
 | Roadmap Request Detail     | `/admin/roadmap-submissions/:id`  | Review submission               | approve/reject/comment               | conflict            | Audited                                        |
 | Silent Prayer Event List   | `/admin/silent-prayer-events`     | Prayer sessions                 | create/open                          | empty               | Scoped                                         |
@@ -59,3 +61,17 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
   scope; Super Admins can review globally. Review decisions are approve/reject
   only, rejection requires comment at the API contract, and the UI does not
   render automatic degree changes or cross-user roadmap rollups.
+- Phase 10B mounts `/admin/roadmap-definitions` and
+  `/admin/roadmap-definitions/:id` as Super Admin-only read routes through the
+  Next App Router and shared Admin Lite shell. The routes use typed roadmap
+  definition API clients, shared DTO validation, demo fixtures, responsive
+  rendered list/detail screens, and active navigation. They intentionally do
+  not render create/edit/status/assignment actions until owner-confirmed
+  formation wording and workflow scope are available.
+- Phase 10B mounts `/admin/roadmap-assignments` and
+  `/admin/roadmap-assignments/:id` as Super Admin-only read routes through the
+  Next App Router and shared Admin Lite shell. The routes use typed roadmap
+  assignment API clients, shared DTO validation, demo fixtures, responsive
+  rendered list/detail screens, and active navigation. Assignment detail renders
+  submission status metadata and counts only, not submitted body text, and it
+  does not add assignment create/update/archive actions.

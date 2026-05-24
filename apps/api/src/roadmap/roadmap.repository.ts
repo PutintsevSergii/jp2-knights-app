@@ -6,6 +6,12 @@ import { PrismaService } from "../database/prisma.service.js";
 import type {
   AssignedRoadmap,
   AssignedRoadmapLookup,
+  AdminRoadmapAssignmentDetail,
+  AdminRoadmapAssignmentLookup,
+  AdminRoadmapAssignmentSummary,
+  AdminRoadmapDefinitionDetail,
+  AdminRoadmapDefinitionLookup,
+  AdminRoadmapDefinitionSummary,
   AdminRoadmapSubmissionDetail,
   AdminRoadmapSubmissionDetailLookup,
   AdminRoadmapSubmissionLookup,
@@ -44,6 +50,14 @@ export abstract class RoadmapRepository {
   abstract reviewRoadmapSubmission(
     input: ReviewRoadmapSubmissionInput
   ): Promise<AdminRoadmapSubmissionDetail | null>;
+  abstract listAdminRoadmapAssignments(): Promise<AdminRoadmapAssignmentSummary[]>;
+  abstract findAdminRoadmapAssignment(
+    lookup: AdminRoadmapAssignmentLookup
+  ): Promise<AdminRoadmapAssignmentDetail | null>;
+  abstract listAdminRoadmapDefinitions(): Promise<AdminRoadmapDefinitionSummary[]>;
+  abstract findAdminRoadmapDefinition(
+    lookup: AdminRoadmapDefinitionLookup
+  ): Promise<AdminRoadmapDefinitionDetail | null>;
 }
 
 @Injectable()
@@ -270,6 +284,58 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
 
     return toAdminRoadmapSubmissionDetail(record);
   }
+
+  async listAdminRoadmapAssignments(): Promise<AdminRoadmapAssignmentSummary[]> {
+    const records = await this.prisma.roadmapAssignment.findMany({
+      where: {
+        archivedAt: null
+      },
+      include: adminRoadmapAssignmentInclude,
+      orderBy: [{ assignedAt: "desc" }, { createdAt: "desc" }]
+    });
+
+    return records.map(toAdminRoadmapAssignmentSummary);
+  }
+
+  async findAdminRoadmapAssignment({
+    id
+  }: AdminRoadmapAssignmentLookup): Promise<AdminRoadmapAssignmentDetail | null> {
+    const record = await this.prisma.roadmapAssignment.findFirst({
+      where: {
+        id,
+        archivedAt: null
+      },
+      include: adminRoadmapAssignmentInclude
+    });
+
+    return record ? toAdminRoadmapAssignmentDetail(record) : null;
+  }
+
+  async listAdminRoadmapDefinitions(): Promise<AdminRoadmapDefinitionSummary[]> {
+    const records = await this.prisma.roadmapDefinition.findMany({
+      where: {
+        archivedAt: null
+      },
+      include: adminRoadmapDefinitionSummaryInclude,
+      orderBy: [{ targetRole: "asc" }, { title: "asc" }]
+    });
+
+    return records.map(toAdminRoadmapDefinitionSummary);
+  }
+
+  async findAdminRoadmapDefinition({
+    id
+  }: AdminRoadmapDefinitionLookup): Promise<AdminRoadmapDefinitionDetail | null> {
+    const record = await this.prisma.roadmapDefinition.findFirst({
+      where: {
+        id,
+        archivedAt: null
+      },
+      include: adminRoadmapDefinitionDetailInclude
+    });
+
+    return record ? toAdminRoadmapDefinitionDetail(record) : null;
+  }
 }
 
 type RoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
@@ -324,6 +390,121 @@ const adminRoadmapSubmissionInclude = {
 
 type AdminRoadmapSubmissionRecord = Prisma.RoadmapSubmissionGetPayload<{
   include: typeof adminRoadmapSubmissionInclude;
+}>;
+
+const adminRoadmapAssignmentInclude = {
+  user: {
+    select: {
+      id: true,
+      displayName: true,
+      email: true
+    }
+  },
+  roadmapDefinition: {
+    select: {
+      id: true,
+      title: true,
+      targetRole: true,
+      status: true
+    }
+  },
+  organizationUnit: {
+    select: {
+      name: true
+    }
+  },
+  assigner: {
+    select: {
+      id: true,
+      displayName: true
+    }
+  },
+  submissions: {
+    where: {
+      archivedAt: null
+    },
+    include: {
+      step: {
+        include: {
+          stage: {
+            select: {
+              title: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  }
+} as const;
+
+type AdminRoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
+  include: typeof adminRoadmapAssignmentInclude;
+}>;
+
+const adminRoadmapDefinitionSummaryInclude = {
+  stages: {
+    where: {
+      archivedAt: null
+    },
+    include: {
+      steps: {
+        where: {
+          archivedAt: null
+        },
+        select: {
+          id: true
+        }
+      }
+    }
+  },
+  assignments: {
+    where: {
+      archivedAt: null
+    },
+    select: {
+      id: true
+    }
+  }
+} as const;
+
+const adminRoadmapDefinitionDetailInclude = {
+  stages: {
+    where: {
+      archivedAt: null
+    },
+    orderBy: {
+      sortOrder: "asc"
+    },
+    include: {
+      steps: {
+        where: {
+          archivedAt: null
+        },
+        orderBy: {
+          sortOrder: "asc"
+        }
+      }
+    }
+  },
+  assignments: {
+    where: {
+      archivedAt: null
+    },
+    select: {
+      id: true
+    }
+  }
+} as const;
+
+type AdminRoadmapDefinitionSummaryRecord = Prisma.RoadmapDefinitionGetPayload<{
+  include: typeof adminRoadmapDefinitionSummaryInclude;
+}>;
+
+type AdminRoadmapDefinitionDetailRecord = Prisma.RoadmapDefinitionGetPayload<{
+  include: typeof adminRoadmapDefinitionDetailInclude;
 }>;
 
 export function assignedRoadmapWhere(
@@ -521,6 +702,55 @@ function toAdminRoadmapSubmissionDetail(
   };
 }
 
+function toAdminRoadmapAssignmentSummary(
+  assignment: AdminRoadmapAssignmentRecord
+): AdminRoadmapAssignmentSummary {
+  return {
+    id: assignment.id,
+    assigneeUserId: assignment.user.id,
+    assigneeName: assignment.user.displayName,
+    assigneeEmail: assignment.user.email,
+    roadmapDefinitionId: assignment.roadmapDefinition.id,
+    roadmapTitle: assignment.roadmapDefinition.title,
+    roadmapTargetRole: assignment.roadmapDefinition.targetRole as "CANDIDATE" | "BROTHER",
+    roadmapStatus: assignment.roadmapDefinition.status,
+    organizationUnitId: assignment.organizationUnitId,
+    organizationUnitName: assignment.organizationUnit?.name ?? null,
+    status: assignment.status,
+    assignedByUserId: assignment.assigner?.id ?? null,
+    assignedByName: assignment.assigner?.displayName ?? null,
+    assignedAt: assignment.assignedAt.toISOString(),
+    completedAt: assignment.completedAt?.toISOString() ?? null,
+    submissionCount: assignment.submissions.length,
+    pendingSubmissionCount: assignment.submissions.filter(
+      (submission) => submission.status === "pending_review"
+    ).length,
+    createdAt: assignment.createdAt.toISOString(),
+    updatedAt: assignment.updatedAt.toISOString(),
+    archivedAt: assignment.archivedAt?.toISOString() ?? null
+  };
+}
+
+function toAdminRoadmapAssignmentDetail(
+  assignment: AdminRoadmapAssignmentRecord
+): AdminRoadmapAssignmentDetail {
+  return {
+    ...toAdminRoadmapAssignmentSummary(assignment),
+    submissions: assignment.submissions.map((submission) => ({
+      id: submission.id,
+      stepId: submission.stepId,
+      stageTitle: submission.step.stage.title,
+      stepTitle: submission.step.title,
+      status: submission.status,
+      attachmentCount: toAttachmentMetadata(submission.attachmentMeta).length,
+      reviewComment: submission.reviewComment,
+      reviewedAt: submission.reviewedAt?.toISOString() ?? null,
+      createdAt: submission.createdAt.toISOString(),
+      updatedAt: submission.updatedAt.toISOString()
+    }))
+  };
+}
+
 function roadmapSubmissionBodyPreview(body: string): string | null {
   const normalized = body.replace(/\s+/g, " ").trim();
 
@@ -533,6 +763,47 @@ function roadmapSubmissionBodyPreview(body: string): string | null {
   }
 
   return `${normalized.slice(0, 177).trimEnd()}...`;
+}
+
+function toAdminRoadmapDefinitionSummary(
+  definition: AdminRoadmapDefinitionSummaryRecord
+): AdminRoadmapDefinitionSummary {
+  return {
+    id: definition.id,
+    title: definition.title,
+    targetRole: definition.targetRole as "CANDIDATE" | "BROTHER",
+    language: definition.language,
+    status: definition.status,
+    publishedAt: definition.publishedAt?.toISOString() ?? null,
+    stageCount: definition.stages.length,
+    stepCount: definition.stages.reduce((total, stage) => total + stage.steps.length, 0),
+    assignmentCount: definition.assignments.length,
+    createdAt: definition.createdAt.toISOString(),
+    updatedAt: definition.updatedAt.toISOString(),
+    archivedAt: definition.archivedAt?.toISOString() ?? null
+  };
+}
+
+function toAdminRoadmapDefinitionDetail(
+  definition: AdminRoadmapDefinitionDetailRecord
+): AdminRoadmapDefinitionDetail {
+  return {
+    ...toAdminRoadmapDefinitionSummary(definition),
+    stages: definition.stages.map((stage) => ({
+      id: stage.id,
+      title: stage.title,
+      sortOrder: stage.sortOrder,
+      steps: stage.steps.map((step) => ({
+        id: step.id,
+        title: step.title,
+        description: step.description,
+        requiresSubmission: step.requiresSubmission,
+        sortOrder: step.sortOrder,
+        status: step.status,
+        publishedAt: step.publishedAt?.toISOString() ?? null
+      }))
+    }))
+  };
 }
 
 function toInputAttachmentMetadata(

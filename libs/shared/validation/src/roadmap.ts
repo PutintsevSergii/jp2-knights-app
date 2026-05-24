@@ -139,6 +139,120 @@ export const adminRoadmapSubmissionDetailResponseSchema = z
   })
   .strict();
 
+export const adminRoadmapDefinitionStepSchema = z
+  .object({
+    id: z.uuid(),
+    title: roadmapTextSchema,
+    description: z.string().trim().min(1).max(2000).nullable(),
+    requiresSubmission: z.boolean(),
+    sortOrder: z.number().int().min(0),
+    status: contentStatusSchema,
+    publishedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminRoadmapDefinitionStageSchema = z
+  .object({
+    id: z.uuid(),
+    title: roadmapTextSchema,
+    sortOrder: z.number().int().min(0),
+    steps: z.array(adminRoadmapDefinitionStepSchema)
+  })
+  .strict();
+
+export const adminRoadmapDefinitionSummarySchema = z
+  .object({
+    id: z.uuid(),
+    title: roadmapTextSchema,
+    targetRole: roadmapTargetRoleSchema,
+    language: z.string().trim().min(2).max(10),
+    status: contentStatusSchema,
+    publishedAt: z.iso.datetime().nullable(),
+    stageCount: z.number().int().min(0),
+    stepCount: z.number().int().min(0),
+    assignmentCount: z.number().int().min(0),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminRoadmapDefinitionDetailSchema = adminRoadmapDefinitionSummarySchema
+  .extend({
+    stages: z.array(adminRoadmapDefinitionStageSchema)
+  })
+  .strict();
+
+export const adminRoadmapDefinitionListResponseSchema = z
+  .object({
+    roadmapDefinitions: z.array(adminRoadmapDefinitionSummarySchema)
+  })
+  .strict();
+
+export const adminRoadmapDefinitionDetailResponseSchema = z
+  .object({
+    roadmapDefinition: adminRoadmapDefinitionDetailSchema
+  })
+  .strict();
+
+export const adminRoadmapAssignmentSubmissionSchema = z
+  .object({
+    id: z.uuid(),
+    stepId: z.uuid(),
+    stageTitle: roadmapTextSchema,
+    stepTitle: roadmapTextSchema,
+    status: roadmapSubmissionStatusSchema,
+    attachmentCount: z.number().int().min(0).max(5),
+    reviewComment: z.string().trim().min(1).max(2000).nullable(),
+    reviewedAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const adminRoadmapAssignmentSummarySchema = z
+  .object({
+    id: z.uuid(),
+    assigneeUserId: z.uuid(),
+    assigneeName: roadmapTextSchema,
+    assigneeEmail: z.email(),
+    roadmapDefinitionId: z.uuid(),
+    roadmapTitle: roadmapTextSchema,
+    roadmapTargetRole: roadmapTargetRoleSchema,
+    roadmapStatus: contentStatusSchema,
+    organizationUnitId: z.uuid().nullable(),
+    organizationUnitName: roadmapTextSchema.nullable(),
+    status: roadmapAssignmentStatusSchema,
+    assignedByUserId: z.uuid().nullable(),
+    assignedByName: roadmapTextSchema.nullable(),
+    assignedAt: z.iso.datetime(),
+    completedAt: z.iso.datetime().nullable(),
+    submissionCount: z.number().int().min(0),
+    pendingSubmissionCount: z.number().int().min(0),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminRoadmapAssignmentDetailSchema = adminRoadmapAssignmentSummarySchema
+  .extend({
+    submissions: z.array(adminRoadmapAssignmentSubmissionSchema)
+  })
+  .strict();
+
+export const adminRoadmapAssignmentListResponseSchema = z
+  .object({
+    roadmapAssignments: z.array(adminRoadmapAssignmentSummarySchema)
+  })
+  .strict();
+
+export const adminRoadmapAssignmentDetailResponseSchema = z
+  .object({
+    roadmapAssignment: adminRoadmapAssignmentDetailSchema
+  })
+  .strict();
+
 export const reviewRoadmapSubmissionRequestSchema = z
   .object({
     status: z.enum(["approved", "rejected"]),
@@ -170,6 +284,33 @@ export type AdminRoadmapSubmissionListResponseDto = z.infer<
 >;
 export type AdminRoadmapSubmissionDetailResponseDto = z.infer<
   typeof adminRoadmapSubmissionDetailResponseSchema
+>;
+export type AdminRoadmapDefinitionStepDto = z.infer<typeof adminRoadmapDefinitionStepSchema>;
+export type AdminRoadmapDefinitionStageDto = z.infer<typeof adminRoadmapDefinitionStageSchema>;
+export type AdminRoadmapDefinitionSummaryDto = z.infer<
+  typeof adminRoadmapDefinitionSummarySchema
+>;
+export type AdminRoadmapDefinitionDetailDto = z.infer<typeof adminRoadmapDefinitionDetailSchema>;
+export type AdminRoadmapDefinitionListResponseDto = z.infer<
+  typeof adminRoadmapDefinitionListResponseSchema
+>;
+export type AdminRoadmapDefinitionDetailResponseDto = z.infer<
+  typeof adminRoadmapDefinitionDetailResponseSchema
+>;
+export type AdminRoadmapAssignmentSubmissionDto = z.infer<
+  typeof adminRoadmapAssignmentSubmissionSchema
+>;
+export type AdminRoadmapAssignmentSummaryDto = z.infer<
+  typeof adminRoadmapAssignmentSummarySchema
+>;
+export type AdminRoadmapAssignmentDetailDto = z.infer<
+  typeof adminRoadmapAssignmentDetailSchema
+>;
+export type AdminRoadmapAssignmentListResponseDto = z.infer<
+  typeof adminRoadmapAssignmentListResponseSchema
+>;
+export type AdminRoadmapAssignmentDetailResponseDto = z.infer<
+  typeof adminRoadmapAssignmentDetailResponseSchema
 >;
 export type ReviewRoadmapSubmissionRequestDto = z.infer<
   typeof reviewRoadmapSubmissionRequestSchema

@@ -25,6 +25,8 @@ describe("admin shell", () => {
       "/admin/candidate-requests",
       "/admin/candidates",
       "/admin/organization-units",
+      "/admin/roadmap-assignments",
+      "/admin/roadmap-definitions",
       "/admin/roadmap-submissions",
       "/admin/prayers",
       "/admin/events",
@@ -38,6 +40,8 @@ describe("admin shell", () => {
       "admin-candidate-requests-screen.ts",
       "admin-candidates-screen.ts",
       "admin-organization-units-screen.ts",
+      "admin-roadmap-assignments-screen.ts",
+      "admin-roadmap-definitions-screen.ts",
       "admin-roadmap-submissions-screen.ts"
     ]) {
       const source = readFileSync(join(process.cwd(), "apps/admin/src", fileName), "utf8");

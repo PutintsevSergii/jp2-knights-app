@@ -163,6 +163,221 @@ export const reviewRoadmapSubmissionRequestOpenApiSchema = {
   }
 };
 
+const adminRoadmapAssignmentSubmissionOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "stepId",
+    "stageTitle",
+    "stepTitle",
+    "status",
+    "attachmentCount",
+    "reviewComment",
+    "reviewedAt",
+    "createdAt",
+    "updatedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    stepId: { type: "string", format: "uuid" },
+    stageTitle: { type: "string", minLength: 1, maxLength: 200 },
+    stepTitle: { type: "string", minLength: 1, maxLength: 200 },
+    status: { type: "string", enum: ["pending_review", "approved", "rejected"] },
+    attachmentCount: { type: "integer", minimum: 0, maximum: 5 },
+    reviewComment: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
+    reviewedAt: { type: "string", nullable: true, format: "date-time" },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" }
+  }
+};
+
+const adminRoadmapAssignmentSummaryOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "assigneeUserId",
+    "assigneeName",
+    "assigneeEmail",
+    "roadmapDefinitionId",
+    "roadmapTitle",
+    "roadmapTargetRole",
+    "roadmapStatus",
+    "organizationUnitId",
+    "organizationUnitName",
+    "status",
+    "assignedByUserId",
+    "assignedByName",
+    "assignedAt",
+    "completedAt",
+    "submissionCount",
+    "pendingSubmissionCount",
+    "createdAt",
+    "updatedAt",
+    "archivedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    assigneeUserId: { type: "string", format: "uuid" },
+    assigneeName: { type: "string", minLength: 1, maxLength: 200 },
+    assigneeEmail: { type: "string", format: "email" },
+    roadmapDefinitionId: { type: "string", format: "uuid" },
+    roadmapTitle: { type: "string", minLength: 1, maxLength: 200 },
+    roadmapTargetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
+    roadmapStatus: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    organizationUnitId: { type: "string", nullable: true, format: "uuid" },
+    organizationUnitName: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
+    status: { type: "string", enum: ["active", "completed", "archived"] },
+    assignedByUserId: { type: "string", nullable: true, format: "uuid" },
+    assignedByName: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
+    assignedAt: { type: "string", format: "date-time" },
+    completedAt: { type: "string", nullable: true, format: "date-time" },
+    submissionCount: { type: "integer", minimum: 0 },
+    pendingSubmissionCount: { type: "integer", minimum: 0 },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+const adminRoadmapAssignmentDetailOpenApiSchema = {
+  ...adminRoadmapAssignmentSummaryOpenApiSchema,
+  required: [...adminRoadmapAssignmentSummaryOpenApiSchema.required, "submissions"],
+  properties: {
+    ...adminRoadmapAssignmentSummaryOpenApiSchema.properties,
+    submissions: {
+      type: "array",
+      items: adminRoadmapAssignmentSubmissionOpenApiSchema
+    }
+  }
+};
+
+export const adminRoadmapAssignmentListResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapAssignments"],
+  additionalProperties: false,
+  properties: {
+    roadmapAssignments: {
+      type: "array",
+      items: adminRoadmapAssignmentSummaryOpenApiSchema
+    }
+  }
+};
+
+export const adminRoadmapAssignmentDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapAssignment"],
+  additionalProperties: false,
+  properties: {
+    roadmapAssignment: adminRoadmapAssignmentDetailOpenApiSchema
+  }
+};
+
+const adminRoadmapDefinitionStepOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "title",
+    "description",
+    "requiresSubmission",
+    "sortOrder",
+    "status",
+    "publishedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    description: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
+    requiresSubmission: { type: "boolean" },
+    sortOrder: { type: "integer", minimum: 0 },
+    status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    publishedAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+const adminRoadmapDefinitionStageOpenApiSchema = {
+  type: "object",
+  required: ["id", "title", "sortOrder", "steps"],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    sortOrder: { type: "integer", minimum: 0 },
+    steps: {
+      type: "array",
+      items: adminRoadmapDefinitionStepOpenApiSchema
+    }
+  }
+};
+
+const adminRoadmapDefinitionSummaryOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "title",
+    "targetRole",
+    "language",
+    "status",
+    "publishedAt",
+    "stageCount",
+    "stepCount",
+    "assignmentCount",
+    "createdAt",
+    "updatedAt",
+    "archivedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    targetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
+    language: { type: "string", minLength: 2, maxLength: 10 },
+    status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    publishedAt: { type: "string", nullable: true, format: "date-time" },
+    stageCount: { type: "integer", minimum: 0 },
+    stepCount: { type: "integer", minimum: 0 },
+    assignmentCount: { type: "integer", minimum: 0 },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+const adminRoadmapDefinitionDetailOpenApiSchema = {
+  ...adminRoadmapDefinitionSummaryOpenApiSchema,
+  required: [...adminRoadmapDefinitionSummaryOpenApiSchema.required, "stages"],
+  properties: {
+    ...adminRoadmapDefinitionSummaryOpenApiSchema.properties,
+    stages: {
+      type: "array",
+      items: adminRoadmapDefinitionStageOpenApiSchema
+    }
+  }
+};
+
+export const adminRoadmapDefinitionListResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapDefinitions"],
+  additionalProperties: false,
+  properties: {
+    roadmapDefinitions: {
+      type: "array",
+      items: adminRoadmapDefinitionSummaryOpenApiSchema
+    }
+  }
+};
+
+export const adminRoadmapDefinitionDetailResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapDefinition"],
+  additionalProperties: false,
+  properties: {
+    roadmapDefinition: adminRoadmapDefinitionDetailOpenApiSchema
+  }
+};
+
 const roadmapStepSummaryOpenApiSchema = {
   type: "object",
   required: [

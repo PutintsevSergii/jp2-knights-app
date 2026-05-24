@@ -1,4 +1,12 @@
 import type {
+  AdminRoadmapAssignmentDetailDto,
+  AdminRoadmapAssignmentDetailResponseDto,
+  AdminRoadmapAssignmentListResponseDto,
+  AdminRoadmapAssignmentSummaryDto,
+  AdminRoadmapDefinitionDetailDto,
+  AdminRoadmapDefinitionDetailResponseDto,
+  AdminRoadmapDefinitionListResponseDto,
+  AdminRoadmapDefinitionSummaryDto,
   AdminRoadmapSubmissionDetailDto,
   AdminRoadmapSubmissionDetailResponseDto,
   AdminRoadmapSubmissionListResponseDto,
@@ -68,6 +76,14 @@ export interface ReviewRoadmapSubmissionInput extends AdminRoadmapSubmissionDeta
   reviewComment: string | null;
 }
 
+export interface AdminRoadmapDefinitionLookup {
+  id: string;
+}
+
+export interface AdminRoadmapAssignmentLookup {
+  id: string;
+}
+
 export type AssignedRoadmap = AssignedRoadmapDto;
 export type AssignedRoadmapResponse = AssignedRoadmapResponseDto;
 export type CreateRoadmapSubmissionRequest = CreateRoadmapSubmissionRequestDto;
@@ -78,3 +94,11 @@ export type AdminRoadmapSubmissionDetail = AdminRoadmapSubmissionDetailDto;
 export type AdminRoadmapSubmissionListResponse = AdminRoadmapSubmissionListResponseDto;
 export type AdminRoadmapSubmissionDetailResponse = AdminRoadmapSubmissionDetailResponseDto;
 export type ReviewRoadmapSubmissionRequest = ReviewRoadmapSubmissionRequestDto;
+export type AdminRoadmapDefinitionSummary = AdminRoadmapDefinitionSummaryDto;
+export type AdminRoadmapDefinitionDetail = AdminRoadmapDefinitionDetailDto;
+export type AdminRoadmapDefinitionListResponse = AdminRoadmapDefinitionListResponseDto;
+export type AdminRoadmapDefinitionDetailResponse = AdminRoadmapDefinitionDetailResponseDto;
+export type AdminRoadmapAssignmentSummary = AdminRoadmapAssignmentSummaryDto;
+export type AdminRoadmapAssignmentDetail = AdminRoadmapAssignmentDetailDto;
+export type AdminRoadmapAssignmentListResponse = AdminRoadmapAssignmentListResponseDto;
+export type AdminRoadmapAssignmentDetailResponse = AdminRoadmapAssignmentDetailResponseDto;

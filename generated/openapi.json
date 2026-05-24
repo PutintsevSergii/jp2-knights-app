@@ -13541,6 +13541,994 @@
           "roadmap"
         ]
       }
+    },
+    "/api/admin/roadmap-assignments": {
+      "get": {
+        "operationId": "RoadmapController_listAdminRoadmapAssignments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Roadmap assignments visible to Super Admin roadmap configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "roadmapAssignments"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "roadmapAssignments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "assigneeUserId",
+                          "assigneeName",
+                          "assigneeEmail",
+                          "roadmapDefinitionId",
+                          "roadmapTitle",
+                          "roadmapTargetRole",
+                          "roadmapStatus",
+                          "organizationUnitId",
+                          "organizationUnitName",
+                          "status",
+                          "assignedByUserId",
+                          "assignedByName",
+                          "assignedAt",
+                          "completedAt",
+                          "submissionCount",
+                          "pendingSubmissionCount",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "assigneeUserId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "assigneeName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "assigneeEmail": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "roadmapDefinitionId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "roadmapTitle": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "roadmapTargetRole": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER"
+                            ]
+                          },
+                          "roadmapStatus": {
+                            "type": "string",
+                            "enum": [
+                              "DRAFT",
+                              "REVIEW",
+                              "APPROVED",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                            ]
+                          },
+                          "organizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "organizationUnitName": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "completed",
+                              "archived"
+                            ]
+                          },
+                          "assignedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "assignedByName": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "assignedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "completedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "submissionCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "pendingSubmissionCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Super Admin access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "roadmap"
+        ]
+      }
+    },
+    "/api/admin/roadmap-assignments/{id}": {
+      "get": {
+        "operationId": "RoadmapController_getAdminRoadmapAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roadmap assignment detail visible to Super Admin roadmap configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "roadmapAssignment"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "roadmapAssignment": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "assigneeUserId",
+                        "assigneeName",
+                        "assigneeEmail",
+                        "roadmapDefinitionId",
+                        "roadmapTitle",
+                        "roadmapTargetRole",
+                        "roadmapStatus",
+                        "organizationUnitId",
+                        "organizationUnitName",
+                        "status",
+                        "assignedByUserId",
+                        "assignedByName",
+                        "assignedAt",
+                        "completedAt",
+                        "submissionCount",
+                        "pendingSubmissionCount",
+                        "createdAt",
+                        "updatedAt",
+                        "archivedAt",
+                        "submissions"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "assigneeUserId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "assigneeName": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "assigneeEmail": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "roadmapDefinitionId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "roadmapTitle": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "roadmapTargetRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER"
+                          ]
+                        },
+                        "roadmapStatus": {
+                          "type": "string",
+                          "enum": [
+                            "DRAFT",
+                            "REVIEW",
+                            "APPROVED",
+                            "PUBLISHED",
+                            "ARCHIVED"
+                          ]
+                        },
+                        "organizationUnitId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "organizationUnitName": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "completed",
+                            "archived"
+                          ]
+                        },
+                        "assignedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "assignedByName": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "assignedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "submissionCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "pendingSubmissionCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "archivedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "submissions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "stepId",
+                              "stageTitle",
+                              "stepTitle",
+                              "status",
+                              "attachmentCount",
+                              "reviewComment",
+                              "reviewedAt",
+                              "createdAt",
+                              "updatedAt"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "stepId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "stageTitle": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "stepTitle": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending_review",
+                                  "approved",
+                                  "rejected"
+                                ]
+                              },
+                              "attachmentCount": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reviewComment": {
+                                "type": "string",
+                                "nullable": true,
+                                "minLength": 1,
+                                "maxLength": 2000
+                              },
+                              "reviewedAt": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "updatedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Super Admin access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The roadmap assignment was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "roadmap"
+        ]
+      }
+    },
+    "/api/admin/roadmap-definitions": {
+      "get": {
+        "operationId": "RoadmapController_listAdminRoadmapDefinitions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Roadmap definitions visible to Super Admin roadmap configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "roadmapDefinitions"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "roadmapDefinitions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "targetRole",
+                          "language",
+                          "status",
+                          "publishedAt",
+                          "stageCount",
+                          "stepCount",
+                          "assignmentCount",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "targetRole": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER"
+                            ]
+                          },
+                          "language": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 10
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "DRAFT",
+                              "REVIEW",
+                              "APPROVED",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                            ]
+                          },
+                          "publishedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "stageCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "stepCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "assignmentCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Super Admin access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "roadmap"
+        ]
+      }
+    },
+    "/api/admin/roadmap-definitions/{id}": {
+      "get": {
+        "operationId": "RoadmapController_getAdminRoadmapDefinition",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roadmap definition detail visible to Super Admin roadmap configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "roadmapDefinition"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "roadmapDefinition": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "targetRole",
+                        "language",
+                        "status",
+                        "publishedAt",
+                        "stageCount",
+                        "stepCount",
+                        "assignmentCount",
+                        "createdAt",
+                        "updatedAt",
+                        "archivedAt",
+                        "stages"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "targetRole": {
+                          "type": "string",
+                          "enum": [
+                            "CANDIDATE",
+                            "BROTHER"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 10
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "DRAFT",
+                            "REVIEW",
+                            "APPROVED",
+                            "PUBLISHED",
+                            "ARCHIVED"
+                          ]
+                        },
+                        "publishedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "stageCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "stepCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "assignmentCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "archivedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        },
+                        "stages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "title",
+                              "sortOrder",
+                              "steps"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "steps": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "description",
+                                    "requiresSubmission",
+                                    "sortOrder",
+                                    "status",
+                                    "publishedAt"
+                                  ],
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 200
+                                    },
+                                    "description": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "minLength": 1,
+                                      "maxLength": 2000
+                                    },
+                                    "requiresSubmission": {
+                                      "type": "boolean"
+                                    },
+                                    "sortOrder": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "status": {
+                                      "type": "string",
+                                      "enum": [
+                                        "DRAFT",
+                                        "REVIEW",
+                                        "APPROVED",
+                                        "PUBLISHED",
+                                        "ARCHIVED"
+                                      ]
+                                    },
+                                    "publishedAt": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "format": "date-time"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Super Admin access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The roadmap definition was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "roadmap"
+        ]
+      }
     }
   },
   "info": {

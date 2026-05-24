@@ -95,6 +95,14 @@ function isActiveRoute(routePath: string, currentPath: string): boolean {
     return currentPath === routePath || currentPath.startsWith("/admin/roadmap-submissions/");
   }
 
+  if (routePath === "/admin/roadmap-assignments") {
+    return currentPath === routePath || currentPath.startsWith("/admin/roadmap-assignments/");
+  }
+
+  if (routePath === "/admin/roadmap-definitions") {
+    return currentPath === routePath || currentPath.startsWith("/admin/roadmap-definitions/");
+  }
+
   if (routePath === "/admin/announcements") {
     return currentPath === routePath || currentPath.startsWith("/admin/announcements/");
   }

@@ -9,6 +9,10 @@ import type { RequestWithPrincipal } from "../auth/current-user.types.js";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
+  adminRoadmapAssignmentDetailResponseOpenApiSchema,
+  adminRoadmapAssignmentListResponseOpenApiSchema,
+  adminRoadmapDefinitionDetailResponseOpenApiSchema,
+  adminRoadmapDefinitionListResponseOpenApiSchema,
   adminRoadmapSubmissionDetailResponseOpenApiSchema,
   adminRoadmapSubmissionListResponseOpenApiSchema,
   assignedRoadmapResponseOpenApiSchema,
@@ -18,6 +22,10 @@ import {
 } from "./roadmap.openapi.js";
 import { RoadmapService } from "./roadmap.service.js";
 import type {
+  AdminRoadmapAssignmentDetailResponse,
+  AdminRoadmapAssignmentListResponse,
+  AdminRoadmapDefinitionDetailResponse,
+  AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetailResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
@@ -212,6 +220,86 @@ export class RoadmapController {
       id,
       body
     );
+  }
+
+  @Get("admin/roadmap-assignments")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Roadmap assignments visible to Super Admin roadmap configuration.",
+    schema: adminRoadmapAssignmentListResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  listAdminRoadmapAssignments(
+    @Req() request: RequestWithPrincipal
+  ): Promise<AdminRoadmapAssignmentListResponse> {
+    return this.roadmapService.listAdminRoadmapAssignments(requirePrincipal(request));
+  }
+
+  @Get("admin/roadmap-assignments/:id")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Roadmap assignment detail visible to Super Admin roadmap configuration.",
+    schema: adminRoadmapAssignmentDetailResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The roadmap assignment was not found.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  getAdminRoadmapAssignment(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminRoadmapAssignmentDetailResponse> {
+    return this.roadmapService.getAdminRoadmapAssignment(requirePrincipal(request), id);
+  }
+
+  @Get("admin/roadmap-definitions")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Roadmap definitions visible to Super Admin roadmap configuration.",
+    schema: adminRoadmapDefinitionListResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  listAdminRoadmapDefinitions(
+    @Req() request: RequestWithPrincipal
+  ): Promise<AdminRoadmapDefinitionListResponse> {
+    return this.roadmapService.listAdminRoadmapDefinitions(requirePrincipal(request));
+  }
+
+  @Get("admin/roadmap-definitions/:id")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Roadmap definition detail visible to Super Admin roadmap configuration.",
+    schema: adminRoadmapDefinitionDetailResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The roadmap definition was not found.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  getAdminRoadmapDefinition(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminRoadmapDefinitionDetailResponse> {
+    return this.roadmapService.getAdminRoadmapDefinition(requirePrincipal(request), id);
   }
 }
 

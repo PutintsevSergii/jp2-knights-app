@@ -11,7 +11,9 @@
 ## Shared Contract Foundation
 
 Phase 10B now defines the roadmap data and DTO contract foundation, the first
-candidate/brother read routes, and the brother submission write route:
+candidate/brother read routes, the brother submission write route, scoped admin
+submission review, and Super Admin read-only roadmap definition/assignment
+inspection:
 
 - `roadmap_definitions` hold published candidate or brother roadmap roots with
   `target_role`, `language`, content status, and publish/approval metadata.
@@ -70,9 +72,10 @@ Rejected submissions require `reviewComment`.
 
 | Method | Path                             | Role                | Purpose                   |
 | ------ | -------------------------------- | ------------------- | ------------------------- |
-| GET    | `/admin/roadmap-definitions`     | Admin               | List roadmap definitions  |
-| POST   | `/admin/roadmap-definitions`     | Admin               | Create roadmap definition |
-| PATCH  | `/admin/roadmap-definitions/:id` | Admin               | Edit status/content       |
+| GET    | `/admin/roadmap-assignments`     | Super Admin         | List roadmap assignments  |
+| GET    | `/admin/roadmap-assignments/:id` | Super Admin         | Inspect assignment status |
+| GET    | `/admin/roadmap-definitions`     | Super Admin         | List roadmap definitions  |
+| GET    | `/admin/roadmap-definitions/:id` | Super Admin         | Inspect stages/steps      |
 | GET    | `/admin/roadmap-submissions`     | Officer/Super Admin | Review queue              |
 | GET    | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Review detail             |
 | PATCH  | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Approve/reject            |
@@ -100,6 +103,18 @@ Rejected submissions require `reviewComment`.
   review decisions for pending submissions. Rejections require a
   `reviewComment`; all decisions write audit summaries that redact the full
   submission body.
+- `GET /admin/roadmap-definitions` and
+  `GET /admin/roadmap-definitions/:id` require Super Admin access and expose
+  non-archived roadmap definitions with stage, step, and assignment counts for
+  read-only inspection. Create/edit/status mutation routes remain deferred until
+  the owner confirms the exact formation wording and approval workflow.
+- `GET /admin/roadmap-assignments` and
+  `GET /admin/roadmap-assignments/:id` require Super Admin access and expose
+  non-archived assignments with assignee, roadmap, organization-unit, lifecycle,
+  and submission-status counts. Assignment detail lists submission status
+  metadata only; submitted body text remains in the scoped submission review
+  route, not the assignment inspection surface. Assignment create/update/archive
+  mutations remain deferred until the owner confirms the assignment workflow.
 - Candidate roadmaps are read-only in default V1. Candidate-authored roadmap submissions are not implemented unless the human owner approves a scope expansion and this API contract is updated.
 - App never auto-awards degrees.
 - Officer decisions require comment for rejection and create audit logs.

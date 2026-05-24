@@ -6,12 +6,16 @@ import {
   NotFoundException
 } from "@nestjs/common";
 import { canAccessBrotherMode, canAccessCandidateMode } from "@jp2/shared-auth";
-import { adminScopeFor, requireAdminLite } from "../admin/admin-access.policy.js";
+import { adminScopeFor, requireAdminLite, requireSuperAdmin } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { RoadmapRepository } from "./roadmap.repository.js";
 import type {
+  AdminRoadmapAssignmentDetailResponse,
+  AdminRoadmapAssignmentListResponse,
+  AdminRoadmapDefinitionDetailResponse,
+  AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetail,
   AdminRoadmapSubmissionDetailResponse,
   AdminRoadmapSubmissionListResponse,
@@ -196,6 +200,56 @@ export class RoadmapService {
     });
 
     return { roadmapSubmission };
+  }
+
+  async listAdminRoadmapAssignments(
+    principal: CurrentUserPrincipal
+  ): Promise<AdminRoadmapAssignmentListResponse> {
+    requireSuperAdmin(principal);
+
+    return {
+      roadmapAssignments: await this.roadmapRepository.listAdminRoadmapAssignments()
+    };
+  }
+
+  async getAdminRoadmapAssignment(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminRoadmapAssignmentDetailResponse> {
+    requireSuperAdmin(principal);
+
+    const roadmapAssignment = await this.roadmapRepository.findAdminRoadmapAssignment({ id });
+
+    if (!roadmapAssignment) {
+      throw new NotFoundException("Roadmap assignment was not found.");
+    }
+
+    return { roadmapAssignment };
+  }
+
+  async listAdminRoadmapDefinitions(
+    principal: CurrentUserPrincipal
+  ): Promise<AdminRoadmapDefinitionListResponse> {
+    requireSuperAdmin(principal);
+
+    return {
+      roadmapDefinitions: await this.roadmapRepository.listAdminRoadmapDefinitions()
+    };
+  }
+
+  async getAdminRoadmapDefinition(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminRoadmapDefinitionDetailResponse> {
+    requireSuperAdmin(principal);
+
+    const roadmapDefinition = await this.roadmapRepository.findAdminRoadmapDefinition({ id });
+
+    if (!roadmapDefinition) {
+      throw new NotFoundException("Roadmap definition was not found.");
+    }
+
+    return { roadmapDefinition };
   }
 }
 
