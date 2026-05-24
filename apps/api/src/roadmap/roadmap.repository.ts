@@ -6,9 +6,14 @@ import { PrismaService } from "../database/prisma.service.js";
 import type {
   AssignedRoadmap,
   AssignedRoadmapLookup,
+  AdminRoadmapSubmissionDetail,
+  AdminRoadmapSubmissionDetailLookup,
+  AdminRoadmapSubmissionLookup,
+  AdminRoadmapSubmissionSummary,
   BrotherRoadmapSubmissionTargetLookup,
   CreateRoadmapSubmissionInput,
   PendingRoadmapSubmissionLookup,
+  ReviewRoadmapSubmissionInput,
   RoadmapBrotherAccessProfile,
   RoadmapCandidateAccessProfile,
   RoadmapSubmissionSummary,
@@ -30,6 +35,15 @@ export abstract class RoadmapRepository {
   abstract createRoadmapSubmission(
     input: CreateRoadmapSubmissionInput
   ): Promise<RoadmapSubmissionSummary>;
+  abstract listAdminRoadmapSubmissions(
+    lookup: AdminRoadmapSubmissionLookup
+  ): Promise<AdminRoadmapSubmissionSummary[]>;
+  abstract findAdminRoadmapSubmission(
+    lookup: AdminRoadmapSubmissionDetailLookup
+  ): Promise<AdminRoadmapSubmissionDetail | null>;
+  abstract reviewRoadmapSubmission(
+    input: ReviewRoadmapSubmissionInput
+  ): Promise<AdminRoadmapSubmissionDetail | null>;
 }
 
 @Injectable()
@@ -194,6 +208,68 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
 
     return toRoadmapSubmissionSummary(submission);
   }
+
+  async listAdminRoadmapSubmissions({
+    scopeOrganizationUnitIds
+  }: AdminRoadmapSubmissionLookup): Promise<AdminRoadmapSubmissionSummary[]> {
+    const records = await this.prisma.roadmapSubmission.findMany({
+      where: scopedAdminRoadmapSubmissionWhere(scopeOrganizationUnitIds),
+      include: adminRoadmapSubmissionInclude,
+      orderBy: [{ createdAt: "desc" }]
+    });
+
+    return records.map(toAdminRoadmapSubmissionSummary);
+  }
+
+  async findAdminRoadmapSubmission({
+    id,
+    scopeOrganizationUnitIds
+  }: AdminRoadmapSubmissionDetailLookup): Promise<AdminRoadmapSubmissionDetail | null> {
+    const record = await this.prisma.roadmapSubmission.findFirst({
+      where: {
+        ...scopedAdminRoadmapSubmissionWhere(scopeOrganizationUnitIds),
+        id
+      },
+      include: adminRoadmapSubmissionInclude
+    });
+
+    return record ? toAdminRoadmapSubmissionDetail(record) : null;
+  }
+
+  async reviewRoadmapSubmission({
+    id,
+    scopeOrganizationUnitIds,
+    reviewerUserId,
+    status,
+    reviewComment
+  }: ReviewRoadmapSubmissionInput): Promise<AdminRoadmapSubmissionDetail | null> {
+    const existing = await this.prisma.roadmapSubmission.findFirst({
+      where: {
+        ...scopedAdminRoadmapSubmissionWhere(scopeOrganizationUnitIds),
+        id
+      },
+      select: {
+        id: true
+      }
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    const record = await this.prisma.roadmapSubmission.update({
+      where: { id },
+      data: {
+        status,
+        reviewComment,
+        reviewedBy: reviewerUserId,
+        reviewedAt: new Date()
+      },
+      include: adminRoadmapSubmissionInclude
+    });
+
+    return toAdminRoadmapSubmissionDetail(record);
+  }
 }
 
 type RoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
@@ -211,6 +287,44 @@ type RoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
 }>;
 
 type RoadmapSubmissionRecord = Prisma.RoadmapSubmissionGetPayload<Record<string, never>>;
+
+const adminRoadmapSubmissionInclude = {
+  user: {
+    select: {
+      id: true,
+      displayName: true,
+      email: true
+    }
+  },
+  assignment: {
+    include: {
+      organizationUnit: {
+        select: {
+          name: true
+        }
+      },
+      roadmapDefinition: {
+        select: {
+          title: true,
+          targetRole: true
+        }
+      }
+    }
+  },
+  step: {
+    include: {
+      stage: {
+        select: {
+          title: true
+        }
+      }
+    }
+  }
+} as const;
+
+type AdminRoadmapSubmissionRecord = Prisma.RoadmapSubmissionGetPayload<{
+  include: typeof adminRoadmapSubmissionInclude;
+}>;
 
 export function assignedRoadmapWhere(
   userId: string,
@@ -286,6 +400,29 @@ export function brotherRoadmapSubmissionTargetWhere(
   };
 }
 
+export function scopedAdminRoadmapSubmissionWhere(
+  scopeOrganizationUnitIds: readonly string[] | null
+): Prisma.RoadmapSubmissionWhereInput {
+  if (scopeOrganizationUnitIds === null) {
+    return {
+      archivedAt: null,
+      assignment: {
+        archivedAt: null
+      }
+    };
+  }
+
+  return {
+    archivedAt: null,
+    assignment: {
+      organizationUnitId: {
+        in: [...scopeOrganizationUnitIds]
+      },
+      archivedAt: null
+    }
+  };
+}
+
 export function toAssignedRoadmap(
   assignment: RoadmapAssignmentRecord,
   submissions: readonly RoadmapSubmissionRecord[]
@@ -346,6 +483,56 @@ function toRoadmapSubmissionSummary(submission: RoadmapSubmissionRecord): Roadma
     createdAt: submission.createdAt.toISOString(),
     updatedAt: submission.updatedAt.toISOString()
   };
+}
+
+function toAdminRoadmapSubmissionSummary(
+  submission: AdminRoadmapSubmissionRecord
+): AdminRoadmapSubmissionSummary {
+  return {
+    id: submission.id,
+    assignmentId: submission.assignmentId,
+    stepId: submission.stepId,
+    submitterUserId: submission.user.id,
+    submitterName: submission.user.displayName,
+    submitterEmail: submission.user.email,
+    roadmapTitle: submission.assignment.roadmapDefinition.title,
+    roadmapTargetRole: submission.assignment.roadmapDefinition.targetRole as "CANDIDATE" | "BROTHER",
+    stageTitle: submission.step.stage.title,
+    stepTitle: submission.step.title,
+    organizationUnitId: submission.assignment.organizationUnitId,
+    organizationUnitName: submission.assignment.organizationUnit?.name ?? null,
+    status: submission.status,
+    bodyPreview: roadmapSubmissionBodyPreview(submission.body),
+    attachmentCount: toAttachmentMetadata(submission.attachmentMeta).length,
+    reviewComment: submission.reviewComment,
+    reviewedAt: submission.reviewedAt?.toISOString() ?? null,
+    createdAt: submission.createdAt.toISOString(),
+    updatedAt: submission.updatedAt.toISOString()
+  };
+}
+
+function toAdminRoadmapSubmissionDetail(
+  submission: AdminRoadmapSubmissionRecord
+): AdminRoadmapSubmissionDetail {
+  return {
+    ...toAdminRoadmapSubmissionSummary(submission),
+    body: submission.body,
+    attachmentMetadata: toAttachmentMetadata(submission.attachmentMeta)
+  };
+}
+
+function roadmapSubmissionBodyPreview(body: string): string | null {
+  const normalized = body.replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.length <= 180) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 177).trimEnd()}...`;
 }
 
 function toInputAttachmentMetadata(

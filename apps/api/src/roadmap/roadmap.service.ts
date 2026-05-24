@@ -6,18 +6,27 @@ import {
   NotFoundException
 } from "@nestjs/common";
 import { canAccessBrotherMode, canAccessCandidateMode } from "@jp2/shared-auth";
+import { adminScopeFor, requireAdminLite } from "../admin/admin-access.policy.js";
+import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { RoadmapRepository } from "./roadmap.repository.js";
 import type {
+  AdminRoadmapSubmissionDetail,
+  AdminRoadmapSubmissionDetailResponse,
+  AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
   CreateRoadmapSubmissionRequest,
+  ReviewRoadmapSubmissionRequest,
   RoadmapSubmissionResponse
 } from "./roadmap.types.js";
 
 @Injectable()
 export class RoadmapService {
-  constructor(private readonly roadmapRepository: RoadmapRepository) {}
+  constructor(
+    private readonly roadmapRepository: RoadmapRepository,
+    private readonly auditLog: AuditLogService
+  ) {}
 
   async getCandidateRoadmap(principal: CurrentUserPrincipal): Promise<AssignedRoadmapResponse> {
     if (!canAccessCandidateMode(principal)) {
@@ -112,4 +121,98 @@ export class RoadmapService {
 
     return { submission };
   }
+
+  async listAdminRoadmapSubmissions(
+    principal: CurrentUserPrincipal
+  ): Promise<AdminRoadmapSubmissionListResponse> {
+    requireAdminLite(principal);
+
+    return {
+      roadmapSubmissions: await this.roadmapRepository.listAdminRoadmapSubmissions({
+        scopeOrganizationUnitIds: adminScopeFor(principal)
+      })
+    };
+  }
+
+  async getAdminRoadmapSubmission(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminRoadmapSubmissionDetailResponse> {
+    requireAdminLite(principal);
+
+    const roadmapSubmission = await this.roadmapRepository.findAdminRoadmapSubmission({
+      id,
+      scopeOrganizationUnitIds: adminScopeFor(principal)
+    });
+
+    if (!roadmapSubmission) {
+      throw new NotFoundException("Roadmap submission was not found in the current admin scope.");
+    }
+
+    return { roadmapSubmission };
+  }
+
+  async reviewAdminRoadmapSubmission(
+    principal: CurrentUserPrincipal,
+    id: string,
+    request: ReviewRoadmapSubmissionRequest
+  ): Promise<AdminRoadmapSubmissionDetailResponse> {
+    requireAdminLite(principal);
+
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
+    const beforeSubmission = await this.roadmapRepository.findAdminRoadmapSubmission({
+      id,
+      scopeOrganizationUnitIds
+    });
+
+    if (!beforeSubmission) {
+      throw new NotFoundException("Roadmap submission was not found in the current admin scope.");
+    }
+
+    if (beforeSubmission.status !== "pending_review") {
+      throw new ConflictException("Only pending roadmap submissions can be reviewed.");
+    }
+
+    const roadmapSubmission = await this.roadmapRepository.reviewRoadmapSubmission({
+      id,
+      scopeOrganizationUnitIds,
+      reviewerUserId: principal.id,
+      status: request.status,
+      reviewComment: request.reviewComment ?? null
+    });
+
+    if (!roadmapSubmission) {
+      throw new NotFoundException("Roadmap submission was not found in the current admin scope.");
+    }
+
+    await this.auditLog.record({
+      action: `admin.roadmapSubmission.${request.status}`,
+      actorUserId: principal.id,
+      entityType: "roadmap_submission",
+      entityId: roadmapSubmission.id,
+      scopeOrganizationUnitId: roadmapSubmission.organizationUnitId,
+      beforeSummary: summarizeRoadmapSubmissionForAudit(beforeSubmission),
+      afterSummary: summarizeRoadmapSubmissionForAudit(roadmapSubmission)
+    });
+
+    return { roadmapSubmission };
+  }
+}
+
+function summarizeRoadmapSubmissionForAudit(
+  submission: AdminRoadmapSubmissionDetail
+): AuditSummary {
+  return {
+    submissionId: submission.id,
+    assignmentId: submission.assignmentId,
+    stepId: submission.stepId,
+    submitterUserId: submission.submitterUserId,
+    roadmapTargetRole: submission.roadmapTargetRole,
+    organizationUnitId: submission.organizationUnitId,
+    status: submission.status,
+    attachmentCount: submission.attachmentCount,
+    hasBody: Boolean(submission.body),
+    hasReviewComment: Boolean(submission.reviewComment),
+    reviewedAt: submission.reviewedAt
+  };
 }

@@ -10,6 +10,8 @@ import { renderAdminDashboardRoute } from "./admin-dashboard-screen.js";
 import { renderAdminIdentityAccessShellRoute } from "./admin-identity-access-shell.js";
 import type { AdminOrganizationUnitShellRoute } from "./admin-organization-units-shell.js";
 import { renderAdminOrganizationUnitRoute } from "./admin-organization-units-shell.js";
+import type { AdminRoadmapSubmissionShellRoute } from "./admin-roadmap-submissions-shell.js";
+import { renderAdminRoadmapSubmissionRoute } from "./admin-roadmap-submissions-shell.js";
 
 export interface AdminWebRouteContext {
   path: string;
@@ -88,6 +90,16 @@ const adminWebRouteDefinitions: readonly AdminWebRouteDefinition[] = [
     })
   },
   {
+    matches: isAdminRoadmapSubmissionRoute,
+    render: async (context) => ({
+      title: "Admin Roadmap Submissions",
+      ...(await renderAdminRoadmapSubmissionRoute({
+        ...routeOptions(context),
+        path: context.path as AdminRoadmapSubmissionShellRoute
+      }))
+    })
+  },
+  {
     matches: isAdminContentRoute,
     render: async (context) => ({
       title: titleForAdminContentRoute(context.path),
@@ -159,5 +171,13 @@ function isAdminOrganizationUnitRoute(path: string): boolean {
     path === "/admin/organization-units" ||
     (path.startsWith("/admin/organization-units/") &&
       path.length > "/admin/organization-units/".length)
+  );
+}
+
+function isAdminRoadmapSubmissionRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-submissions" ||
+    (path.startsWith("/admin/roadmap-submissions/") &&
+      path.length > "/admin/roadmap-submissions/".length)
   );
 }

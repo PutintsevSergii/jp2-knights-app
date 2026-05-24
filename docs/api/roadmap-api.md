@@ -74,6 +74,7 @@ Rejected submissions require `reviewComment`.
 | POST   | `/admin/roadmap-definitions`     | Admin               | Create roadmap definition |
 | PATCH  | `/admin/roadmap-definitions/:id` | Admin               | Edit status/content       |
 | GET    | `/admin/roadmap-submissions`     | Officer/Super Admin | Review queue              |
+| GET    | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Review detail             |
 | PATCH  | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Approve/reject            |
 
 ## Rules
@@ -89,6 +90,16 @@ Rejected submissions require `reviewComment`.
   membership, validates the shared create-submission DTO, stores bounded
   attachment metadata only, returns the created pending submission, and never
   exposes other users' submissions or participant lists.
+- `GET /admin/roadmap-submissions` and
+  `GET /admin/roadmap-submissions/:id` require Admin Lite access. Super Admins
+  can review all non-archived submissions; officers see only submissions whose
+  roadmap assignment is scoped to their assigned organization units. List
+  responses expose body previews, while detail responses expose full submission
+  body only inside the scoped admin boundary.
+- `PATCH /admin/roadmap-submissions/:id` accepts only `approved` or `rejected`
+  review decisions for pending submissions. Rejections require a
+  `reviewComment`; all decisions write audit summaries that redact the full
+  submission body.
 - Candidate roadmaps are read-only in default V1. Candidate-authored roadmap submissions are not implemented unless the human owner approves a scope expansion and this API contract is updated.
 - App never auto-awards degrees.
 - Officer decisions require comment for rejection and create audit logs.

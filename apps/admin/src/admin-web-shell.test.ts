@@ -6,6 +6,7 @@ import {
   fallbackAdminDashboard,
   fallbackAdminIdentityAccessReviews,
   fallbackAdminOrganizationUnits,
+  fallbackAdminRoadmapSubmissions,
   fallbackAdminPrayers
 } from "./admin-content-fixtures.js";
 import { renderAdminWebRequest } from "./admin-web-shell.js";
@@ -336,6 +337,66 @@ describe("admin web shell", () => {
     expect(detailResponse.statusCode).toBe(200);
     expect(detailResponse.body).toContain("Save Follow-up");
     expect(detailResponse.body).toContain('href="/admin/candidate-requests" aria-current="page"');
+  });
+
+  it("mounts roadmap submission list and detail routes", async () => {
+    const roadmapSubmission = fallbackAdminRoadmapSubmissions[0]!;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            roadmapSubmissions: [
+              {
+                id: roadmapSubmission.id,
+                assignmentId: roadmapSubmission.assignmentId,
+                stepId: roadmapSubmission.stepId,
+                submitterUserId: roadmapSubmission.submitterUserId,
+                submitterName: roadmapSubmission.submitterName,
+                submitterEmail: roadmapSubmission.submitterEmail,
+                roadmapTitle: roadmapSubmission.roadmapTitle,
+                roadmapTargetRole: roadmapSubmission.roadmapTargetRole,
+                stageTitle: roadmapSubmission.stageTitle,
+                stepTitle: roadmapSubmission.stepTitle,
+                organizationUnitId: roadmapSubmission.organizationUnitId,
+                organizationUnitName: roadmapSubmission.organizationUnitName,
+                status: roadmapSubmission.status,
+                bodyPreview: roadmapSubmission.bodyPreview,
+                attachmentCount: roadmapSubmission.attachmentCount,
+                reviewComment: roadmapSubmission.reviewComment,
+                reviewedAt: roadmapSubmission.reviewedAt,
+                createdAt: roadmapSubmission.createdAt,
+                updatedAt: roadmapSubmission.updatedAt
+              }
+            ]
+          })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ roadmapSubmission })
+      });
+
+    const listResponse = await renderAdminWebRequest(
+      { path: "/admin/roadmap-submissions", headers: { authorization: "Bearer token_1" } },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", canWrite: true, fetchImpl }
+    );
+    const detailResponse = await renderAdminWebRequest(
+      {
+        path: `/admin/roadmap-submissions/${roadmapSubmission.id}`,
+        headers: { authorization: "Bearer token_1" }
+      },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", canWrite: true, fetchImpl }
+    );
+
+    expect(listResponse.statusCode).toBe(200);
+    expect(listResponse.body).toContain("Demo Brother");
+    expect(listResponse.body).toContain('href="/admin/roadmap-submissions" aria-current="page"');
+    expect(detailResponse.statusCode).toBe(200);
+    expect(detailResponse.body).toContain("Roadmap Submission: Meet your officer");
+    expect(detailResponse.body).toContain('href="/admin/roadmap-submissions" aria-current="page"');
   });
 
   it("mounts the organization-unit admin route", async () => {

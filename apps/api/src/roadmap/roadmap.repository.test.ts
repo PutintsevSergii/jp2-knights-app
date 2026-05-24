@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { brotherRoadmapSubmissionTargetWhere } from "./roadmap.repository.js";
+import {
+  brotherRoadmapSubmissionTargetWhere,
+  scopedAdminRoadmapSubmissionWhere
+} from "./roadmap.repository.js";
 
 describe("brotherRoadmapSubmissionTargetWhere", () => {
   it("limits submissions to the active brother's own active scoped published roadmap step", () => {
@@ -44,6 +47,31 @@ describe("brotherRoadmapSubmissionTargetWhere", () => {
           ]
         }
       ]
+    });
+  });
+});
+
+describe("scopedAdminRoadmapSubmissionWhere", () => {
+  it("limits officer review queues to assigned organization-unit submissions", () => {
+    expect(
+      scopedAdminRoadmapSubmissionWhere(["33333333-3333-4333-8333-333333333333"])
+    ).toEqual({
+      archivedAt: null,
+      assignment: {
+        organizationUnitId: {
+          in: ["33333333-3333-4333-8333-333333333333"]
+        },
+        archivedAt: null
+      }
+    });
+  });
+
+  it("allows Super Admin review queues across all non-archived submissions", () => {
+    expect(scopedAdminRoadmapSubmissionWhere(null)).toEqual({
+      archivedAt: null,
+      assignment: {
+        archivedAt: null
+      }
     });
   });
 });

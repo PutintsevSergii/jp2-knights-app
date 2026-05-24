@@ -51,3 +51,11 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
   shared DTO validation, demo fixture, scoped write-state action metadata, and
   navigation active state. The routes are one-way management only: no chat,
   comments, read receipts, or push delivery state are rendered.
+- Phase 10B mounts `/admin/roadmap-submissions` and
+  `/admin/roadmap-submissions/:id` through the Next App Router and shared Admin
+  Lite shell. The routes use typed roadmap submission API clients, shared DTO
+  validation, demo fixtures, scoped write-state action metadata, and active
+  navigation. Officers see only submissions assigned to their organization-unit
+  scope; Super Admins can review globally. Review decisions are approve/reject
+  only, rejection requires comment at the API contract, and the UI does not
+  render automatic degree changes or cross-user roadmap rollups.

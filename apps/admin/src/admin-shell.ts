@@ -18,6 +18,10 @@ import {
   adminOrganizationUnitShellRoutes,
   type AdminOrganizationUnitShellRouteMetadata
 } from "./admin-organization-units-shell.js";
+import {
+  adminRoadmapSubmissionShellRoutes,
+  type AdminRoadmapSubmissionShellRouteMetadata
+} from "./admin-roadmap-submissions-shell.js";
 
 export type AdminShellRoute =
   | "/admin/dashboard"
@@ -25,6 +29,7 @@ export type AdminShellRoute =
   | AdminCandidateRequestShellRouteMetadata["path"]
   | AdminCandidateShellRouteMetadata["path"]
   | AdminOrganizationUnitShellRouteMetadata["path"]
+  | AdminRoadmapSubmissionShellRouteMetadata["path"]
   | AdminContentShellRouteMetadata["path"];
 
 export interface AdminShellRouteMetadata {
@@ -36,6 +41,7 @@ export interface AdminShellRouteMetadata {
     | AdminCandidateRequestShellRouteMetadata["screenRoute"]
     | AdminCandidateShellRouteMetadata["screenRoute"]
     | AdminOrganizationUnitShellRouteMetadata["screenRoute"]
+    | AdminRoadmapSubmissionShellRouteMetadata["screenRoute"]
     | AdminContentShellRouteMetadata["screenRoute"];
 }
 
@@ -49,5 +55,6 @@ export const adminShellRoutes: readonly AdminShellRouteMetadata[] = [
   ...adminCandidateRequestShellRoutes,
   ...adminCandidateShellRoutes,
   ...adminOrganizationUnitShellRoutes,
+  ...adminRoadmapSubmissionShellRoutes,
   ...adminContentShellRoutes
 ];

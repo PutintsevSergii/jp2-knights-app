@@ -96,6 +96,49 @@ export const roadmapSubmissionResponseSchema = z
   })
   .strict();
 
+export const adminRoadmapSubmissionSummarySchema = z
+  .object({
+    id: z.uuid(),
+    assignmentId: z.uuid(),
+    stepId: z.uuid(),
+    submitterUserId: z.uuid(),
+    submitterName: roadmapTextSchema,
+    submitterEmail: z.email(),
+    roadmapTitle: roadmapTextSchema,
+    roadmapTargetRole: roadmapTargetRoleSchema,
+    stageTitle: roadmapTextSchema,
+    stepTitle: roadmapTextSchema,
+    organizationUnitId: z.uuid().nullable(),
+    organizationUnitName: roadmapTextSchema.nullable(),
+    status: roadmapSubmissionStatusSchema,
+    bodyPreview: z.string().trim().min(1).max(200).nullable(),
+    attachmentCount: z.number().int().min(0).max(5),
+    reviewComment: z.string().trim().min(1).max(2000).nullable(),
+    reviewedAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const adminRoadmapSubmissionDetailSchema = adminRoadmapSubmissionSummarySchema
+  .extend({
+    body: roadmapBodySchema,
+    attachmentMetadata: z.array(roadmapAttachmentMetadataSchema).max(5)
+  })
+  .strict();
+
+export const adminRoadmapSubmissionListResponseSchema = z
+  .object({
+    roadmapSubmissions: z.array(adminRoadmapSubmissionSummarySchema)
+  })
+  .strict();
+
+export const adminRoadmapSubmissionDetailResponseSchema = z
+  .object({
+    roadmapSubmission: adminRoadmapSubmissionDetailSchema
+  })
+  .strict();
+
 export const reviewRoadmapSubmissionRequestSchema = z
   .object({
     status: z.enum(["approved", "rejected"]),
@@ -118,6 +161,16 @@ export type CreateRoadmapSubmissionRequestDto = z.infer<
   typeof createRoadmapSubmissionRequestSchema
 >;
 export type RoadmapSubmissionResponseDto = z.infer<typeof roadmapSubmissionResponseSchema>;
+export type AdminRoadmapSubmissionSummaryDto = z.infer<
+  typeof adminRoadmapSubmissionSummarySchema
+>;
+export type AdminRoadmapSubmissionDetailDto = z.infer<typeof adminRoadmapSubmissionDetailSchema>;
+export type AdminRoadmapSubmissionListResponseDto = z.infer<
+  typeof adminRoadmapSubmissionListResponseSchema
+>;
+export type AdminRoadmapSubmissionDetailResponseDto = z.infer<
+  typeof adminRoadmapSubmissionDetailResponseSchema
+>;
 export type ReviewRoadmapSubmissionRequestDto = z.infer<
   typeof reviewRoadmapSubmissionRequestSchema
 >;

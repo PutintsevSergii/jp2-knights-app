@@ -30,6 +30,11 @@ describe("admin shell routes", () => {
         screenRoute: "AdminOrganizationUnitList"
       },
       {
+        path: "/admin/roadmap-submissions",
+        label: "Roadmap Reviews",
+        screenRoute: "AdminRoadmapSubmissionList"
+      },
+      {
         path: "/admin/prayers",
         label: "Prayers",
         screenRoute: "AdminPrayerList"

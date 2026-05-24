@@ -5,6 +5,7 @@ import {
   NotFoundException
 } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
+import type { AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { RoadmapRepository } from "./roadmap.repository.js";
@@ -34,6 +35,15 @@ const brother: CurrentUserPrincipal = {
   status: "active",
   roles: ["BROTHER"],
   memberOrganizationUnitIds: [organizationUnitId]
+};
+
+const officer: CurrentUserPrincipal = {
+  id: "3f3f3f3f-3333-4333-8333-333333333333",
+  email: "officer@example.test",
+  displayName: "Demo Officer",
+  status: "active",
+  roles: ["OFFICER"],
+  officerOrganizationUnitIds: [organizationUnitId]
 };
 
 const idleUser: CurrentUserPrincipal = {
@@ -135,6 +145,21 @@ const submission: RoadmapSubmissionSummary = {
   updatedAt: "2026-05-11T09:00:00.000Z"
 };
 
+const adminRoadmapSubmission = {
+  ...submission,
+  submitterUserId: brother.id,
+  submitterName: brother.displayName,
+  submitterEmail: brother.email,
+  roadmapTitle: "Brother Formation Roadmap",
+  roadmapTargetRole: "BROTHER" as const,
+  stageTitle: "Discernment",
+  stepTitle: "Meet your officer",
+  organizationUnitId,
+  organizationUnitName: "Pilot Organization Unit",
+  bodyPreview: "Reflection text.",
+  attachmentCount: 1
+};
+
 describe("RoadmapService", () => {
   it("returns the active candidate's own assigned roadmap", async () => {
     const repository = roadmapRepository({
@@ -142,7 +167,7 @@ describe("RoadmapService", () => {
       roadmap: candidateRoadmap
     });
 
-    await expect(new RoadmapService(repository).getCandidateRoadmap(candidate)).resolves.toEqual({
+    await expect(service(repository).getCandidateRoadmap(candidate)).resolves.toEqual({
       roadmap: candidateRoadmap
     });
     expect(repository.lookups).toEqual([
@@ -156,7 +181,7 @@ describe("RoadmapService", () => {
 
   it("returns null when an active candidate has no assigned roadmap", async () => {
     await expect(
-      new RoadmapService(
+      service(
         roadmapRepository({
           candidateProfile: { assignedOrganizationUnitId: null },
           roadmap: null
@@ -171,7 +196,7 @@ describe("RoadmapService", () => {
       roadmap: brotherRoadmap
     });
 
-    await expect(new RoadmapService(repository).getBrotherRoadmap(brother)).resolves.toEqual({
+    await expect(service(repository).getBrotherRoadmap(brother)).resolves.toEqual({
       roadmap: brotherRoadmap
     });
     expect(repository.lookups).toEqual([
@@ -185,11 +210,11 @@ describe("RoadmapService", () => {
 
   it("blocks wrong-role and idle principals before loading roadmap assignments", async () => {
     const repository = roadmapRepository({ roadmap: candidateRoadmap });
-    const service = new RoadmapService(repository);
+    const roadmapService = service(repository);
 
-    await expect(service.getCandidateRoadmap(brother)).rejects.toBeInstanceOf(ForbiddenException);
-    await expect(service.getBrotherRoadmap(candidate)).rejects.toBeInstanceOf(ForbiddenException);
-    await expect(service.getCandidateRoadmap(idleUser)).rejects.toSatisfy(
+    await expect(roadmapService.getCandidateRoadmap(brother)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(roadmapService.getBrotherRoadmap(candidate)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(roadmapService.getCandidateRoadmap(idleUser)).rejects.toSatisfy(
       (error: unknown) =>
         error instanceof ForbiddenException &&
         isIdleApprovalErrorResponse(error.getResponse())
@@ -199,12 +224,12 @@ describe("RoadmapService", () => {
 
   it("requires active candidate and brother access profiles", async () => {
     await expect(
-      new RoadmapService(roadmapRepository({ candidateProfile: null })).getCandidateRoadmap(
+      service(roadmapRepository({ candidateProfile: null })).getCandidateRoadmap(
         candidate
       )
     ).rejects.toBeInstanceOf(ForbiddenException);
     await expect(
-      new RoadmapService(roadmapRepository({ brotherProfile: null })).getBrotherRoadmap(brother)
+      service(roadmapRepository({ brotherProfile: null })).getBrotherRoadmap(brother)
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -220,7 +245,7 @@ describe("RoadmapService", () => {
     });
 
     await expect(
-      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+      service(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
         stepId: submission.stepId,
         body: " Reflection text. ",
         attachmentMetadata: submission.attachmentMetadata
@@ -250,7 +275,7 @@ describe("RoadmapService", () => {
     });
 
     await expect(
-      new RoadmapService(repository).submitBrotherRoadmapStep(
+      service(repository).submitBrotherRoadmapStep(
         brother,
         submission.stepId,
         {
@@ -271,7 +296,7 @@ describe("RoadmapService", () => {
     });
 
     await expect(
-      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+      service(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
         stepId: submission.stepId,
         body: "Reflection text.",
         attachmentMetadata: []
@@ -291,7 +316,7 @@ describe("RoadmapService", () => {
     });
 
     await expect(
-      new RoadmapService(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
+      service(repository).submitBrotherRoadmapStep(brother, submission.stepId, {
         stepId: submission.stepId,
         body: "Second reflection.",
         attachmentMetadata: []
@@ -299,7 +324,111 @@ describe("RoadmapService", () => {
     ).rejects.toBeInstanceOf(ConflictException);
     expect(repository.createdSubmissions).toEqual([]);
   });
+
+  it("lists and reads roadmap submissions in the current admin scope", async () => {
+    const repository = roadmapRepository({
+      adminSubmissions: [adminRoadmapSubmission],
+      adminSubmission: adminRoadmapSubmission
+    });
+
+    await expect(service(repository).listAdminRoadmapSubmissions(officer)).resolves.toEqual({
+      roadmapSubmissions: [adminRoadmapSubmission]
+    });
+    await expect(
+      service(repository).getAdminRoadmapSubmission(officer, adminRoadmapSubmission.id)
+    ).resolves.toEqual({
+      roadmapSubmission: adminRoadmapSubmission
+    });
+    expect(repository.adminSubmissionLookups).toEqual([
+      {
+        scopeOrganizationUnitIds: [organizationUnitId]
+      },
+      {
+        id: adminRoadmapSubmission.id,
+        scopeOrganizationUnitIds: [organizationUnitId]
+      }
+    ]);
+  });
+
+  it("reviews pending roadmap submissions with redacted audit summaries", async () => {
+    const reviewedSubmission = {
+      ...adminRoadmapSubmission,
+      status: "approved" as const,
+      reviewComment: "Approved after officer review.",
+      reviewedAt: "2026-05-12T09:00:00.000Z"
+    };
+    const repository = roadmapRepository({
+      adminSubmission: adminRoadmapSubmission,
+      reviewedSubmission
+    });
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository, auditLog).reviewAdminRoadmapSubmission(
+        officer,
+        adminRoadmapSubmission.id,
+        {
+          status: "approved",
+          reviewComment: "Approved after officer review."
+        }
+      )
+    ).resolves.toEqual({
+      roadmapSubmission: reviewedSubmission
+    });
+    expect(repository.reviewInputs).toEqual([
+      {
+        id: adminRoadmapSubmission.id,
+        scopeOrganizationUnitIds: [organizationUnitId],
+        reviewerUserId: officer.id,
+        status: "approved",
+        reviewComment: "Approved after officer review."
+      }
+    ]);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.roadmapSubmission.approved",
+      actorUserId: officer.id,
+      entityType: "roadmap_submission",
+      entityId: adminRoadmapSubmission.id,
+      scopeOrganizationUnitId: organizationUnitId
+    });
+    expect(auditLog.records[0]?.beforeSummary).toMatchObject({
+      hasBody: true,
+      attachmentCount: 1,
+      status: "pending_review"
+    });
+    expect(auditLog.records[0]?.beforeSummary).not.toHaveProperty("body");
+  });
+
+  it("blocks reviewed, out-of-scope, and non-admin roadmap reviews", async () => {
+    await expect(
+      service(
+        roadmapRepository({
+          adminSubmission: { ...adminRoadmapSubmission, status: "approved" }
+        })
+      ).reviewAdminRoadmapSubmission(officer, adminRoadmapSubmission.id, {
+        status: "rejected",
+        reviewComment: "Needs another pass."
+      })
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    await expect(
+      service(roadmapRepository({ adminSubmission: null })).getAdminRoadmapSubmission(
+        officer,
+        adminRoadmapSubmission.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    await expect(
+      service(roadmapRepository({ adminSubmissions: [adminRoadmapSubmission] }))
+        .listAdminRoadmapSubmissions(brother)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
 });
+
+function service(repository: RoadmapRepository, auditLog: TestAuditLog = auditLogRecorder()) {
+  return new RoadmapService(repository, auditLog as unknown as AuditLogService);
+}
 
 function roadmapRepository(options: {
   candidateProfile?: { assignedOrganizationUnitId: string | null } | null | undefined;
@@ -308,6 +437,9 @@ function roadmapRepository(options: {
   submissionTarget?: RoadmapSubmissionTarget | null | undefined;
   pendingSubmission?: RoadmapSubmissionSummary | null | undefined;
   createdSubmission?: RoadmapSubmissionSummary | undefined;
+  adminSubmissions?: typeof adminRoadmapSubmission[] | undefined;
+  adminSubmission?: typeof adminRoadmapSubmission | null | undefined;
+  reviewedSubmission?: typeof adminRoadmapSubmission | undefined;
 }) {
   class FakeRoadmapRepository implements RoadmapRepository {
     lookups: Array<{
@@ -334,6 +466,17 @@ function roadmapRepository(options: {
         mimeType: string;
         sizeBytes: number;
       }[];
+    }> = [];
+    adminSubmissionLookups: Array<{
+      id?: string;
+      scopeOrganizationUnitIds: readonly string[] | null;
+    }> = [];
+    reviewInputs: Array<{
+      id: string;
+      scopeOrganizationUnitIds: readonly string[] | null;
+      reviewerUserId: string;
+      status: "approved" | "rejected";
+      reviewComment: string | null;
     }> = [];
 
     findActiveCandidateAccessProfile() {
@@ -398,9 +541,61 @@ function roadmapRepository(options: {
       });
       return Promise.resolve(options.createdSubmission ?? submission);
     }
+
+    listAdminRoadmapSubmissions(lookup: { scopeOrganizationUnitIds: readonly string[] | null }) {
+      this.adminSubmissionLookups.push({
+        scopeOrganizationUnitIds:
+          lookup.scopeOrganizationUnitIds === null ? null : [...lookup.scopeOrganizationUnitIds]
+      });
+      return Promise.resolve(options.adminSubmissions ?? []);
+    }
+
+    findAdminRoadmapSubmission(lookup: {
+      id: string;
+      scopeOrganizationUnitIds: readonly string[] | null;
+    }) {
+      this.adminSubmissionLookups.push({
+        id: lookup.id,
+        scopeOrganizationUnitIds:
+          lookup.scopeOrganizationUnitIds === null ? null : [...lookup.scopeOrganizationUnitIds]
+      });
+      return Promise.resolve(options.adminSubmission ?? null);
+    }
+
+    reviewRoadmapSubmission(input: {
+      id: string;
+      scopeOrganizationUnitIds: readonly string[] | null;
+      reviewerUserId: string;
+      status: "approved" | "rejected";
+      reviewComment: string | null;
+    }) {
+      this.reviewInputs.push({
+        id: input.id,
+        scopeOrganizationUnitIds:
+          input.scopeOrganizationUnitIds === null ? null : [...input.scopeOrganizationUnitIds],
+        reviewerUserId: input.reviewerUserId,
+        status: input.status,
+        reviewComment: input.reviewComment
+      });
+      return Promise.resolve(options.reviewedSubmission ?? adminRoadmapSubmission);
+    }
   }
 
   return new FakeRoadmapRepository();
+}
+
+type TestAuditLog = Pick<AuditLogService, "record"> & {
+  records: Parameters<AuditLogService["record"]>[0][];
+};
+
+function auditLogRecorder(): TestAuditLog {
+  return {
+    records: [],
+    record(input: Parameters<AuditLogService["record"]>[0]) {
+      this.records.push(input);
+      return Promise.resolve();
+    }
+  };
 }
 
 function isIdleApprovalErrorResponse(response: unknown): boolean {

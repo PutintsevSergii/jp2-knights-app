@@ -6,6 +6,7 @@ import type {
   AdminCandidateRequestDetailDto,
   AdminCandidateProfileDetailDto,
   AdminOrganizationUnitListResponseDto,
+  AdminRoadmapSubmissionDetailDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
 
@@ -116,6 +117,38 @@ export const fallbackAdminCandidateProfiles: AdminCandidateProfileDetailDto[] = 
     createdAt: "2026-05-05T10:05:00.000Z",
     updatedAt: "2026-05-05T10:05:00.000Z",
     archivedAt: null
+  }
+];
+
+export const fallbackAdminRoadmapSubmissions: AdminRoadmapSubmissionDetailDto[] = [
+  {
+    id: "89898989-8989-4989-8989-898989898989",
+    assignmentId: "99999999-9999-4999-8999-999999999999",
+    stepId: "88888888-8888-4888-8888-888888888888",
+    submitterUserId: "33333333-3333-4333-8333-333333333333",
+    submitterName: "Demo Brother",
+    submitterEmail: "brother@example.test",
+    roadmapTitle: "Brother Formation Roadmap",
+    roadmapTargetRole: "BROTHER",
+    stageTitle: "Discernment",
+    stepTitle: "Meet your officer",
+    organizationUnitId: "11111111-1111-4111-8111-111111111111",
+    organizationUnitName: "Pilot Organization Unit",
+    status: "pending_review",
+    bodyPreview: "Reflection text for officer review.",
+    attachmentCount: 1,
+    reviewComment: null,
+    reviewedAt: null,
+    createdAt: "2026-05-11T09:00:00.000Z",
+    updatedAt: "2026-05-11T09:00:00.000Z",
+    body: "Reflection text for officer review.",
+    attachmentMetadata: [
+      {
+        originalFilename: "reflection.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 512
+      }
+    ]
   }
 ];
 
