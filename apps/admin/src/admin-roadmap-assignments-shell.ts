@@ -1,4 +1,3 @@
-import { designTokens } from "@jp2/shared-design-tokens";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
   AdminRoadmapAssignmentDetailDto,
@@ -21,8 +20,7 @@ import {
   type AdminRoadmapAssignmentDetailScreen,
   type AdminRoadmapAssignmentListScreen,
   type AdminRoadmapAssignmentRoute,
-  type AdminRoadmapAssignmentRow,
-  type AdminRoadmapAssignmentSection
+  type AdminRoadmapAssignmentRow
 } from "./admin-roadmap-assignments-screen.js";
 import {
   adminStatusCodeForState,
@@ -33,6 +31,11 @@ import {
   renderAdminEmptyState,
   renderAdminHeader
 } from "./admin-render-primitives.js";
+import {
+  renderRoadmapReadOnlySections,
+  renderRoadmapReadOnlyStyle,
+  roadmapReadOnlyStatusClass
+} from "./admin-roadmap-readonly-shell-primitives.js";
 
 export type AdminRoadmapAssignmentShellRoute =
   | "/admin/roadmap-assignments"
@@ -148,7 +151,7 @@ async function resolveRoadmapAssignmentDetailScreen(
 function renderRoadmapAssignmentListScreen(screen: AdminRoadmapAssignmentListScreen): string {
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
-    renderStyle(),
+    renderRoadmapReadOnlyStyle(),
     renderAdminHeader({
       title: screen.title,
       body: screen.body,
@@ -164,7 +167,7 @@ function renderRoadmapAssignmentListScreen(screen: AdminRoadmapAssignmentListScr
 function renderRoadmapAssignmentDetailScreen(screen: AdminRoadmapAssignmentDetailScreen): string {
   return [
     `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}">`,
-    renderStyle(),
+    renderRoadmapReadOnlyStyle(),
     renderAdminHeader({
       title: screen.title,
       body: screen.body,
@@ -174,33 +177,6 @@ function renderRoadmapAssignmentDetailScreen(screen: AdminRoadmapAssignmentDetai
     }),
     renderSections(screen),
     "</section>"
-  ].join("");
-}
-
-function renderStyle(): string {
-  return [
-    "<style>",
-    `.admin-content{padding:${designTokens.space[8]}px ${designTokens.space[6]}px;font-family:${designTokens.typography.fontFamily.web};background:${designTokens.color.background.app};color:${designTokens.color.text.primary};}`,
-    ".admin-content__header{display:flex;justify-content:space-between;gap:24px;max-width:1120px;margin:0 auto 28px;}",
-    `.admin-content__title{font-size:44px;line-height:50px;margin:0 0 8px;color:${designTokens.color.brand.goldDarker};}`,
-    `.admin-content__body{margin:0;color:${designTokens.color.text.muted};max-width:640px;}`,
-    ".admin-content__actions{display:flex;gap:8px;flex-wrap:wrap;}",
-    ".admin-content__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1120px;margin:0 auto;}",
-    `.admin-content__card,.admin-content__sections{border:1px solid ${designTokens.color.border.subtle};border-radius:${designTokens.radius.lg}px;padding:${designTokens.space[4]}px;background:${designTokens.color.background.surface};}`,
-    ".admin-content__name{font-size:18px;line-height:24px;margin:0 0 6px;}",
-    `.admin-content__meta,.admin-content__preview{color:${designTokens.color.text.muted};font-size:14px;line-height:20px;}`,
-    ".admin-content__badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700;text-transform:uppercase;}",
-    `.admin-content__badge--active{background:${designTokens.color.brand.gold};color:${designTokens.color.brand.goldDeep};}`,
-    `.admin-content__badge--completed{background:${designTokens.color.border.soft};color:${designTokens.color.status.success};}`,
-    `.admin-content__badge--archived{background:${designTokens.color.border.soft};color:${designTokens.color.status.danger};}`,
-    `.admin-content__button{border:1px solid ${designTokens.color.action.primary};border-radius:${designTokens.radius.md}px;padding:8px 12px;text-decoration:none;color:${designTokens.color.action.primaryText};background:${designTokens.color.action.primary};font-weight:700;display:inline-flex;margin-right:8px;}`,
-    `.admin-content__button--secondary{background:${designTokens.color.background.surface};color:${designTokens.color.text.primary};border-color:${designTokens.color.border.subtle};}`,
-    ".admin-content__sections{display:grid;gap:16px;max-width:1120px;margin:0 auto;}",
-    `.admin-content__section{border-bottom:1px solid ${designTokens.color.border.subtle};padding-bottom:14px;}`,
-    ".admin-content__section:last-child{border-bottom:0;padding-bottom:0;}",
-    ".admin-content__section-title{font-size:18px;line-height:24px;margin:0 0 6px;}",
-    "@media (max-width:760px){.admin-content__header{display:block;}.admin-content__actions{margin-top:16px;}}",
-    "</style>"
   ].join("");
 }
 
@@ -215,7 +191,7 @@ function renderRows(screen: AdminRoadmapAssignmentListScreen): string {
 function renderRow(row: AdminRoadmapAssignmentRow): string {
   return [
     `<article class="admin-content__card" data-roadmap-assignment-id="${escapeAttribute(row.id)}">`,
-    `<span class="admin-content__badge ${statusClass(row.status)}">${escapeHtml(row.statusLabel)}</span>`,
+    `<span class="admin-content__badge ${roadmapReadOnlyStatusClass(row.status)}">${escapeHtml(row.statusLabel)}</span>`,
     `<h2 class="admin-content__name">${escapeHtml(row.title)}</h2>`,
     `<div class="admin-content__meta">${escapeHtml(row.assignee)}</div>`,
     `<div class="admin-content__meta">${escapeHtml(row.roadmapMeta)}</div>`,
@@ -227,24 +203,13 @@ function renderRow(row: AdminRoadmapAssignmentRow): string {
 }
 
 function renderSections(screen: AdminRoadmapAssignmentDetailScreen): string {
-  if (screen.sections.length === 0) {
-    return renderAdminEmptyState(screen.title, screen.body);
-  }
-
-  return [
-    `<div class="admin-content__sections" data-roadmap-assignment-id="${escapeAttribute(screen.roadmapAssignmentId ?? "")}">`,
-    screen.sections.map(renderSection).join(""),
-    "</div>"
-  ].join("");
-}
-
-function renderSection(section: AdminRoadmapAssignmentSection): string {
-  return [
-    `<section class="admin-content__section" data-roadmap-section-id="${escapeAttribute(section.id)}">`,
-    `<h2 class="admin-content__section-title">${escapeHtml(section.title)}</h2>`,
-    `<p class="admin-content__preview">${escapeHtml(section.body)}</p>`,
-    "</section>"
-  ].join("");
+  return renderRoadmapReadOnlySections({
+    sections: screen.sections,
+    emptyTitle: screen.title,
+    emptyBody: screen.body,
+    containerAttributeName: "data-roadmap-assignment-id",
+    containerId: screen.roadmapAssignmentId ?? ""
+  });
 }
 
 function renderAction(action: AdminRoadmapAssignmentAction): string {
@@ -257,10 +222,6 @@ function renderAction(action: AdminRoadmapAssignmentAction): string {
     href,
     secondary: action.id === "view" || action.id === "refresh"
   });
-}
-
-function statusClass(status: string): string {
-  return `admin-content__badge--${status.toLowerCase().replaceAll("_", "-")}`;
 }
 
 function roadmapAssignmentIdFromPath(path: AdminRoadmapAssignmentShellRoute): string {
