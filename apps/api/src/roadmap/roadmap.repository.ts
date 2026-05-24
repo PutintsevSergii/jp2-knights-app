@@ -347,7 +347,46 @@ export class PrismaRoadmapRepository extends RoadmapRepository {
       orderBy: [{ targetRole: "asc" }, { title: "asc" }]
     });
 
-    return records.map(toAdminRoadmapDefinitionSummary);
+    if (records.length === 0) {
+      return [];
+    }
+
+    const stageCounts = await this.prisma.roadmapStage.findMany({
+      where: {
+        roadmapDefinitionId: {
+          in: records.map((record) => record.id)
+        },
+        archivedAt: null
+      },
+      select: {
+        roadmapDefinitionId: true,
+        _count: {
+          select: {
+            steps: {
+              where: {
+                archivedAt: null
+              }
+            }
+          }
+        }
+      }
+    });
+    const stepCountByDefinitionId = new Map<string, number>();
+
+    for (const stage of stageCounts) {
+      stepCountByDefinitionId.set(
+        stage.roadmapDefinitionId,
+        (stepCountByDefinitionId.get(stage.roadmapDefinitionId) ?? 0) + stage._count.steps
+      );
+    }
+
+    return records.map((record) =>
+      toAdminRoadmapDefinitionSummary(record, {
+        stageCount: record._count.stages,
+        stepCount: stepCountByDefinitionId.get(record.id) ?? 0,
+        assignmentCount: record._count.assignments
+      })
+    );
   }
 
   async findAdminRoadmapDefinition({
@@ -523,27 +562,18 @@ type AdminRoadmapAssignmentRecord = Prisma.RoadmapAssignmentGetPayload<{
 }>;
 
 const adminRoadmapDefinitionSummaryInclude = {
-  stages: {
-    where: {
-      archivedAt: null
-    },
-    include: {
-      steps: {
+  _count: {
+    select: {
+      stages: {
         where: {
           archivedAt: null
-        },
-        select: {
-          id: true
+        }
+      },
+      assignments: {
+        where: {
+          archivedAt: null
         }
       }
-    }
-  },
-  assignments: {
-    where: {
-      archivedAt: null
-    },
-    select: {
-      id: true
     }
   }
 } as const;
@@ -852,7 +882,12 @@ function roadmapSubmissionBodyPreview(body: string): string | null {
 }
 
 function toAdminRoadmapDefinitionSummary(
-  definition: AdminRoadmapDefinitionSummaryRecord
+  definition: AdminRoadmapDefinitionSummarySource,
+  counts: {
+    stageCount: number;
+    stepCount: number;
+    assignmentCount: number;
+  }
 ): AdminRoadmapDefinitionSummary {
   return {
     id: definition.id,
@@ -861,9 +896,9 @@ function toAdminRoadmapDefinitionSummary(
     language: definition.language,
     status: definition.status,
     publishedAt: definition.publishedAt?.toISOString() ?? null,
-    stageCount: definition.stages.length,
-    stepCount: definition.stages.reduce((total, stage) => total + stage.steps.length, 0),
-    assignmentCount: definition.assignments.length,
+    stageCount: counts.stageCount,
+    stepCount: counts.stepCount,
+    assignmentCount: counts.assignmentCount,
     createdAt: definition.createdAt.toISOString(),
     updatedAt: definition.updatedAt.toISOString(),
     archivedAt: definition.archivedAt?.toISOString() ?? null
@@ -874,7 +909,11 @@ function toAdminRoadmapDefinitionDetail(
   definition: AdminRoadmapDefinitionDetailRecord
 ): AdminRoadmapDefinitionDetail {
   return {
-    ...toAdminRoadmapDefinitionSummary(definition),
+    ...toAdminRoadmapDefinitionSummary(definition, {
+      stageCount: definition.stages.length,
+      stepCount: definition.stages.reduce((total, stage) => total + stage.steps.length, 0),
+      assignmentCount: definition.assignments.length
+    }),
     stages: definition.stages.map((stage) => ({
       id: stage.id,
       title: stage.title,
@@ -891,6 +930,10 @@ function toAdminRoadmapDefinitionDetail(
     }))
   };
 }
+
+type AdminRoadmapDefinitionSummarySource =
+  | AdminRoadmapDefinitionSummaryRecord
+  | AdminRoadmapDefinitionDetailRecord;
 
 function toInputAttachmentMetadata(
   attachmentMetadata: readonly RoadmapAttachmentMetadataDto[]
