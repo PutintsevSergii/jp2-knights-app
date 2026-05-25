@@ -48,7 +48,7 @@ describe("admin roadmap submission screens", () => {
     });
     expect(screen.rows[0]).toMatchObject({
       title: "Meet your officer",
-      statusLabel: "PENDING REVIEW",
+      statusLabel: "Pending review",
       attachmentLabel: "1 attachment"
     });
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual([

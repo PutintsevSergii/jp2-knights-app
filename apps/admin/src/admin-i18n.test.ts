@@ -7,6 +7,10 @@ describe("admin i18n adapter", () => {
 
     expect(t("admin.roadmapDefinitions.title")).toBe("Roadmap Definitions");
     expect(t("admin.roadmapSubmissions.empty.body")).toBe("No roadmap submissions need review.");
+    expect(t("admin.roadmapSubmissions.review")).toBe("Review");
+    expect(t("admin.roadmapSubmissions.detail.title", { stepTitle: "Meet your officer" })).toBe(
+      "Roadmap Submission: Meet your officer"
+    );
     expect(t("admin.roadmapAssignments.create")).toBe("Create Assignment");
     expect(t("admin.roadmapAssignments.detail.title", { assigneeName: "Demo Brother" })).toBe(
       "Roadmap Assignment: Demo Brother"
@@ -15,6 +19,12 @@ describe("admin i18n adapter", () => {
 
   it("supports interpolation through the admin helper", () => {
     expect(adminCopy("roadmap.step.count", { count: 5 })).toBe("5 roadmap steps");
+    expect(
+      adminCopy("admin.roadmapSubmissions.attachmentCount", {
+        count: 2,
+        pluralSuffix: "s"
+      })
+    ).toBe("2 attachments");
     expect(
       adminCopy("admin.roadmapAssignments.counts", {
         submissionCount: 2,

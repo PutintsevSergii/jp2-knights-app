@@ -1,4 +1,5 @@
 import type { AdminRoadmapSubmissionDetailDto } from "@jp2/shared-validation";
+import { adminCopy } from "./admin-i18n.js";
 
 export type AdminRoadmapSubmissionRoute =
   | "AdminRoadmapSubmissionList"
@@ -41,7 +42,7 @@ export interface AdminRoadmapSubmissionField {
 export function adminRoadmapSubmissionBackAction(): AdminRoadmapSubmissionAction {
   return {
     id: "refresh",
-    label: "Back to Queue",
+    label: adminCopy("admin.roadmapSubmissions.back"),
     targetRoute: "AdminRoadmapSubmissionList"
   };
 }
@@ -53,5 +54,13 @@ export function formatAdminRoadmapSubmissionDateTime(value: string): string {
 export function roadmapSubmissionStatusLabel(
   status: AdminRoadmapSubmissionDetailDto["status"]
 ): string {
-  return status.replaceAll("_", " ").toUpperCase();
+  if (status === "pending_review") {
+    return adminCopy("roadmap.status.pendingReview");
+  }
+
+  if (status === "approved") {
+    return adminCopy("roadmap.status.approved");
+  }
+
+  return adminCopy("roadmap.status.rejected");
 }

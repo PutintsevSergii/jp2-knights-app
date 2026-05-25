@@ -2,6 +2,7 @@ import type { RuntimeMode } from "@jp2/shared-types";
 import type { AdminRoadmapSubmissionDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   adminRoadmapSubmissionBackAction,
   formatAdminRoadmapSubmissionDateTime,
@@ -45,10 +46,12 @@ export function buildAdminRoadmapSubmissionDetailScreen(
   return {
     route: "AdminRoadmapSubmissionDetail",
     state: "ready",
-    title: `Roadmap Submission: ${options.roadmapSubmission.stepTitle}`,
+    title: adminCopy("admin.roadmapSubmissions.detail.title", {
+      stepTitle: options.roadmapSubmission.stepTitle
+    }),
     body: canReview
-      ? "Approve or reject this scoped submission. Rejections require a review comment."
-      : "Review the submitted roadmap step and recorded decision.",
+      ? adminCopy("admin.roadmapSubmissions.detail.review.body")
+      : adminCopy("admin.roadmapSubmissions.detail.readOnly.body"),
     roadmapSubmissionId: options.roadmapSubmission.id,
     fields: buildRoadmapSubmissionFields(options.roadmapSubmission, canReview),
     actions: buildDetailActions(options.roadmapSubmission, canReview),
@@ -67,13 +70,13 @@ function buildDetailActions(
     actions.unshift(
       {
         id: "approve",
-        label: "Approve",
+        label: adminCopy("admin.roadmapSubmissions.approve"),
         targetRoute: "AdminRoadmapSubmissionDetail",
         targetId: submission.id
       },
       {
         id: "reject",
-        label: "Reject",
+        label: adminCopy("admin.roadmapSubmissions.reject"),
         targetRoute: "AdminRoadmapSubmissionDetail",
         targetId: submission.id
       }
@@ -88,23 +91,75 @@ function buildRoadmapSubmissionFields(
   canReview: boolean
 ): AdminRoadmapSubmissionField[] {
   return [
-    field("submitterName", "Submitter", submission.submitterName, true),
-    field("submitterEmail", "Email", submission.submitterEmail, true),
-    field("roadmapTitle", "Roadmap", submission.roadmapTitle, true),
-    field("stageTitle", "Stage", submission.stageTitle, true),
-    field("stepTitle", "Step", submission.stepTitle, true),
-    field("organizationUnitName", "Organization Unit", submission.organizationUnitName ?? "", true),
-    field("status", "Current Status", roadmapSubmissionStatusLabel(submission.status), true),
-    field("createdAt", "Submitted At", formatAdminRoadmapSubmissionDateTime(submission.createdAt), true),
-    field("body", "Submission", submission.body, true, true),
+    field(
+      "submitterName",
+      adminCopy("admin.roadmapSubmissions.detail.submitter"),
+      submission.submitterName,
+      true
+    ),
+    field(
+      "submitterEmail",
+      adminCopy("admin.roadmapSubmissions.detail.email"),
+      submission.submitterEmail,
+      true
+    ),
+    field(
+      "roadmapTitle",
+      adminCopy("admin.roadmapSubmissions.detail.roadmap"),
+      submission.roadmapTitle,
+      true
+    ),
+    field(
+      "stageTitle",
+      adminCopy("admin.roadmapSubmissions.detail.stage"),
+      submission.stageTitle,
+      true
+    ),
+    field("stepTitle", adminCopy("admin.roadmapSubmissions.detail.step"), submission.stepTitle, true),
+    field(
+      "organizationUnitName",
+      adminCopy("admin.roadmapSubmissions.detail.organizationUnit"),
+      submission.organizationUnitName ?? "",
+      true
+    ),
+    field(
+      "status",
+      adminCopy("admin.roadmapSubmissions.detail.currentStatus"),
+      roadmapSubmissionStatusLabel(submission.status),
+      true
+    ),
+    field(
+      "createdAt",
+      adminCopy("admin.roadmapSubmissions.detail.submittedAt"),
+      formatAdminRoadmapSubmissionDateTime(submission.createdAt),
+      true
+    ),
+    field(
+      "body",
+      adminCopy("admin.roadmapSubmissions.detail.submission"),
+      submission.body,
+      true,
+      true
+    ),
     field(
       "attachmentMetadata",
-      "Attachments",
+      adminCopy("admin.roadmapSubmissions.detail.attachments"),
       submission.attachmentMetadata.map((metadata) => metadata.originalFilename).join(", "),
       true
     ),
-    field("reviewStatus", "Review Status", "approved / rejected", !canReview),
-    field("reviewCommentInput", "Review Comment", submission.reviewComment ?? "", !canReview, true)
+    field(
+      "reviewStatus",
+      adminCopy("admin.roadmapSubmissions.detail.reviewStatus"),
+      adminCopy("admin.roadmapSubmissions.detail.reviewStatusOptions"),
+      !canReview
+    ),
+    field(
+      "reviewCommentInput",
+      adminCopy("admin.roadmapSubmissions.detail.reviewComment"),
+      submission.reviewComment ?? "",
+      !canReview,
+      true
+    )
   ];
 }
 
@@ -148,27 +203,27 @@ const roadmapSubmissionDetailStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Submission",
-    body: "Roadmap submission is ready."
+    title: adminCopy("admin.roadmapSubmissions.detail.fallbackTitle"),
+    body: adminCopy("admin.roadmapSubmissions.detail.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Submission",
-    body: "Roadmap submission is loading."
+    title: adminCopy("admin.roadmapSubmissions.detail.loading.title"),
+    body: adminCopy("admin.roadmapSubmissions.detail.loading.body")
   },
   empty: {
-    title: "Roadmap Submission Not Found",
-    body: "The requested roadmap submission is not available in the current admin scope."
+    title: adminCopy("admin.roadmapSubmissions.detail.empty.title"),
+    body: adminCopy("admin.roadmapSubmissions.detail.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Submission",
-    body: "Roadmap submission could not be loaded."
+    title: adminCopy("admin.roadmapSubmissions.detail.error.title"),
+    body: adminCopy("admin.roadmapSubmissions.detail.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh this roadmap submission."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapSubmissions.detail.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Admin Lite access is required to review roadmap submissions."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapSubmissions.forbidden.body")
   }
 };

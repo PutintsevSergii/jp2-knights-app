@@ -5,6 +5,7 @@ import type {
 } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   formatAdminRoadmapSubmissionDateTime,
   roadmapSubmissionStatusLabel,
@@ -44,8 +45,8 @@ export function buildAdminRoadmapSubmissionListScreen(
   return {
     route: "AdminRoadmapSubmissionList",
     state: "ready",
-    title: "Roadmap Submissions",
-    body: "Review scoped formation submissions. Decisions are audited and do not automatically change degrees.",
+    title: adminCopy("admin.roadmapSubmissions.title"),
+    body: adminCopy("admin.roadmapSubmissions.list.body"),
     rows: options.response.roadmapSubmissions.map((submission) =>
       roadmapSubmissionRow(submission, options.canWrite)
     ),
@@ -64,11 +65,17 @@ function roadmapSubmissionRow(
     title: submission.stepTitle,
     submitter: `${submission.submitterName} · ${submission.submitterEmail}`,
     roadmapMeta: `${submission.roadmapTitle} · ${submission.stageTitle}`,
-    organizationUnitName: submission.organizationUnitName ?? submission.organizationUnitId ?? "Global",
+    organizationUnitName:
+      submission.organizationUnitName ??
+      submission.organizationUnitId ??
+      adminCopy("admin.roadmapSubmissions.global"),
     status: submission.status,
     statusLabel: roadmapSubmissionStatusLabel(submission.status),
-    bodyPreview: submission.bodyPreview ?? "No preview available.",
-    attachmentLabel: `${submission.attachmentCount} attachment${submission.attachmentCount === 1 ? "" : "s"}`,
+    bodyPreview: submission.bodyPreview ?? adminCopy("admin.roadmapSubmissions.noPreview"),
+    attachmentLabel: adminCopy("admin.roadmapSubmissions.attachmentCount", {
+      count: submission.attachmentCount,
+      pluralSuffix: submission.attachmentCount === 1 ? "" : "s"
+    }),
     createdAt: formatAdminRoadmapSubmissionDateTime(submission.createdAt),
     actions: buildRowActions(submission, canWrite)
   };
@@ -78,7 +85,7 @@ function buildListActions(): AdminRoadmapSubmissionAction[] {
   return [
     {
       id: "refresh",
-      label: "Refresh",
+      label: adminCopy("common.refresh"),
       targetRoute: "AdminRoadmapSubmissionList"
     }
   ];
@@ -91,7 +98,10 @@ function buildRowActions(
   const actions: AdminRoadmapSubmissionAction[] = [
     {
       id: "view",
-      label: canWrite && submission.status === "pending_review" ? "Review" : "View",
+      label:
+        canWrite && submission.status === "pending_review"
+          ? adminCopy("admin.roadmapSubmissions.review")
+          : adminCopy("admin.roadmapSubmissions.view"),
       targetRoute: "AdminRoadmapSubmissionDetail",
       targetId: submission.id
     }
@@ -101,13 +111,13 @@ function buildRowActions(
     actions.push(
       {
         id: "approve",
-        label: "Approve",
+        label: adminCopy("admin.roadmapSubmissions.approve"),
         targetRoute: "AdminRoadmapSubmissionDetail",
         targetId: submission.id
       },
       {
         id: "reject",
-        label: "Reject",
+        label: adminCopy("admin.roadmapSubmissions.reject"),
         targetRoute: "AdminRoadmapSubmissionDetail",
         targetId: submission.id
       }
@@ -140,27 +150,27 @@ const roadmapSubmissionListStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Submissions",
-    body: "Roadmap submissions are ready."
+    title: adminCopy("admin.roadmapSubmissions.title"),
+    body: adminCopy("admin.roadmapSubmissions.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Submissions",
-    body: "Roadmap submissions are loading."
+    title: adminCopy("admin.roadmapSubmissions.loading.title"),
+    body: adminCopy("admin.roadmapSubmissions.loading.body")
   },
   empty: {
-    title: "Roadmap Submissions",
-    body: "No roadmap submissions need review."
+    title: adminCopy("admin.roadmapSubmissions.title"),
+    body: adminCopy("admin.roadmapSubmissions.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Submissions",
-    body: "Roadmap submissions could not be loaded."
+    title: adminCopy("admin.roadmapSubmissions.error.title"),
+    body: adminCopy("admin.roadmapSubmissions.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh roadmap submissions."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapSubmissions.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Admin Lite access is required to review roadmap submissions."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapSubmissions.forbidden.body")
   }
 };
