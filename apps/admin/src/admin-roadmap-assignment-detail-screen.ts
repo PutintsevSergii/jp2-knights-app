@@ -2,6 +2,7 @@ import type { RuntimeMode } from "@jp2/shared-types";
 import type { AdminRoadmapAssignmentDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import { formatAdminStatusLabel } from "./admin-status-labels.js";
 import {
   adminRoadmapAssignmentBackAction,
@@ -43,7 +44,9 @@ export function buildAdminRoadmapAssignmentDetailScreen(
   return {
     route: "AdminRoadmapAssignmentDetail",
     state: "ready",
-    title: `Roadmap Assignment: ${options.roadmapAssignment.assigneeName}`,
+    title: adminCopy("admin.roadmapAssignments.detail.title", {
+      assigneeName: options.roadmapAssignment.assigneeName
+    }),
     body: `${options.roadmapAssignment.roadmapTitle} · ${roadmapAssignmentStatusLabel(options.roadmapAssignment.status)}`,
     roadmapAssignmentId: options.roadmapAssignment.id,
     sections: buildSections(options.roadmapAssignment),
@@ -59,24 +62,33 @@ function buildSections(
   return [
     {
       id: "assignment",
-      title: "Assignment",
+      title: adminCopy("admin.roadmapAssignments.detail.section.assignment"),
       body: [
         `${assignment.assigneeName} <${assignment.assigneeEmail}>`,
-        assignment.organizationUnitName ?? "Global assignment",
-        `Assigned ${formatAdminRoadmapAssignmentDateTime(assignment.assignedAt)}`,
-        `Completed ${formatAdminRoadmapAssignmentDateTime(assignment.completedAt)}`
+        assignment.organizationUnitName ?? adminCopy("admin.roadmapAssignments.global"),
+        adminCopy("admin.roadmapAssignments.detail.assignedAt", {
+          assignedAt: formatAdminRoadmapAssignmentDateTime(assignment.assignedAt)
+        }),
+        adminCopy("admin.roadmapAssignments.detail.completedAt", {
+          completedAt: formatAdminRoadmapAssignmentDateTime(assignment.completedAt)
+        })
       ].join(" · ")
     },
     {
       id: "submissions",
-      title: "Submission Status",
+      title: adminCopy("admin.roadmapAssignments.detail.section.submissions"),
       body:
         assignment.submissions.length === 0
-          ? "No submissions recorded."
+          ? adminCopy("admin.roadmapAssignments.detail.noSubmissions")
           : assignment.submissions
               .map(
                 (submission) =>
-                  `${submission.stageTitle}: ${submission.stepTitle} · ${formatAdminStatusLabel(submission.status)} · ${submission.attachmentCount} attachments`
+                  adminCopy("admin.roadmapAssignments.detail.submissionLine", {
+                    stageTitle: submission.stageTitle,
+                    stepTitle: submission.stepTitle,
+                    statusLabel: formatAdminStatusLabel(submission.status),
+                    attachmentCount: submission.attachmentCount
+                  })
               )
               .join(" | ")
     }
@@ -107,27 +119,27 @@ const roadmapAssignmentDetailStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Assignment",
-    body: "Roadmap assignment is ready."
+    title: adminCopy("admin.roadmapAssignments.detail.fallbackTitle"),
+    body: adminCopy("admin.roadmapAssignments.detail.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Assignment",
-    body: "Roadmap assignment is loading."
+    title: adminCopy("admin.roadmapAssignments.detail.loading.title"),
+    body: adminCopy("admin.roadmapAssignments.detail.loading.body")
   },
   empty: {
-    title: "Roadmap Assignment Not Found",
-    body: "The requested roadmap assignment is not available."
+    title: adminCopy("admin.roadmapAssignments.detail.empty.title"),
+    body: adminCopy("admin.roadmapAssignments.detail.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Assignment",
-    body: "Roadmap assignment could not be loaded."
+    title: adminCopy("admin.roadmapAssignments.detail.error.title"),
+    body: adminCopy("admin.roadmapAssignments.detail.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh this roadmap assignment."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapAssignments.detail.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Super Admin access is required to inspect roadmap assignments."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapAssignments.forbidden.body")
   }
 };

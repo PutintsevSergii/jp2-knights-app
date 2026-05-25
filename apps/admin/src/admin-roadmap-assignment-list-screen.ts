@@ -5,6 +5,7 @@ import type {
 } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   formatAdminRoadmapAssignmentDateTime,
   roadmapAssignmentStatusLabel,
@@ -43,8 +44,8 @@ export function buildAdminRoadmapAssignmentListScreen(
   return {
     route: "AdminRoadmapAssignmentList",
     state: "ready",
-    title: "Roadmap Assignments",
-    body: "Inspect and create assignments from already-published candidate or brother roadmaps.",
+    title: adminCopy("admin.roadmapAssignments.title"),
+    body: adminCopy("admin.roadmapAssignments.list.body"),
     rows: options.response.roadmapAssignments.map(roadmapAssignmentRow),
     actions: buildListActions(),
     demoChromeVisible: options.runtimeMode === "demo",
@@ -60,15 +61,19 @@ function roadmapAssignmentRow(
     title: assignment.roadmapTitle,
     assignee: `${assignment.assigneeName} <${assignment.assigneeEmail}>`,
     roadmapMeta: `${assignment.roadmapTargetRole} · ${assignment.roadmapStatus}`,
-    organizationUnitName: assignment.organizationUnitName ?? "Global assignment",
+    organizationUnitName:
+      assignment.organizationUnitName ?? adminCopy("admin.roadmapAssignments.global"),
     status: assignment.status,
     statusLabel: roadmapAssignmentStatusLabel(assignment.status),
-    countsLabel: `${assignment.submissionCount} submissions · ${assignment.pendingSubmissionCount} pending`,
+    countsLabel: adminCopy("admin.roadmapAssignments.counts", {
+      submissionCount: assignment.submissionCount,
+      pendingCount: assignment.pendingSubmissionCount
+    }),
     assignedAt: formatAdminRoadmapAssignmentDateTime(assignment.assignedAt),
     actions: [
       {
         id: "view",
-        label: "View",
+        label: adminCopy("admin.roadmapAssignments.view"),
         targetRoute: "AdminRoadmapAssignmentDetail",
         targetId: assignment.id
       }
@@ -80,12 +85,12 @@ function buildListActions(): AdminRoadmapAssignmentAction[] {
   return [
     {
       id: "create",
-      label: "Create Assignment",
+      label: adminCopy("admin.roadmapAssignments.create"),
       targetRoute: "AdminRoadmapAssignmentList"
     },
     {
       id: "refresh",
-      label: "Refresh",
+      label: adminCopy("common.refresh"),
       targetRoute: "AdminRoadmapAssignmentList"
     }
   ];
@@ -114,27 +119,27 @@ const roadmapAssignmentListStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Assignments",
-    body: "Roadmap assignments are ready."
+    title: adminCopy("admin.roadmapAssignments.title"),
+    body: adminCopy("admin.roadmapAssignments.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Assignments",
-    body: "Roadmap assignments are loading."
+    title: adminCopy("admin.roadmapAssignments.loading.title"),
+    body: adminCopy("admin.roadmapAssignments.loading.body")
   },
   empty: {
-    title: "Roadmap Assignments",
-    body: "No roadmap assignments are configured."
+    title: adminCopy("admin.roadmapAssignments.title"),
+    body: adminCopy("admin.roadmapAssignments.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Assignments",
-    body: "Roadmap assignments could not be loaded."
+    title: adminCopy("admin.roadmapAssignments.error.title"),
+    body: adminCopy("admin.roadmapAssignments.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh roadmap assignments."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapAssignments.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Super Admin access is required to inspect roadmap assignments."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapAssignments.forbidden.body")
   }
 };

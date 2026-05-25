@@ -666,6 +666,13 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   now asserts these fixtures remain present, and repository coverage documents
   assigned-roadmap filters for current-user, published, non-archived,
   in-scope reads.
+- Phase 10B localization cleanup now moves another roadmap UI slice onto
+  `NFR-LOC-001`: shared `@jp2/shared-i18n` catalog keys cover mobile roadmap
+  step status/submission labels and Admin Lite roadmap assignment list/detail/
+  create-form titles, state copy, actions, form labels, assignment counts, and
+  empty/forbidden/offline copy. Mobile and Admin Lite adapters consume those
+  keys in the roadmap screen models while approved roadmap definition/stage/step
+  content remains data-backed.
 - Phase 10A maintainability cleanup now splits the shared validation contract
   surface into domain modules behind the stable `@jp2/shared-validation`
   barrel and centralizes private mobile route resource loading for candidate
@@ -686,10 +693,10 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   client-side permission filtering.
 - Phase 10A implementation should next add pilot Firebase/Google environment
   values for mobile builds or continue restyling remaining Figma-covered Admin
-  Lite routes as responsive web. Phase 10B should next continue replacing Phase
-  10B-touched user-facing copy with localization keys or add an owner-approved
-  definition mutation workflow after confirmation of the exact formation
-  wording.
+  Lite routes as responsive web. Phase 10B should next continue replacing
+  remaining roadmap submission/definition user-facing copy with localization
+  keys or add an owner-approved definition mutation workflow after confirmation
+  of the exact formation wording.
 - Phase 11 Silent Prayer, Phase 12 privacy/security hardening, and Phase 13
   pilot readiness are not implemented yet unless explicitly listed above.
 

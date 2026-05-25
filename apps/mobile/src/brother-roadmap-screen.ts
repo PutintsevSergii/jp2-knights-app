@@ -61,13 +61,13 @@ export function buildBrotherRoadmapScreen(options: {
         id: step.id,
         stageTitle: stage.title,
         title: step.title,
-        body: step.description ?? "No step description is recorded yet.",
+        body: step.description ?? mobileCopy("mobile.brother.roadmap.noStepDescription"),
         statusLabel: roadmapSubmissionStatusLabel(step.latestSubmission),
         submissionRequired: step.requiresSubmission,
         submissionAction: canSubmitRoadmapStep(step)
           ? {
               id: "submit-roadmap-step",
-              label: "Submit reflection",
+              label: mobileCopy("mobile.brother.roadmap.submitReflection"),
               targetRoute: "BrotherRoadmap",
               targetId: step.id
             }

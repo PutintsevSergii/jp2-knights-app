@@ -2,6 +2,7 @@ import type {
   AdminRoadmapAssignmentDetailDto,
   CreateAdminRoadmapAssignmentRequestDto
 } from "@jp2/shared-validation";
+import { adminCopy } from "./admin-i18n.js";
 import { formatAdminStatusLabel } from "./admin-status-labels.js";
 
 export type AdminRoadmapAssignmentRoute =
@@ -48,13 +49,13 @@ export interface AdminRoadmapAssignmentFormField {
 export function adminRoadmapAssignmentBackAction(): AdminRoadmapAssignmentAction {
   return {
     id: "refresh",
-    label: "Back to Assignments",
+    label: adminCopy("admin.roadmapAssignments.back"),
     targetRoute: "AdminRoadmapAssignmentList"
   };
 }
 
 export function formatAdminRoadmapAssignmentDateTime(value: string | null): string {
-  return value ? new Date(value).toISOString() : "Not completed";
+  return value ? new Date(value).toISOString() : adminCopy("admin.roadmapAssignments.detail.notCompleted");
 }
 
 export function roadmapAssignmentStatusLabel(status: string): string {

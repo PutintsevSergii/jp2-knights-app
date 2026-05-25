@@ -1,6 +1,7 @@
 import type { RuntimeMode } from "@jp2/shared-types";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   adminRoadmapAssignmentBackAction,
   type AdminRoadmapAssignmentAction,
@@ -35,13 +36,13 @@ export function buildAdminRoadmapAssignmentEditorScreen(
     route: "AdminRoadmapAssignmentEditor",
     state: "ready",
     mode: "create",
-    title: "Create Roadmap Assignment",
-    body: "Assign an already-published candidate or brother roadmap to an eligible user in the matching scope.",
+    title: adminCopy("admin.roadmapAssignments.editor.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.body"),
     fields: buildRoadmapAssignmentFields(),
     actions: [
       {
         id: "create",
-        label: "Create",
+        label: adminCopy("admin.roadmapAssignments.create.submit"),
         targetRoute: "AdminRoadmapAssignmentEditor"
       },
       adminRoadmapAssignmentBackAction()
@@ -74,21 +75,21 @@ function buildRoadmapAssignmentFields(): AdminRoadmapAssignmentFormField[] {
   return [
     {
       name: "assigneeUserId",
-      label: "Assignee User ID",
+      label: adminCopy("admin.roadmapAssignments.editor.assigneeUserId"),
       value: "",
       required: true,
       readOnly: false
     },
     {
       name: "roadmapDefinitionId",
-      label: "Roadmap Definition ID",
+      label: adminCopy("admin.roadmapAssignments.editor.roadmapDefinitionId"),
       value: "",
       required: true,
       readOnly: false
     },
     {
       name: "organizationUnitId",
-      label: "Organization Unit ID",
+      label: adminCopy("admin.roadmapAssignments.editor.organizationUnitId"),
       value: "",
       required: false,
       readOnly: false
@@ -101,27 +102,27 @@ const roadmapAssignmentEditorStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Create Roadmap Assignment",
-    body: "Roadmap assignment form is ready."
+    title: adminCopy("admin.roadmapAssignments.editor.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Assignment Form",
-    body: "Roadmap assignment form is loading."
+    title: adminCopy("admin.roadmapAssignments.editor.loading.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.loading.body")
   },
   empty: {
-    title: "Create Roadmap Assignment",
-    body: "No roadmap assignment form is available."
+    title: adminCopy("admin.roadmapAssignments.editor.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Assignment Form",
-    body: "Roadmap assignment form could not be loaded."
+    title: adminCopy("admin.roadmapAssignments.editor.error.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to create a roadmap assignment."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Super Admin access is required to create roadmap assignments."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapAssignments.editor.forbidden.body")
   }
 };

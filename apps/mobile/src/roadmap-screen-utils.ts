@@ -35,8 +35,10 @@ export function buildRoadmapSections(roadmap: AssignedRoadmapDto): RoadmapScreen
 function roadmapStepBody(step: RoadmapStepSummaryDto): string {
   const parts = [
     step.description,
-    step.requiresSubmission ? "Submission required." : "Read-only step.",
-    `Status: ${roadmapStepStatusLabel(step)}.`
+    step.requiresSubmission
+      ? mobileCopy("roadmap.step.submissionRequired")
+      : mobileCopy("roadmap.step.readOnly"),
+    mobileCopy("roadmap.step.statusLine", { statusLabel: roadmapStepStatusLabel(step) })
   ].filter((part): part is string => Boolean(part));
 
   return parts.join("\n");
