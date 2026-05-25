@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: May 24, 2026 (Phases 0–9 complete; Phase 10A V1 Figma/RBAC alignment in progress; Phase 10B roadmap assignment creation started)
+**Last Updated**: May 25, 2026 (Phases 0–9 complete; Phase 10A V1 Figma/RBAC alignment in progress; Phase 10B roadmap assignment creation started; Cloud Run/Cloud SQL optimization improvement documented)
 
 ---
 
@@ -651,6 +651,18 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   and brother surfaces. This keeps DTO/schema ownership, API/demo loading,
   auth-token gating, error-state mapping, and cancellation behavior reusable
   before the Phase 10B roadmap screens expand the private mobile route groups.
+- Possible post-current-scope operational improvement is documented for a
+  low-cost Google Cloud Run + Cloud SQL deployment profile. The audit recommends
+  a Redis read-aside cache layer for high-traffic read paths before pilot scale:
+  public content lists/details, auth principal resolution, brother profile/today
+  reads, candidate dashboard/event reads, and Admin Lite dashboard counts. It
+  also records Prisma connection-pool hardening with explicit
+  `connection_limit`/`pool_timeout`, startup retry and shutdown hooks, migration
+  deployment through a standalone Cloud Run Job, and preserving the existing
+  shallow `/api/health` route as the Cloud Run readiness probe. This is a
+  possible improvement queued after the existing Phase 10A/10B items and does
+  not authorize V2 features, read replicas, analytics, hierarchy rollups, or
+  client-side permission filtering.
 - Phase 10A implementation should next add pilot Firebase/Google environment
   values for mobile builds or continue restyling remaining Figma-covered Admin
   Lite routes as responsive web. Phase 10B should next add the rendered Admin

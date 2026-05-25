@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 24, 2026
+Updated: May 25, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -81,6 +81,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 - 🟡 Add pilot Firebase/Google environment values and validate the provider flow on a native Expo target
 - 🟡 Add rendered Admin Lite create-assignment form flow or owner-approved roadmap definition mutation workflow after confirmation of exact formation wording
+- 🟡 Possible operational improvement queued after existing Phase 10A/10B items: document and size the low-cost Google Cloud Run + Cloud SQL optimization path, including Redis read-aside caching for public content, auth principal, brother/candidate dashboard/event, and Admin Lite dashboard-count reads; Prisma connection-limit/retry/shutdown hardening; standalone Cloud Run Job migrations; and `/api/health` readiness-probe alignment
 
 **Scope guard**: This workstream is now V1 scope. It still does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
 
@@ -623,6 +624,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
    - [ ] Expand realistic seed/load fixtures across multiple chorągwie, roles, inactive users, archived records, and visibility levels
    - [ ] Replace hardcoded user-facing copy in Phase 10B-touched mobile/admin screens with localization keys while preserving approved content loaded from content tables
    - [ ] Queue Phase 11 Redis TTL/reconnect/duplicate-join/multi-instance tests for silent prayer before implementing realtime sockets
+   - [ ] Possible improvement after existing items: prepare the Cloud Run + Cloud SQL low-cost deployment optimization slice by adding a Redis read-aside cache module/decorators, caching the identified high-traffic read paths, hardening Prisma pool/retry/shutdown behavior, moving production migrations to a standalone Cloud Run Job, and keeping readiness checks shallow on `/api/health`
 
 ### Medium Term (Next 5–10 commits)
 
@@ -721,6 +723,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 24, 2026
+**Last Updated**: May 25, 2026
 **Current Phase**: Phase 10 Figma/RBAC alignment and Formation Roadmap in progress; Phases 0–9 complete
-**Next Major Milestone**: Add rendered roadmap assignment form flow or definition workflow after owner confirmation of exact formation wording
+**Next Major Milestone**: Add rendered roadmap assignment form flow or definition workflow after owner confirmation of exact formation wording; then consider the documented Cloud Run + Cloud SQL read-cache/pooling optimization improvement
