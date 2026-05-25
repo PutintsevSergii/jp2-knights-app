@@ -2,6 +2,7 @@ import type { RuntimeMode } from "@jp2/shared-types";
 import type { AdminRoadmapDefinitionDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   adminRoadmapDefinitionBackAction,
   roadmapDefinitionStatusLabel,
@@ -41,7 +42,9 @@ export function buildAdminRoadmapDefinitionDetailScreen(
   return {
     route: "AdminRoadmapDefinitionDetail",
     state: "ready",
-    title: `Roadmap Definition: ${options.roadmapDefinition.title}`,
+    title: adminCopy("admin.roadmapDefinitions.detail.title", {
+      title: options.roadmapDefinition.title
+    }),
     body: `${options.roadmapDefinition.targetRole} · ${roadmapDefinitionStatusLabel(options.roadmapDefinition.status)} · ${options.roadmapDefinition.language}`,
     roadmapDefinitionId: options.roadmapDefinition.id,
     sections: buildSections(options.roadmapDefinition),
@@ -58,14 +61,16 @@ function buildSections(
     {
       id: `stage-${stage.id}`,
       title: stage.title,
-      body: `${stage.steps.length} roadmap steps`
+      body: adminCopy("roadmap.step.count", { count: stage.steps.length })
     },
     ...stage.steps.map((step) => ({
       id: `step-${step.id}`,
       title: step.title,
       body: [
-        step.description ?? "No description.",
-        step.requiresSubmission ? "Submission required." : "Read-only step.",
+        step.description ?? adminCopy("admin.roadmapDefinitions.detail.noDescription"),
+        step.requiresSubmission
+          ? adminCopy("roadmap.step.submissionRequired")
+          : adminCopy("roadmap.step.readOnly"),
         roadmapDefinitionStatusLabel(step.status)
       ].join(" ")
     }))
@@ -96,27 +101,27 @@ const roadmapDefinitionDetailStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Definition",
-    body: "Roadmap definition is ready."
+    title: adminCopy("admin.roadmapDefinitions.detail.fallbackTitle"),
+    body: adminCopy("admin.roadmapDefinitions.detail.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Definition",
-    body: "Roadmap definition is loading."
+    title: adminCopy("admin.roadmapDefinitions.detail.loading.title"),
+    body: adminCopy("admin.roadmapDefinitions.detail.loading.body")
   },
   empty: {
-    title: "Roadmap Definition Not Found",
-    body: "The requested roadmap definition is not available."
+    title: adminCopy("admin.roadmapDefinitions.detail.empty.title"),
+    body: adminCopy("admin.roadmapDefinitions.detail.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Definition",
-    body: "Roadmap definition could not be loaded."
+    title: adminCopy("admin.roadmapDefinitions.detail.error.title"),
+    body: adminCopy("admin.roadmapDefinitions.detail.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh this roadmap definition."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapDefinitions.detail.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Super Admin access is required to inspect roadmap definitions."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapDefinitions.forbidden.body")
   }
 };

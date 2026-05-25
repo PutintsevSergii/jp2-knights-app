@@ -677,6 +677,81 @@ async function main() {
     }
   });
 
+  await prisma.silentPrayerEvent.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000043"
+    },
+    update: {
+      title: "Public Silent Prayer",
+      intention: "A public aggregate-only silent prayer fixture.",
+      visibility: "PUBLIC",
+      targetOrganizationUnitId: null,
+      status: "PUBLISHED",
+      startsAt: new Date("2026-05-01T00:00:00.000Z"),
+      endsAt: new Date("2026-12-31T23:59:59.000Z"),
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-05-01T00:00:00.000Z"),
+      cancelledAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000043",
+      title: "Public Silent Prayer",
+      intention: "A public aggregate-only silent prayer fixture.",
+      visibility: "PUBLIC",
+      status: "PUBLISHED",
+      startsAt: new Date("2026-05-01T00:00:00.000Z"),
+      endsAt: new Date("2026-12-31T23:59:59.000Z"),
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-05-01T00:00:00.000Z")
+    }
+  });
+
+  await prisma.silentPrayerEvent.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000044"
+    },
+    update: {
+      title: "Brother Silent Prayer",
+      intention: "A brother-only silent prayer fixture for scoped aggregate counters.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "PUBLISHED",
+      startsAt: new Date("2026-05-01T00:00:00.000Z"),
+      endsAt: new Date("2026-12-31T23:59:59.000Z"),
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-05-01T00:00:00.000Z"),
+      cancelledAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000044",
+      title: "Brother Silent Prayer",
+      intention: "A brother-only silent prayer fixture for scoped aggregate counters.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: pilotUnit.id,
+      status: "PUBLISHED",
+      startsAt: new Date("2026-05-01T00:00:00.000Z"),
+      endsAt: new Date("2026-12-31T23:59:59.000Z"),
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      approvedBy: superAdmin.id,
+      publishedBy: superAdmin.id,
+      approvedAt: new Date("2026-05-01T00:00:00.000Z"),
+      publishedAt: new Date("2026-05-01T00:00:00.000Z")
+    }
+  });
+
   await prisma.announcement.upsert({
     where: {
       id: "00000000-0000-0000-0000-000000000019"

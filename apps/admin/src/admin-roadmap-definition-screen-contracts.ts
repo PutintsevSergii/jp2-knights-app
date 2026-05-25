@@ -1,5 +1,5 @@
 import type { AdminRoadmapDefinitionDetailDto } from "@jp2/shared-validation";
-import { formatAdminStatusLabel } from "./admin-status-labels.js";
+import { adminCopy } from "./admin-i18n.js";
 
 export type AdminRoadmapDefinitionRoute =
   | "AdminRoadmapDefinitionList"
@@ -35,17 +35,33 @@ export interface AdminRoadmapDefinitionSection {
 export function adminRoadmapDefinitionBackAction(): AdminRoadmapDefinitionAction {
   return {
     id: "refresh",
-    label: "Back to Definitions",
+    label: adminCopy("admin.roadmapDefinitions.back"),
     targetRoute: "AdminRoadmapDefinitionList"
   };
 }
 
 export function formatAdminRoadmapDefinitionDateTime(value: string | null): string {
-  return value ? new Date(value).toISOString() : "Not published";
+  return value ? new Date(value).toISOString() : adminCopy("admin.roadmapDefinitions.notPublished");
 }
 
 export function roadmapDefinitionStatusLabel(
   status: AdminRoadmapDefinitionDetailDto["status"]
 ): string {
-  return formatAdminStatusLabel(status);
+  if (status === "DRAFT") {
+    return adminCopy("content.status.draft");
+  }
+
+  if (status === "REVIEW") {
+    return adminCopy("content.status.review");
+  }
+
+  if (status === "APPROVED") {
+    return adminCopy("content.status.approved");
+  }
+
+  if (status === "PUBLISHED") {
+    return adminCopy("content.status.published");
+  }
+
+  return adminCopy("content.status.archived");
 }

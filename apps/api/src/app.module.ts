@@ -14,6 +14,7 @@ import { OrganizationModule } from "./organization/organization.module.js";
 import { RequestIdMiddleware } from "./observability/request-id.middleware.js";
 import { PublicModule } from "./public/public.module.js";
 import { RoadmapModule } from "./roadmap/roadmap.module.js";
+import { SilentPrayerModule } from "./silent-prayer/silent-prayer.module.js";
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { RoadmapModule } from "./roadmap/roadmap.module.js";
     EventParticipationModule,
     OrganizationModule,
     PublicModule,
-    RoadmapModule
+    RoadmapModule,
+    SilentPrayerModule
   ],
   controllers: [AppController],
   providers: [AppService]

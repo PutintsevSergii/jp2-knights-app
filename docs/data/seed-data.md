@@ -6,8 +6,8 @@ Seed data grows with the implementation phase. The committed seed currently
 covers the identity and organization foundation needed for scope checks plus the
 Phase 3 public About content fallback, Phase 4 public content fixtures, the
 Phase 5/6 Idle access review fixture, and the first Phase 7 candidate
-request/profile fixtures, Phase 9 announcement fixtures, and the first Phase
-10B roadmap fixtures:
+request/profile fixtures, Phase 9 announcement fixtures, the first Phase
+10B roadmap fixtures, and Phase 11 silent-prayer session fixtures:
 
 - one active Super Admin;
 - two active Officers, each scoped to a different organization unit;
@@ -32,6 +32,8 @@ request/profile fixtures, Phase 9 announcement fixtures, and the first Phase
 - one rejected brother roadmap submission fixture in the second organization unit for resubmission-path demos.
 - one archived roadmap assignment/submission fixture tied to an inactive brother; it must stay outside active reads and review queues.
 - draft and archived roadmap definition fixtures for Admin Lite configuration-state inspection.
+- one active published `PUBLIC` silent-prayer event fixture.
+- one active published `ORGANIZATION_UNIT` silent-prayer event fixture scoped to the pilot organization unit.
 
 The full V1 local-development target is:
 

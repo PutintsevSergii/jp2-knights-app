@@ -9,6 +9,7 @@ import {
   type AdminContentScreenState
 } from "./admin-content-api.js";
 import { fallbackAdminRoadmapDefinitions } from "./admin-content-fixtures.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   fetchAdminRoadmapDefinition,
   fetchAdminRoadmapDefinitions
@@ -68,7 +69,7 @@ export const adminRoadmapDefinitionShellRoutes: readonly AdminRoadmapDefinitionS
   [
     {
       path: "/admin/roadmap-definitions",
-      label: "Roadmap Definitions",
+      label: adminCopy("admin.roadmapDefinitions.title"),
       screenRoute: "AdminRoadmapDefinitionList"
     }
   ];
@@ -90,7 +91,10 @@ export async function renderAdminRoadmapDefinitionRoute(
     route: screen.route,
     state: screen.state,
     statusCode: adminStatusCodeForState(screen.state),
-    document: renderAdminDocument({ title: "Admin Roadmap Definitions", body: html })
+    document: renderAdminDocument({
+      title: adminCopy("admin.roadmapDefinitions.documentTitle"),
+      body: html
+    })
   };
 }
 

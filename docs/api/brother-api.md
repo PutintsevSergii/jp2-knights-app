@@ -13,8 +13,8 @@
 | GET    | `/brother/prayers`                           | Yes  | Brother | filters/pagination                 | prayers                                                                       | 400         | Public/brother/own organization units                   |
 | GET    | `/brother/roadmap`                           | Yes  | Brother | none                               | roadmap assignment or `null`                                                  | 403,404     | Own formation only                                      |
 | POST   | `/brother/roadmap/steps/:stepId/submissions` | Yes  | Brother | body, optional attachment metadata | submission                                                                    | 400,409     | Pending review created                                  |
-| GET    | `/brother/silent-prayer-events`              | Yes  | Brother | activeOnly?                        | sessions                                                                      | 400         | Relevant only                                           |
-| POST   | `/brother/silent-prayer-events/:id/join`     | Yes  | Brother | none                               | room info, counter                                                            | 404,422     | Counts once per user                                    |
+| GET    | `/brother/silent-prayer-events`              | Yes  | Brother | pagination                         | active sessions with aggregate counters                                       | 400         | Public/family/brother/own-unit only                    |
+| POST   | `/brother/silent-prayer-events/:id/join`     | Yes  | Brother | none                               | counter, expiry, socket room info                                             | 403,404     | Counts once per user; no participant list              |
 
 ## Implemented Phase 8 Brother Companion Core
 

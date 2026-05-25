@@ -39,8 +39,8 @@ describe("admin roadmap definition screens", () => {
     });
     expect(screen.rows[0]).toMatchObject({
       title: "Brother Formation Roadmap",
-      countsLabel: "1 stages · 1 steps · 1 assignments",
-      statusLabel: "PUBLISHED"
+      countsLabel: "1 stage · 1 step · 1 assignment",
+      statusLabel: "Published"
     });
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual(["view"]);
   });

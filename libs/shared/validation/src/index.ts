@@ -5,3 +5,4 @@ export * from "./common.js";
 export * from "./member-content.js";
 export * from "./public-content.js";
 export * from "./roadmap.js";
+export * from "./silent-prayer.js";

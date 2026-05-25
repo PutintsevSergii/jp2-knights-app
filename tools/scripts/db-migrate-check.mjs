@@ -16,6 +16,7 @@ const requiredInputs = [
   "prisma/migrations/000009_announcements/migration.sql",
   "prisma/migrations/000010_notifications/migration.sql",
   "prisma/migrations/000011_roadmap_foundation/migration.sql",
+  "prisma/migrations/000012_silent_prayer_events/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -322,6 +323,33 @@ if (missingRoadmapMigrationSnippets.length > 0) {
   );
 }
 
+const silentPrayerMigrationSql = readFileSync(
+  "prisma/migrations/000012_silent_prayer_events/migration.sql",
+  "utf8"
+);
+
+const requiredSilentPrayerMigrationSnippets = [
+  "CREATE TABLE silent_prayer_events",
+  "target_organization_unit_id",
+  "starts_at timestamptz",
+  "ends_at timestamptz",
+  "cancelled_at timestamptz",
+  "CREATE INDEX silent_prayer_events_visibility_status_starts_at_idx",
+  "CREATE INDEX silent_prayer_events_status_published_at_idx"
+];
+
+const missingSilentPrayerMigrationSnippets = requiredSilentPrayerMigrationSnippets.filter(
+  (snippet) => !silentPrayerMigrationSql.includes(snippet)
+);
+
+if (missingSilentPrayerMigrationSnippets.length > 0) {
+  throw new Error(
+    `Silent prayer migration is missing required SQL: ${missingSilentPrayerMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -368,7 +396,10 @@ const requiredSeedSnippets = [
   "Second scope reflection fixture rejected for resubmission testing",
   "Archived submission fixture that must stay outside active review queues",
   "Draft Formation Fixture",
-  "Archived Formation Fixture"
+  "Archived Formation Fixture",
+  "silentPrayerEvent",
+  "Public Silent Prayer",
+  "Brother Silent Prayer"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
@@ -379,5 +410,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, Phase 9 notification tables, and Phase 10B roadmap data/contracts fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, Phase 9 notification tables, Phase 10B roadmap data/contracts fixtures, and Phase 11 silent-prayer event fixtures."
 );

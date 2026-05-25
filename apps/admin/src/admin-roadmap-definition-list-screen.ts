@@ -5,6 +5,7 @@ import type {
 } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
+import { adminCopy } from "./admin-i18n.js";
 import {
   formatAdminRoadmapDefinitionDateTime,
   roadmapDefinitionStatusLabel,
@@ -43,8 +44,8 @@ export function buildAdminRoadmapDefinitionListScreen(
   return {
     route: "AdminRoadmapDefinitionList",
     state: "ready",
-    title: "Roadmap Definitions",
-    body: "Inspect configured candidate and brother roadmaps. Editing remains gated until approved formation wording is confirmed.",
+    title: adminCopy("admin.roadmapDefinitions.title"),
+    body: adminCopy("admin.roadmapDefinitions.list.body"),
     rows: options.response.roadmapDefinitions.map(roadmapDefinitionRow),
     actions: buildListActions(),
     demoChromeVisible: options.runtimeMode === "demo",
@@ -62,12 +63,19 @@ function roadmapDefinitionRow(
     language: definition.language,
     status: definition.status,
     statusLabel: roadmapDefinitionStatusLabel(definition.status),
-    countsLabel: `${definition.stageCount} stages · ${definition.stepCount} steps · ${definition.assignmentCount} assignments`,
+    countsLabel: adminCopy("admin.roadmapDefinitions.counts", {
+      stageCount: definition.stageCount,
+      stagePluralSuffix: definition.stageCount === 1 ? "" : "s",
+      stepCount: definition.stepCount,
+      stepPluralSuffix: definition.stepCount === 1 ? "" : "s",
+      assignmentCount: definition.assignmentCount,
+      assignmentPluralSuffix: definition.assignmentCount === 1 ? "" : "s"
+    }),
     publishedAt: formatAdminRoadmapDefinitionDateTime(definition.publishedAt),
     actions: [
       {
         id: "view",
-        label: "View",
+        label: adminCopy("admin.roadmapDefinitions.view"),
         targetRoute: "AdminRoadmapDefinitionDetail",
         targetId: definition.id
       }
@@ -79,7 +87,7 @@ function buildListActions(): AdminRoadmapDefinitionAction[] {
   return [
     {
       id: "refresh",
-      label: "Refresh",
+      label: adminCopy("common.refresh"),
       targetRoute: "AdminRoadmapDefinitionList"
     }
   ];
@@ -108,27 +116,27 @@ const roadmapDefinitionListStateCopy: Record<
   { title: string; body: string }
 > = {
   ready: {
-    title: "Roadmap Definitions",
-    body: "Roadmap definitions are ready."
+    title: adminCopy("admin.roadmapDefinitions.title"),
+    body: adminCopy("admin.roadmapDefinitions.ready.body")
   },
   loading: {
-    title: "Loading Roadmap Definitions",
-    body: "Roadmap definitions are loading."
+    title: adminCopy("admin.roadmapDefinitions.loading.title"),
+    body: adminCopy("admin.roadmapDefinitions.loading.body")
   },
   empty: {
-    title: "Roadmap Definitions",
-    body: "No roadmap definitions are configured."
+    title: adminCopy("admin.roadmapDefinitions.title"),
+    body: adminCopy("admin.roadmapDefinitions.empty.body")
   },
   error: {
-    title: "Unable to Load Roadmap Definitions",
-    body: "Roadmap definitions could not be loaded."
+    title: adminCopy("admin.roadmapDefinitions.error.title"),
+    body: adminCopy("admin.roadmapDefinitions.error.body")
   },
   offline: {
-    title: "Offline",
-    body: "Reconnect to refresh roadmap definitions."
+    title: adminCopy("common.offline.title"),
+    body: adminCopy("admin.roadmapDefinitions.offline.body")
   },
   forbidden: {
-    title: "Access Denied",
-    body: "Super Admin access is required to inspect roadmap definitions."
+    title: adminCopy("common.accessDenied.title"),
+    body: adminCopy("admin.roadmapDefinitions.forbidden.body")
   }
 };
