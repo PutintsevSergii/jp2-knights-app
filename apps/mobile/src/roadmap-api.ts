@@ -1,12 +1,17 @@
 import {
   assignedRoadmapResponseSchema,
-  type AssignedRoadmapResponseDto
+  createRoadmapSubmissionRequestSchema,
+  roadmapSubmissionResponseSchema,
+  type AssignedRoadmapResponseDto,
+  type RoadmapAttachmentMetadataDto,
+  type RoadmapSubmissionResponseDto
 } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
 import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
   requestMobileApi,
+  requestPrivateJsonMobileApi,
   type MobileApiFetch,
   type MobileApiFetchInit,
   type MobileApiFetchResponse,
@@ -25,6 +30,12 @@ export interface FetchRoadmapOptions {
   fetchImpl?: RoadmapFetch;
 }
 
+export interface SubmitBrotherRoadmapStepOptions extends FetchRoadmapOptions {
+  stepId: string;
+  body: string;
+  attachmentMetadata?: RoadmapAttachmentMetadataDto[] | undefined;
+}
+
 export async function fetchCandidateRoadmap(
   options: FetchRoadmapOptions = {}
 ): Promise<AssignedRoadmapResponseDto> {
@@ -41,12 +52,40 @@ export async function fetchBrotherRoadmap(
   return assignedRoadmapResponseSchema.parse(await response.json());
 }
 
+export async function submitBrotherRoadmapStep(
+  options: SubmitBrotherRoadmapStepOptions
+): Promise<RoadmapSubmissionResponseDto> {
+  const request = createRoadmapSubmissionRequestSchema.parse({
+    stepId: options.stepId,
+    body: options.body,
+    attachmentMetadata: options.attachmentMetadata ?? []
+  });
+  const response = await requestPrivateJsonMobileApi<RoadmapFetchResponse>(
+    buildBrotherRoadmapSubmissionUrl(options.stepId, options.baseUrl),
+    options,
+    JSON.stringify(request),
+    (status, code) => new RoadmapHttpError(status, code)
+  );
+
+  return roadmapSubmissionResponseSchema.parse(await response.json());
+}
+
 export function buildCandidateRoadmapUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return buildMobileApiUrl("candidate/roadmap", baseUrl);
 }
 
 export function buildBrotherRoadmapUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_URL): string {
   return buildMobileApiUrl("brother/roadmap", baseUrl);
+}
+
+export function buildBrotherRoadmapSubmissionUrl(
+  stepId: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildMobileApiUrl(
+    `brother/roadmap/steps/${encodeURIComponent(stepId)}/submissions`,
+    baseUrl
+  );
 }
 
 export function roadmapLoadFailureState(error: unknown): MobileScreenState {

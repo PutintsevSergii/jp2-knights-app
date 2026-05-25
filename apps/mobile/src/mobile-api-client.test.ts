@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildMobileApiUrl,
   requestMobileApi,
+  requestPrivateJsonMobileApi,
   requestPublicJsonMobileApi,
   requestPublicMobileApi
 } from "./mobile-api-client.js";
@@ -39,11 +40,12 @@ describe("mobile api client primitives", () => {
       requestMobileApi(
         "https://api.example.test/candidate/dashboard",
         {
-          fetchImpl: () => Promise.resolve({
-            ok: false,
-            status: 403,
-            json: () => Promise.resolve({ error: { code: "IDLE_APPROVAL_REQUIRED" } })
-          })
+          fetchImpl: () =>
+            Promise.resolve({
+              ok: false,
+              status: 403,
+              json: () => Promise.resolve({ error: { code: "IDLE_APPROVAL_REQUIRED" } })
+            })
         },
         "GET",
         (status, code) => new Error(`${status}:${code ?? "none"}`)
@@ -55,11 +57,12 @@ describe("mobile api client primitives", () => {
     await expect(
       requestPublicMobileApi(
         "https://api.example.test/public/home",
-        () => Promise.resolve({
-          ok: false,
-          status: 503,
-          json: () => Promise.resolve({})
-        }),
+        () =>
+          Promise.resolve({
+            ok: false,
+            status: 503,
+            json: () => Promise.resolve({})
+          }),
         (status) => new Error(`public:${status}`)
       )
     ).rejects.toThrow("public:503");
@@ -70,17 +73,62 @@ describe("mobile api client primitives", () => {
         (_input, init) => {
           expect(init?.method).toBe("POST");
           expect(init?.headers?.["content-type"]).toBe("application/json");
-          expect(init?.body).toBe("{\"ok\":true}");
+          expect(init?.body).toBe('{"ok":true}');
           return Promise.resolve({
             ok: false,
             status: 409,
             json: () => Promise.resolve({})
           });
         },
-        "{\"ok\":true}",
+        '{"ok":true}',
         (status) => new Error(`json:${status}`)
       )
     ).rejects.toThrow("json:409");
+  });
+
+  it("adds bearer and JSON headers for private mobile POST requests", async () => {
+    const response = await requestPrivateJsonMobileApi(
+      "https://api.example.test/brother/roadmap/steps/step_1/submissions",
+      {
+        authToken: "brother-token",
+        fetchImpl: (_input, init) => {
+          expect(init).toEqual({
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              authorization: "Bearer brother-token"
+            },
+            body: '{"ok":true}'
+          });
+
+          return Promise.resolve({
+            ok: true,
+            status: 201,
+            json: () => Promise.resolve({})
+          });
+        }
+      },
+      '{"ok":true}',
+      (status, code) => new Error(`private:${status}:${code ?? "none"}`)
+    );
+
+    expect(response.status).toBe(201);
+
+    await expect(
+      requestPrivateJsonMobileApi(
+        "https://api.example.test/brother/roadmap/steps/step_1/submissions",
+        {
+          fetchImpl: () =>
+            Promise.resolve({
+              ok: false,
+              status: 403,
+              json: () => Promise.resolve({ error: { code: "IDLE_APPROVAL_REQUIRED" } })
+            })
+        },
+        '{"ok":true}',
+        (status, code) => new Error(`private:${status}:${code ?? "none"}`)
+      )
+    ).rejects.toThrow("private:403:IDLE_APPROVAL_REQUIRED");
   });
 
   it("keeps feature mobile API clients on the shared request primitive", () => {

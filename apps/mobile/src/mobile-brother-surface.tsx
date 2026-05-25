@@ -1,5 +1,9 @@
 import { useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
+import type {
+  AssignedRoadmapResponseDto,
+  RoadmapSubmissionSummaryDto
+} from "@jp2/shared-validation";
 import {
   brotherCompanionLoadFailureState,
   cancelBrotherEventParticipation,
@@ -33,21 +37,27 @@ import {
   buildOrganizationUnitDetailScreen
 } from "./brother-screens.js";
 import type { BrotherRoute } from "./brother-screens.js";
+import type { BrotherScreenAction } from "./brother-screen-contracts.js";
 import { isBrotherRoute } from "./mobile-routes.js";
+import { requirePrivateAuthToken, usePrivateRouteResource } from "./mobile-private-resource.js";
 import {
-  requirePrivateAuthToken,
-  usePrivateRouteResource
-} from "./mobile-private-resource.js";
-import { fetchBrotherRoadmap, roadmapLoadFailureState } from "./roadmap-api.js";
+  fetchBrotherRoadmap,
+  roadmapLoadFailureState,
+  submitBrotherRoadmapStep
+} from "./roadmap-api.js";
 import { fallbackBrotherRoadmap } from "./roadmap.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
 import { BrotherPrayersScreen } from "./screens/BrotherPrayersScreen.js";
+import { BrotherRoadmapScreen } from "./screens/BrotherRoadmapScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { MyOrganizationUnitsScreen } from "./screens/MyOrganizationUnitsScreen.js";
 import { OrganizationUnitDetailScreen } from "./screens/OrganizationUnitDetailScreen.js";
-import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
+import {
+  PrivateContentScreen,
+  type PrivateContentScreenAction
+} from "./screens/PrivateContentScreen.js";
 
 export interface MobileBrotherSurfaceProps {
   route: BrotherRoute;
@@ -64,9 +74,9 @@ export function MobileBrotherSurface({
   authToken,
   onRouteChange
 }: MobileBrotherSurfaceProps) {
-  const [selectedOrganizationUnitId, setSelectedOrganizationUnitId] = useState<
-    string | undefined
-  >(() => fallbackMyOrganizationUnits.organizationUnits[0]?.id);
+  const [selectedOrganizationUnitId, setSelectedOrganizationUnitId] = useState<string | undefined>(
+    () => fallbackMyOrganizationUnits.organizationUnits[0]?.id
+  );
   const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
   const brotherToday = usePrivateRouteResource({
     route,
@@ -100,7 +110,8 @@ export function MobileBrotherSurface({
   });
   const myOrganizationUnits = usePrivateRouteResource({
     route,
-    activeRoute: route === "OrganizationUnitDetail" ? "OrganizationUnitDetail" : "MyOrganizationUnits",
+    activeRoute:
+      route === "OrganizationUnitDetail" ? "OrganizationUnitDetail" : "MyOrganizationUnits",
     runtimeMode,
     authToken,
     initialApiState: "empty",
@@ -191,9 +202,65 @@ export function MobileBrotherSurface({
     failureState: brotherCompanionLoadFailureState
   });
 
-  async function handleBrotherRoute(nextRoute: BrotherRoute, targetId?: string, actionId?: string) {
+  function handleBrotherAction(action: BrotherScreenAction) {
+    if (isBrotherRoute(action.targetRoute)) {
+      void handleBrotherRoute(
+        action.targetRoute,
+        action.targetId,
+        action.id,
+        action.submissionBody
+      );
+    }
+  }
+
+  function handlePrivateContentAction(action: PrivateContentScreenAction) {
+    if (isBrotherRoute(action.targetRoute)) {
+      void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
+    }
+  }
+
+  async function handleBrotherRoute(
+    nextRoute: BrotherRoute,
+    targetId?: string,
+    actionId?: string,
+    submissionBody?: string
+  ) {
     if (nextRoute === "SilentPrayer") {
       onRouteChange("BrotherToday");
+      return;
+    }
+
+    if (nextRoute === "BrotherRoadmap" && actionId === "submit-roadmap-step" && targetId) {
+      if (runtimeMode === "demo") {
+        const submission = buildDemoRoadmapSubmission(
+          brotherRoadmap.data ?? fallbackBrotherRoadmap,
+          targetId,
+          submissionBody ?? ""
+        );
+        brotherRoadmap.setData((current) =>
+          applyRoadmapSubmission(current ?? fallbackBrotherRoadmap, targetId, submission)
+        );
+        brotherRoadmap.setState("ready");
+      } else if (authToken && submissionBody) {
+        brotherRoadmap.setState("loading");
+
+        try {
+          const response = await submitBrotherRoadmapStep({
+            baseUrl: publicApiBaseUrl,
+            authToken,
+            stepId: targetId,
+            body: submissionBody
+          });
+          brotherRoadmap.setData((current) =>
+            current ? applyRoadmapSubmission(current, targetId, response.submission) : current
+          );
+          brotherRoadmap.setState("ready");
+        } catch (error: unknown) {
+          brotherRoadmap.setState(roadmapLoadFailureState(error));
+        }
+      }
+
+      onRouteChange("BrotherRoadmap");
       return;
     }
 
@@ -263,11 +330,7 @@ export function MobileBrotherSurface({
           response: brotherProfile.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handlePrivateContentAction}
       />
     );
   }
@@ -280,11 +343,7 @@ export function MobileBrotherSurface({
           response: myOrganizationUnits.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -298,11 +357,7 @@ export function MobileBrotherSurface({
           selectedOrganizationUnitId,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -315,11 +370,7 @@ export function MobileBrotherSurface({
           response: brotherEvents.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -332,11 +383,7 @@ export function MobileBrotherSurface({
           response: brotherAnnouncements.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -349,28 +396,20 @@ export function MobileBrotherSurface({
           response: brotherPrayers.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
 
   if (route === "BrotherRoadmap") {
     return (
-      <PrivateContentScreen
+      <BrotherRoadmapScreen
         screen={buildBrotherRoadmapScreen({
           state: brotherRoadmap.state,
           response: brotherRoadmap.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -383,11 +422,7 @@ export function MobileBrotherSurface({
           response: brotherEventDetail.data,
           runtimeMode
         })}
-        onAction={(action) => {
-          if (isBrotherRoute(action.targetRoute)) {
-            void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-          }
-        }}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -399,11 +434,53 @@ export function MobileBrotherSurface({
         response: brotherToday.data,
         runtimeMode
       })}
-      onAction={(action) => {
-        if (isBrotherRoute(action.targetRoute)) {
-          void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-        }
-      }}
+      onAction={handleBrotherAction}
     />
   );
+}
+
+function applyRoadmapSubmission(
+  response: AssignedRoadmapResponseDto,
+  stepId: string,
+  submission: RoadmapSubmissionSummaryDto
+): AssignedRoadmapResponseDto {
+  if (!response.roadmap) {
+    return response;
+  }
+
+  return {
+    roadmap: {
+      ...response.roadmap,
+      stages: response.roadmap.stages.map((stage) => ({
+        ...stage,
+        steps: stage.steps.map((step) =>
+          step.id === stepId
+            ? {
+                ...step,
+                latestSubmission: submission
+              }
+            : step
+        )
+      }))
+    }
+  };
+}
+
+function buildDemoRoadmapSubmission(
+  response: AssignedRoadmapResponseDto,
+  stepId: string,
+  body: string
+): RoadmapSubmissionSummaryDto {
+  return {
+    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    assignmentId: response.roadmap?.assignmentId ?? "99999999-9999-4999-8999-999999999999",
+    stepId,
+    status: "pending_review",
+    body,
+    attachmentMetadata: [],
+    reviewComment: null,
+    reviewedAt: null,
+    createdAt: "2026-05-25T00:00:00.000Z",
+    updatedAt: "2026-05-25T00:00:00.000Z"
+  };
 }

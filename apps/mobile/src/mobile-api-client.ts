@@ -30,10 +30,7 @@ export async function requestMobileApi<TResponse extends MobileApiFetchResponse>
   url: string,
   options: MobileApiRequestOptions,
   method: MobileApiFetchInit["method"],
-  createHttpError: (
-    status: number,
-    code: MobilePrivateAccessErrorCode | null
-  ) => Error
+  createHttpError: (status: number, code: MobilePrivateAccessErrorCode | null) => Error
 ): Promise<TResponse> {
   const fetcher = options.fetchImpl ?? getGlobalFetch();
   const headers: Record<string, string> = {};
@@ -89,6 +86,34 @@ export async function requestPublicJsonMobileApi<TResponse extends MobileApiFetc
 
   if (!response.ok) {
     throw createHttpError(response.status);
+  }
+
+  return response;
+}
+
+export async function requestPrivateJsonMobileApi<TResponse extends MobileApiFetchResponse>(
+  url: string,
+  options: MobileApiRequestOptions,
+  body: string,
+  createHttpError: (status: number, code: MobilePrivateAccessErrorCode | null) => Error
+): Promise<TResponse> {
+  const fetcher = options.fetchImpl ?? getGlobalFetch();
+  const headers: Record<string, string> = {
+    "content-type": "application/json"
+  };
+
+  if (options.authToken) {
+    headers.authorization = `Bearer ${options.authToken}`;
+  }
+
+  const response = (await fetcher(url, {
+    method: "POST",
+    headers,
+    body
+  })) as TResponse;
+
+  if (!response.ok) {
+    throw createHttpError(response.status, await readPrivateAccessErrorCode(response));
   }
 
   return response;

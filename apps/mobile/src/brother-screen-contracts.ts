@@ -19,6 +19,7 @@ export interface BrotherScreenAction {
   label: string;
   targetRoute: BrotherRoute;
   targetId?: string | undefined;
+  submissionBody?: string | undefined;
 }
 
 export interface BrotherScreenSection {

@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   RoadmapHttpError,
+  buildBrotherRoadmapSubmissionUrl,
   buildBrotherRoadmapUrl,
   buildCandidateRoadmapUrl,
   fetchBrotherRoadmap,
   fetchCandidateRoadmap,
-  roadmapLoadFailureState
+  roadmapLoadFailureState,
+  submitBrotherRoadmapStep
 } from "./roadmap-api.js";
 import { fallbackBrotherRoadmap, fallbackCandidateRoadmap } from "./roadmap.js";
 
@@ -58,6 +60,9 @@ describe("mobile roadmap API client", () => {
     expect(buildBrotherRoadmapUrl("https://api.example.test/")).toBe(
       "https://api.example.test/brother/roadmap"
     );
+    expect(buildBrotherRoadmapSubmissionUrl("step/1", "https://api.example.test")).toBe(
+      "https://api.example.test/brother/roadmap/steps/step%2F1/submissions"
+    );
 
     await expect(
       fetchCandidateRoadmap({
@@ -105,5 +110,75 @@ describe("mobile roadmap API client", () => {
           })
       })
     ).rejects.toThrow();
+  });
+
+  it("submits brother roadmap steps with route/body step agreement and schema validation", async () => {
+    const stepId = fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!.id;
+    const fetchImpl = vi.fn((_input: string, init) => {
+      expect(init).toEqual({
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer brother-token"
+        },
+        body: JSON.stringify({
+          stepId,
+          body: "A short formation reflection.",
+          attachmentMetadata: []
+        })
+      });
+
+      return Promise.resolve({
+        ok: true,
+        status: 201,
+        json: () =>
+          Promise.resolve({
+            submission: {
+              ...fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!.latestSubmission,
+              id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+              stepId,
+              body: "A short formation reflection.",
+              status: "pending_review",
+              createdAt: "2026-05-11T09:00:00.000Z",
+              updatedAt: "2026-05-11T09:00:00.000Z"
+            }
+          })
+      });
+    });
+
+    await expect(
+      submitBrotherRoadmapStep({
+        baseUrl: "https://api.example.test",
+        authToken: "brother-token",
+        stepId,
+        body: " A short formation reflection. ",
+        fetchImpl
+      })
+    ).resolves.toMatchObject({
+      submission: {
+        stepId,
+        body: "A short formation reflection.",
+        status: "pending_review"
+      }
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/brother/roadmap/steps/${stepId}/submissions`,
+      expect.any(Object)
+    );
+  });
+
+  it("rejects invalid brother roadmap submission payloads before making a request", async () => {
+    const fetchImpl = vi.fn();
+
+    await expect(
+      submitBrotherRoadmapStep({
+        stepId: "not-a-uuid",
+        body: "",
+        fetchImpl
+      })
+    ).rejects.toThrow();
+
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,9 @@
 import type { RuntimeMode } from "@jp2/shared-types";
-import type { AssignedRoadmapResponseDto } from "@jp2/shared-validation";
+import type {
+  AssignedRoadmapResponseDto,
+  RoadmapStepSummaryDto,
+  RoadmapSubmissionSummaryDto
+} from "@jp2/shared-validation";
 import { mobileCopy } from "./mobile-i18n.js";
 import type { MobileScreenState } from "./navigation.js";
 import {
@@ -17,9 +21,20 @@ export interface BrotherRoadmapScreen {
   title: string;
   body: string;
   sections: BrotherScreenSection[];
+  stepCards: BrotherRoadmapStepCard[];
   actions: BrotherScreenAction[];
   demoChromeVisible: boolean;
   theme: BrotherScreenTheme;
+}
+
+export interface BrotherRoadmapStepCard {
+  id: string;
+  stageTitle: string;
+  title: string;
+  body: string;
+  statusLabel: string;
+  submissionRequired: boolean;
+  submissionAction?: BrotherScreenAction | undefined;
 }
 
 export function buildBrotherRoadmapScreen(options: {
@@ -41,6 +56,24 @@ export function buildBrotherRoadmapScreen(options: {
     title: options.response.roadmap.definition.title,
     body: roadmapSummaryBody(options.response.roadmap),
     sections: buildRoadmapSections(options.response.roadmap),
+    stepCards: options.response.roadmap.stages.flatMap((stage) =>
+      stage.steps.map((step) => ({
+        id: step.id,
+        stageTitle: stage.title,
+        title: step.title,
+        body: step.description ?? "No step description is recorded yet.",
+        statusLabel: roadmapSubmissionStatusLabel(step.latestSubmission),
+        submissionRequired: step.requiresSubmission,
+        submissionAction: canSubmitRoadmapStep(step)
+          ? {
+              id: "submit-roadmap-step",
+              label: "Submit reflection",
+              targetRoute: "BrotherRoadmap",
+              targetId: step.id
+            }
+          : undefined
+      }))
+    ),
     actions: [
       {
         id: "today",
@@ -71,8 +104,32 @@ function stateOnlyBrotherRoadmap(
     title: copy.title,
     body: copy.body,
     sections: [],
+    stepCards: [],
     actions: [],
     demoChromeVisible,
     theme: brotherScreenTheme
   };
+}
+
+function canSubmitRoadmapStep(step: RoadmapStepSummaryDto): boolean {
+  return (
+    step.requiresSubmission &&
+    (step.latestSubmission === null || step.latestSubmission.status === "rejected")
+  );
+}
+
+function roadmapSubmissionStatusLabel(submission: RoadmapSubmissionSummaryDto | null): string {
+  if (!submission) {
+    return mobileCopy("roadmap.status.notStarted");
+  }
+
+  if (submission.status === "pending_review") {
+    return mobileCopy("roadmap.status.pendingReview");
+  }
+
+  if (submission.status === "approved") {
+    return mobileCopy("roadmap.status.approved");
+  }
+
+  return mobileCopy("roadmap.status.rejected");
 }

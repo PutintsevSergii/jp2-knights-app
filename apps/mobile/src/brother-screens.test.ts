@@ -329,6 +329,63 @@ describe("brother screen models", () => {
     expect(JSON.stringify(screen)).not.toMatch(/roster|participant list|other brother/i);
   });
 
+  it("adds a brother roadmap submission action only for rejected or unsubmitted steps", () => {
+    const stepId = fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!.id;
+    const response = {
+      roadmap: {
+        ...fallbackBrotherRoadmap.roadmap!,
+        stages: [
+          {
+            ...fallbackBrotherRoadmap.roadmap!.stages[0]!,
+            steps: [
+              {
+                ...fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!,
+                latestSubmission: null
+              },
+              {
+                ...fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!,
+                id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+                latestSubmission: {
+                  ...fallbackBrotherRoadmap.roadmap!.stages[0]!.steps[0]!.latestSubmission!,
+                  id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+                  stepId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+                  status: "approved" as const
+                }
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    const screen = buildBrotherRoadmapScreen({
+      state: "ready",
+      response,
+      runtimeMode: "api"
+    });
+
+    expect(screen.stepCards).toEqual([
+      expect.objectContaining({
+        id: stepId,
+        statusLabel: "Not started",
+        submissionRequired: true,
+        submissionAction: {
+          id: "submit-roadmap-step",
+          label: "Submit reflection",
+          targetRoute: "BrotherRoadmap",
+          targetId: stepId
+        }
+      }),
+      expect.objectContaining({
+        id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        statusLabel: "Approved",
+        submissionRequired: true,
+        submissionAction: undefined
+      })
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/auto.?award|other brother|participant/i);
+  });
+
   it("builds Brother Event Detail plan action when the user has no active intent", () => {
     const response = {
       event: {

@@ -204,15 +204,15 @@ Use this shape when adding a new boundary entry:
 
 | Field                      | Contract                                                                                                                                                         |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Requirement/phase          | FR-ROADMAP-001 and FR-ROADMAP-002, Phase 10B                                                                                                                     |
-| Data/API source            | Guarded `GET /candidate/roadmap` and `GET /brother/roadmap` responses through `apps/mobile/src/roadmap-api.ts`; backend-free demo fixtures in `roadmap.ts`       |
+| Requirement/phase          | FR-ROADMAP-001, FR-ROADMAP-002, and FR-ROADMAP-003, Phase 10B                                                                                                    |
+| Data/API source            | Guarded `GET /candidate/roadmap`, `GET /brother/roadmap`, and `POST /brother/roadmap/steps/:stepId/submissions` responses through `apps/mobile/src/roadmap-api.ts`; backend-free demo fixtures in `roadmap.ts` |
 | Screen model               | `apps/mobile/src/candidate-roadmap-screen.ts` and `apps/mobile/src/brother-roadmap-screen.ts`; `candidate-screens.ts` and `brother-screens.ts` remain barrels only |
 | Route/surface owner        | `apps/mobile/src/mobile-candidate-surface.tsx` and `apps/mobile/src/mobile-brother-surface.tsx`; route groups own API/demo loading and auth-token gating         |
-| Renderer components        | Current slice uses `PrivateContentScreen`; add dedicated React Native roadmap renderers only when a Figma/product screen requires richer layout                  |
+| Renderer components        | Candidate roadmap still uses `PrivateContentScreen`; brother roadmap uses `apps/mobile/src/screens/BrotherRoadmapScreen.tsx` for submit-required step inputs over the existing guarded POST contract |
 | Shared components/tokens   | Uses shared candidate/brother themes, shared i18n roadmap keys, and existing private route resource loading                                                       |
 | Tests                      | API service/controller tests, mobile roadmap API tests, candidate/brother screen-model tests, route/export guard tests                                            |
-| Forbidden responsibilities | No candidate-authored submissions, auto-degree changes, officer review workflow, other-user submissions, brother rosters, participant lists, or client-side filtering |
-| Scope guard                | Read-only assigned roadmap display only; brother submission and Admin Lite review are separate Phase 10B slices                                                   |
+| Forbidden responsibilities | No candidate-authored submissions, auto-degree changes, officer review workflow in mobile, other-user submissions, brother rosters, participant lists, or client-side filtering |
+| Scope guard                | Candidate roadmap remains read-only; brother submissions are current-user only and Admin Lite review remains a separate scoped Phase 10B slice                    |
 
 ### Brother Events
 
