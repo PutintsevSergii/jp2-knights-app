@@ -10,8 +10,9 @@ request/profile fixtures, Phase 9 announcement fixtures, and the first Phase
 10B roadmap fixtures:
 
 - one active Super Admin;
-- one active Officer scoped to the pilot organization unit;
-- one active Brother scoped to the pilot organization unit;
+- two active Officers, each scoped to a different organization unit;
+- two active Brothers, one scoped to the pilot organization unit and one scoped to the second organization unit;
+- one inactive Brother fixture with an inactive membership for lifecycle checks;
 - local Firebase-provider identity links for `demo-admin`, `demo-officer`, `demo-candidate`, and `demo-brother`;
 - one scoped identity access approver assignment for the demo officer;
 - one pending `identity_access_reviews` fixture for `idle-review@example.test`;
@@ -23,27 +24,30 @@ request/profile fixtures, Phase 9 announcement fixtures, and the first Phase
 - one published `BROTHER` event fixture that must remain hidden from public reads.
 - one published `CANDIDATE` announcement fixture.
 - one published `BROTHER` announcement fixture that must remain hidden from candidates.
-- one active candidate profile assigned to the pilot organization unit.
+- two active candidate profiles assigned to different organization units.
 - one `new` candidate request assigned to the pilot organization unit with consent metadata and an idempotency key.
-- one published candidate onboarding roadmap assigned to the demo candidate.
-- one published brother formation roadmap assigned to the demo brother.
-- one pending brother roadmap submission fixture for scoped officer review.
+- one published candidate onboarding roadmap assigned to candidates in both organization units.
+- one published brother formation roadmap assigned to brothers in both organization units.
+- one pending brother roadmap submission fixture for scoped officer review in the pilot organization unit.
+- one rejected brother roadmap submission fixture in the second organization unit for resubmission-path demos.
+- one archived roadmap assignment/submission fixture tied to an inactive brother; it must stay outside active reads and review queues.
+- draft and archived roadmap definition fixtures for Admin Lite configuration-state inspection.
 
 The full V1 local-development target is:
 
-| Data              | Minimum                                                 |
-| ----------------- | ------------------------------------------------------- |
-| Super Admin       | 1 active user with `SUPER_ADMIN`                        |
-| Organization unit | 2 units once Phase 2 officer scope tests exist          |
-| Officer           | 1 user with `OFFICER` scoped to pilot organization unit |
-| Identity review   | 1 pending Idle review and 1 scoped approver assignment  |
-| Brothers          | 2-5 sample brothers                                     |
-| Candidate         | 1 candidate profile and 1 candidate request             |
-| Prayers           | Public prayer, candidate prayer, brother prayer         |
-| Events            | Public event, candidate event, brother/unit event       |
-| Announcement      | One per audience: public/candidate/brother              |
-| Roadmap           | Candidate roadmap and brother roadmap                   |
-| Silent prayer     | Public and brother sessions                             |
+| Data              | Minimum                                                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| Super Admin       | 1 active user with `SUPER_ADMIN`                                                                            |
+| Organization unit | 2 units once Phase 2 officer scope tests exist                                                              |
+| Officer           | 2 users with `OFFICER`, each scoped to a different organization unit                                        |
+| Identity review   | 1 pending Idle review and 1 scoped approver assignment                                                      |
+| Brothers          | 2-5 sample brothers, plus inactive/archived lifecycle fixtures                                              |
+| Candidate         | 2 candidate profiles across organization units and 1 candidate request                                      |
+| Prayers           | Public prayer, candidate prayer, brother prayer                                                             |
+| Events            | Public event, candidate event, brother/unit event                                                           |
+| Announcement      | One per audience: public/candidate/brother                                                                  |
+| Roadmap           | Candidate and brother roadmaps across two organization units, plus pending/rejected/archived/draft fixtures |
+| Silent prayer     | Public and brother sessions                                                                                 |
 
 Local seed data must include at least two organization units for permission and visibility tests once officer scoping is implemented. A one-unit seed is acceptable only before Phase 2 scope tests exist. Later rows in the target table become required when their owning phase adds the corresponding schema and feature tests.
 

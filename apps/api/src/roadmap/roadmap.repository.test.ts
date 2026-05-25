@@ -1,9 +1,45 @@
 import { describe, expect, it } from "vitest";
 import {
+  assignedRoadmapWhere,
   brotherRoadmapSubmissionTargetWhere,
   eligibleRoadmapAssignmentAssigneeWhere,
   scopedAdminRoadmapSubmissionWhere
 } from "./roadmap.repository.js";
+
+describe("assignedRoadmapWhere", () => {
+  it("limits assigned roadmap reads to current-user active or completed published definitions in scope", () => {
+    const now = new Date("2026-05-19T10:00:00.000Z");
+
+    expect(
+      assignedRoadmapWhere(
+        "11111111-1111-4111-8111-111111111111",
+        "BROTHER",
+        ["33333333-3333-4333-8333-333333333333"],
+        now
+      )
+    ).toEqual({
+      userId: "11111111-1111-4111-8111-111111111111",
+      archivedAt: null,
+      status: {
+        in: ["active", "completed"]
+      },
+      roadmapDefinition: {
+        targetRole: "BROTHER",
+        status: "PUBLISHED",
+        archivedAt: null,
+        OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
+      },
+      AND: [
+        {
+          OR: [
+            { organizationUnitId: null },
+            { organizationUnitId: { in: ["33333333-3333-4333-8333-333333333333"] } }
+          ]
+        }
+      ]
+    });
+  });
+});
 
 describe("brotherRoadmapSubmissionTargetWhere", () => {
   it("limits submissions to the active brother's own active scoped published roadmap step", () => {
@@ -54,9 +90,7 @@ describe("brotherRoadmapSubmissionTargetWhere", () => {
 
 describe("scopedAdminRoadmapSubmissionWhere", () => {
   it("limits officer review queues to assigned organization-unit submissions", () => {
-    expect(
-      scopedAdminRoadmapSubmissionWhere(["33333333-3333-4333-8333-333333333333"])
-    ).toEqual({
+    expect(scopedAdminRoadmapSubmissionWhere(["33333333-3333-4333-8333-333333333333"])).toEqual({
       archivedAt: null,
       assignment: {
         organizationUnitId: {

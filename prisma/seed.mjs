@@ -11,7 +11,7 @@ async function main() {
     publicDescription: "Demo pilot organization unit for local development."
   });
 
-  await findOrCreateOrganizationUnit({
+  const secondUnit = await findOrCreateOrganizationUnit({
     type: "CHORAGIEW",
     name: "Second Scope Choragiew",
     city: "Warsaw",
@@ -242,6 +242,142 @@ async function main() {
       status: "active",
       currentDegree: "First Degree",
       joinedAt: new Date("2026-01-15T00:00:00.000Z")
+    }
+  });
+
+  const secondOfficer = await ensureSeedUser({
+    email: "second-officer@example.test",
+    displayName: "Second Scope Officer",
+    status: "active"
+  });
+
+  await ensureUserRole({
+    id: "00000000-0000-0000-0000-000000000035",
+    userId: secondOfficer.id,
+    role: "OFFICER",
+    createdBy: superAdmin.id
+  });
+
+  await prisma.officerAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000036"
+    },
+    update: {
+      userId: secondOfficer.id,
+      organizationUnitId: secondUnit.id,
+      title: "Second Scope Officer",
+      endsAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000036",
+      userId: secondOfficer.id,
+      organizationUnitId: secondUnit.id,
+      title: "Second Scope Officer",
+      startsAt: new Date("2026-01-01T00:00:00.000Z"),
+      createdBy: superAdmin.id
+    }
+  });
+
+  const secondCandidate = await ensureSeedUser({
+    email: "second-candidate@example.test",
+    displayName: "Second Scope Candidate",
+    status: "active"
+  });
+
+  await ensureUserRole({
+    id: "00000000-0000-0000-0000-000000000037",
+    userId: secondCandidate.id,
+    role: "CANDIDATE",
+    createdBy: superAdmin.id
+  });
+
+  await prisma.candidateProfile.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000038"
+    },
+    update: {
+      userId: secondCandidate.id,
+      assignedOrganizationUnitId: secondUnit.id,
+      responsibleOfficerId: secondOfficer.id,
+      status: "active",
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000038",
+      userId: secondCandidate.id,
+      assignedOrganizationUnitId: secondUnit.id,
+      responsibleOfficerId: secondOfficer.id,
+      status: "active"
+    }
+  });
+
+  const secondBrother = await ensureSeedUser({
+    email: "second-brother@example.test",
+    displayName: "Second Scope Brother",
+    status: "active"
+  });
+
+  await ensureUserRole({
+    id: "00000000-0000-0000-0000-000000000039",
+    userId: secondBrother.id,
+    role: "BROTHER",
+    createdBy: superAdmin.id
+  });
+
+  await prisma.membership.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000040"
+    },
+    update: {
+      userId: secondBrother.id,
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2026-02-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000040",
+      userId: secondBrother.id,
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2026-02-01T00:00:00.000Z")
+    }
+  });
+
+  const inactiveBrother = await ensureSeedUser({
+    email: "inactive-brother@example.test",
+    displayName: "Inactive Brother Fixture",
+    status: "inactive"
+  });
+
+  await ensureUserRole({
+    id: "00000000-0000-0000-0000-000000000041",
+    userId: inactiveBrother.id,
+    role: "BROTHER",
+    createdBy: superAdmin.id
+  });
+
+  await prisma.membership.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000042"
+    },
+    update: {
+      userId: inactiveBrother.id,
+      organizationUnitId: pilotUnit.id,
+      status: "inactive",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2025-12-01T00:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000042",
+      userId: inactiveBrother.id,
+      organizationUnitId: pilotUnit.id,
+      status: "inactive",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2025-12-01T00:00:00.000Z")
     }
   });
 
@@ -610,7 +746,18 @@ async function main() {
     }
   });
 
-  await seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit });
+  await seedRoadmaps({
+    superAdmin,
+    officer,
+    candidate,
+    brother,
+    pilotUnit,
+    secondUnit,
+    secondOfficer,
+    secondCandidate,
+    secondBrother,
+    inactiveBrother
+  });
 }
 
 async function findOrCreateOrganizationUnit(data) {
@@ -649,7 +796,56 @@ async function linkExternalIdentity(data) {
   });
 }
 
-async function seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit }) {
+async function ensureSeedUser({ email, displayName, status }) {
+  const existing = await prisma.user.findFirst({
+    where: { email, archivedAt: null }
+  });
+
+  return (
+    existing ??
+    prisma.user.create({
+      data: {
+        email,
+        displayName,
+        status,
+        preferredLanguage: "en"
+      }
+    })
+  );
+}
+
+async function ensureUserRole({ id, userId, role, createdBy }) {
+  await prisma.userRole.upsert({
+    where: {
+      id
+    },
+    update: {
+      userId,
+      role,
+      createdBy,
+      revokedAt: null
+    },
+    create: {
+      id,
+      userId,
+      role,
+      createdBy
+    }
+  });
+}
+
+async function seedRoadmaps({
+  superAdmin,
+  officer,
+  candidate,
+  brother,
+  pilotUnit,
+  secondUnit,
+  secondOfficer,
+  secondCandidate,
+  secondBrother,
+  inactiveBrother
+}) {
   await prisma.roadmapDefinition.upsert({
     where: {
       id: "00000000-0000-0000-0000-000000000024"
@@ -748,6 +944,30 @@ async function seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit
       status: "active",
       assignedBy: officer.id,
       assignedAt: new Date("2026-05-09T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000043"
+    },
+    update: {
+      userId: secondCandidate.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      assignedBy: secondOfficer.id,
+      completedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000043",
+      userId: secondCandidate.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000024",
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      assignedBy: secondOfficer.id,
+      assignedAt: new Date("2026-05-10T09:00:00.000Z")
     }
   });
 
@@ -876,6 +1096,164 @@ async function seedRoadmaps({ superAdmin, officer, candidate, brother, pilotUnit
       body: "Demo formation reflection awaiting scoped officer review.",
       attachmentMeta: [],
       status: "pending_review"
+    }
+  });
+
+  await prisma.roadmapAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000044"
+    },
+    update: {
+      userId: secondBrother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      assignedBy: secondOfficer.id,
+      completedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000044",
+      userId: secondBrother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: secondUnit.id,
+      status: "active",
+      assignedBy: secondOfficer.id,
+      assignedAt: new Date("2026-05-10T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapSubmission.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000045"
+    },
+    update: {
+      assignmentId: "00000000-0000-0000-0000-000000000044",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: secondBrother.id,
+      body: "Second scope reflection fixture rejected for resubmission testing.",
+      attachmentMeta: [],
+      status: "rejected",
+      reviewedBy: secondOfficer.id,
+      reviewComment: "Please add the agreed follow-up from the local formation meeting.",
+      reviewedAt: new Date("2026-05-11T09:00:00.000Z"),
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000045",
+      assignmentId: "00000000-0000-0000-0000-000000000044",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: secondBrother.id,
+      body: "Second scope reflection fixture rejected for resubmission testing.",
+      attachmentMeta: [],
+      status: "rejected",
+      reviewedBy: secondOfficer.id,
+      reviewComment: "Please add the agreed follow-up from the local formation meeting.",
+      reviewedAt: new Date("2026-05-11T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapAssignment.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000046"
+    },
+    update: {
+      userId: inactiveBrother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: pilotUnit.id,
+      status: "archived",
+      assignedBy: officer.id,
+      completedAt: null,
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000046",
+      userId: inactiveBrother.id,
+      roadmapDefinitionId: "00000000-0000-0000-0000-000000000029",
+      organizationUnitId: pilotUnit.id,
+      status: "archived",
+      assignedBy: officer.id,
+      assignedAt: new Date("2026-05-01T09:00:00.000Z"),
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapSubmission.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000047"
+    },
+    update: {
+      assignmentId: "00000000-0000-0000-0000-000000000046",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: inactiveBrother.id,
+      body: "Archived submission fixture that must stay outside active review queues.",
+      attachmentMeta: [],
+      status: "pending_review",
+      reviewedBy: null,
+      reviewComment: null,
+      reviewedAt: null,
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000047",
+      assignmentId: "00000000-0000-0000-0000-000000000046",
+      stepId: "00000000-0000-0000-0000-000000000031",
+      userId: inactiveBrother.id,
+      body: "Archived submission fixture that must stay outside active review queues.",
+      attachmentMeta: [],
+      status: "pending_review",
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
+    }
+  });
+
+  await prisma.roadmapDefinition.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000048"
+    },
+    update: {
+      title: "Draft Formation Fixture",
+      targetRole: "BROTHER",
+      status: "DRAFT",
+      language: "en",
+      updatedBy: superAdmin.id,
+      approvedBy: null,
+      publishedBy: null,
+      approvedAt: null,
+      publishedAt: null,
+      archivedAt: null
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000048",
+      title: "Draft Formation Fixture",
+      targetRole: "BROTHER",
+      status: "DRAFT",
+      language: "en",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id
+    }
+  });
+
+  await prisma.roadmapDefinition.upsert({
+    where: {
+      id: "00000000-0000-0000-0000-000000000049"
+    },
+    update: {
+      title: "Archived Formation Fixture",
+      targetRole: "BROTHER",
+      status: "ARCHIVED",
+      language: "en",
+      updatedBy: superAdmin.id,
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
+    },
+    create: {
+      id: "00000000-0000-0000-0000-000000000049",
+      title: "Archived Formation Fixture",
+      targetRole: "BROTHER",
+      status: "ARCHIVED",
+      language: "en",
+      createdBy: superAdmin.id,
+      updatedBy: superAdmin.id,
+      archivedAt: new Date("2026-05-12T09:00:00.000Z")
     }
   });
 }

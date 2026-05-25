@@ -353,6 +353,10 @@ const requiredSeedSnippets = [
   "Candidate Welcome",
   "Brother Update",
   "demo-brother",
+  "second-officer@example.test",
+  "second-candidate@example.test",
+  "second-brother@example.test",
+  "inactive-brother@example.test",
   "membership",
   "roadmapDefinition",
   "roadmapStage",
@@ -360,7 +364,11 @@ const requiredSeedSnippets = [
   "roadmapAssignment",
   "roadmapSubmission",
   "Candidate Onboarding Roadmap",
-  "Brother Formation Roadmap"
+  "Brother Formation Roadmap",
+  "Second scope reflection fixture rejected for resubmission testing",
+  "Archived submission fixture that must stay outside active review queues",
+  "Draft Formation Fixture",
+  "Archived Formation Fixture"
 ];
 const missingSeedSnippets = requiredSeedSnippets.filter((snippet) => !seedScript.includes(snippet));
 
