@@ -15,3 +15,8 @@ export {
   type AdminRoadmapAssignmentDetailScreen,
   type BuildAdminRoadmapAssignmentDetailScreenOptions
 } from "./admin-roadmap-assignment-detail-screen.js";
+export {
+  buildAdminRoadmapAssignmentEditorScreen,
+  type AdminRoadmapAssignmentEditorScreen,
+  type BuildAdminRoadmapAssignmentEditorScreenOptions
+} from "./admin-roadmap-assignment-editor-screen.js";

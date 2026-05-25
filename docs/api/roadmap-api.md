@@ -73,6 +73,7 @@ Rejected submissions require `reviewComment`.
 | Method | Path                             | Role                | Purpose                   |
 | ------ | -------------------------------- | ------------------- | ------------------------- |
 | GET    | `/admin/roadmap-assignments`     | Super Admin         | List roadmap assignments  |
+| POST   | `/admin/roadmap-assignments`     | Super Admin         | Create roadmap assignment |
 | GET    | `/admin/roadmap-assignments/:id` | Super Admin         | Inspect assignment status |
 | GET    | `/admin/roadmap-definitions`     | Super Admin         | List roadmap definitions  |
 | GET    | `/admin/roadmap-definitions/:id` | Super Admin         | Inspect stages/steps      |
@@ -113,8 +114,14 @@ Rejected submissions require `reviewComment`.
   non-archived assignments with assignee, roadmap, organization-unit, lifecycle,
   and submission-status counts. Assignment detail lists submission status
   metadata only; submitted body text remains in the scoped submission review
-  route, not the assignment inspection surface. Assignment create/update/archive
-  mutations remain deferred until the owner confirms the assignment workflow.
+  route, not the assignment inspection surface.
+- `POST /admin/roadmap-assignments` requires Super Admin access and accepts
+  `assigneeUserId`, `roadmapDefinitionId`, and optional `organizationUnitId`.
+  The API creates assignments only from published definitions for eligible
+  candidate or brother users in the matching scope, rejects duplicate
+  active/completed assignments, and audits create decisions with assignee email
+  and submission bodies redacted. Assignment update/archive mutations remain
+  deferred until the owner confirms the assignment workflow.
 - Candidate roadmaps are read-only in default V1. Candidate-authored roadmap submissions are not implemented unless the human owner approves a scope expansion and this API contract is updated.
 - App never auto-awards degrees.
 - Officer decisions require comment for rejection and create audit logs.

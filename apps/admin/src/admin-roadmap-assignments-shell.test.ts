@@ -113,4 +113,27 @@ describe("admin roadmap assignments shell", () => {
       statusCode: 403
     });
   });
+
+  it("renders the create-assignment form without treating new as a detail id", async () => {
+    const fetchImpl = vi.fn();
+
+    const rendered = await renderAdminRoadmapAssignmentRoute({
+      path: "/admin/roadmap-assignments/new",
+      runtimeMode: "api",
+      fetchImpl
+    });
+
+    expect(rendered).toMatchObject({
+      route: "AdminRoadmapAssignmentEditor",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(rendered.document).toContain('data-route="AdminRoadmapAssignmentEditor"');
+    expect(rendered.document).toContain('name="assigneeUserId"');
+    expect(rendered.document).toContain('name="roadmapDefinitionId"');
+    expect(rendered.document).toContain('name="organizationUnitId"');
+    expect(rendered.document).toContain('data-endpoint="/admin/roadmap-assignments"');
+    expect(rendered.document).toContain('data-method="POST"');
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
 });

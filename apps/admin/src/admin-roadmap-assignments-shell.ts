@@ -15,9 +15,11 @@ import {
 } from "./admin-roadmap-assignments-api.js";
 import {
   buildAdminRoadmapAssignmentDetailScreen,
+  buildAdminRoadmapAssignmentEditorScreen,
   buildAdminRoadmapAssignmentListScreen,
   type AdminRoadmapAssignmentAction,
   type AdminRoadmapAssignmentDetailScreen,
+  type AdminRoadmapAssignmentEditorScreen,
   type AdminRoadmapAssignmentListScreen,
   type AdminRoadmapAssignmentRoute,
   type AdminRoadmapAssignmentRow
@@ -29,6 +31,7 @@ import {
   renderAdminActionLink,
   renderAdminDocument,
   renderAdminEmptyState,
+  renderAdminFormField,
   renderAdminHeader
 } from "./admin-render-primitives.js";
 import {
@@ -39,6 +42,7 @@ import {
 
 export type AdminRoadmapAssignmentShellRoute =
   | "/admin/roadmap-assignments"
+  | "/admin/roadmap-assignments/new"
   | `/admin/roadmap-assignments/${string}`;
 
 export interface AdminRoadmapAssignmentShellRouteMetadata {
@@ -79,11 +83,18 @@ export async function renderAdminRoadmapAssignmentRoute(
   const screen =
     options.path === "/admin/roadmap-assignments"
       ? await resolveRoadmapAssignmentListScreen(options)
-      : await resolveRoadmapAssignmentDetailScreen(options);
+      : options.path === "/admin/roadmap-assignments/new"
+        ? buildAdminRoadmapAssignmentEditorScreen({
+            state: "ready",
+            runtimeMode: options.runtimeMode
+          })
+        : await resolveRoadmapAssignmentDetailScreen(options);
   const html =
     screen.route === "AdminRoadmapAssignmentList"
       ? renderRoadmapAssignmentListScreen(screen)
-      : renderRoadmapAssignmentDetailScreen(screen);
+      : screen.route === "AdminRoadmapAssignmentEditor"
+        ? renderRoadmapAssignmentEditorScreen(screen)
+        : renderRoadmapAssignmentDetailScreen(screen);
 
   return {
     path: options.path,
@@ -180,6 +191,23 @@ function renderRoadmapAssignmentDetailScreen(screen: AdminRoadmapAssignmentDetai
   ].join("");
 }
 
+function renderRoadmapAssignmentEditorScreen(screen: AdminRoadmapAssignmentEditorScreen): string {
+  return [
+    `<section class="admin-content" data-route="${screen.route}" data-state="${screen.state}" data-mode="${screen.mode}">`,
+    renderRoadmapReadOnlyStyle(),
+    renderRoadmapAssignmentEditorStyle(screen),
+    renderAdminHeader({
+      title: screen.title,
+      body: screen.body,
+      actions: screen.actions,
+      demoChromeVisible: screen.demoChromeVisible,
+      renderAction
+    }),
+    renderEditorForm(screen),
+    "</section>"
+  ].join("");
+}
+
 function renderRows(screen: AdminRoadmapAssignmentListScreen): string {
   if (screen.rows.length === 0) {
     return renderAdminEmptyState(screen.title, screen.body);
@@ -212,9 +240,34 @@ function renderSections(screen: AdminRoadmapAssignmentDetailScreen): string {
   });
 }
 
+function renderEditorForm(screen: AdminRoadmapAssignmentEditorScreen): string {
+  if (screen.fields.length === 0) {
+    return renderAdminEmptyState(screen.title, screen.body, "admin-content__form");
+  }
+
+  return [
+    '<form class="admin-content__form" data-endpoint="/admin/roadmap-assignments" data-method="POST">',
+    screen.fields.map(renderAdminFormField).join(""),
+    "</form>"
+  ].join("");
+}
+
+function renderRoadmapAssignmentEditorStyle(screen: AdminRoadmapAssignmentEditorScreen): string {
+  return [
+    "<style>",
+    `.admin-content__form{display:grid;gap:14px;max-width:760px;margin:0 auto;border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:16px;background:${screen.theme.surface};}`,
+    ".admin-content__field{display:grid;gap:6px;}",
+    ".admin-content__label{font-weight:700;}",
+    `.admin-content__input{border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:10px 12px;font:inherit;color:${screen.theme.text};background:${screen.theme.background};}`,
+    "</style>"
+  ].join("");
+}
+
 function renderAction(action: AdminRoadmapAssignmentAction): string {
   const href =
-    action.targetId && action.id !== "refresh"
+    action.id === "create"
+      ? "/admin/roadmap-assignments/new"
+      : action.targetId && action.id !== "refresh"
       ? `/admin/roadmap-assignments/${action.targetId}`
       : "/admin/roadmap-assignments";
 

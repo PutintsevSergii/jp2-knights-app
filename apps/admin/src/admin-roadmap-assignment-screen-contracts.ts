@@ -1,6 +1,13 @@
+import type {
+  AdminRoadmapAssignmentDetailDto,
+  CreateAdminRoadmapAssignmentRequestDto
+} from "@jp2/shared-validation";
+import { formatAdminStatusLabel } from "./admin-status-labels.js";
+
 export type AdminRoadmapAssignmentRoute =
   | "AdminRoadmapAssignmentList"
-  | "AdminRoadmapAssignmentDetail";
+  | "AdminRoadmapAssignmentDetail"
+  | "AdminRoadmapAssignmentEditor";
 
 export type AdminRoadmapAssignmentActionId = "create" | "refresh" | "view";
 
@@ -30,6 +37,14 @@ export interface AdminRoadmapAssignmentSection {
   body: string;
 }
 
+export interface AdminRoadmapAssignmentFormField {
+  name: keyof CreateAdminRoadmapAssignmentRequestDto;
+  label: string;
+  value: string;
+  required: boolean;
+  readOnly: boolean;
+}
+
 export function adminRoadmapAssignmentBackAction(): AdminRoadmapAssignmentAction {
   return {
     id: "refresh",
@@ -45,5 +60,3 @@ export function formatAdminRoadmapAssignmentDateTime(value: string | null): stri
 export function roadmapAssignmentStatusLabel(status: string): string {
   return formatAdminStatusLabel(status);
 }
-import type { AdminRoadmapAssignmentDetailDto } from "@jp2/shared-validation";
-import { formatAdminStatusLabel } from "./admin-status-labels.js";

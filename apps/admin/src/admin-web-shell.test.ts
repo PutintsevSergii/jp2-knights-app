@@ -506,6 +506,10 @@ describe("admin web shell", () => {
       },
       { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
     );
+    const createResponse = await renderAdminWebRequest(
+      { path: "/admin/roadmap-assignments/new", headers: { authorization: "Bearer token_1" } },
+      { runtimeMode: "api", baseUrl: "https://api.example.test", fetchImpl }
+    );
 
     expect(listResponse.statusCode).toBe(200);
     expect(listResponse.body).toContain("Demo Brother");
@@ -514,6 +518,9 @@ describe("admin web shell", () => {
     expect(detailResponse.body).toContain("Roadmap Assignment: Demo Brother");
     expect(detailResponse.body).not.toContain("Reflection text for officer review");
     expect(detailResponse.body).toContain('href="/admin/roadmap-assignments" aria-current="page"');
+    expect(createResponse.statusCode).toBe(200);
+    expect(createResponse.body).toContain("Create Roadmap Assignment");
+    expect(createResponse.body).toContain('href="/admin/roadmap-assignments" aria-current="page"');
   });
 
   it("mounts the organization-unit admin route", async () => {

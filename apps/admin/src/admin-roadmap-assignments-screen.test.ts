@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fallbackAdminRoadmapAssignments } from "./admin-content-fixtures.js";
 import {
+  buildAdminRoadmapAssignmentEditorScreen,
   buildAdminRoadmapAssignmentDetailScreen,
   buildAdminRoadmapAssignmentListScreen
 } from "./admin-roadmap-assignments-screen.js";
@@ -74,6 +75,28 @@ describe("admin roadmap assignment screens", () => {
     expect(screen.actions.map((action) => action.id)).toEqual(["refresh"]);
   });
 
+  it("builds create-assignment form fields over the POST contract", () => {
+    const screen = buildAdminRoadmapAssignmentEditorScreen({
+      state: "ready",
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "AdminRoadmapAssignmentEditor",
+      state: "ready",
+      title: "Create Roadmap Assignment",
+      mode: "create"
+    });
+    expect(screen.fields.map((field) => field.name)).toEqual([
+      "assigneeUserId",
+      "roadmapDefinitionId",
+      "organizationUnitId"
+    ]);
+    expect(screen.fields.map((field) => field.required)).toEqual([true, true, false]);
+    expect(screen.fields.every((field) => field.readOnly === false)).toBe(true);
+    expect(screen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
+  });
+
   it("maps forbidden and empty states without edit actions", () => {
     expect(
       buildAdminRoadmapAssignmentListScreen({
@@ -94,6 +117,18 @@ describe("admin roadmap assignment screens", () => {
     ).toMatchObject({
       state: "empty",
       sections: []
+    });
+
+    expect(
+      buildAdminRoadmapAssignmentEditorScreen({
+        state: "forbidden",
+        runtimeMode: "api"
+      })
+    ).toMatchObject({
+      route: "AdminRoadmapAssignmentEditor",
+      state: "forbidden",
+      fields: [],
+      actions: []
     });
   });
 });
