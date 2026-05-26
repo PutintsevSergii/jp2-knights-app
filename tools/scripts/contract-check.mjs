@@ -67,6 +67,8 @@ const requiredPaths = [
   "/api/admin/prayers/{id}",
   "/api/admin/events",
   "/api/admin/events/{id}",
+  "/api/admin/silent-prayer-events",
+  "/api/admin/silent-prayer-events/{id}",
   "/api/admin/announcements",
   "/api/admin/announcements/{id}"
 ];
@@ -206,6 +208,16 @@ const responseSchemaChecks = [
   ["/api/admin/events/{id}", "patch", "200"],
   ["/api/admin/events/{id}", "patch", "400"],
   ["/api/admin/events/{id}", "patch", "403"],
+  ["/api/admin/events/{id}", "patch", "404"],
+  ["/api/admin/silent-prayer-events", "get", "200"],
+  ["/api/admin/silent-prayer-events", "get", "403"],
+  ["/api/admin/silent-prayer-events", "post", "200"],
+  ["/api/admin/silent-prayer-events", "post", "400"],
+  ["/api/admin/silent-prayer-events", "post", "403"],
+  ["/api/admin/silent-prayer-events/{id}", "patch", "200"],
+  ["/api/admin/silent-prayer-events/{id}", "patch", "400"],
+  ["/api/admin/silent-prayer-events/{id}", "patch", "403"],
+  ["/api/admin/silent-prayer-events/{id}", "patch", "404"],
   ["/api/admin/announcements", "get", "200"],
   ["/api/admin/announcements", "get", "403"],
   ["/api/admin/announcements", "post", "200"],
@@ -244,6 +256,8 @@ const requestSchemaChecks = [
   ["/api/admin/prayers/{id}", "patch"],
   ["/api/admin/events", "post"],
   ["/api/admin/events/{id}", "patch"],
+  ["/api/admin/silent-prayer-events", "post"],
+  ["/api/admin/silent-prayer-events/{id}", "patch"],
   ["/api/admin/announcements", "post"],
   ["/api/admin/announcements/{id}", "patch"]
 ];

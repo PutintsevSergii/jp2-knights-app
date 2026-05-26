@@ -32,7 +32,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | GET            | `/admin/roadmap-assignments/:id`           | Super Admin              | none                              | assignment detail         | 403,404     | Status metadata only, no submitted bodies                      |
 | GET            | `/admin/roadmap-submissions`               | Officer/Super Admin      | filters/page                      | scoped review queue        | 403,400     | Officer scope                                                  |
 | GET/PATCH      | `/admin/roadmap-submissions/:id`           | Officer/Super Admin      | approve/reject/comment            | submission                 | 403,404,409 | Decision audited                                               |
-| GET/POST/PATCH | `/admin/silent-prayer-events`              | Officer/Super Admin      | session payload                   | list/detail                | 403,400     | Participant lists hidden                                       |
+| GET/POST       | `/admin/silent-prayer-events`              | Officer/Super Admin      | session payload                   | list/detail                | 403,400     | Participant lists hidden; audit summaries redact intention     |
+| PATCH          | `/admin/silent-prayer-events/:id`          | Officer/Super Admin      | edit/lifecycle payload            | detail                     | 403,404     | Scope required; no participant/session identity                |
 | GET            | `/admin/audit-logs`                        | Super Admin              | filters/pagination                | logs                       | 403         | Limited officer view only if approved                          |
 
 ## Admin Validation Rules
@@ -107,6 +108,12 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   and render no chat, comments, read receipts, or push delivery state. Detail
   editor rendering resolves the scoped announcement from the list contract until
   a dedicated admin detail read contract is introduced.
+
+## Implemented Silent Prayer Management Rules
+
+- `GET /admin/silent-prayer-events` requires Admin Lite access. Super Admin sees all sessions; officers see public/family-open sessions plus sessions targeted to their assigned organization units.
+- `POST /admin/silent-prayer-events` and `PATCH /admin/silent-prayer-events/:id` require Admin Lite access, explicit visibility/status, valid timing, and scoped officer target organization units.
+- Silent-prayer create/update audit summaries include title, visibility, target organization unit, status, timing, and lifecycle timestamps only. They do not include intention text, participant lists, anonymous session ids, user ids, rosters, or prayer history.
 - `GET /admin/roadmap-definitions` and
   `GET /admin/roadmap-definitions/:id` require Super Admin access and support
   read-only roadmap definition inspection through shared DTO validation and

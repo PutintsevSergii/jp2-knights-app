@@ -12,6 +12,8 @@ import {
   adminOrganizationUnitListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
+  adminSilentPrayerEventDetailResponseSchema,
+  adminSilentPrayerEventListResponseSchema,
   authSessionResponseSchema,
   attachmentStatusSchema,
   brotherEventDetailResponseSchema,
@@ -29,6 +31,7 @@ import {
   createAdminAnnouncementRequestSchema,
   createAdminEventRequestSchema,
   createAdminPrayerRequestSchema,
+  createAdminSilentPrayerEventRequestSchema,
   createOrganizationUnitRequestSchema,
   createPublicCandidateRequestSchema,
   createRoadmapSubmissionRequestSchema,
@@ -62,6 +65,7 @@ import {
   updateAdminCandidateProfileSchema,
   updateAdminCandidateRequestSchema,
   updateAdminPrayerRequestSchema,
+  updateAdminSilentPrayerEventRequestSchema,
   updateNotificationPreferencesRequestSchema,
   updateOrganizationUnitRequestSchema,
   visibilitySchema
@@ -570,6 +574,79 @@ describe("shared validation", () => {
       events: [event]
     });
     expect(adminEventDetailResponseSchema.parse({ event })).toEqual({ event });
+  });
+
+  it("validates admin silent-prayer event write and response DTOs", () => {
+    const silentPrayerEvent = {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Morning Prayer",
+      intention: "For peace.",
+      visibility: "FAMILY_OPEN",
+      targetOrganizationUnitId: null,
+      status: "DRAFT",
+      startsAt: "2026-05-10T18:00:00.000Z",
+      endsAt: null,
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    };
+
+    expect(
+      createAdminSilentPrayerEventRequestSchema.parse({
+        title: " Morning Prayer ",
+        intention: " For peace. ",
+        startsAt: "2026-05-10T18:00:00.000Z",
+        visibility: "FAMILY_OPEN",
+        status: "DRAFT"
+      })
+    ).toEqual({
+      title: "Morning Prayer",
+      intention: "For peace.",
+      startsAt: "2026-05-10T18:00:00.000Z",
+      visibility: "FAMILY_OPEN",
+      status: "DRAFT"
+    });
+    expect(() =>
+      createAdminSilentPrayerEventRequestSchema.parse({
+        title: "Scoped",
+        startsAt: "2026-05-10T18:00:00.000Z",
+        visibility: "ORGANIZATION_UNIT",
+        status: "DRAFT"
+      })
+    ).toThrow();
+    expect(() =>
+      createAdminSilentPrayerEventRequestSchema.parse({
+        title: "Bad dates",
+        startsAt: "2026-05-10T18:00:00.000Z",
+        endsAt: "2026-05-10T17:00:00.000Z",
+        visibility: "PUBLIC",
+        status: "DRAFT"
+      })
+    ).toThrow();
+    expect(updateAdminSilentPrayerEventRequestSchema.parse({ status: "ARCHIVED" })).toEqual({
+      status: "ARCHIVED"
+    });
+    expect(
+      updateAdminSilentPrayerEventRequestSchema.parse({
+        startsAt: "2026-05-10T18:00:00.000Z",
+        endsAt: null
+      })
+    ).toEqual({
+      startsAt: "2026-05-10T18:00:00.000Z",
+      endsAt: null
+    });
+    expect(() => updateAdminSilentPrayerEventRequestSchema.parse({})).toThrow();
+    expect(
+      adminSilentPrayerEventListResponseSchema.parse({
+        silentPrayerEvents: [silentPrayerEvent]
+      })
+    ).toEqual({ silentPrayerEvents: [silentPrayerEvent] });
+    expect(
+      adminSilentPrayerEventDetailResponseSchema.parse({
+        silentPrayerEvent
+      })
+    ).toEqual({ silentPrayerEvent });
   });
 
   it("validates admin announcement write and response DTOs", () => {

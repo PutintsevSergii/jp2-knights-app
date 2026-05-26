@@ -1,0 +1,13 @@
+import type {
+  AdminSilentPrayerEventDetailResponseDto,
+  AdminSilentPrayerEventListResponseDto,
+  AdminSilentPrayerEventSummaryDto,
+  CreateAdminSilentPrayerEventRequestDto,
+  UpdateAdminSilentPrayerEventRequestDto
+} from "@jp2/shared-validation";
+
+export type AdminSilentPrayerEventSummary = AdminSilentPrayerEventSummaryDto;
+export type AdminSilentPrayerEventListResponse = AdminSilentPrayerEventListResponseDto;
+export type AdminSilentPrayerEventDetailResponse = AdminSilentPrayerEventDetailResponseDto;
+export type CreateAdminSilentPrayerEventRequest = CreateAdminSilentPrayerEventRequestDto;
+export type UpdateAdminSilentPrayerEventRequest = UpdateAdminSilentPrayerEventRequestDto;

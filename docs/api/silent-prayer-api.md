@@ -8,16 +8,20 @@
 | POST | `/public/silent-prayer-events/:id/join` | No | Guest | Join an active public/family-open session using an anonymous session id |
 | GET | `/brother/silent-prayer-events` | Yes | Brother | List active public/family/brother/own-organization-unit sessions with aggregate counters only |
 | POST | `/brother/silent-prayer-events/:id/join` | Yes | Brother | Join an active brother-visible session; counts once per authenticated user |
-| GET/POST/PATCH | `/admin/silent-prayer-events` | Yes | Admin | Manage sessions |
+| GET/POST | `/admin/silent-prayer-events` | Yes | Officer/Super Admin | List/create silent-prayer sessions within admin scope |
+| PATCH | `/admin/silent-prayer-events/:id` | Yes | Officer/Super Admin | Update lifecycle, visibility, and timing metadata within admin scope |
 
 ## Socket Events
 
 | Event | Direction | Payload | Result |
 | --- | --- | --- | --- |
-| `silent_prayer.join` | client -> server | event id, join token/session | validates and joins room |
-| `silent_prayer.heartbeat` | client -> server | event id | refreshes presence TTL |
-| `silent_prayer.leave` | client -> server | event id | removes presence |
-| `silent_prayer.count` | server -> client | event id, aggregate count | updates counter |
+| `silent-prayer:public:join` | client -> server | event id, anonymous session id | validates public visibility and joins room |
+| `silent-prayer:brother:join` | client -> server | event id, auth session token | validates brother visibility/scope and joins room |
+| `silent-prayer:heartbeat` | client -> server | event id | refreshes presence TTL |
+| `silent-prayer:leave` | client -> server | event id | removes presence |
+| `silent-prayer:joined` | server -> client | event id, aggregate count, expiry, socket room | confirms current participant join |
+| `silent-prayer:presence` | server -> client | event id, aggregate count, expiry, socket room | updates counter |
+| `silent-prayer:error` | server -> client | code, message | reports validation/auth/not-found errors without identity details |
 
 ## Rules
 
@@ -26,4 +30,5 @@
 - No participant list is exposed in V1.
 - REST join/list endpoints validate status, publish time, active window, cancellation/archive state, and server-side visibility before touching presence.
 - REST responses return `activeCount`, `expiresAt`, and a socket room name only. They do not return anonymous session ids, user ids, rosters, participant lists, or prayer history.
-- Socket.IO gateway and real Redis adapter wiring remain the next Phase 11 step; the current API module uses the Redis-shaped presence store boundary.
+- Socket.IO gateway and Redis adapter wiring are enabled in Phase 11; production requires `REDIS_URL`, while local/test environments may use the deterministic in-memory store.
+- Admin create/update audit summaries include title, visibility, scope, status, timing, and lifecycle timestamps only. They do not copy intention text or participant/session identity into `audit_logs`.
