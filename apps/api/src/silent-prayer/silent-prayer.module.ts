@@ -2,8 +2,9 @@ import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
 import { DatabaseModule } from "../database/database.module.js";
 import { SilentPrayerPresenceService } from "./silent-prayer-presence.service.js";
-import { InMemorySilentPrayerPresenceStore } from "./silent-prayer-presence.store.js";
+import { createConfiguredSilentPrayerPresenceStore } from "./silent-prayer-presence.store.js";
 import { SilentPrayerPresenceStore } from "./silent-prayer-presence.types.js";
+import { SilentPrayerGateway } from "./silent-prayer.gateway.js";
 import {
   BrotherSilentPrayerController,
   PublicSilentPrayerController
@@ -19,10 +20,11 @@ import { SilentPrayerService } from "./silent-prayer.service.js";
   controllers: [PublicSilentPrayerController, BrotherSilentPrayerController],
   providers: [
     SilentPrayerService,
+    SilentPrayerGateway,
     SilentPrayerPresenceService,
     {
       provide: SilentPrayerPresenceStore,
-      useClass: InMemorySilentPrayerPresenceStore
+      useFactory: createConfiguredSilentPrayerPresenceStore
     },
     {
       provide: SilentPrayerRepository,

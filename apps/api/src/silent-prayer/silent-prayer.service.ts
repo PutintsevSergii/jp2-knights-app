@@ -3,6 +3,10 @@ import { canAccessBrotherMode } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
 import { SilentPrayerPresenceService } from "./silent-prayer-presence.service.js";
+import type {
+  SilentPrayerParticipant,
+  SilentPrayerPresenceResult
+} from "./silent-prayer-presence.types.js";
 import { SilentPrayerRepository } from "./silent-prayer.repository.js";
 import type {
   BrotherSilentPrayerJoinResponse,
@@ -69,6 +73,22 @@ export class SilentPrayerService {
     };
   }
 
+  async refreshPublicSessionPresence(
+    id: string,
+    anonymousSessionId: string,
+    now = new Date()
+  ): Promise<SilentPrayerSocketPresence> {
+    const session = await this.repository.findPublicJoinableSession(id, now);
+
+    if (!session) {
+      throw new NotFoundException("Public silent-prayer session was not found.");
+    }
+
+    return withSocketRoom(
+      await this.presence.heartbeat(id, { type: "anonymous", sessionId: anonymousSessionId }, now)
+    );
+  }
+
   async listBrotherSessions(
     principal: CurrentUserPrincipal,
     query: SilentPrayerListQuery,
@@ -122,6 +142,31 @@ export class SilentPrayerService {
     };
   }
 
+  async refreshBrotherSessionPresence(
+    principal: CurrentUserPrincipal,
+    id: string,
+    now = new Date()
+  ): Promise<SilentPrayerSocketPresence> {
+    const organizationUnitIds = await this.loadBrotherOrganizationUnitIds(principal);
+    const session = await this.repository.findBrotherJoinableSession(id, organizationUnitIds, now);
+
+    if (!session) {
+      throw new NotFoundException("Brother silent-prayer session was not found in the current scope.");
+    }
+
+    return withSocketRoom(
+      await this.presence.heartbeat(id, { type: "authenticated", userId: principal.id }, now)
+    );
+  }
+
+  async leaveSessionPresence(
+    id: string,
+    participant: SilentPrayerParticipant,
+    now = new Date()
+  ): Promise<SilentPrayerSocketPresence> {
+    return withSocketRoom(await this.presence.leave(id, participant, now));
+  }
+
   private async loadBrotherOrganizationUnitIds(
     principal: CurrentUserPrincipal
   ): Promise<readonly string[]> {
@@ -144,4 +189,15 @@ export class SilentPrayerService {
 
 export function silentPrayerSocketRoom(eventId: string): string {
   return `silent-prayer:${encodeURIComponent(eventId)}`;
+}
+
+export interface SilentPrayerSocketPresence extends SilentPrayerPresenceResult {
+  readonly socketRoom: string;
+}
+
+function withSocketRoom(presence: SilentPrayerPresenceResult): SilentPrayerSocketPresence {
+  return {
+    ...presence,
+    socketRoom: silentPrayerSocketRoom(presence.eventId)
+  };
 }

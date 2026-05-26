@@ -15,6 +15,19 @@ export const publicSilentPrayerJoinRequestSchema = z
   })
   .strict();
 
+export const publicSilentPrayerSocketJoinPayloadSchema =
+  publicSilentPrayerJoinRequestSchema
+    .extend({
+      eventId: silentPrayerEventIdSchema
+    })
+    .strict();
+
+export const silentPrayerSocketEventPayloadSchema = z
+  .object({
+    eventId: silentPrayerEventIdSchema
+  })
+  .strict();
+
 export const silentPrayerPresenceSchema = z
   .object({
     eventId: z.uuid(),
@@ -86,6 +99,12 @@ export type SilentPrayerPaginationQueryDto = z.infer<
 >;
 export type PublicSilentPrayerJoinRequestDto = z.infer<
   typeof publicSilentPrayerJoinRequestSchema
+>;
+export type PublicSilentPrayerSocketJoinPayloadDto = z.infer<
+  typeof publicSilentPrayerSocketJoinPayloadSchema
+>;
+export type SilentPrayerSocketEventPayloadDto = z.infer<
+  typeof silentPrayerSocketEventPayloadSchema
 >;
 export type SilentPrayerPresenceDto = z.infer<typeof silentPrayerPresenceSchema>;
 export type PublicSilentPrayerEventSummaryDto = z.infer<

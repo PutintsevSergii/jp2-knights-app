@@ -3,6 +3,7 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module.js";
 import { ApiExceptionFilter } from "./errors/api-exception.filter.js";
+import { configureSilentPrayerSocketIoAdapter } from "./silent-prayer/silent-prayer-socket.adapter.js";
 
 export function buildOpenApiConfig() {
   return new DocumentBuilder()
@@ -17,6 +18,7 @@ export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix("api");
   app.useGlobalFilters(new ApiExceptionFilter());
+  await configureSilentPrayerSocketIoAdapter(app);
 
   const document = SwaggerModule.createDocument(app, buildOpenApiConfig());
   SwaggerModule.setup("api/docs", app, document);

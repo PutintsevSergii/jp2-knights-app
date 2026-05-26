@@ -33,6 +33,14 @@ sequenceDiagram
   API-->>App: updated aggregate count
 ```
 
+## Implemented Transport
+
+- Socket.IO namespace: `/silent-prayer`
+- Join events: `silent-prayer:public:join` and `silent-prayer:brother:join`
+- Session events: `silent-prayer:heartbeat`, `silent-prayer:leave`, `silent-prayer:presence`, `silent-prayer:joined`, and `silent-prayer:error`
+- Brother socket auth uses the existing bearer/cookie session resolution path.
+- `REDIS_URL` enables the Redis presence store and Socket.IO Redis adapter. Production startup fails if Redis is not configured; local/test environments use the deterministic in-memory store.
+
 ## Rules
 
 - Duplicate joins from the same authenticated user count once.
@@ -40,4 +48,3 @@ sequenceDiagram
 - Participant lists are not exposed in V1.
 - Disconnected clients expire by TTL.
 - Redis is required for multi-instance correctness.
-
