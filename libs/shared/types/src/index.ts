@@ -87,3 +87,5 @@ export interface HealthStatus {
   runtimeMode: RuntimeMode;
   status: "ok";
 }
+
+export * from "./status-metadata.js";

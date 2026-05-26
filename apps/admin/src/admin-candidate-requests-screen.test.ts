@@ -55,7 +55,7 @@ describe("admin candidate request screens", () => {
       initials: "JN",
       locationMeta: "Riga, LV",
       messagePreview: "I would like to learn more about the Order.",
-      statusLabel: "NEW"
+      statusLabel: "New"
     });
 
     const contactedScreen = buildAdminCandidateRequestListScreen({

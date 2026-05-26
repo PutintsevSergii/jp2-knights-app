@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   CONTENT_STATUSES,
+  CONTENT_STATUS_METADATA,
+  EVENT_STATUS_METADATA,
   DEVICE_TOKEN_PLATFORMS,
   MEMBERSHIP_STATUSES,
   NOTIFICATION_CATEGORIES,
@@ -8,7 +10,9 @@ import {
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
   ROADMAP_ASSIGNMENT_STATUSES,
+  ROADMAP_ASSIGNMENT_STATUS_METADATA,
   ROADMAP_SUBMISSION_STATUSES,
+  ROADMAP_SUBMISSION_STATUS_METADATA,
   ROADMAP_TARGET_ROLES,
   RUNTIME_MODES,
   VISIBILITIES
@@ -51,5 +55,23 @@ describe("shared types", () => {
     expect(ROADMAP_TARGET_ROLES).toEqual(["CANDIDATE", "BROTHER"]);
     expect(ROADMAP_ASSIGNMENT_STATUSES).toEqual(["active", "completed", "archived"]);
     expect(ROADMAP_SUBMISSION_STATUSES).toEqual(["pending_review", "approved", "rejected"]);
+  });
+
+  it("keeps shared status metadata in parity with status contracts", () => {
+    expect(Object.keys(CONTENT_STATUS_METADATA)).toEqual([...CONTENT_STATUSES]);
+    expect(Object.keys(EVENT_STATUS_METADATA)).toEqual([
+      "draft",
+      "published",
+      "cancelled",
+      "archived"
+    ]);
+    expect(Object.keys(ROADMAP_ASSIGNMENT_STATUS_METADATA)).toEqual([
+      ...ROADMAP_ASSIGNMENT_STATUSES
+    ]);
+    expect(Object.keys(ROADMAP_SUBMISSION_STATUS_METADATA)).toEqual([
+      ...ROADMAP_SUBMISSION_STATUSES
+    ]);
+    expect(ROADMAP_SUBMISSION_STATUS_METADATA.pending_review.terminal).toBe(false);
+    expect(ROADMAP_SUBMISSION_STATUS_METADATA.approved.labelKey).toBe("roadmap.status.approved");
   });
 });

@@ -1,4 +1,4 @@
-import type { RuntimeMode } from "@jp2/shared-types";
+import { CANDIDATE_REQUEST_STATUS_METADATA, type RuntimeMode } from "@jp2/shared-types";
 import type {
   AdminCandidateRequestListResponseDto,
   AdminCandidateRequestSummaryDto
@@ -11,6 +11,7 @@ import {
   type AdminCandidateRequestMetric,
   type AdminCandidateRequestRow
 } from "./admin-candidate-request-screen-contracts.js";
+import { formatAdminStatusMetadataLabel } from "./admin-status-labels.js";
 
 export interface AdminCandidateRequestListScreen {
   route: "AdminCandidateRequestList";
@@ -74,9 +75,7 @@ function candidateRequestRow(
     status: request.status,
     statusLabel: statusLabel(request.status),
     assignedOrganizationUnitName:
-      request.assignedOrganizationUnitName ??
-      request.assignedOrganizationUnitId ??
-      "Unassigned",
+      request.assignedOrganizationUnitName ?? request.assignedOrganizationUnitId ?? "Unassigned",
     createdAt: formatAdminCandidateRequestDateTime(request.createdAt),
     actions: buildRowActions(request, canWrite)
   };
@@ -129,7 +128,7 @@ function candidateInitials(firstName: string, lastName: string): string {
 }
 
 function statusLabel(status: AdminCandidateRequestSummaryDto["status"]): string {
-  return status.replaceAll("_", " ").toUpperCase();
+  return formatAdminStatusMetadataLabel(CANDIDATE_REQUEST_STATUS_METADATA, status);
 }
 
 function buildListActions(): AdminCandidateRequestAction[] {

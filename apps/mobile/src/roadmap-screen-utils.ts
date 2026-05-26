@@ -1,3 +1,4 @@
+import { ROADMAP_SUBMISSION_STATUS_METADATA } from "@jp2/shared-types";
 import type {
   AssignedRoadmapDto,
   RoadmapStepSummaryDto,
@@ -45,21 +46,15 @@ function roadmapStepBody(step: RoadmapStepSummaryDto): string {
 }
 
 function roadmapStepStatusLabel(step: RoadmapStepSummaryDto): string {
-  if (!step.latestSubmission) {
+  return roadmapSubmissionStatusLabel(step.latestSubmission);
+}
+
+export function roadmapSubmissionStatusLabel(
+  submission: RoadmapSubmissionSummaryDto | null
+): string {
+  if (!submission) {
     return mobileCopy("roadmap.status.notStarted");
   }
 
-  return submissionStatusLabel(step.latestSubmission.status);
-}
-
-function submissionStatusLabel(status: RoadmapSubmissionSummaryDto["status"]): string {
-  if (status === "pending_review") {
-    return mobileCopy("roadmap.status.pendingReview");
-  }
-
-  if (status === "approved") {
-    return mobileCopy("roadmap.status.approved");
-  }
-
-  return mobileCopy("roadmap.status.rejected");
+  return mobileCopy(ROADMAP_SUBMISSION_STATUS_METADATA[submission.status].labelKey);
 }

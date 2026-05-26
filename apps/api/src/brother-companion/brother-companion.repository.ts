@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import { assertAudienceVisibility } from "@jp2/shared-auth";
 import {
   memberScopedVisibilityWhere,
   publishedAtNowOrUnset
@@ -304,7 +305,7 @@ export function brotherEventWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "BROTHER",
+    "brother",
     organizationUnitIds
   );
 
@@ -328,7 +329,7 @@ export function brotherEventDetailWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "BROTHER",
+    "brother",
     organizationUnitIds
   );
 
@@ -351,7 +352,7 @@ export function brotherAnnouncementWhere(
   now: Date
 ): Prisma.AnnouncementWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.AnnouncementWhereInput>(
-    "BROTHER",
+    "brother",
     organizationUnitIds
   );
 
@@ -367,7 +368,9 @@ export function brotherAnnouncementWhere(
   };
 }
 
-function toBrotherAnnouncementSummary(record: BrotherAnnouncementRecord): BrotherAnnouncementSummary {
+function toBrotherAnnouncementSummary(
+  record: BrotherAnnouncementRecord
+): BrotherAnnouncementSummary {
   if (!record.publishedAt) {
     throw new Error("Repository returned an unpublished brother announcement.");
   }
@@ -389,7 +392,7 @@ export function brotherPrayerWhere(
   now: Date
 ): Prisma.PrayerWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.PrayerWhereInput>(
-    "BROTHER",
+    "brother",
     organizationUnitIds
   );
 
@@ -521,44 +524,17 @@ function toBrotherPrayerSummary(record: BrotherPrayerRecord): BrotherPrayerSumma
 }
 
 function toBrotherEventVisibility(visibility: string): BrotherTodayEventSummary["visibility"] {
-  if (
-    visibility === "PUBLIC" ||
-    visibility === "FAMILY_OPEN" ||
-    visibility === "BROTHER" ||
-    visibility === "ORGANIZATION_UNIT"
-  ) {
-    return visibility;
-  }
-
-  throw new Error("Repository returned an event visibility hidden from brothers.");
+  return assertAudienceVisibility("brother", visibility, "event");
 }
 
 function toBrotherPrayerVisibility(visibility: string): BrotherPrayerSummary["visibility"] {
-  if (
-    visibility === "PUBLIC" ||
-    visibility === "FAMILY_OPEN" ||
-    visibility === "BROTHER" ||
-    visibility === "ORGANIZATION_UNIT"
-  ) {
-    return visibility;
-  }
-
-  throw new Error("Repository returned a prayer visibility hidden from brothers.");
+  return assertAudienceVisibility("brother", visibility, "prayer");
 }
 
 function toBrotherAnnouncementVisibility(
   visibility: string
 ): BrotherAnnouncementSummary["visibility"] {
-  if (
-    visibility === "PUBLIC" ||
-    visibility === "FAMILY_OPEN" ||
-    visibility === "BROTHER" ||
-    visibility === "ORGANIZATION_UNIT"
-  ) {
-    return visibility;
-  }
-
-  throw new Error("Repository returned an announcement visibility hidden from brothers.");
+  return assertAudienceVisibility("brother", visibility, "announcement");
 }
 
 function excerpt(value: string): string {

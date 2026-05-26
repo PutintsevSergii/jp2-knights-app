@@ -1,9 +1,13 @@
+import {
+  ROADMAP_ASSIGNMENT_STATUS_METADATA,
+  type RoadmapAssignmentStatus
+} from "@jp2/shared-types";
 import type {
   AdminRoadmapAssignmentDetailDto,
   CreateAdminRoadmapAssignmentRequestDto
 } from "@jp2/shared-validation";
 import { adminCopy } from "./admin-i18n.js";
-import { formatAdminStatusLabel } from "./admin-status-labels.js";
+import { formatAdminStatusMetadataLabel } from "./admin-status-labels.js";
 
 export type AdminRoadmapAssignmentRoute =
   | "AdminRoadmapAssignmentList"
@@ -55,9 +59,11 @@ export function adminRoadmapAssignmentBackAction(): AdminRoadmapAssignmentAction
 }
 
 export function formatAdminRoadmapAssignmentDateTime(value: string | null): string {
-  return value ? new Date(value).toISOString() : adminCopy("admin.roadmapAssignments.detail.notCompleted");
+  return value
+    ? new Date(value).toISOString()
+    : adminCopy("admin.roadmapAssignments.detail.notCompleted");
 }
 
-export function roadmapAssignmentStatusLabel(status: string): string {
-  return formatAdminStatusLabel(status);
+export function roadmapAssignmentStatusLabel(status: RoadmapAssignmentStatus): string {
+  return formatAdminStatusMetadataLabel(ROADMAP_ASSIGNMENT_STATUS_METADATA, status);
 }

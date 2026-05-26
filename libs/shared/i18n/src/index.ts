@@ -147,6 +147,17 @@ export const TRANSLATION_KEYS = [
   "content.status.approved",
   "content.status.published",
   "content.status.archived",
+  "event.status.cancelled",
+  "roadmap.assignment.status.active",
+  "roadmap.assignment.status.completed",
+  "candidateRequest.status.new",
+  "candidateRequest.status.contacted",
+  "candidateRequest.status.invited",
+  "candidateRequest.status.rejected",
+  "candidateRequest.status.convertedToCandidate",
+  "candidateProfile.status.active",
+  "candidateProfile.status.paused",
+  "candidateProfile.status.convertedToBrother",
   "roadmap.status.notStarted",
   "roadmap.status.inProgress",
   "roadmap.status.pendingReview",
@@ -208,8 +219,7 @@ export const ENGLISH_TRANSLATIONS: TranslationCatalog = {
     "The requested roadmap definition is not available.",
   "admin.roadmapDefinitions.detail.error.title": "Unable to Load Roadmap Definition",
   "admin.roadmapDefinitions.detail.error.body": "Roadmap definition could not be loaded.",
-  "admin.roadmapDefinitions.detail.offline.body":
-    "Reconnect to refresh this roadmap definition.",
+  "admin.roadmapDefinitions.detail.offline.body": "Reconnect to refresh this roadmap definition.",
   "admin.roadmapDefinitions.detail.noDescription": "No description.",
   "admin.roadmapSubmissions.title": "Roadmap Submissions",
   "admin.roadmapSubmissions.list.body":
@@ -245,8 +255,7 @@ export const ENGLISH_TRANSLATIONS: TranslationCatalog = {
     "The requested roadmap submission is not available in the current admin scope.",
   "admin.roadmapSubmissions.detail.error.title": "Unable to Load Roadmap Submission",
   "admin.roadmapSubmissions.detail.error.body": "Roadmap submission could not be loaded.",
-  "admin.roadmapSubmissions.detail.offline.body":
-    "Reconnect to refresh this roadmap submission.",
+  "admin.roadmapSubmissions.detail.offline.body": "Reconnect to refresh this roadmap submission.",
   "admin.roadmapSubmissions.detail.submitter": "Submitter",
   "admin.roadmapSubmissions.detail.email": "Email",
   "admin.roadmapSubmissions.detail.roadmap": "Roadmap",
@@ -288,8 +297,7 @@ export const ENGLISH_TRANSLATIONS: TranslationCatalog = {
     "The requested roadmap assignment is not available.",
   "admin.roadmapAssignments.detail.error.title": "Unable to Load Roadmap Assignment",
   "admin.roadmapAssignments.detail.error.body": "Roadmap assignment could not be loaded.",
-  "admin.roadmapAssignments.detail.offline.body":
-    "Reconnect to refresh this roadmap assignment.",
+  "admin.roadmapAssignments.detail.offline.body": "Reconnect to refresh this roadmap assignment.",
   "admin.roadmapAssignments.detail.section.assignment": "Assignment",
   "admin.roadmapAssignments.detail.section.submissions": "Submission Status",
   "admin.roadmapAssignments.detail.assignedAt": "Assigned {{assignedAt}}",
@@ -305,8 +313,7 @@ export const ENGLISH_TRANSLATIONS: TranslationCatalog = {
   "admin.roadmapAssignments.editor.loading.title": "Loading Roadmap Assignment Form",
   "admin.roadmapAssignments.editor.loading.body": "Roadmap assignment form is loading.",
   "admin.roadmapAssignments.editor.empty.body": "No roadmap assignment form is available.",
-  "admin.roadmapAssignments.editor.error.title":
-    "Unable to Load Roadmap Assignment Form",
+  "admin.roadmapAssignments.editor.error.title": "Unable to Load Roadmap Assignment Form",
   "admin.roadmapAssignments.editor.error.body": "Roadmap assignment form could not be loaded.",
   "admin.roadmapAssignments.editor.offline.body": "Reconnect to create a roadmap assignment.",
   "admin.roadmapAssignments.editor.forbidden.body":
@@ -324,6 +331,17 @@ export const ENGLISH_TRANSLATIONS: TranslationCatalog = {
   "content.status.approved": "Approved",
   "content.status.published": "Published",
   "content.status.archived": "Archived",
+  "event.status.cancelled": "Cancelled",
+  "roadmap.assignment.status.active": "Active",
+  "roadmap.assignment.status.completed": "Completed",
+  "candidateRequest.status.new": "New",
+  "candidateRequest.status.contacted": "Contacted",
+  "candidateRequest.status.invited": "Invited",
+  "candidateRequest.status.rejected": "Rejected",
+  "candidateRequest.status.convertedToCandidate": "Converted to candidate",
+  "candidateProfile.status.active": "Active",
+  "candidateProfile.status.paused": "Paused",
+  "candidateProfile.status.convertedToBrother": "Converted to brother",
   "roadmap.status.notStarted": "Not started",
   "roadmap.status.inProgress": "In progress",
   "roadmap.status.pendingReview": "Pending review",
@@ -357,7 +375,9 @@ export function hasTranslation(key: string): key is TranslationKey {
 export function normalizeLocale(locale: string | undefined): SupportedLocale {
   const normalized = locale?.trim().toLowerCase().split("-")[0];
 
-  return SUPPORTED_LOCALES.find((supportedLocale) => supportedLocale === normalized) ?? DEFAULT_LOCALE;
+  return (
+    SUPPORTED_LOCALES.find((supportedLocale) => supportedLocale === normalized) ?? DEFAULT_LOCALE
+  );
 }
 
 function interpolate(template: string, values: TranslationValues = {}): string {

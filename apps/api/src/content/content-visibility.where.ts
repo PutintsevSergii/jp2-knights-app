@@ -1,13 +1,17 @@
+import { audienceVisibilityValues, type MemberContentAudience } from "@jp2/shared-auth";
 import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
 
-export type MemberAudienceVisibility = "CANDIDATE" | "BROTHER";
-
 export function memberScopedVisibilityWhere<TWhere>(
-  audienceVisibility: MemberAudienceVisibility,
+  audience: MemberContentAudience,
   organizationUnitIds: readonly string[] | string | null | undefined
 ): TWhere[] {
+  const visibilityValues = audienceVisibilityValues(audience);
   const visibilityWhere: Record<string, unknown>[] = [
-    { visibility: { in: ["PUBLIC", "FAMILY_OPEN", audienceVisibility] } }
+    {
+      visibility: {
+        in: visibilityValues.filter((visibility) => visibility !== "ORGANIZATION_UNIT")
+      }
+    }
   ];
   const scopedOrganizationUnitIds: string[] =
     typeof organizationUnitIds === "string"

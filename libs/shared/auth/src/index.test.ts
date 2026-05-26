@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   assertActive,
+  assertAudienceVisibility,
+  AUDIENCE_VISIBILITIES,
+  audienceVisibilityValues,
   canAccessAdminLite,
   canAccessBrotherMode,
   canAccessCandidateMode,
@@ -95,7 +98,9 @@ describe("shared auth helpers", () => {
     expect(canAdministerOrganizationUnit(officer, organizationUnitA)).toBe(true);
     expect(canAdministerOrganizationUnit(officer, organizationUnitB)).toBe(false);
     expect(canAdministerOrganizationUnit(superAdmin, organizationUnitB)).toBe(true);
-    expect(canAdministerOrganizationUnit({ ...officer, status: "inactive" }, organizationUnitA)).toBe(false);
+    expect(
+      canAdministerOrganizationUnit({ ...officer, status: "inactive" }, organizationUnitA)
+    ).toBe(false);
   });
 
   it("keeps unassigned admin records explicit for officers", () => {
@@ -156,7 +161,10 @@ describe("shared visibility helpers", () => {
   });
 
   it("requires explicit candidate permission for organization unit visibility", () => {
-    const scopedRecord = { visibility: "ORGANIZATION_UNIT" as const, targetOrganizationUnitId: organizationUnitA };
+    const scopedRecord = {
+      visibility: "ORGANIZATION_UNIT" as const,
+      targetOrganizationUnitId: organizationUnitA
+    };
 
     expect(canViewByVisibility(candidate, scopedRecord, { audience: "candidate" })).toBe(false);
     expect(
@@ -178,9 +186,9 @@ describe("shared visibility helpers", () => {
   });
 
   it("limits brother organization unit visibility to own organization unit", () => {
-    expect(canViewByVisibility(brother, { visibility: "ORGANIZATION_UNIT" }, { audience: "brother" })).toBe(
-      false
-    );
+    expect(
+      canViewByVisibility(brother, { visibility: "ORGANIZATION_UNIT" }, { audience: "brother" })
+    ).toBe(false);
     expect(
       canViewByVisibility(
         brother,
@@ -315,12 +323,10 @@ describe("shared visibility helpers", () => {
       publishedAt: "2026-01-01T00:00:00.000Z"
     };
 
-    expect(canViewPublishedContent(null, scopedBrotherContent, { audience: "public" })).toBe(
-      false
+    expect(canViewPublishedContent(null, scopedBrotherContent, { audience: "public" })).toBe(false);
+    expect(canViewPublishedContent(brother, scopedBrotherContent, { audience: "brother" })).toBe(
+      true
     );
-    expect(
-      canViewPublishedContent(brother, scopedBrotherContent, { audience: "brother" })
-    ).toBe(true);
     expect(
       canViewPublishedContent(
         { ...brother, memberOrganizationUnitIds: [organizationUnitB] },
@@ -414,15 +420,9 @@ describe("shared visibility helpers", () => {
       { visibility: "ADMIN" as const, targetOrganizationUnitId: organizationUnitA }
     ];
 
-    expect(records.map((record) => canViewByVisibility(null, record, { audience: "public" }))).toEqual([
-      true,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false
-    ]);
+    expect(
+      records.map((record) => canViewByVisibility(null, record, { audience: "public" }))
+    ).toEqual([true, true, false, false, false, false, false]);
     expect(
       records.map((record) =>
         canViewByVisibility(candidate, record, {
@@ -431,23 +431,33 @@ describe("shared visibility helpers", () => {
         })
       )
     ).toEqual([true, true, true, false, true, false, false]);
-    expect(records.map((record) => canViewByVisibility(brother, record, { audience: "brother" }))).toEqual([
-      true,
-      true,
-      false,
-      true,
-      true,
-      false,
-      false
+    expect(
+      records.map((record) => canViewByVisibility(brother, record, { audience: "brother" }))
+    ).toEqual([true, true, false, true, true, false, false]);
+    expect(
+      records.map((record) => canViewByVisibility(officer, record, { audience: "admin" }))
+    ).toEqual([true, true, true, true, true, true, true]);
+  });
+
+  it("centralizes member audience visibility lists for repository query builders", () => {
+    expect(audienceVisibilityValues("candidate")).toEqual([
+      "PUBLIC",
+      "FAMILY_OPEN",
+      "CANDIDATE",
+      "ORGANIZATION_UNIT"
     ]);
-    expect(records.map((record) => canViewByVisibility(officer, record, { audience: "admin" }))).toEqual([
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true
+    expect(audienceVisibilityValues("brother")).toEqual([
+      "PUBLIC",
+      "FAMILY_OPEN",
+      "BROTHER",
+      "ORGANIZATION_UNIT"
     ]);
+    expect(AUDIENCE_VISIBILITIES.public).toEqual(["PUBLIC", "FAMILY_OPEN"]);
+    expect(assertAudienceVisibility("candidate", "ORGANIZATION_UNIT", "event")).toBe(
+      "ORGANIZATION_UNIT"
+    );
+    expect(() => assertAudienceVisibility("candidate", "BROTHER", "event")).toThrow(
+      "Repository returned an event visibility hidden from candidates."
+    );
   });
 });

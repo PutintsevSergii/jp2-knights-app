@@ -8,20 +8,20 @@ import {
 
 describe("content visibility where helpers", () => {
   it("builds member visibility filters without organization-unit scope", () => {
-    expect(memberScopedVisibilityWhere("BROTHER", null)).toEqual([
+    expect(memberScopedVisibilityWhere("brother", null)).toEqual([
       { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } }
     ]);
   });
 
   it("builds member visibility filters for one organization-unit id", () => {
-    expect(memberScopedVisibilityWhere("CANDIDATE", "unit-1")).toEqual([
+    expect(memberScopedVisibilityWhere("candidate", "unit-1")).toEqual([
       { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE"] } },
       { visibility: "ORGANIZATION_UNIT", targetOrganizationUnitId: "unit-1" }
     ]);
   });
 
   it("builds member visibility filters for multiple organization-unit ids", () => {
-    expect(memberScopedVisibilityWhere("BROTHER", ["unit-1", "unit-2"])).toEqual([
+    expect(memberScopedVisibilityWhere("brother", ["unit-1", "unit-2"])).toEqual([
       { visibility: { in: ["PUBLIC", "FAMILY_OPEN", "BROTHER"] } },
       {
         visibility: "ORGANIZATION_UNIT",

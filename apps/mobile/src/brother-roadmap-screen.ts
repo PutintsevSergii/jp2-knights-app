@@ -1,9 +1,5 @@
 import type { RuntimeMode } from "@jp2/shared-types";
-import type {
-  AssignedRoadmapResponseDto,
-  RoadmapStepSummaryDto,
-  RoadmapSubmissionSummaryDto
-} from "@jp2/shared-validation";
+import type { AssignedRoadmapResponseDto, RoadmapStepSummaryDto } from "@jp2/shared-validation";
 import { mobileCopy } from "./mobile-i18n.js";
 import type { MobileScreenState } from "./navigation.js";
 import {
@@ -13,7 +9,11 @@ import {
   type BrotherScreenSection,
   type BrotherScreenTheme
 } from "./brother-screen-contracts.js";
-import { buildRoadmapSections, roadmapSummaryBody } from "./roadmap-screen-utils.js";
+import {
+  buildRoadmapSections,
+  roadmapSubmissionStatusLabel,
+  roadmapSummaryBody
+} from "./roadmap-screen-utils.js";
 
 export interface BrotherRoadmapScreen {
   route: "BrotherRoadmap";
@@ -116,20 +116,4 @@ function canSubmitRoadmapStep(step: RoadmapStepSummaryDto): boolean {
     step.requiresSubmission &&
     (step.latestSubmission === null || step.latestSubmission.status === "rejected")
   );
-}
-
-function roadmapSubmissionStatusLabel(submission: RoadmapSubmissionSummaryDto | null): string {
-  if (!submission) {
-    return mobileCopy("roadmap.status.notStarted");
-  }
-
-  if (submission.status === "pending_review") {
-    return mobileCopy("roadmap.status.pendingReview");
-  }
-
-  if (submission.status === "approved") {
-    return mobileCopy("roadmap.status.approved");
-  }
-
-  return mobileCopy("roadmap.status.rejected");
 }

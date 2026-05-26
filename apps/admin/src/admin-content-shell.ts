@@ -1,4 +1,9 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import type {
+  AdminAnnouncementListResponseDto,
+  AdminEventListResponseDto,
+  AdminPrayerListResponseDto
+} from "@jp2/shared-validation";
 import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 import { routeOptions } from "./admin-web-route-types.js";
 import {
@@ -94,6 +99,35 @@ export const adminContentRouteDefinition: AdminWebRouteDefinition = {
   })
 };
 
+interface AdminContentListResolver<TResponse> {
+  demoResponse: TResponse;
+  fetchResponse: (options: RenderAdminContentRouteOptions) => Promise<TResponse>;
+  buildScreen: (options: {
+    state: AdminContentScreenState;
+    response?: TResponse | undefined;
+    runtimeMode: RuntimeMode;
+    canWrite: boolean;
+  }) => AdminContentListScreen;
+}
+
+const prayerListResolver: AdminContentListResolver<AdminPrayerListResponseDto> = {
+  demoResponse: fallbackAdminPrayers,
+  fetchResponse: fetchAdminPrayers,
+  buildScreen: buildAdminPrayerListScreen
+};
+
+const eventListResolver: AdminContentListResolver<AdminEventListResponseDto> = {
+  demoResponse: fallbackAdminEvents,
+  fetchResponse: fetchAdminEvents,
+  buildScreen: buildAdminEventListScreen
+};
+
+const announcementListResolver: AdminContentListResolver<AdminAnnouncementListResponseDto> = {
+  demoResponse: fallbackAdminAnnouncements,
+  fetchResponse: fetchAdminAnnouncements,
+  buildScreen: buildAdminAnnouncementListScreen
+};
+
 export async function renderAdminContentRoute(
   options: RenderAdminContentRouteOptions
 ): Promise<RenderedAdminContentRoute> {
@@ -124,80 +158,43 @@ export async function renderAdminContentRoute(
 async function resolvePrayerScreen(
   options: RenderAdminContentRouteOptions
 ): Promise<AdminContentListScreen> {
-  if (options.runtimeMode === "demo") {
-    return buildAdminPrayerListScreen({
-      state: "ready",
-      response: fallbackAdminPrayers,
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  }
-
-  try {
-    return buildAdminPrayerListScreen({
-      state: "ready",
-      response: await fetchAdminPrayers(options),
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  } catch (error) {
-    return buildAdminPrayerListScreen({
-      state: adminContentFailureState(error),
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  }
+  return resolveContentListScreen(options, prayerListResolver);
 }
 
 async function resolveEventScreen(
   options: RenderAdminContentRouteOptions
 ): Promise<AdminContentListScreen> {
-  if (options.runtimeMode === "demo") {
-    return buildAdminEventListScreen({
-      state: "ready",
-      response: fallbackAdminEvents,
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  }
-
-  try {
-    return buildAdminEventListScreen({
-      state: "ready",
-      response: await fetchAdminEvents(options),
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  } catch (error) {
-    return buildAdminEventListScreen({
-      state: adminContentFailureState(error),
-      runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
-    });
-  }
+  return resolveContentListScreen(options, eventListResolver);
 }
 
 async function resolveAnnouncementScreen(
   options: RenderAdminContentRouteOptions
 ): Promise<AdminContentListScreen> {
+  return resolveContentListScreen(options, announcementListResolver);
+}
+
+async function resolveContentListScreen<TResponse>(
+  options: RenderAdminContentRouteOptions,
+  resolver: AdminContentListResolver<TResponse>
+): Promise<AdminContentListScreen> {
   if (options.runtimeMode === "demo") {
-    return buildAdminAnnouncementListScreen({
+    return resolver.buildScreen({
       state: "ready",
-      response: fallbackAdminAnnouncements,
+      response: resolver.demoResponse,
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite
     });
   }
 
   try {
-    return buildAdminAnnouncementListScreen({
+    return resolver.buildScreen({
       state: "ready",
-      response: await fetchAdminAnnouncements(options),
+      response: await resolver.fetchResponse(options),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite
     });
   } catch (error) {
-    return buildAdminAnnouncementListScreen({
+    return resolver.buildScreen({
       state: adminContentFailureState(error),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite

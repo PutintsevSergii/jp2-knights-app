@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import { assertAudienceVisibility } from "@jp2/shared-auth";
 import {
   memberScopedVisibilityWhere,
   publishedAtNowOrUnset
@@ -220,7 +221,7 @@ export function candidateEventWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "CANDIDATE",
+    "candidate",
     assignedOrganizationUnitId
   );
 
@@ -245,7 +246,7 @@ export function candidateEventDetailWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "CANDIDATE",
+    "candidate",
     assignedOrganizationUnitId
   );
 
@@ -268,7 +269,7 @@ export function candidateAnnouncementWhere(
   now: Date
 ): Prisma.AnnouncementWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.AnnouncementWhereInput>(
-    "CANDIDATE",
+    "candidate",
     assignedOrganizationUnitId
   );
 
@@ -338,7 +339,7 @@ function toCandidateEventSummary(record: CandidateEventListRecord): CandidateEve
 function toCandidateEventDetail(record: CandidateEventDetailRecord): CandidateEventDetail {
   return {
     ...toCandidateEventSummary(record),
-    description: record.description,
+    description: record.description
   };
 }
 
@@ -385,29 +386,11 @@ function toParticipationStatus(
 function toCandidateEventVisibility(
   visibility: string
 ): CandidateDashboardEventSummary["visibility"] {
-  if (
-    visibility === "PUBLIC" ||
-    visibility === "FAMILY_OPEN" ||
-    visibility === "CANDIDATE" ||
-    visibility === "ORGANIZATION_UNIT"
-  ) {
-    return visibility;
-  }
-
-  throw new Error("Repository returned an event visibility hidden from candidates.");
+  return assertAudienceVisibility("candidate", visibility, "event");
 }
 
 function toCandidateAnnouncementVisibility(
   visibility: string
 ): CandidateAnnouncementSummary["visibility"] {
-  if (
-    visibility === "PUBLIC" ||
-    visibility === "FAMILY_OPEN" ||
-    visibility === "CANDIDATE" ||
-    visibility === "ORGANIZATION_UNIT"
-  ) {
-    return visibility;
-  }
-
-  throw new Error("Repository returned an announcement visibility hidden from candidates.");
+  return assertAudienceVisibility("candidate", visibility, "announcement");
 }

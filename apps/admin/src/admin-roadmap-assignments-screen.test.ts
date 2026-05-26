@@ -50,7 +50,7 @@ describe("admin roadmap assignment screens", () => {
       title: "Brother Formation Roadmap",
       assignee: "Demo Brother <brother@example.test>",
       countsLabel: "1 submissions · 1 pending",
-      statusLabel: "ACTIVE"
+      statusLabel: "Active"
     });
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual(["view"]);
     expect(screen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);

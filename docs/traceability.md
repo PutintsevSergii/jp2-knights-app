@@ -223,6 +223,12 @@ Implementation is complete through Phase 9 Events, Announcements, and Push, and 
   policy seam, shared Admin Lite and mobile API request primitives, and
   regression tests that prevent duplicated admin-scope and HTTP request plumbing
   from reappearing in new feature code.
+- Phase 10A architecture cleanup now centralizes member-audience visibility
+  metadata and status presentation metadata, splits the Roadmap persistence
+  surface into interface, Prisma, query-builder, and presentation helper files,
+  reduces Admin Lite content-route loading duplication through typed resolvers,
+  and moves public silent-prayer response patching out of the public route
+  controller.
 - Phase 8 now includes the brother prayer read API foundation:
   guarded `GET /api/brother/prayers` with shared query/response DTO validation,
   active brother membership enforcement, category/search/language/pagination

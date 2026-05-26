@@ -103,6 +103,52 @@ export function canReadAdminScopedRecord(
 
 export type AccessAudience = "public" | "candidate" | "brother" | "admin";
 
+export type MemberContentAudience = "candidate" | "brother";
+
+export const AUDIENCE_VISIBILITIES = {
+  public: ["PUBLIC", "FAMILY_OPEN"],
+  candidate: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE", "ORGANIZATION_UNIT"],
+  brother: ["PUBLIC", "FAMILY_OPEN", "BROTHER", "ORGANIZATION_UNIT"],
+  admin: ["OFFICER", "ADMIN"]
+} as const satisfies Record<AccessAudience, readonly Visibility[]>;
+
+export function audienceVisibilityValues(audience: MemberContentAudience): readonly Visibility[] {
+  return AUDIENCE_VISIBILITIES[audience];
+}
+
+export type VisibilityForMemberAudience<TAudience extends MemberContentAudience> =
+  (typeof AUDIENCE_VISIBILITIES)[TAudience][number];
+
+export function assertAudienceVisibility(
+  audience: "candidate",
+  visibility: string,
+  context: string
+): VisibilityForMemberAudience<"candidate">;
+export function assertAudienceVisibility(
+  audience: "brother",
+  visibility: string,
+  context: string
+): VisibilityForMemberAudience<"brother">;
+export function assertAudienceVisibility(
+  audience: MemberContentAudience,
+  visibility: string,
+  context: string
+): VisibilityForMemberAudience<MemberContentAudience> {
+  const allowedVisibilities = audienceVisibilityValues(audience);
+
+  if ((allowedVisibilities as readonly string[]).includes(visibility)) {
+    return visibility as VisibilityForMemberAudience<MemberContentAudience>;
+  }
+
+  throw new Error(
+    `Repository returned ${articleFor(context)} ${context} visibility hidden from ${audience}s.`
+  );
+}
+
+function articleFor(value: string): "a" | "an" {
+  return /^[aeiou]/i.test(value) ? "an" : "a";
+}
+
 export interface VisibilityRecord {
   visibility: Visibility;
   targetOrganizationUnitId?: string | null;

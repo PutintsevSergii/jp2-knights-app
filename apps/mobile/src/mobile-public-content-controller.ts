@@ -7,8 +7,7 @@ import type {
   PublicPrayerDetailResponseDto,
   PublicPrayerListResponseDto,
   PublicSilentPrayerJoinResponseDto,
-  PublicSilentPrayerListResponseDto,
-  SilentPrayerPresenceDto
+  PublicSilentPrayerListResponseDto
 } from "@jp2/shared-validation";
 import { fetchPublicContentPage, publicContentPageLoadFailureState } from "./public-content-api.js";
 import {
@@ -43,6 +42,11 @@ import {
   type SilentPrayerRealtimeSession,
   type SilentPrayerSocketError
 } from "./silent-prayer-socket.js";
+import {
+  applyPublicSilentPrayerJoin,
+  applyPublicSilentPrayerPresence,
+  applyPublicSilentPrayerPresenceToJoin
+} from "./public-silent-prayer-state.js";
 import type { MobileScreenState } from "./navigation.js";
 import type { PublicRoute, PublicScreenAction } from "./public-screens.js";
 
@@ -77,8 +81,9 @@ export function useMobilePublicContentController({
   const [publicEvents, setPublicEvents] = useState<PublicEventListResponseDto | undefined>(() =>
     runtimeMode === "demo" ? fallbackPublicEvents : undefined
   );
-  const [publicSilentPrayerState, setPublicSilentPrayerState] =
-    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [publicSilentPrayerState, setPublicSilentPrayerState] = useState<MobileScreenState>(
+    runtimeMode === "demo" ? "ready" : "empty"
+  );
   const [publicSilentPrayerSessions, setPublicSilentPrayerSessions] = useState<
     PublicSilentPrayerListResponseDto | undefined
   >(() => (runtimeMode === "demo" ? fallbackPublicSilentPrayerSessions : undefined));
@@ -386,52 +391,5 @@ export function useMobilePublicContentController({
     publicEventDetail,
     handlePublicRoute,
     handlePublicAction
-  };
-}
-
-function applyPublicSilentPrayerJoin(
-  current: PublicSilentPrayerListResponseDto,
-  joined: PublicSilentPrayerJoinResponseDto
-): PublicSilentPrayerListResponseDto {
-  return {
-    ...current,
-    sessions: current.sessions.map((session) =>
-      session.id === joined.session.id ? joined.session : session
-    )
-  };
-}
-
-function applyPublicSilentPrayerPresence(
-  current: PublicSilentPrayerListResponseDto,
-  presence: SilentPrayerPresenceDto
-): PublicSilentPrayerListResponseDto {
-  return {
-    ...current,
-    sessions: current.sessions.map((session) =>
-      session.id === presence.eventId
-        ? {
-            ...session,
-            activeCount: presence.activeCount
-          }
-        : session
-    )
-  };
-}
-
-function applyPublicSilentPrayerPresenceToJoin(
-  current: PublicSilentPrayerJoinResponseDto,
-  presence: SilentPrayerPresenceDto
-): PublicSilentPrayerJoinResponseDto {
-  if (current.session.id !== presence.eventId) {
-    return current;
-  }
-
-  return {
-    ...current,
-    presence,
-    session: {
-      ...current.session,
-      activeCount: presence.activeCount
-    }
   };
 }

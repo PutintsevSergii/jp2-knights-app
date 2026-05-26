@@ -1,5 +1,7 @@
+import { CONTENT_STATUS_METADATA } from "@jp2/shared-types";
 import type { AdminRoadmapDefinitionDetailDto } from "@jp2/shared-validation";
 import { adminCopy } from "./admin-i18n.js";
+import { formatAdminStatusMetadataLabel } from "./admin-status-labels.js";
 
 export type AdminRoadmapDefinitionRoute =
   | "AdminRoadmapDefinitionList"
@@ -47,21 +49,5 @@ export function formatAdminRoadmapDefinitionDateTime(value: string | null): stri
 export function roadmapDefinitionStatusLabel(
   status: AdminRoadmapDefinitionDetailDto["status"]
 ): string {
-  if (status === "DRAFT") {
-    return adminCopy("content.status.draft");
-  }
-
-  if (status === "REVIEW") {
-    return adminCopy("content.status.review");
-  }
-
-  if (status === "APPROVED") {
-    return adminCopy("content.status.approved");
-  }
-
-  if (status === "PUBLISHED") {
-    return adminCopy("content.status.published");
-  }
-
-  return adminCopy("content.status.archived");
+  return formatAdminStatusMetadataLabel(CONTENT_STATUS_METADATA, status);
 }

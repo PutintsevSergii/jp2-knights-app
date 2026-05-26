@@ -40,9 +40,7 @@ export class PrismaEventParticipationRepository extends EventParticipationReposi
     super();
   }
 
-  async findActiveCandidateOrganizationUnitId(
-    userId: string
-  ): Promise<string | null | undefined> {
+  async findActiveCandidateOrganizationUnitId(userId: string): Promise<string | null | undefined> {
     const record = await this.prisma.candidateProfile.findFirst({
       where: {
         userId,
@@ -57,9 +55,7 @@ export class PrismaEventParticipationRepository extends EventParticipationReposi
     return record ? record.assignedOrganizationUnitId : undefined;
   }
 
-  async findActiveBrotherOrganizationUnitIds(
-    userId: string
-  ): Promise<readonly string[] | null> {
+  async findActiveBrotherOrganizationUnitIds(userId: string): Promise<readonly string[] | null> {
     const record = await this.prisma.user.findFirst({
       where: {
         id: userId,
@@ -194,7 +190,7 @@ export function candidateParticipationEventWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "CANDIDATE",
+    "candidate",
     assignedOrganizationUnitId
   );
 
@@ -207,7 +203,7 @@ export function brotherParticipationEventWhere(
   now: Date
 ): Prisma.EventWhereInput {
   const visibilityWhere = memberScopedVisibilityWhere<Prisma.EventWhereInput>(
-    "BROTHER",
+    "brother",
     organizationUnitIds
   );
 
