@@ -30,6 +30,19 @@ export {
   silentPrayerAnonymousSessionId
 } from "./silent-prayer-api.js";
 export {
+  SILENT_PRAYER_SOCKET_EVENTS,
+  SILENT_PRAYER_SOCKET_NAMESPACE,
+  buildSilentPrayerSocketUrl,
+  startBrotherSilentPrayerRealtime,
+  startPublicSilentPrayerRealtime
+} from "./silent-prayer-socket.js";
+export type {
+  SilentPrayerRealtimeSession,
+  SilentPrayerSocketError,
+  SilentPrayerSocketFactory,
+  SilentPrayerSocketTransport
+} from "./silent-prayer-socket.js";
+export {
   buildPublicContentPageUrl,
   fetchPublicContentPage,
   publicContentPageLoadFailureState

@@ -45,6 +45,7 @@ import {
   buildPublicSilentPrayerJoinUrl,
   buildPublicSilentPrayerScreen,
   buildPublicSilentPrayerSessionsUrl,
+  buildSilentPrayerSocketUrl,
   fallbackAboutOrderContentPage,
   fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
@@ -271,6 +272,9 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("PublicSilentPrayer");
+    expect(buildSilentPrayerSocketUrl("https://api.example.test")).toBe(
+      "https://api.example.test/silent-prayer"
+    );
   });
 
   it("exports public prayer and event detail screen model builders", () => {

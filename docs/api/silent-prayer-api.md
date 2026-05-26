@@ -31,4 +31,5 @@
 - REST join/list endpoints validate status, publish time, active window, cancellation/archive state, and server-side visibility before touching presence.
 - REST responses return `activeCount`, `expiresAt`, and a socket room name only. They do not return anonymous session ids, user ids, rosters, participant lists, or prayer history.
 - Socket.IO gateway and Redis adapter wiring are enabled in Phase 11; production requires `REDIS_URL`, while local/test environments may use the deterministic in-memory store.
+- Mobile public and brother silent-prayer screens join through REST first, then connect to the `/silent-prayer` Socket.IO namespace to replay the matching socket join, send heartbeat events, receive aggregate presence updates, and emit leave when the user exits the route.
 - Admin create/update audit summaries include title, visibility, scope, status, timing, and lifecycle timestamps only. They do not copy intention text or participant/session identity into `audit_logs`.

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
   AssignedRoadmapResponseDto,
   BrotherSilentPrayerJoinResponseDto,
   BrotherSilentPrayerListResponseDto,
+  SilentPrayerPresenceDto,
   RoadmapSubmissionSummaryDto
 } from "@jp2/shared-validation";
 import {
@@ -58,6 +59,11 @@ import {
   fallbackBrotherSilentPrayerJoin,
   fallbackBrotherSilentPrayerSessions
 } from "./silent-prayer.js";
+import {
+  startBrotherSilentPrayerRealtime,
+  type SilentPrayerRealtimeSession,
+  type SilentPrayerSocketError
+} from "./silent-prayer-socket.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
@@ -94,6 +100,7 @@ export function MobileBrotherSurface({
   const [brotherSilentPrayerJoin, setBrotherSilentPrayerJoin] = useState<
     BrotherSilentPrayerJoinResponseDto | undefined
   >();
+  const brotherSilentPrayerRealtime = useRef<SilentPrayerRealtimeSession | null>(null);
   const brotherToday = usePrivateRouteResource({
     route,
     activeRoute: "BrotherToday",
@@ -256,6 +263,10 @@ export function MobileBrotherSurface({
     actionId?: string,
     submissionBody?: string
   ) {
+    if (route === "SilentPrayer" && nextRoute !== "SilentPrayer") {
+      stopBrotherSilentPrayerRealtime(true);
+    }
+
     if (nextRoute === "SilentPrayer" && actionId === "join-silent-prayer" && targetId) {
       if (runtimeMode === "demo") {
         setBrotherSilentPrayerJoin(fallbackBrotherSilentPrayerJoin);
@@ -274,6 +285,7 @@ export function MobileBrotherSurface({
           brotherSilentPrayer.setData((current) =>
             current ? applyBrotherSilentPrayerJoin(current, response) : current
           );
+          startBrotherSilentPrayerSocket(response);
           brotherSilentPrayer.setState("ready");
         } catch (error: unknown) {
           brotherSilentPrayer.setState(brotherSilentPrayerLoadFailureState(error));
@@ -374,6 +386,56 @@ export function MobileBrotherSurface({
     }
 
     onRouteChange(nextRoute);
+  }
+
+  function startBrotherSilentPrayerSocket(response: BrotherSilentPrayerJoinResponseDto) {
+    stopBrotherSilentPrayerRealtime(false);
+
+    brotherSilentPrayerRealtime.current = startBrotherSilentPrayerRealtime({
+      baseUrl: publicApiBaseUrl,
+      eventId: response.session.id,
+      authToken: requirePrivateAuthToken(authToken),
+      onJoined: (joined) => {
+        setBrotherSilentPrayerJoin(joined);
+        brotherSilentPrayer.setData((current) =>
+          current ? applyBrotherSilentPrayerJoin(current, joined) : current
+        );
+        brotherSilentPrayer.setState("ready");
+      },
+      onPresence: (presence) => {
+        setBrotherSilentPrayerJoin((current) =>
+          current ? applyBrotherSilentPrayerPresenceToJoin(current, presence) : current
+        );
+        brotherSilentPrayer.setData((current) =>
+          current ? applyBrotherSilentPrayerPresence(current, presence) : current
+        );
+      },
+      onError: handleBrotherSilentPrayerSocketError
+    });
+  }
+
+  function stopBrotherSilentPrayerRealtime(emitLeave: boolean) {
+    if (emitLeave) {
+      brotherSilentPrayerRealtime.current?.leave();
+    } else {
+      brotherSilentPrayerRealtime.current?.disconnect();
+    }
+
+    brotherSilentPrayerRealtime.current = null;
+  }
+
+  function handleBrotherSilentPrayerSocketError(error: SilentPrayerSocketError) {
+    if (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN") {
+      brotherSilentPrayer.setState("forbidden");
+      return;
+    }
+
+    if (error.code === "NOT_FOUND") {
+      brotherSilentPrayer.setState("empty");
+      return;
+    }
+
+    brotherSilentPrayer.setState("error");
   }
 
   if (route === "BrotherProfile") {
@@ -516,6 +578,41 @@ function applyBrotherSilentPrayerJoin(
     sessions: current.sessions.map((session) =>
       session.id === joined.session.id ? joined.session : session
     )
+  };
+}
+
+function applyBrotherSilentPrayerPresence(
+  current: BrotherSilentPrayerListResponseDto,
+  presence: SilentPrayerPresenceDto
+): BrotherSilentPrayerListResponseDto {
+  return {
+    ...current,
+    sessions: current.sessions.map((session) =>
+      session.id === presence.eventId
+        ? {
+            ...session,
+            activeCount: presence.activeCount
+          }
+        : session
+    )
+  };
+}
+
+function applyBrotherSilentPrayerPresenceToJoin(
+  current: BrotherSilentPrayerJoinResponseDto,
+  presence: SilentPrayerPresenceDto
+): BrotherSilentPrayerJoinResponseDto {
+  if (current.session.id !== presence.eventId) {
+    return current;
+  }
+
+  return {
+    ...current,
+    presence,
+    session: {
+      ...current.session,
+      activeCount: presence.activeCount
+    }
   };
 }
 
