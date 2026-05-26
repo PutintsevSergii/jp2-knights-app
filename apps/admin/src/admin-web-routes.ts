@@ -1,42 +1,13 @@
-import type { RuntimeMode } from "@jp2/shared-types";
-import type { AdminCandidateRequestShellRoute } from "./admin-candidate-requests-shell.js";
-import { renderAdminCandidateRequestRoute } from "./admin-candidate-requests-shell.js";
-import type { AdminCandidateShellRoute } from "./admin-candidates-shell.js";
-import { renderAdminCandidateRoute } from "./admin-candidates-shell.js";
-import type { AdminContentFetch } from "./admin-content-api.js";
-import type { AdminContentShellRoute } from "./admin-content-shell.js";
-import { renderAdminContentRoute } from "./admin-content-shell.js";
-import { renderAdminDashboardRoute } from "./admin-dashboard-screen.js";
-import { renderAdminIdentityAccessShellRoute } from "./admin-identity-access-shell.js";
-import type { AdminOrganizationUnitShellRoute } from "./admin-organization-units-shell.js";
-import { renderAdminOrganizationUnitRoute } from "./admin-organization-units-shell.js";
-import type { AdminRoadmapAssignmentShellRoute } from "./admin-roadmap-assignments-shell.js";
-import { renderAdminRoadmapAssignmentRoute } from "./admin-roadmap-assignments-shell.js";
-import type { AdminRoadmapSubmissionShellRoute } from "./admin-roadmap-submissions-shell.js";
-import { renderAdminRoadmapSubmissionRoute } from "./admin-roadmap-submissions-shell.js";
-import type { AdminRoadmapDefinitionShellRoute } from "./admin-roadmap-definitions-shell.js";
-import { renderAdminRoadmapDefinitionRoute } from "./admin-roadmap-definitions-shell.js";
-
-export interface AdminWebRouteContext {
-  path: string;
-  runtimeMode: RuntimeMode;
-  canWrite: boolean;
-  authToken?: string;
-  authCookie?: string;
-  baseUrl?: string;
-  fetchImpl?: AdminContentFetch;
-}
-
-export interface RenderedAdminWebRoute {
-  title: string;
-  statusCode: number;
-  document: string;
-}
-
-interface AdminWebRouteDefinition {
-  matches: (path: string) => boolean;
-  render: (context: AdminWebRouteContext) => Promise<RenderedAdminWebRoute>;
-}
+import { adminCandidateRequestRouteDefinition } from "./admin-candidate-requests-shell.js";
+import { adminCandidateRouteDefinition } from "./admin-candidates-shell.js";
+import { adminContentRouteDefinition } from "./admin-content-shell.js";
+import { adminDashboardRouteDefinition } from "./admin-dashboard-screen.js";
+import { adminIdentityAccessRouteDefinition } from "./admin-identity-access-shell.js";
+import { adminOrganizationUnitRouteDefinition } from "./admin-organization-units-shell.js";
+import { adminRoadmapAssignmentRouteDefinition } from "./admin-roadmap-assignments-shell.js";
+import { adminRoadmapDefinitionRouteDefinition } from "./admin-roadmap-definitions-shell.js";
+import { adminRoadmapSubmissionRouteDefinition } from "./admin-roadmap-submissions-shell.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 
 export function normalizeAdminPath(path: string): string {
   const url = new URL(path, "http://admin.local");
@@ -49,175 +20,13 @@ export function findAdminWebRoute(path: string): AdminWebRouteDefinition | undef
 }
 
 const adminWebRouteDefinitions: readonly AdminWebRouteDefinition[] = [
-  {
-    matches: (path) => path === "/admin/dashboard",
-    render: async (context) => ({
-      title: "Admin Dashboard",
-      ...(await renderAdminDashboardRoute(routeOptions(context)))
-    })
-  },
-  {
-    matches: (path) => path === "/admin/identity-access-reviews",
-    render: async (context) => ({
-      title: "Admin Identity Access Reviews",
-      ...(await renderAdminIdentityAccessShellRoute(routeOptions(context)))
-    })
-  },
-  {
-    matches: isAdminCandidateRequestRoute,
-    render: async (context) => ({
-      title: "Admin Candidate Requests",
-      ...(await renderAdminCandidateRequestRoute({
-        ...routeOptions(context),
-        path: context.path as AdminCandidateRequestShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminCandidateRoute,
-    render: async (context) => ({
-      title: "Admin Candidates",
-      ...(await renderAdminCandidateRoute({
-        ...routeOptions(context),
-        path: context.path as AdminCandidateShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminOrganizationUnitRoute,
-    render: async (context) => ({
-      title: "Admin Organization Units",
-      ...(await renderAdminOrganizationUnitRoute({
-        ...routeOptions(context),
-        path: context.path as AdminOrganizationUnitShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminRoadmapAssignmentRoute,
-    render: async (context) => ({
-      title: "Admin Roadmap Assignments",
-      ...(await renderAdminRoadmapAssignmentRoute({
-        ...routeOptions(context),
-        path: context.path as AdminRoadmapAssignmentShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminRoadmapDefinitionRoute,
-    render: async (context) => ({
-      title: "Admin Roadmap Definitions",
-      ...(await renderAdminRoadmapDefinitionRoute({
-        ...routeOptions(context),
-        path: context.path as AdminRoadmapDefinitionShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminRoadmapSubmissionRoute,
-    render: async (context) => ({
-      title: "Admin Roadmap Submissions",
-      ...(await renderAdminRoadmapSubmissionRoute({
-        ...routeOptions(context),
-        path: context.path as AdminRoadmapSubmissionShellRoute
-      }))
-    })
-  },
-  {
-    matches: isAdminContentRoute,
-    render: async (context) => ({
-      title: titleForAdminContentRoute(context.path),
-      ...(await renderAdminContentRoute({
-        ...routeOptions(context),
-        path: context.path as AdminContentShellRoute
-      }))
-    })
-  }
+  adminDashboardRouteDefinition,
+  adminIdentityAccessRouteDefinition,
+  adminCandidateRequestRouteDefinition,
+  adminCandidateRouteDefinition,
+  adminOrganizationUnitRouteDefinition,
+  adminRoadmapAssignmentRouteDefinition,
+  adminRoadmapDefinitionRouteDefinition,
+  adminRoadmapSubmissionRouteDefinition,
+  adminContentRouteDefinition
 ];
-
-function routeOptions(context: AdminWebRouteContext) {
-  return {
-    runtimeMode: context.runtimeMode,
-    canWrite: context.canWrite,
-    ...(context.authToken ? { authToken: context.authToken } : {}),
-    ...(context.authCookie ? { authCookie: context.authCookie } : {}),
-    ...(context.baseUrl ? { baseUrl: context.baseUrl } : {}),
-    ...(context.fetchImpl ? { fetchImpl: context.fetchImpl } : {})
-  };
-}
-
-function isAdminContentRoute(path: string): boolean {
-  return (
-    path === "/admin/prayers" ||
-    path === "/admin/events" ||
-    path === "/admin/announcements" ||
-    isAdminAnnouncementEditorRoute(path)
-  );
-}
-
-function titleForAdminContentRoute(path: string): string {
-  if (path === "/admin/prayers") {
-    return "Admin Prayers";
-  }
-
-  if (path === "/admin/events") {
-    return "Admin Events";
-  }
-
-  return "Admin Announcements";
-}
-
-function isAdminAnnouncementEditorRoute(path: string): boolean {
-  return (
-    path === "/admin/announcements/new" ||
-    (path.startsWith("/admin/announcements/") && path.length > "/admin/announcements/".length)
-  );
-}
-
-function isAdminCandidateRequestRoute(path: string): boolean {
-  return (
-    path === "/admin/candidate-requests" ||
-    (path.startsWith("/admin/candidate-requests/") &&
-      path.length > "/admin/candidate-requests/".length)
-  );
-}
-
-function isAdminCandidateRoute(path: string): boolean {
-  return path === "/admin/candidates" || isAdminCandidateDetailRoute(path);
-}
-
-function isAdminCandidateDetailRoute(path: string): boolean {
-  return path.startsWith("/admin/candidates/") && path.length > "/admin/candidates/".length;
-}
-
-function isAdminOrganizationUnitRoute(path: string): boolean {
-  return (
-    path === "/admin/organization-units" ||
-    (path.startsWith("/admin/organization-units/") &&
-      path.length > "/admin/organization-units/".length)
-  );
-}
-
-function isAdminRoadmapSubmissionRoute(path: string): boolean {
-  return (
-    path === "/admin/roadmap-submissions" ||
-    (path.startsWith("/admin/roadmap-submissions/") &&
-      path.length > "/admin/roadmap-submissions/".length)
-  );
-}
-
-function isAdminRoadmapAssignmentRoute(path: string): boolean {
-  return (
-    path === "/admin/roadmap-assignments" ||
-    (path.startsWith("/admin/roadmap-assignments/") &&
-      path.length > "/admin/roadmap-assignments/".length)
-  );
-}
-
-function isAdminRoadmapDefinitionRoute(path: string): boolean {
-  return (
-    path === "/admin/roadmap-definitions" ||
-    (path.startsWith("/admin/roadmap-definitions/") &&
-      path.length > "/admin/roadmap-definitions/".length)
-  );
-}

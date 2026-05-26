@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { adminManageableContentScope } from "../admin/admin-content-access.policy.js";
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminEventRepository } from "./admin-event.repository.js";
 
@@ -48,7 +49,11 @@ describe("PrismaAdminEventRepository", () => {
   it("lists every event for super-admin scope", async () => {
     const { eventFindMany, prisma } = prismaMock([eventRecord]);
 
-    await expect(new PrismaAdminEventRepository(prisma).listManageableEvents(null)).resolves.toEqual([
+    await expect(
+      new PrismaAdminEventRepository(prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
+    ).resolves.toEqual([
       {
         id: eventRecord.id,
         title: eventRecord.title,
@@ -75,9 +80,9 @@ describe("PrismaAdminEventRepository", () => {
     const { eventFindMany, prisma } = prismaMock([scopedEventRecord]);
 
     await expect(
-      new PrismaAdminEventRepository(prisma).listManageableEvents([
-        "11111111-1111-4111-8111-111111111111"
-      ])
+      new PrismaAdminEventRepository(prisma).listManageableEvents(
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+      )
     ).resolves.toEqual([
       {
         id: scopedEventRecord.id,
@@ -205,7 +210,7 @@ describe("PrismaAdminEventRepository", () => {
           status: "published",
           archivedAt: null
         },
-        ["11111111-1111-4111-8111-111111111111"]
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
       )
     ).resolves.toEqual({
       id: scopedEventRecord.id,
@@ -253,7 +258,7 @@ describe("PrismaAdminEventRepository", () => {
       new PrismaAdminEventRepository(scopedOut.prisma).updateEvent(
         eventRecord.id,
         { status: "archived" },
-        ["22222222-2222-4222-8222-222222222222"]
+        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"])
       )
     ).resolves.toBeNull();
     expect(scopedOut.eventFindFirst).not.toHaveBeenCalled();
@@ -262,14 +267,18 @@ describe("PrismaAdminEventRepository", () => {
   it("fails fast when Prisma returns an unknown event enum", async () => {
     const { prisma } = prismaMock([{ ...eventRecord, visibility: "PRIVATE" }]);
 
-    await expect(new PrismaAdminEventRepository(prisma).listManageableEvents(null)).rejects.toThrow(
-      "Repository returned an unknown event visibility."
-    );
+    await expect(
+      new PrismaAdminEventRepository(prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
+    ).rejects.toThrow("Repository returned an unknown event visibility.");
 
     const mock = prismaMock([{ ...eventRecord, status: "deleted" }]);
-    await expect(new PrismaAdminEventRepository(mock.prisma).listManageableEvents(null)).rejects.toThrow(
-      "Repository returned an unknown event status."
-    );
+    await expect(
+      new PrismaAdminEventRepository(mock.prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
+    ).rejects.toThrow("Repository returned an unknown event status.");
   });
 });
 

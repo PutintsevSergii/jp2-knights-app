@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import { adminManageableContentScope } from "../admin/admin-content-access.policy.js";
 import { adminEventListWhere } from "../admin-content/admin-event.repository.js";
 import { adminPrayerListWhere } from "../admin-content/admin-prayer.repository.js";
 import { PrismaService } from "../database/prisma.service.js";
@@ -26,10 +27,10 @@ export class PrismaAdminDashboardRepository implements AdminDashboardRepository 
         where: adminDashboardOrganizationUnitWhere(scopeOrganizationUnitIds)
       }),
       this.prisma.prayer.count({
-        where: adminPrayerListWhere(scopeOrganizationUnitIds)
+        where: adminPrayerListWhere(adminManageableContentScope(scopeOrganizationUnitIds))
       }),
       this.prisma.event.count({
-        where: adminEventListWhere(scopeOrganizationUnitIds)
+        where: adminEventListWhere(adminManageableContentScope(scopeOrganizationUnitIds))
       })
     ]);
 

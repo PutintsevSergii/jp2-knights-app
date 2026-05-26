@@ -1,5 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
+import {
+  eventStatusCreateTimestamps,
+  eventStatusUpdateTimestamps,
+  toEventStatus,
+  toVisibility
+} from "../content/content-contracts.js";
+import {
+  adminManageableContentWhere,
+  adminScopedContentUpdateWhere
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   AdminEventSummary,
@@ -9,17 +20,17 @@ import type {
 
 export abstract class AdminEventRepository {
   abstract listManageableEvents(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary[]>;
   abstract createEvent(data: CreateAdminEventRequest): Promise<AdminEventSummary>;
   abstract updateEvent(
     id: string,
     data: UpdateAdminEventRequest,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary | null>;
   abstract findEventForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary | null>;
 }
 
@@ -28,10 +39,10 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async listManageableEvents(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary[]> {
     const records = await this.prisma.event.findMany({
-      where: adminEventListWhere(scopeOrganizationUnitIds),
+      where: adminEventListWhere(scope),
       orderBy: [{ startAt: "asc" }, { updatedAt: "desc" }, { title: "asc" }]
     });
 
@@ -50,9 +61,7 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
         visibility: data.visibility,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         status: data.status,
-        publishedAt: data.status === "published" ? new Date() : null,
-        cancelledAt: data.status === "cancelled" ? new Date() : null,
-        archivedAt: data.status === "archived" ? new Date() : null
+        ...eventStatusCreateTimestamps(data.status)
       }
     });
 
@@ -62,7 +71,7 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
   async updateEvent(
     id: string,
     data: UpdateAdminEventRequest,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary | null> {
     const updateData: Prisma.EventUncheckedUpdateInput = {};
 
@@ -78,9 +87,7 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
       updateData.targetOrganizationUnitId = data.targetOrganizationUnitId;
     }
     if (data.status !== undefined) updateData.status = data.status;
-    if (data.status === "published") updateData.publishedAt = new Date();
-    if (data.status === "cancelled") updateData.cancelledAt = new Date();
-    if (data.status === "archived") updateData.archivedAt = new Date();
+    Object.assign(updateData, eventStatusUpdateTimestamps(data.status));
     if (data.publishedAt !== undefined) {
       updateData.publishedAt = data.publishedAt === null ? null : new Date(data.publishedAt);
     }
@@ -91,7 +98,7 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
       updateData.archivedAt = data.archivedAt === null ? null : new Date(data.archivedAt);
     }
 
-    const where = adminEventUpdateWhere(id, scopeOrganizationUnitIds);
+    const where = adminEventUpdateWhere(id, scope);
     const result = await this.prisma.event.updateMany({
       where,
       data: updateData
@@ -110,10 +117,10 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
 
   async findEventForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminEventSummary | null> {
     const record = await this.prisma.event.findFirst({
-      where: adminEventUpdateWhere(id, scopeOrganizationUnitIds)
+      where: adminEventUpdateWhere(id, scope)
     });
 
     return record ? toAdminEventSummary(record) : null;
@@ -121,32 +128,16 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
 }
 
 export function adminEventListWhere(
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.EventWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return {};
-  }
-
-  return {
-    OR: [
-      { visibility: { in: ["PUBLIC", "FAMILY_OPEN"] } },
-      { targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] } }
-    ]
-  };
+  return adminManageableContentWhere<Prisma.EventWhereInput>(scope);
 }
 
 function adminEventUpdateWhere(
   id: string,
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.EventWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return { id };
-  }
-
-  return {
-    id,
-    targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] }
-  };
+  return adminScopedContentUpdateWhere<Prisma.EventWhereInput>(id, scope);
 }
 
 interface AdminEventRecord {
@@ -184,25 +175,9 @@ function toAdminEventSummary(record: AdminEventRecord): AdminEventSummary {
 }
 
 function toAdminEventVisibility(value: string): AdminEventSummary["visibility"] {
-  if (
-    value === "PUBLIC" ||
-    value === "FAMILY_OPEN" ||
-    value === "CANDIDATE" ||
-    value === "BROTHER" ||
-    value === "ORGANIZATION_UNIT" ||
-    value === "OFFICER" ||
-    value === "ADMIN"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown event visibility.");
+  return toVisibility(value, "event");
 }
 
 function toAdminEventStatus(value: string): AdminEventSummary["status"] {
-  if (value === "draft" || value === "published" || value === "cancelled" || value === "archived") {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown event status.");
+  return toEventStatus(value, "event");
 }

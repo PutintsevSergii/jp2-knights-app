@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { adminManageableContentScope } from "../admin/admin-content-access.policy.js";
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminPrayerRepository } from "./admin-prayer.repository.js";
 
@@ -43,7 +44,11 @@ describe("PrismaAdminPrayerRepository", () => {
   it("lists every prayer for super-admin scope", async () => {
     const { prayerFindMany, prisma } = prismaMock([prayerRecord]);
 
-    await expect(new PrismaAdminPrayerRepository(prisma).listManageablePrayers(null)).resolves.toEqual([
+    await expect(
+      new PrismaAdminPrayerRepository(prisma).listManageablePrayers(
+        adminManageableContentScope(null)
+      )
+    ).resolves.toEqual([
       {
         id: prayerRecord.id,
         categoryId: null,
@@ -67,9 +72,9 @@ describe("PrismaAdminPrayerRepository", () => {
     const { prayerFindMany, prisma } = prismaMock([scopedPrayerRecord]);
 
     await expect(
-      new PrismaAdminPrayerRepository(prisma).listManageablePrayers([
-        "11111111-1111-4111-8111-111111111111"
-      ])
+      new PrismaAdminPrayerRepository(prisma).listManageablePrayers(
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+      )
     ).resolves.toEqual([
       {
         id: scopedPrayerRecord.id,
@@ -225,14 +230,18 @@ describe("PrismaAdminPrayerRepository", () => {
   it("fails fast when Prisma returns an unknown prayer enum", async () => {
     const { prisma } = prismaMock([{ ...prayerRecord, visibility: "PRIVATE" }]);
 
-    await expect(new PrismaAdminPrayerRepository(prisma).listManageablePrayers(null)).rejects.toThrow(
-      "Repository returned an unknown prayer visibility."
-    );
+    await expect(
+      new PrismaAdminPrayerRepository(prisma).listManageablePrayers(
+        adminManageableContentScope(null)
+      )
+    ).rejects.toThrow("Repository returned an unknown prayer visibility.");
 
     const mock = prismaMock([{ ...prayerRecord, status: "DELETED" }]);
-    await expect(new PrismaAdminPrayerRepository(mock.prisma).listManageablePrayers(null)).rejects.toThrow(
-      "Repository returned an unknown prayer status."
-    );
+    await expect(
+      new PrismaAdminPrayerRepository(mock.prisma).listManageablePrayers(
+        adminManageableContentScope(null)
+      )
+    ).rejects.toThrow("Repository returned an unknown prayer status.");
   });
 });
 

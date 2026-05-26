@@ -37,6 +37,8 @@ import {
   renderRoadmapReadOnlyStyle,
   roadmapReadOnlyStatusClass
 } from "./admin-roadmap-readonly-shell-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminRoadmapDefinitionShellRoute =
   | "/admin/roadmap-definitions"
@@ -63,6 +65,25 @@ export interface RenderedAdminRoadmapDefinitionRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminRoadmapDefinitionRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminRoadmapDefinitionRoute,
+  render: async (context) => ({
+    title: "Admin Roadmap Definitions",
+    ...(await renderAdminRoadmapDefinitionRoute({
+      ...routeOptions(context),
+      path: context.path as AdminRoadmapDefinitionShellRoute
+    }))
+  })
+};
+
+function isAdminRoadmapDefinitionRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-definitions" ||
+    (path.startsWith("/admin/roadmap-definitions/") &&
+      path.length > "/admin/roadmap-definitions/".length)
+  );
 }
 
 export const adminRoadmapDefinitionShellRoutes: readonly AdminRoadmapDefinitionShellRouteMetadata[] =

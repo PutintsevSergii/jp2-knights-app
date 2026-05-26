@@ -1,5 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
+import {
+  contentStatusCreateTimestamps,
+  contentStatusUpdateTimestamps,
+  toContentStatus,
+  toVisibility
+} from "../content/content-contracts.js";
+import { adminManageableContentWhere } from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   AdminPrayerSummary,
@@ -9,7 +17,7 @@ import type {
 
 export abstract class AdminPrayerRepository {
   abstract listManageablePrayers(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminPrayerSummary[]>;
   abstract createPrayer(data: CreateAdminPrayerRequest): Promise<AdminPrayerSummary>;
   abstract updatePrayer(id: string, data: UpdateAdminPrayerRequest): Promise<AdminPrayerSummary>;
@@ -21,10 +29,10 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async listManageablePrayers(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminPrayerSummary[]> {
     const records = await this.prisma.prayer.findMany({
-      where: adminPrayerListWhere(scopeOrganizationUnitIds),
+      where: adminPrayerListWhere(scope),
       orderBy: [{ updatedAt: "desc" }, { title: "asc" }]
     });
 
@@ -41,8 +49,7 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
         visibility: data.visibility,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         status: data.status,
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
-        archivedAt: data.status === "ARCHIVED" ? new Date() : null
+        ...contentStatusCreateTimestamps(data.status)
       }
     });
 
@@ -61,8 +68,7 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
       updateData.targetOrganizationUnitId = data.targetOrganizationUnitId;
     }
     if (data.status !== undefined) updateData.status = data.status;
-    if (data.status === "PUBLISHED") updateData.publishedAt = new Date();
-    if (data.status === "ARCHIVED") updateData.archivedAt = new Date();
+    Object.assign(updateData, contentStatusUpdateTimestamps(data.status));
     if (data.archivedAt !== undefined) {
       updateData.archivedAt = data.archivedAt === null ? null : new Date(data.archivedAt);
     }
@@ -85,18 +91,9 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
 }
 
 export function adminPrayerListWhere(
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.PrayerWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return {};
-  }
-
-  return {
-    OR: [
-      { visibility: { in: ["PUBLIC", "FAMILY_OPEN"] } },
-      { targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] } }
-    ]
-  };
+  return adminManageableContentWhere<Prisma.PrayerWhereInput>(scope);
 }
 
 interface AdminPrayerRecord {
@@ -128,31 +125,9 @@ function toAdminPrayerSummary(record: AdminPrayerRecord): AdminPrayerSummary {
 }
 
 function toAdminPrayerVisibility(value: string): AdminPrayerSummary["visibility"] {
-  if (
-    value === "PUBLIC" ||
-    value === "FAMILY_OPEN" ||
-    value === "CANDIDATE" ||
-    value === "BROTHER" ||
-    value === "ORGANIZATION_UNIT" ||
-    value === "OFFICER" ||
-    value === "ADMIN"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown prayer visibility.");
+  return toVisibility(value, "prayer");
 }
 
 function toAdminPrayerStatus(value: string): AdminPrayerSummary["status"] {
-  if (
-    value === "DRAFT" ||
-    value === "REVIEW" ||
-    value === "APPROVED" ||
-    value === "PUBLISHED" ||
-    value === "ARCHIVED"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown prayer status.");
+  return toContentStatus(value, "prayer");
 }

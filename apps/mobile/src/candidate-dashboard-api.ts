@@ -14,6 +14,7 @@ import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
   normalizeBaseUrl,
+  privateMobileLoadFailureState,
   requestMobileApi,
   setOptionalNumberParam,
   setOptionalParam,
@@ -160,29 +161,10 @@ export function buildCandidateEventParticipationUrl(
 }
 
 export function candidateDashboardLoadFailureState(error: unknown): MobileScreenState {
-  if (error instanceof TypeError) {
-    return "offline";
-  }
-
-  if (
-    error instanceof CandidateDashboardHttpError &&
-    error.code === "IDLE_APPROVAL_REQUIRED"
-  ) {
-    return "idleApproval";
-  }
-
-  if (
-    error instanceof CandidateDashboardHttpError &&
-    (error.status === 401 || error.status === 403)
-  ) {
-    return "forbidden";
-  }
-
-  if (error instanceof CandidateDashboardHttpError && error.status === 404) {
-    return "empty";
-  }
-
-  return "error";
+  return privateMobileLoadFailureState(
+    error,
+    (value): value is CandidateDashboardHttpError => value instanceof CandidateDashboardHttpError
+  );
 }
 
 export class CandidateDashboardHttpError extends Error {

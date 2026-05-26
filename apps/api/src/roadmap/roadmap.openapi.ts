@@ -1,3 +1,11 @@
+import {
+  contentStatusOpenApiSchema,
+  roadmapAssignmentStatusOpenApiSchema,
+  roadmapSubmissionReviewStatusOpenApiSchema,
+  roadmapSubmissionStatusOpenApiSchema,
+  roadmapTargetRoleOpenApiSchema
+} from "../openapi/shared-openapi-schemas.js";
+
 const roadmapAttachmentMetadataOpenApiSchema = {
   type: "object",
   required: ["originalFilename", "mimeType", "sizeBytes"],
@@ -28,7 +36,7 @@ const roadmapSubmissionSummaryOpenApiSchema = {
     id: { type: "string", format: "uuid" },
     assignmentId: { type: "string", format: "uuid" },
     stepId: { type: "string", format: "uuid" },
-    status: { type: "string", enum: ["pending_review", "approved", "rejected"] },
+    status: roadmapSubmissionStatusOpenApiSchema,
     body: { type: "string", minLength: 1, maxLength: 4000 },
     attachmentMetadata: {
       type: "array",
@@ -74,12 +82,12 @@ const adminRoadmapSubmissionSummaryOpenApiSchema = {
     submitterName: { type: "string", minLength: 1, maxLength: 200 },
     submitterEmail: { type: "string", format: "email" },
     roadmapTitle: { type: "string", minLength: 1, maxLength: 200 },
-    roadmapTargetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
+    roadmapTargetRole: roadmapTargetRoleOpenApiSchema,
     stageTitle: { type: "string", minLength: 1, maxLength: 200 },
     stepTitle: { type: "string", minLength: 1, maxLength: 200 },
     organizationUnitId: { type: "string", nullable: true, format: "uuid" },
     organizationUnitName: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
-    status: { type: "string", enum: ["pending_review", "approved", "rejected"] },
+    status: roadmapSubmissionStatusOpenApiSchema,
     bodyPreview: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
     attachmentCount: { type: "integer", minimum: 0, maximum: 5 },
     reviewComment: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
@@ -158,7 +166,7 @@ export const reviewRoadmapSubmissionRequestOpenApiSchema = {
   required: ["status"],
   additionalProperties: false,
   properties: {
-    status: { type: "string", enum: ["approved", "rejected"] },
+    status: roadmapSubmissionReviewStatusOpenApiSchema,
     reviewComment: { type: "string", nullable: true, minLength: 1, maxLength: 2000 }
   }
 };
@@ -183,7 +191,7 @@ const adminRoadmapAssignmentSubmissionOpenApiSchema = {
     stepId: { type: "string", format: "uuid" },
     stageTitle: { type: "string", minLength: 1, maxLength: 200 },
     stepTitle: { type: "string", minLength: 1, maxLength: 200 },
-    status: { type: "string", enum: ["pending_review", "approved", "rejected"] },
+    status: roadmapSubmissionStatusOpenApiSchema,
     attachmentCount: { type: "integer", minimum: 0, maximum: 5 },
     reviewComment: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
     reviewedAt: { type: "string", nullable: true, format: "date-time" },
@@ -224,11 +232,11 @@ const adminRoadmapAssignmentSummaryOpenApiSchema = {
     assigneeEmail: { type: "string", format: "email" },
     roadmapDefinitionId: { type: "string", format: "uuid" },
     roadmapTitle: { type: "string", minLength: 1, maxLength: 200 },
-    roadmapTargetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
-    roadmapStatus: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    roadmapTargetRole: roadmapTargetRoleOpenApiSchema,
+    roadmapStatus: contentStatusOpenApiSchema,
     organizationUnitId: { type: "string", nullable: true, format: "uuid" },
     organizationUnitName: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
-    status: { type: "string", enum: ["active", "completed", "archived"] },
+    status: roadmapAssignmentStatusOpenApiSchema,
     assignedByUserId: { type: "string", nullable: true, format: "uuid" },
     assignedByName: { type: "string", nullable: true, minLength: 1, maxLength: 200 },
     assignedAt: { type: "string", format: "date-time" },
@@ -303,7 +311,7 @@ const adminRoadmapDefinitionStepOpenApiSchema = {
     description: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
     requiresSubmission: { type: "boolean" },
     sortOrder: { type: "integer", minimum: 0 },
-    status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    status: contentStatusOpenApiSchema,
     publishedAt: { type: "string", nullable: true, format: "date-time" }
   }
 };
@@ -343,9 +351,9 @@ const adminRoadmapDefinitionSummaryOpenApiSchema = {
   properties: {
     id: { type: "string", format: "uuid" },
     title: { type: "string", minLength: 1, maxLength: 200 },
-    targetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
+    targetRole: roadmapTargetRoleOpenApiSchema,
     language: { type: "string", minLength: 2, maxLength: 10 },
-    status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    status: contentStatusOpenApiSchema,
     publishedAt: { type: "string", nullable: true, format: "date-time" },
     stageCount: { type: "integer", minimum: 0 },
     stepCount: { type: "integer", minimum: 0 },
@@ -407,7 +415,7 @@ const roadmapStepSummaryOpenApiSchema = {
     description: { type: "string", nullable: true, minLength: 1, maxLength: 2000 },
     requiresSubmission: { type: "boolean" },
     sortOrder: { type: "integer", minimum: 0 },
-    status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+    status: contentStatusOpenApiSchema,
     latestSubmission: {
       nullable: true,
       oneOf: [roadmapSubmissionSummaryOpenApiSchema]
@@ -444,7 +452,7 @@ const assignedRoadmapOpenApiSchema = {
   additionalProperties: false,
   properties: {
     assignmentId: { type: "string", format: "uuid" },
-    status: { type: "string", enum: ["active", "completed", "archived"] },
+    status: roadmapAssignmentStatusOpenApiSchema,
     assignedAt: { type: "string", format: "date-time" },
     completedAt: { type: "string", nullable: true, format: "date-time" },
     organizationUnitId: { type: "string", nullable: true, format: "uuid" },
@@ -455,9 +463,9 @@ const assignedRoadmapOpenApiSchema = {
       properties: {
         id: { type: "string", format: "uuid" },
         title: { type: "string", minLength: 1, maxLength: 200 },
-        targetRole: { type: "string", enum: ["CANDIDATE", "BROTHER"] },
+        targetRole: roadmapTargetRoleOpenApiSchema,
         language: { type: "string", minLength: 2, maxLength: 10 },
-        status: { type: "string", enum: ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED"] },
+        status: contentStatusOpenApiSchema,
         publishedAt: { type: "string", nullable: true, format: "date-time" }
       }
     },

@@ -10,6 +10,7 @@ import type { MobileScreenState } from "./navigation.js";
 import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
+  privateMobileLoadFailureState,
   requestMobileApi,
   requestPrivateJsonMobileApi,
   type MobileApiFetch,
@@ -89,23 +90,10 @@ export function buildBrotherRoadmapSubmissionUrl(
 }
 
 export function roadmapLoadFailureState(error: unknown): MobileScreenState {
-  if (error instanceof TypeError) {
-    return "offline";
-  }
-
-  if (error instanceof RoadmapHttpError && error.code === "IDLE_APPROVAL_REQUIRED") {
-    return "idleApproval";
-  }
-
-  if (error instanceof RoadmapHttpError && (error.status === 401 || error.status === 403)) {
-    return "forbidden";
-  }
-
-  if (error instanceof RoadmapHttpError && error.status === 404) {
-    return "empty";
-  }
-
-  return "error";
+  return privateMobileLoadFailureState(
+    error,
+    (value): value is RoadmapHttpError => value instanceof RoadmapHttpError
+  );
 }
 
 export class RoadmapHttpError extends Error {

@@ -1,6 +1,7 @@
 import { designTokens } from "@jp2/shared-design-tokens";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { SignInScreen as SignInScreenModel } from "../public-screens.js";
+import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 
 export interface SignInScreenProps {
   screen: SignInScreenModel;
@@ -22,22 +23,7 @@ export function SignInScreen({
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {screen.demoChromeVisible ? (
-          <View
-            style={[
-              styles.demoBanner,
-              {
-                backgroundColor: screen.theme.primaryAction,
-                borderRadius: screen.theme.radius,
-                paddingHorizontal: screen.theme.spacing,
-                paddingVertical: screen.theme.spacing / 2
-              }
-            ]}
-            accessibilityRole="text"
-          >
-            <Text style={{ color: screen.theme.primaryActionText }}>Demo mode</Text>
-          </View>
-        ) : null}
+        {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
         <View style={styles.header}>
           <View style={styles.logo}>
@@ -121,9 +107,6 @@ const styles = StyleSheet.create({
     gap: 48,
     paddingHorizontal: 32,
     paddingVertical: 80
-  },
-  demoBanner: {
-    alignSelf: "flex-start"
   },
   header: {
     alignItems: "center",

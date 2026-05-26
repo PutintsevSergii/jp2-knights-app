@@ -21,6 +21,7 @@ import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
   normalizeBaseUrl,
+  privateMobileLoadFailureState,
   requestMobileApi,
   setOptionalNumberParam,
   setOptionalParam,
@@ -231,29 +232,10 @@ export function buildMyOrganizationUnitsUrl(baseUrl = DEFAULT_PUBLIC_API_BASE_UR
 }
 
 export function brotherCompanionLoadFailureState(error: unknown): MobileScreenState {
-  if (error instanceof TypeError) {
-    return "offline";
-  }
-
-  if (
-    error instanceof BrotherCompanionHttpError &&
-    error.code === "IDLE_APPROVAL_REQUIRED"
-  ) {
-    return "idleApproval";
-  }
-
-  if (
-    error instanceof BrotherCompanionHttpError &&
-    (error.status === 401 || error.status === 403)
-  ) {
-    return "forbidden";
-  }
-
-  if (error instanceof BrotherCompanionHttpError && error.status === 404) {
-    return "empty";
-  }
-
-  return "error";
+  return privateMobileLoadFailureState(
+    error,
+    (value): value is BrotherCompanionHttpError => value instanceof BrotherCompanionHttpError
+  );
 }
 
 export class BrotherCompanionHttpError extends Error {

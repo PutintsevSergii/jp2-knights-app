@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { PublicHomeScreen as PublicHomeScreenModel } from "../public-screens.js";
+import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 
 export interface PublicHomeScreenProps {
   screen: PublicHomeScreenModel;
@@ -24,22 +25,7 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
           paddingTop: screen.theme.spacing * 2
         }}
       >
-        {screen.demoChromeVisible ? (
-          <View
-            style={[
-              styles.demoBanner,
-              {
-                backgroundColor: screen.theme.primaryAction,
-                borderRadius: screen.theme.radius,
-                paddingHorizontal: screen.theme.spacing,
-                paddingVertical: screen.theme.spacing / 2
-              }
-            ]}
-            accessibilityRole="text"
-          >
-            <Text style={{ color: screen.theme.primaryActionText }}>Demo mode</Text>
-          </View>
-        ) : null}
+        {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
         <View
           style={[
@@ -107,9 +93,6 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1
-  },
-  demoBanner: {
-    alignSelf: "flex-start"
   },
   title: {
     fontSize: designTokens.typography.size.screenTitle,

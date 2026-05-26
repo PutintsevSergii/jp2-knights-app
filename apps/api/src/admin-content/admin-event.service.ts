@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
-  adminScopeFor,
   requireAdminLite,
   requireScopedAdminWrite
 } from "../admin/admin-access.policy.js";
+import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AdminEventRepository } from "./admin-event.repository.js";
@@ -25,7 +25,9 @@ export class AdminEventService {
     requireAdminLite(principal);
 
     return {
-      events: await this.adminEventRepository.listManageableEvents(adminScopeFor(principal))
+      events: await this.adminEventRepository.listManageableEvents(
+        adminContentScopeFor(principal)
+      )
     };
   }
 
@@ -70,12 +72,12 @@ export class AdminEventService {
       requireAdminLite(principal);
     }
 
-    const scopeOrganizationUnitIds = adminScopeFor(principal);
+    const scope = adminContentScopeFor(principal);
     const beforeEvent = await this.adminEventRepository.findEventForAudit(
       id,
-      scopeOrganizationUnitIds
+      scope
     );
-    const event = await this.adminEventRepository.updateEvent(id, data, scopeOrganizationUnitIds);
+    const event = await this.adminEventRepository.updateEvent(id, data, scope);
 
     if (!event) {
       throw new NotFoundException("Event was not found in the current admin scope.");

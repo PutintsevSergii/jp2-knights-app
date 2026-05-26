@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildMobileApiUrl,
+  privateMobileLoadFailureState,
+  publicMobileLoadFailureState,
   requestMobileApi,
   requestPrivateJsonMobileApi,
   requestPublicJsonMobileApi,
@@ -129,6 +131,44 @@ describe("mobile api client primitives", () => {
         (status, code) => new Error(`private:${status}:${code ?? "none"}`)
       )
     ).rejects.toThrow("private:403:IDLE_APPROVAL_REQUIRED");
+  });
+
+  it("maps shared private load failures to mobile screen states", () => {
+    class HttpError extends Error {
+      constructor(
+        readonly status: number,
+        readonly code: "IDLE_APPROVAL_REQUIRED" | null = null
+      ) {
+        super("http");
+      }
+    }
+    const isHttpError = (error: unknown): error is HttpError => error instanceof HttpError;
+
+    expect(privateMobileLoadFailureState(new TypeError("network"), isHttpError)).toBe(
+      "offline"
+    );
+    expect(
+      privateMobileLoadFailureState(new HttpError(403, "IDLE_APPROVAL_REQUIRED"), isHttpError)
+    ).toBe("idleApproval");
+    expect(privateMobileLoadFailureState(new HttpError(401), isHttpError)).toBe("forbidden");
+    expect(privateMobileLoadFailureState(new HttpError(403), isHttpError)).toBe("forbidden");
+    expect(privateMobileLoadFailureState(new HttpError(404), isHttpError)).toBe("empty");
+    expect(privateMobileLoadFailureState(new HttpError(500), isHttpError)).toBe("error");
+  });
+
+  it("maps shared public load failures to mobile screen states", () => {
+    class HttpError extends Error {
+      constructor(readonly status: number) {
+        super("http");
+      }
+    }
+    const isHttpError = (error: unknown): error is HttpError => error instanceof HttpError;
+
+    expect(publicMobileLoadFailureState(new TypeError("network"), isHttpError)).toBe(
+      "offline"
+    );
+    expect(publicMobileLoadFailureState(new HttpError(404), isHttpError)).toBe("empty");
+    expect(publicMobileLoadFailureState(new HttpError(500), isHttpError)).toBe("error");
   });
 
   it("keeps feature mobile API clients on the shared request primitive", () => {

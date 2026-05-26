@@ -10,6 +10,8 @@ import {
   escapeHtml,
   renderAdminDocument
 } from "./admin-render-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export interface AdminDashboardMetric {
   id: "identityAccessReviews" | "organizationUnits" | "prayers" | "events";
@@ -48,6 +50,14 @@ export interface AdminDashboardScreen {
     radius: number;
   };
 }
+
+export const adminDashboardRouteDefinition: AdminWebRouteDefinition = {
+  matches: (path) => path === "/admin/dashboard",
+  render: async (context) => ({
+    title: "Admin Dashboard",
+    ...(await renderAdminDashboardRoute(routeOptions(context)))
+  })
+};
 
 export interface BuildAdminDashboardScreenOptions {
   state: AdminContentScreenState;

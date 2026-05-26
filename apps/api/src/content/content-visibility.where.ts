@@ -1,3 +1,5 @@
+import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
+
 export type MemberAudienceVisibility = "CANDIDATE" | "BROTHER";
 
 export function memberScopedVisibilityWhere<TWhere>(
@@ -27,4 +29,31 @@ export function memberScopedVisibilityWhere<TWhere>(
 
 export function publishedAtNowOrUnset(now: Date) {
   return [{ publishedAt: null }, { publishedAt: { lte: now } }];
+}
+
+export function adminManageableContentWhere<TWhere>(scope: AdminContentScope): TWhere {
+  if (scope.kind === "global") {
+    return {} as TWhere;
+  }
+
+  return {
+    OR: [
+      { visibility: { in: ["PUBLIC", "FAMILY_OPEN"] } },
+      { targetOrganizationUnitId: { in: [...scope.organizationUnitIds] } }
+    ]
+  } as TWhere;
+}
+
+export function adminScopedContentUpdateWhere<TWhere>(
+  id: string,
+  scope: AdminContentScope
+): TWhere {
+  if (scope.kind === "global") {
+    return { id } as TWhere;
+  }
+
+  return {
+    id,
+    targetOrganizationUnitId: { in: [...scope.organizationUnitIds] }
+  } as TWhere;
 }

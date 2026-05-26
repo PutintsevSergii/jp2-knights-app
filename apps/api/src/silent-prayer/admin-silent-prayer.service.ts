@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
-  adminScopeFor,
   requireAdminLite,
   requireScopedAdminWrite
 } from "../admin/admin-access.policy.js";
+import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AdminSilentPrayerRepository } from "./admin-silent-prayer.repository.js";
@@ -29,7 +29,7 @@ export class AdminSilentPrayerService {
 
     return {
       silentPrayerEvents: await this.adminSilentPrayerRepository.listManageableEvents(
-        adminScopeFor(principal)
+        adminContentScopeFor(principal)
       )
     };
   }
@@ -78,13 +78,13 @@ export class AdminSilentPrayerService {
       requireAdminLite(principal);
     }
 
-    const scopeOrganizationUnitIds = adminScopeFor(principal);
+    const scope = adminContentScopeFor(principal);
     const beforeSilentPrayerEvent =
-      await this.adminSilentPrayerRepository.findEventForAudit(id, scopeOrganizationUnitIds);
+      await this.adminSilentPrayerRepository.findEventForAudit(id, scope);
     const silentPrayerEvent = await this.adminSilentPrayerRepository.updateEvent(
       id,
       data,
-      scopeOrganizationUnitIds,
+      scope,
       principal.id
     );
 

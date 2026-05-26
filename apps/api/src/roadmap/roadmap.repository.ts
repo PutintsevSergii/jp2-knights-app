@@ -30,12 +30,15 @@ import type {
   RoadmapSubmissionTarget
 } from "./roadmap.types.js";
 
-export abstract class RoadmapRepository {
+export abstract class RoadmapAccessRepository {
   abstract findActiveCandidateAccessProfile(
     userId: string
   ): Promise<RoadmapCandidateAccessProfile | null>;
   abstract findActiveBrotherAccessProfile(userId: string): Promise<RoadmapBrotherAccessProfile | null>;
   abstract findAssignedRoadmap(lookup: AssignedRoadmapLookup): Promise<AssignedRoadmap | null>;
+}
+
+export abstract class RoadmapSubmissionRepository {
   abstract findBrotherRoadmapSubmissionTarget(
     lookup: BrotherRoadmapSubmissionTargetLookup
   ): Promise<RoadmapSubmissionTarget | null>;
@@ -45,6 +48,9 @@ export abstract class RoadmapRepository {
   abstract createRoadmapSubmission(
     input: CreateRoadmapSubmissionInput
   ): Promise<RoadmapSubmissionSummary>;
+}
+
+export abstract class AdminRoadmapSubmissionRepository {
   abstract listAdminRoadmapSubmissions(
     lookup: AdminRoadmapSubmissionLookup
   ): Promise<AdminRoadmapSubmissionSummary[]>;
@@ -54,6 +60,9 @@ export abstract class RoadmapRepository {
   abstract reviewRoadmapSubmission(
     input: ReviewRoadmapSubmissionInput
   ): Promise<AdminRoadmapSubmissionDetail | null>;
+}
+
+export abstract class AdminRoadmapAssignmentRepository {
   abstract listAdminRoadmapAssignments(): Promise<AdminRoadmapAssignmentSummary[]>;
   abstract findAdminRoadmapAssignment(
     lookup: AdminRoadmapAssignmentLookup
@@ -70,17 +79,24 @@ export abstract class RoadmapRepository {
   abstract createAdminRoadmapAssignment(
     input: CreateAdminRoadmapAssignmentInput
   ): Promise<AdminRoadmapAssignmentDetail>;
+}
+
+export abstract class AdminRoadmapDefinitionRepository {
   abstract listAdminRoadmapDefinitions(): Promise<AdminRoadmapDefinitionSummary[]>;
   abstract findAdminRoadmapDefinition(
     lookup: AdminRoadmapDefinitionLookup
   ): Promise<AdminRoadmapDefinitionDetail | null>;
 }
 
+export type RoadmapRepository = RoadmapAccessRepository &
+  RoadmapSubmissionRepository &
+  AdminRoadmapSubmissionRepository &
+  AdminRoadmapAssignmentRepository &
+  AdminRoadmapDefinitionRepository;
+
 @Injectable()
-export class PrismaRoadmapRepository extends RoadmapRepository {
-  constructor(private readonly prisma: PrismaService) {
-    super();
-  }
+export class PrismaRoadmapRepository implements RoadmapRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
   async findActiveCandidateAccessProfile(
     userId: string

@@ -1,9 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import {
-  adminScopeFor,
-  requireAdminLite,
-  requireSuperAdmin
-} from "../admin/admin-access.policy.js";
+import { requireAdminLite, requireSuperAdmin } from "../admin/admin-access.policy.js";
+import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AdminPrayerRepository } from "./admin-prayer.repository.js";
@@ -25,7 +22,9 @@ export class AdminPrayerService {
     requireAdminLite(principal);
 
     return {
-      prayers: await this.adminPrayerRepository.listManageablePrayers(adminScopeFor(principal))
+      prayers: await this.adminPrayerRepository.listManageablePrayers(
+        adminContentScopeFor(principal)
+      )
     };
   }
 

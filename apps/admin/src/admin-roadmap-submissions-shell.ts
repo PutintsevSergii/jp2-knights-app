@@ -34,6 +34,8 @@ import {
   renderAdminFormField,
   renderAdminHeader
 } from "./admin-render-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminRoadmapSubmissionShellRoute =
   | "/admin/roadmap-submissions"
@@ -61,6 +63,25 @@ export interface RenderedAdminRoadmapSubmissionRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminRoadmapSubmissionRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminRoadmapSubmissionRoute,
+  render: async (context) => ({
+    title: "Admin Roadmap Submissions",
+    ...(await renderAdminRoadmapSubmissionRoute({
+      ...routeOptions(context),
+      path: context.path as AdminRoadmapSubmissionShellRoute
+    }))
+  })
+};
+
+function isAdminRoadmapSubmissionRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-submissions" ||
+    (path.startsWith("/admin/roadmap-submissions/") &&
+      path.length > "/admin/roadmap-submissions/".length)
+  );
 }
 
 export const adminRoadmapSubmissionShellRoutes: readonly AdminRoadmapSubmissionShellRouteMetadata[] =

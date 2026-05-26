@@ -13,6 +13,8 @@ import {
   DEFAULT_PUBLIC_API_BASE_URL,
   buildMobileApiUrl,
   normalizeBaseUrl,
+  privateMobileLoadFailureState,
+  publicMobileLoadFailureState,
   requestMobileApi,
   requestPrivateJsonMobileApi,
   requestPublicJsonMobileApi,
@@ -156,41 +158,19 @@ export function silentPrayerAnonymousSessionId(seed = Date.now()): string {
 }
 
 export function publicSilentPrayerLoadFailureState(error: unknown): MobileScreenState {
-  if (error instanceof TypeError) {
-    return "offline";
-  }
-
-  if (error instanceof PublicSilentPrayerHttpError && error.status === 404) {
-    return "empty";
-  }
-
-  return "error";
+  return publicMobileLoadFailureState(
+    error,
+    (value): value is PublicSilentPrayerHttpError =>
+      value instanceof PublicSilentPrayerHttpError
+  );
 }
 
 export function brotherSilentPrayerLoadFailureState(error: unknown): MobileScreenState {
-  if (error instanceof TypeError) {
-    return "offline";
-  }
-
-  if (
-    error instanceof BrotherSilentPrayerHttpError &&
-    error.code === "IDLE_APPROVAL_REQUIRED"
-  ) {
-    return "idleApproval";
-  }
-
-  if (
-    error instanceof BrotherSilentPrayerHttpError &&
-    (error.status === 401 || error.status === 403)
-  ) {
-    return "forbidden";
-  }
-
-  if (error instanceof BrotherSilentPrayerHttpError && error.status === 404) {
-    return "empty";
-  }
-
-  return "error";
+  return privateMobileLoadFailureState(
+    error,
+    (value): value is BrotherSilentPrayerHttpError =>
+      value instanceof BrotherSilentPrayerHttpError
+  );
 }
 
 export class PublicSilentPrayerHttpError extends Error {

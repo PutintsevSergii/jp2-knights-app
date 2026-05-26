@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { adminManageableContentScope } from "../admin/admin-content-access.policy.js";
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminSilentPrayerRepository } from "./admin-silent-prayer.repository.js";
 
@@ -50,7 +51,9 @@ describe("PrismaAdminSilentPrayerRepository", () => {
     const { silentPrayerEventFindMany, prisma } = prismaMock([silentPrayerEventRecord]);
 
     await expect(
-      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents(null)
+      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
     ).resolves.toEqual([
       {
         id: silentPrayerEventRecord.id,
@@ -77,9 +80,9 @@ describe("PrismaAdminSilentPrayerRepository", () => {
     const { silentPrayerEventFindMany, prisma } = prismaMock([scopedSilentPrayerEventRecord]);
 
     await expect(
-      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents([
-        "11111111-1111-4111-8111-111111111111"
-      ])
+      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents(
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+      )
     ).resolves.toEqual([
       {
         id: scopedSilentPrayerEventRecord.id,
@@ -198,7 +201,7 @@ describe("PrismaAdminSilentPrayerRepository", () => {
           endsAt: "2026-05-10T20:00:00.000Z",
           archivedAt: null
         },
-        ["11111111-1111-4111-8111-111111111111"],
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"]),
         actorUserId
       )
     ).resolves.toEqual({
@@ -248,7 +251,7 @@ describe("PrismaAdminSilentPrayerRepository", () => {
       new PrismaAdminSilentPrayerRepository(scopedOut.prisma).updateEvent(
         silentPrayerEventRecord.id,
         { status: "ARCHIVED" },
-        ["22222222-2222-4222-8222-222222222222"],
+        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"]),
         actorUserId
       )
     ).resolves.toBeNull();
@@ -259,12 +262,16 @@ describe("PrismaAdminSilentPrayerRepository", () => {
     const { prisma } = prismaMock([{ ...silentPrayerEventRecord, visibility: "PRIVATE" }]);
 
     await expect(
-      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents(null)
+      new PrismaAdminSilentPrayerRepository(prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
     ).rejects.toThrow("Repository returned an unknown silent-prayer visibility.");
 
     const mock = prismaMock([{ ...silentPrayerEventRecord, status: "deleted" }]);
     await expect(
-      new PrismaAdminSilentPrayerRepository(mock.prisma).listManageableEvents(null)
+      new PrismaAdminSilentPrayerRepository(mock.prisma).listManageableEvents(
+        adminManageableContentScope(null)
+      )
     ).rejects.toThrow("Repository returned an unknown silent-prayer status.");
   });
 });

@@ -1,3 +1,5 @@
+import type { MobileScreenState } from "./navigation.js";
+
 export const DEFAULT_PUBLIC_API_BASE_URL = "http://localhost:3000";
 
 export type MobilePrivateAccessErrorCode = "IDLE_APPROVAL_REQUIRED";
@@ -24,6 +26,49 @@ export type MobilePublicFetch = (input: string) => Promise<MobileApiFetchRespons
 export interface MobileApiRequestOptions {
   authToken?: string;
   fetchImpl?: MobileApiFetch;
+}
+
+export interface MobileHttpErrorLike {
+  status: number;
+  code?: MobilePrivateAccessErrorCode | null;
+}
+
+export function privateMobileLoadFailureState(
+  error: unknown,
+  isHttpError: (error: unknown) => error is MobileHttpErrorLike
+): MobileScreenState {
+  if (error instanceof TypeError) {
+    return "offline";
+  }
+
+  if (isHttpError(error) && error.code === "IDLE_APPROVAL_REQUIRED") {
+    return "idleApproval";
+  }
+
+  if (isHttpError(error) && (error.status === 401 || error.status === 403)) {
+    return "forbidden";
+  }
+
+  if (isHttpError(error) && error.status === 404) {
+    return "empty";
+  }
+
+  return "error";
+}
+
+export function publicMobileLoadFailureState(
+  error: unknown,
+  isHttpError: (error: unknown) => error is { status: number }
+): MobileScreenState {
+  if (error instanceof TypeError) {
+    return "offline";
+  }
+
+  if (isHttpError(error) && error.status === 404) {
+    return "empty";
+  }
+
+  return "error";
 }
 
 export async function requestMobileApi<TResponse extends MobileApiFetchResponse>(

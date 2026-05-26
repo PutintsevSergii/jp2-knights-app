@@ -1,12 +1,7 @@
-const eventStatusOpenApiSchema = {
-  type: "string",
-  enum: ["draft", "published", "cancelled", "archived"]
-};
-
-const visibilityOpenApiSchema = {
-  type: "string",
-  enum: ["PUBLIC", "FAMILY_OPEN", "CANDIDATE", "BROTHER", "ORGANIZATION_UNIT", "OFFICER", "ADMIN"]
-};
+import {
+  eventStatusOpenApiSchema,
+  visibilityOpenApiSchema
+} from "../openapi/shared-openapi-schemas.js";
 
 export const adminEventSummaryOpenApiSchema = {
   type: "object",

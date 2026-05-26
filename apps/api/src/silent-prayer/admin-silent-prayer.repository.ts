@@ -1,5 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
+import {
+  adminManageableContentWhere,
+  adminScopedContentUpdateWhere
+} from "../content/content-visibility.where.js";
+import {
+  approvalContentStatusCreateMetadata,
+  approvalContentStatusUpdateMetadata,
+  toContentStatus,
+  toVisibility
+} from "../content/content-contracts.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   AdminSilentPrayerEventSummary,
@@ -9,7 +20,7 @@ import type {
 
 export abstract class AdminSilentPrayerRepository {
   abstract listManageableEvents(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminSilentPrayerEventSummary[]>;
   abstract createEvent(
     data: CreateAdminSilentPrayerEventRequest,
@@ -18,12 +29,12 @@ export abstract class AdminSilentPrayerRepository {
   abstract updateEvent(
     id: string,
     data: UpdateAdminSilentPrayerEventRequest,
-    scopeOrganizationUnitIds: readonly string[] | null,
+    scope: AdminContentScope,
     actorUserId: string
   ): Promise<AdminSilentPrayerEventSummary | null>;
   abstract findEventForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminSilentPrayerEventSummary | null>;
 }
 
@@ -32,10 +43,10 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
   constructor(private readonly prisma: PrismaService) {}
 
   async listManageableEvents(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminSilentPrayerEventSummary[]> {
     const records = await this.prisma.silentPrayerEvent.findMany({
-      where: adminSilentPrayerListWhere(scopeOrganizationUnitIds),
+      where: adminSilentPrayerListWhere(scope),
       orderBy: [{ startsAt: "asc" }, { updatedAt: "desc" }, { title: "asc" }]
     });
 
@@ -57,13 +68,8 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
         endsAt: data.endsAt === undefined || data.endsAt === null ? null : new Date(data.endsAt),
         createdBy: actorUserId,
         updatedBy: actorUserId,
-        approvedBy: data.status === "APPROVED" || data.status === "PUBLISHED" ? actorUserId : null,
-        publishedBy: data.status === "PUBLISHED" ? actorUserId : null,
-        approvedAt:
-          data.status === "APPROVED" || data.status === "PUBLISHED" ? new Date() : null,
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
+        ...approvalContentStatusCreateMetadata(data.status, actorUserId),
         cancelledAt: null,
-        archivedAt: data.status === "ARCHIVED" ? new Date() : null
       }
     });
 
@@ -73,7 +79,7 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
   async updateEvent(
     id: string,
     data: UpdateAdminSilentPrayerEventRequest,
-    scopeOrganizationUnitIds: readonly string[] | null,
+    scope: AdminContentScope,
     actorUserId: string
   ): Promise<AdminSilentPrayerEventSummary | null> {
     const updateData: Prisma.SilentPrayerEventUncheckedUpdateInput = {
@@ -91,15 +97,7 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
     if (data.endsAt !== undefined) {
       updateData.endsAt = data.endsAt === null ? null : new Date(data.endsAt);
     }
-    if (data.status === "APPROVED" || data.status === "PUBLISHED") {
-      updateData.approvedBy = actorUserId;
-      updateData.approvedAt = new Date();
-    }
-    if (data.status === "PUBLISHED") {
-      updateData.publishedBy = actorUserId;
-      updateData.publishedAt = new Date();
-    }
-    if (data.status === "ARCHIVED") updateData.archivedAt = new Date();
+    Object.assign(updateData, approvalContentStatusUpdateMetadata(data.status, actorUserId));
     if (data.approvedAt !== undefined) {
       updateData.approvedAt = data.approvedAt === null ? null : new Date(data.approvedAt);
     }
@@ -113,7 +111,7 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
       updateData.archivedAt = data.archivedAt === null ? null : new Date(data.archivedAt);
     }
 
-    const where = adminSilentPrayerUpdateWhere(id, scopeOrganizationUnitIds);
+    const where = adminSilentPrayerUpdateWhere(id, scope);
     const result = await this.prisma.silentPrayerEvent.updateMany({
       where,
       data: updateData
@@ -130,10 +128,10 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
 
   async findEventForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminSilentPrayerEventSummary | null> {
     const record = await this.prisma.silentPrayerEvent.findFirst({
-      where: adminSilentPrayerUpdateWhere(id, scopeOrganizationUnitIds)
+      where: adminSilentPrayerUpdateWhere(id, scope)
     });
 
     return record ? toAdminSilentPrayerEventSummary(record) : null;
@@ -141,32 +139,16 @@ export class PrismaAdminSilentPrayerRepository implements AdminSilentPrayerRepos
 }
 
 export function adminSilentPrayerListWhere(
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.SilentPrayerEventWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return {};
-  }
-
-  return {
-    OR: [
-      { visibility: { in: ["PUBLIC", "FAMILY_OPEN"] } },
-      { targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] } }
-    ]
-  };
+  return adminManageableContentWhere<Prisma.SilentPrayerEventWhereInput>(scope);
 }
 
 function adminSilentPrayerUpdateWhere(
   id: string,
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.SilentPrayerEventWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return { id };
-  }
-
-  return {
-    id,
-    targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] }
-  };
+  return adminScopedContentUpdateWhere<Prisma.SilentPrayerEventWhereInput>(id, scope);
 }
 
 interface AdminSilentPrayerEventRecord {
@@ -206,31 +188,9 @@ function toAdminSilentPrayerEventSummary(
 function toAdminSilentPrayerVisibility(
   value: string
 ): AdminSilentPrayerEventSummary["visibility"] {
-  if (
-    value === "PUBLIC" ||
-    value === "FAMILY_OPEN" ||
-    value === "CANDIDATE" ||
-    value === "BROTHER" ||
-    value === "ORGANIZATION_UNIT" ||
-    value === "OFFICER" ||
-    value === "ADMIN"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown silent-prayer visibility.");
+  return toVisibility(value, "silent-prayer");
 }
 
 function toAdminSilentPrayerStatus(value: string): AdminSilentPrayerEventSummary["status"] {
-  if (
-    value === "DRAFT" ||
-    value === "REVIEW" ||
-    value === "APPROVED" ||
-    value === "PUBLISHED" ||
-    value === "ARCHIVED"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown silent-prayer status.");
+  return toContentStatus(value, "silent-prayer");
 }

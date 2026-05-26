@@ -31,6 +31,8 @@ import {
   renderAdminFormField,
   renderAdminHeader
 } from "./admin-render-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminCandidateRequestShellRoute =
   | "/admin/candidate-requests"
@@ -58,6 +60,25 @@ export interface RenderedAdminCandidateRequestRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminCandidateRequestRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminCandidateRequestRoute,
+  render: async (context) => ({
+    title: "Admin Candidate Requests",
+    ...(await renderAdminCandidateRequestRoute({
+      ...routeOptions(context),
+      path: context.path as AdminCandidateRequestShellRoute
+    }))
+  })
+};
+
+function isAdminCandidateRequestRoute(path: string): boolean {
+  return (
+    path === "/admin/candidate-requests" ||
+    (path.startsWith("/admin/candidate-requests/") &&
+      path.length > "/admin/candidate-requests/".length)
+  );
 }
 
 export const adminCandidateRequestShellRoutes: readonly AdminCandidateRequestShellRouteMetadata[] =

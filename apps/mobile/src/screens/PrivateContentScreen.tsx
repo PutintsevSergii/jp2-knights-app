@@ -18,6 +18,7 @@ import type {
   BrotherTodayScreen,
   MyOrganizationUnitsScreen
 } from "../brother-screens.js";
+import { DemoModeBanner } from "./shared/DemoModeBanner.js";
 
 export type PrivateContentScreenModel =
   | CandidateDashboardScreen
@@ -50,22 +51,7 @@ export function PrivateContentScreen({ screen, onAction }: PrivateContentScreenP
           paddingTop: screen.theme.spacing * 2
         }}
       >
-        {screen.demoChromeVisible ? (
-          <View
-            style={[
-              styles.demoBanner,
-              {
-                backgroundColor: screen.theme.primaryAction,
-                borderRadius: screen.theme.radius,
-                paddingHorizontal: screen.theme.spacing,
-                paddingVertical: screen.theme.spacing / 2
-              }
-            ]}
-            accessibilityRole="text"
-          >
-            <Text style={{ color: screen.theme.primaryActionText }}>Demo mode</Text>
-          </View>
-        ) : null}
+        {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
         <View
           style={[
@@ -133,9 +119,6 @@ export function PrivateContentScreen({ screen, onAction }: PrivateContentScreenP
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1
-  },
-  demoBanner: {
-    alignSelf: "flex-start"
   },
   panel: {
     borderWidth: 1

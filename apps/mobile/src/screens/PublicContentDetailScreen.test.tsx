@@ -48,6 +48,7 @@ interface TestElement {
 }
 
 type TestNode = TestElement | string | number | boolean | null | undefined | readonly TestNode[];
+type TestComponent = (props: TestElement["props"]) => TestNode;
 
 function findElementByType(node: TestNode, type: string): TestElement | undefined {
   if (isTestNodeArray(node)) {
@@ -74,6 +75,12 @@ function findElementByType(node: TestNode, type: string): TestElement | undefine
 }
 
 function findText(node: TestNode, text: string): boolean {
+  const resolved = resolveElement(node);
+
+  if (resolved !== node) {
+    return findText(resolved, text);
+  }
+
   if (isTestNodeArray(node)) {
     return node.some((child) => findText(child, text));
   }
@@ -95,4 +102,14 @@ function isTestElement(node: TestNode): node is TestElement {
 
 function isTestNodeArray(node: TestNode): node is readonly TestNode[] {
   return Array.isArray(node);
+}
+
+function resolveElement(node: TestNode): TestNode {
+  if (!isTestElement(node) || typeof node.type !== "function") {
+    return node;
+  }
+
+  const renderElement = node.type as TestComponent;
+
+  return renderElement(node.props);
 }

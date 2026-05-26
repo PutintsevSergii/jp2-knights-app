@@ -1,4 +1,6 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 import {
   adminContentFailureState,
   type AdminContentFetch,
@@ -80,6 +82,17 @@ export const adminContentShellRoutes: readonly AdminContentShellRouteMetadata[] 
     screenRoute: "AdminAnnouncementList"
   }
 ];
+
+export const adminContentRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminContentRoute,
+  render: async (context) => ({
+    title: titleForAdminContentRoute(context.path),
+    ...(await renderAdminContentRoute({
+      ...routeOptions(context),
+      path: context.path as AdminContentShellRoute
+    }))
+  })
+};
 
 export async function renderAdminContentRoute(
   options: RenderAdminContentRouteOptions
@@ -250,6 +263,34 @@ function titleForRoute(
   }
 
   return "Admin Announcements";
+}
+
+function isAdminContentRoute(path: string): boolean {
+  return (
+    path === "/admin/prayers" ||
+    path === "/admin/events" ||
+    path === "/admin/announcements" ||
+    isAdminAnnouncementEditorRoute(path)
+  );
+}
+
+function titleForAdminContentRoute(path: string): string {
+  if (path === "/admin/prayers") {
+    return "Admin Prayers";
+  }
+
+  if (path === "/admin/events") {
+    return "Admin Events";
+  }
+
+  return "Admin Announcements";
+}
+
+function isAdminAnnouncementEditorRoute(path: string): boolean {
+  return (
+    path === "/admin/announcements/new" ||
+    (path.startsWith("/admin/announcements/") && path.length > "/admin/announcements/".length)
+  );
 }
 
 function announcementIdFromPath(path: AdminContentShellRoute): string {

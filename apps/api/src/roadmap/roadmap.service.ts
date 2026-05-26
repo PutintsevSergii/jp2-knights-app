@@ -10,7 +10,13 @@ import { adminScopeFor, requireAdminLite, requireSuperAdmin } from "../admin/adm
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
-import { RoadmapRepository } from "./roadmap.repository.js";
+import {
+  AdminRoadmapAssignmentRepository,
+  AdminRoadmapDefinitionRepository,
+  AdminRoadmapSubmissionRepository,
+  RoadmapAccessRepository,
+  RoadmapSubmissionRepository
+} from "./roadmap.repository.js";
 import type {
   AdminRoadmapAssignmentDetailResponse,
   AdminRoadmapAssignmentListResponse,
@@ -29,7 +35,11 @@ import type {
 @Injectable()
 export class RoadmapService {
   constructor(
-    private readonly roadmapRepository: RoadmapRepository,
+    private readonly roadmapAccessRepository: RoadmapAccessRepository,
+    private readonly roadmapSubmissionRepository: RoadmapSubmissionRepository,
+    private readonly adminRoadmapSubmissionRepository: AdminRoadmapSubmissionRepository,
+    private readonly adminRoadmapAssignmentRepository: AdminRoadmapAssignmentRepository,
+    private readonly adminRoadmapDefinitionRepository: AdminRoadmapDefinitionRepository,
     private readonly auditLog: AuditLogService
   ) {}
 
@@ -39,13 +49,13 @@ export class RoadmapService {
       throw new ForbiddenException("Candidate access is required.");
     }
 
-    const profile = await this.roadmapRepository.findActiveCandidateAccessProfile(principal.id);
+    const profile = await this.roadmapAccessRepository.findActiveCandidateAccessProfile(principal.id);
 
     if (!profile) {
       throw new ForbiddenException("An active candidate profile is required.");
     }
 
-    const roadmap = await this.roadmapRepository.findAssignedRoadmap({
+    const roadmap = await this.roadmapAccessRepository.findAssignedRoadmap({
       userId: principal.id,
       targetRole: "CANDIDATE",
       organizationUnitIds: profile.assignedOrganizationUnitId
@@ -62,13 +72,13 @@ export class RoadmapService {
       throw new ForbiddenException("Brother access is required.");
     }
 
-    const profile = await this.roadmapRepository.findActiveBrotherAccessProfile(principal.id);
+    const profile = await this.roadmapAccessRepository.findActiveBrotherAccessProfile(principal.id);
 
     if (!profile) {
       throw new NotFoundException("Active brother membership profile was not found.");
     }
 
-    const roadmap = await this.roadmapRepository.findAssignedRoadmap({
+    const roadmap = await this.roadmapAccessRepository.findAssignedRoadmap({
       userId: principal.id,
       targetRole: "BROTHER",
       organizationUnitIds: profile.organizationUnitIds
@@ -91,13 +101,13 @@ export class RoadmapService {
       throw new BadRequestException("Request stepId must match the route stepId.");
     }
 
-    const profile = await this.roadmapRepository.findActiveBrotherAccessProfile(principal.id);
+    const profile = await this.roadmapAccessRepository.findActiveBrotherAccessProfile(principal.id);
 
     if (!profile) {
       throw new NotFoundException("Active brother membership profile was not found.");
     }
 
-    const target = await this.roadmapRepository.findBrotherRoadmapSubmissionTarget({
+    const target = await this.roadmapSubmissionRepository.findBrotherRoadmapSubmissionTarget({
       userId: principal.id,
       stepId,
       organizationUnitIds: profile.organizationUnitIds
@@ -107,7 +117,7 @@ export class RoadmapService {
       throw new NotFoundException("Roadmap step was not found in the current brother scope.");
     }
 
-    const pendingSubmission = await this.roadmapRepository.findPendingRoadmapSubmission({
+    const pendingSubmission = await this.roadmapSubmissionRepository.findPendingRoadmapSubmission({
       assignmentId: target.assignmentId,
       stepId: target.stepId
     });
@@ -116,7 +126,7 @@ export class RoadmapService {
       throw new ConflictException("A pending roadmap submission already exists for this step.");
     }
 
-    const submission = await this.roadmapRepository.createRoadmapSubmission({
+    const submission = await this.roadmapSubmissionRepository.createRoadmapSubmission({
       assignmentId: target.assignmentId,
       stepId: target.stepId,
       userId: principal.id,
@@ -133,7 +143,7 @@ export class RoadmapService {
     requireAdminLite(principal);
 
     return {
-      roadmapSubmissions: await this.roadmapRepository.listAdminRoadmapSubmissions({
+      roadmapSubmissions: await this.adminRoadmapSubmissionRepository.listAdminRoadmapSubmissions({
         scopeOrganizationUnitIds: adminScopeFor(principal)
       })
     };
@@ -145,7 +155,7 @@ export class RoadmapService {
   ): Promise<AdminRoadmapSubmissionDetailResponse> {
     requireAdminLite(principal);
 
-    const roadmapSubmission = await this.roadmapRepository.findAdminRoadmapSubmission({
+    const roadmapSubmission = await this.adminRoadmapSubmissionRepository.findAdminRoadmapSubmission({
       id,
       scopeOrganizationUnitIds: adminScopeFor(principal)
     });
@@ -165,7 +175,7 @@ export class RoadmapService {
     requireAdminLite(principal);
 
     const scopeOrganizationUnitIds = adminScopeFor(principal);
-    const beforeSubmission = await this.roadmapRepository.findAdminRoadmapSubmission({
+    const beforeSubmission = await this.adminRoadmapSubmissionRepository.findAdminRoadmapSubmission({
       id,
       scopeOrganizationUnitIds
     });
@@ -178,7 +188,7 @@ export class RoadmapService {
       throw new ConflictException("Only pending roadmap submissions can be reviewed.");
     }
 
-    const roadmapSubmission = await this.roadmapRepository.reviewRoadmapSubmission({
+    const roadmapSubmission = await this.adminRoadmapSubmissionRepository.reviewRoadmapSubmission({
       id,
       scopeOrganizationUnitIds,
       reviewerUserId: principal.id,
@@ -209,7 +219,7 @@ export class RoadmapService {
     requireSuperAdmin(principal);
 
     return {
-      roadmapAssignments: await this.roadmapRepository.listAdminRoadmapAssignments()
+      roadmapAssignments: await this.adminRoadmapAssignmentRepository.listAdminRoadmapAssignments()
     };
   }
 
@@ -219,7 +229,7 @@ export class RoadmapService {
   ): Promise<AdminRoadmapAssignmentDetailResponse> {
     requireSuperAdmin(principal);
 
-    const roadmapAssignment = await this.roadmapRepository.findAdminRoadmapAssignment({ id });
+    const roadmapAssignment = await this.adminRoadmapAssignmentRepository.findAdminRoadmapAssignment({ id });
 
     if (!roadmapAssignment) {
       throw new NotFoundException("Roadmap assignment was not found.");
@@ -236,7 +246,7 @@ export class RoadmapService {
 
     const organizationUnitId = request.organizationUnitId ?? null;
     const roadmapDefinition =
-      await this.roadmapRepository.findPublishedRoadmapDefinitionAssignmentTarget(
+      await this.adminRoadmapAssignmentRepository.findPublishedRoadmapDefinitionAssignmentTarget(
         request.roadmapDefinitionId
       );
 
@@ -244,7 +254,7 @@ export class RoadmapService {
       throw new NotFoundException("Published roadmap definition was not found.");
     }
 
-    const assignee = await this.roadmapRepository.findEligibleRoadmapAssignmentAssignee({
+    const assignee = await this.adminRoadmapAssignmentRepository.findEligibleRoadmapAssignmentAssignee({
       userId: request.assigneeUserId,
       targetRole: roadmapDefinition.targetRole,
       organizationUnitId
@@ -256,7 +266,7 @@ export class RoadmapService {
       );
     }
 
-    const duplicate = await this.roadmapRepository.findActiveRoadmapAssignmentDuplicate({
+    const duplicate = await this.adminRoadmapAssignmentRepository.findActiveRoadmapAssignmentDuplicate({
       assigneeUserId: request.assigneeUserId,
       roadmapDefinitionId: request.roadmapDefinitionId,
       organizationUnitId
@@ -266,7 +276,7 @@ export class RoadmapService {
       throw new ConflictException("An active roadmap assignment already exists for this scope.");
     }
 
-    const roadmapAssignment = await this.roadmapRepository.createAdminRoadmapAssignment({
+    const roadmapAssignment = await this.adminRoadmapAssignmentRepository.createAdminRoadmapAssignment({
       assigneeUserId: request.assigneeUserId,
       roadmapDefinitionId: request.roadmapDefinitionId,
       organizationUnitId,
@@ -292,7 +302,7 @@ export class RoadmapService {
     requireSuperAdmin(principal);
 
     return {
-      roadmapDefinitions: await this.roadmapRepository.listAdminRoadmapDefinitions()
+      roadmapDefinitions: await this.adminRoadmapDefinitionRepository.listAdminRoadmapDefinitions()
     };
   }
 
@@ -302,7 +312,7 @@ export class RoadmapService {
   ): Promise<AdminRoadmapDefinitionDetailResponse> {
     requireSuperAdmin(principal);
 
-    const roadmapDefinition = await this.roadmapRepository.findAdminRoadmapDefinition({ id });
+    const roadmapDefinition = await this.adminRoadmapDefinitionRepository.findAdminRoadmapDefinition({ id });
 
     if (!roadmapDefinition) {
       throw new NotFoundException("Roadmap definition was not found.");

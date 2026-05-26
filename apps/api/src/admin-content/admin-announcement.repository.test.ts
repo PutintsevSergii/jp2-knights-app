@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { adminManageableContentScope } from "../admin/admin-content-access.policy.js";
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminAnnouncementRepository } from "./admin-announcement.repository.js";
 
@@ -42,7 +43,9 @@ describe("PrismaAdminAnnouncementRepository", () => {
     const { announcementFindMany, prisma } = prismaMock([announcementRecord]);
 
     await expect(
-      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements(null)
+      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements(
+        adminManageableContentScope(null)
+      )
     ).resolves.toEqual([
       {
         id: announcementRecord.id,
@@ -66,9 +69,9 @@ describe("PrismaAdminAnnouncementRepository", () => {
     const { announcementFindMany, prisma } = prismaMock([scopedAnnouncementRecord]);
 
     await expect(
-      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements([
-        "11111111-1111-4111-8111-111111111111"
-      ])
+      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements(
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+      )
     ).resolves.toEqual([
       {
         id: scopedAnnouncementRecord.id,
@@ -178,7 +181,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
           status: "PUBLISHED",
           archivedAt: null
         },
-        ["11111111-1111-4111-8111-111111111111"]
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
       )
     ).resolves.toEqual({
       id: scopedAnnouncementRecord.id,
@@ -219,7 +222,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
       new PrismaAdminAnnouncementRepository(scopedOut.prisma).updateAnnouncement(
         announcementRecord.id,
         { status: "ARCHIVED" },
-        ["22222222-2222-4222-8222-222222222222"]
+        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"])
       )
     ).resolves.toBeNull();
     expect(scopedOut.announcementFindFirst).not.toHaveBeenCalled();
@@ -229,12 +232,16 @@ describe("PrismaAdminAnnouncementRepository", () => {
     const { prisma } = prismaMock([{ ...announcementRecord, visibility: "PRIVATE" }]);
 
     await expect(
-      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements(null)
+      new PrismaAdminAnnouncementRepository(prisma).listManageableAnnouncements(
+        adminManageableContentScope(null)
+      )
     ).rejects.toThrow("Repository returned an unknown announcement visibility.");
 
     const mock = prismaMock([{ ...announcementRecord, status: "deleted" }]);
     await expect(
-      new PrismaAdminAnnouncementRepository(mock.prisma).listManageableAnnouncements(null)
+      new PrismaAdminAnnouncementRepository(mock.prisma).listManageableAnnouncements(
+        adminManageableContentScope(null)
+      )
     ).rejects.toThrow("Repository returned an unknown announcement status.");
   });
 });

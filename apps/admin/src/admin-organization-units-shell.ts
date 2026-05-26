@@ -23,6 +23,8 @@ import {
   renderAdminFormField,
   renderAdminHeader
 } from "./admin-render-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminOrganizationUnitShellRoute =
   | "/admin/organization-units"
@@ -51,6 +53,25 @@ export interface RenderedAdminOrganizationUnitRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminOrganizationUnitRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminOrganizationUnitRoute,
+  render: async (context) => ({
+    title: "Admin Organization Units",
+    ...(await renderAdminOrganizationUnitRoute({
+      ...routeOptions(context),
+      path: context.path as AdminOrganizationUnitShellRoute
+    }))
+  })
+};
+
+function isAdminOrganizationUnitRoute(path: string): boolean {
+  return (
+    path === "/admin/organization-units" ||
+    (path.startsWith("/admin/organization-units/") &&
+      path.length > "/admin/organization-units/".length)
+  );
 }
 
 export const adminOrganizationUnitShellRoutes: readonly AdminOrganizationUnitShellRouteMetadata[] =

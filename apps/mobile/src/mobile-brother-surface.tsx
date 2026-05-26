@@ -1,23 +1,15 @@
 import { useRef, useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
-import type {
-  AssignedRoadmapResponseDto,
-  BrotherSilentPrayerJoinResponseDto,
-  BrotherSilentPrayerListResponseDto,
-  SilentPrayerPresenceDto,
-  RoadmapSubmissionSummaryDto
-} from "@jp2/shared-validation";
+import type { BrotherSilentPrayerJoinResponseDto } from "@jp2/shared-validation";
 import {
   brotherCompanionLoadFailureState,
-  cancelBrotherEventParticipation,
   fetchBrotherAnnouncements,
   fetchBrotherEvent,
   fetchBrotherEvents,
   fetchBrotherProfile,
   fetchBrotherPrayers,
   fetchBrotherToday,
-  fetchMyOrganizationUnits,
-  markBrotherEventParticipation
+  fetchMyOrganizationUnits
 } from "./brother-companion-api.js";
 import {
   fallbackBrotherAnnouncements,
@@ -41,29 +33,19 @@ import {
   buildOrganizationUnitDetailScreen
 } from "./brother-screens.js";
 import type { BrotherRoute } from "./brother-screens.js";
-import type { BrotherScreenAction } from "./brother-screen-contracts.js";
-import { isBrotherRoute } from "./mobile-routes.js";
 import { requirePrivateAuthToken, usePrivateRouteResource } from "./mobile-private-resource.js";
 import {
   fetchBrotherRoadmap,
-  roadmapLoadFailureState,
-  submitBrotherRoadmapStep
+  roadmapLoadFailureState
 } from "./roadmap-api.js";
 import { fallbackBrotherRoadmap } from "./roadmap.js";
 import {
   brotherSilentPrayerLoadFailureState,
-  fetchBrotherSilentPrayerSessions,
-  joinBrotherSilentPrayerSession
+  fetchBrotherSilentPrayerSessions
 } from "./silent-prayer-api.js";
-import {
-  fallbackBrotherSilentPrayerJoin,
-  fallbackBrotherSilentPrayerSessions
-} from "./silent-prayer.js";
-import {
-  startBrotherSilentPrayerRealtime,
-  type SilentPrayerRealtimeSession,
-  type SilentPrayerSocketError
-} from "./silent-prayer-socket.js";
+import { fallbackBrotherSilentPrayerSessions } from "./silent-prayer.js";
+import type { SilentPrayerRealtimeSession } from "./silent-prayer-socket.js";
+import { useBrotherRouteActions } from "./mobile-brother-route-actions.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
@@ -73,10 +55,7 @@ import { BrotherSilentPrayerScreen } from "./screens/BrotherSilentPrayerScreen.j
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { MyOrganizationUnitsScreen } from "./screens/MyOrganizationUnitsScreen.js";
 import { OrganizationUnitDetailScreen } from "./screens/OrganizationUnitDetailScreen.js";
-import {
-  PrivateContentScreen,
-  type PrivateContentScreenAction
-} from "./screens/PrivateContentScreen.js";
+import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
 export interface MobileBrotherSurfaceProps {
   route: BrotherRoute;
@@ -240,203 +219,21 @@ export function MobileBrotherSurface({
     failureState: brotherCompanionLoadFailureState
   });
 
-  function handleBrotherAction(action: BrotherScreenAction) {
-    if (isBrotherRoute(action.targetRoute)) {
-      void handleBrotherRoute(
-        action.targetRoute,
-        action.targetId,
-        action.id,
-        action.submissionBody
-      );
-    }
-  }
-
-  function handlePrivateContentAction(action: PrivateContentScreenAction) {
-    if (isBrotherRoute(action.targetRoute)) {
-      void handleBrotherRoute(action.targetRoute, action.targetId, action.id);
-    }
-  }
-
-  async function handleBrotherRoute(
-    nextRoute: BrotherRoute,
-    targetId?: string,
-    actionId?: string,
-    submissionBody?: string
-  ) {
-    if (route === "SilentPrayer" && nextRoute !== "SilentPrayer") {
-      stopBrotherSilentPrayerRealtime(true);
-    }
-
-    if (nextRoute === "SilentPrayer" && actionId === "join-silent-prayer" && targetId) {
-      if (runtimeMode === "demo") {
-        setBrotherSilentPrayerJoin(fallbackBrotherSilentPrayerJoin);
-        brotherSilentPrayer.setData(fallbackBrotherSilentPrayerSessions);
-        brotherSilentPrayer.setState("ready");
-      } else if (authToken) {
-        brotherSilentPrayer.setState("loading");
-
-        try {
-          const response = await joinBrotherSilentPrayerSession({
-            id: targetId,
-            baseUrl: publicApiBaseUrl,
-            authToken
-          });
-          setBrotherSilentPrayerJoin(response);
-          brotherSilentPrayer.setData((current) =>
-            current ? applyBrotherSilentPrayerJoin(current, response) : current
-          );
-          startBrotherSilentPrayerSocket(response);
-          brotherSilentPrayer.setState("ready");
-        } catch (error: unknown) {
-          brotherSilentPrayer.setState(brotherSilentPrayerLoadFailureState(error));
-        }
-      }
-
-      onRouteChange("SilentPrayer");
-      return;
-    }
-
-    if (nextRoute === "BrotherRoadmap" && actionId === "submit-roadmap-step" && targetId) {
-      if (runtimeMode === "demo") {
-        const submission = buildDemoRoadmapSubmission(
-          brotherRoadmap.data ?? fallbackBrotherRoadmap,
-          targetId,
-          submissionBody ?? ""
-        );
-        brotherRoadmap.setData((current) =>
-          applyRoadmapSubmission(current ?? fallbackBrotherRoadmap, targetId, submission)
-        );
-        brotherRoadmap.setState("ready");
-      } else if (authToken && submissionBody) {
-        brotherRoadmap.setState("loading");
-
-        try {
-          const response = await submitBrotherRoadmapStep({
-            baseUrl: publicApiBaseUrl,
-            authToken,
-            stepId: targetId,
-            body: submissionBody
-          });
-          brotherRoadmap.setData((current) =>
-            current ? applyRoadmapSubmission(current, targetId, response.submission) : current
-          );
-          brotherRoadmap.setState("ready");
-        } catch (error: unknown) {
-          brotherRoadmap.setState(roadmapLoadFailureState(error));
-        }
-      }
-
-      onRouteChange("BrotherRoadmap");
-      return;
-    }
-
-    if (nextRoute === "BrotherEventDetail") {
-      setSelectedBrotherEventId(targetId);
-
-      if (runtimeMode === "demo") {
-        brotherEventDetail.setData(fallbackBrotherEventDetail);
-        brotherEventDetail.setState(targetId ? "ready" : "empty");
-      } else if (targetId && authToken && actionId === "plan-to-attend") {
-        const response = await markBrotherEventParticipation({
-          id: targetId,
-          baseUrl: publicApiBaseUrl,
-          authToken
-        });
-        brotherEventDetail.setData((current) =>
-          current
-            ? {
-                event: {
-                  ...current.event,
-                  currentUserParticipation: response.participation
-                }
-              }
-            : current
-        );
-        brotherEventDetail.setState("ready");
-      } else if (targetId && authToken && actionId === "cancel-participation") {
-        const response = await cancelBrotherEventParticipation({
-          id: targetId,
-          baseUrl: publicApiBaseUrl,
-          authToken
-        });
-        brotherEventDetail.setData((current) =>
-          current
-            ? {
-                event: {
-                  ...current.event,
-                  currentUserParticipation:
-                    response.participation.intentStatus === "cancelled"
-                      ? null
-                      : response.participation
-                }
-              }
-            : current
-        );
-        brotherEventDetail.setState("ready");
-      }
-    }
-
-    if (nextRoute === "OrganizationUnitDetail") {
-      setSelectedOrganizationUnitId(targetId);
-
-      if (runtimeMode === "demo") {
-        myOrganizationUnits.setData(fallbackMyOrganizationUnits);
-        myOrganizationUnits.setState(targetId ? "ready" : "empty");
-      }
-    }
-
-    onRouteChange(nextRoute);
-  }
-
-  function startBrotherSilentPrayerSocket(response: BrotherSilentPrayerJoinResponseDto) {
-    stopBrotherSilentPrayerRealtime(false);
-
-    brotherSilentPrayerRealtime.current = startBrotherSilentPrayerRealtime({
-      baseUrl: publicApiBaseUrl,
-      eventId: response.session.id,
-      authToken: requirePrivateAuthToken(authToken),
-      onJoined: (joined) => {
-        setBrotherSilentPrayerJoin(joined);
-        brotherSilentPrayer.setData((current) =>
-          current ? applyBrotherSilentPrayerJoin(current, joined) : current
-        );
-        brotherSilentPrayer.setState("ready");
-      },
-      onPresence: (presence) => {
-        setBrotherSilentPrayerJoin((current) =>
-          current ? applyBrotherSilentPrayerPresenceToJoin(current, presence) : current
-        );
-        brotherSilentPrayer.setData((current) =>
-          current ? applyBrotherSilentPrayerPresence(current, presence) : current
-        );
-      },
-      onError: handleBrotherSilentPrayerSocketError
-    });
-  }
-
-  function stopBrotherSilentPrayerRealtime(emitLeave: boolean) {
-    if (emitLeave) {
-      brotherSilentPrayerRealtime.current?.leave();
-    } else {
-      brotherSilentPrayerRealtime.current?.disconnect();
-    }
-
-    brotherSilentPrayerRealtime.current = null;
-  }
-
-  function handleBrotherSilentPrayerSocketError(error: SilentPrayerSocketError) {
-    if (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN") {
-      brotherSilentPrayer.setState("forbidden");
-      return;
-    }
-
-    if (error.code === "NOT_FOUND") {
-      brotherSilentPrayer.setState("empty");
-      return;
-    }
-
-    brotherSilentPrayer.setState("error");
-  }
+  const { handleBrotherAction, handlePrivateContentAction } = useBrotherRouteActions({
+    route,
+    runtimeMode,
+    publicApiBaseUrl,
+    authToken,
+    onRouteChange,
+    setSelectedOrganizationUnitId,
+    setSelectedBrotherEventId,
+    setBrotherSilentPrayerJoin,
+    brotherSilentPrayerRealtime,
+    myOrganizationUnits,
+    brotherRoadmap,
+    brotherSilentPrayer,
+    brotherEventDetail
+  });
 
   if (route === "BrotherProfile") {
     return (
@@ -567,97 +364,4 @@ export function MobileBrotherSurface({
       onAction={handleBrotherAction}
     />
   );
-}
-
-function applyBrotherSilentPrayerJoin(
-  current: BrotherSilentPrayerListResponseDto,
-  joined: BrotherSilentPrayerJoinResponseDto
-): BrotherSilentPrayerListResponseDto {
-  return {
-    ...current,
-    sessions: current.sessions.map((session) =>
-      session.id === joined.session.id ? joined.session : session
-    )
-  };
-}
-
-function applyBrotherSilentPrayerPresence(
-  current: BrotherSilentPrayerListResponseDto,
-  presence: SilentPrayerPresenceDto
-): BrotherSilentPrayerListResponseDto {
-  return {
-    ...current,
-    sessions: current.sessions.map((session) =>
-      session.id === presence.eventId
-        ? {
-            ...session,
-            activeCount: presence.activeCount
-          }
-        : session
-    )
-  };
-}
-
-function applyBrotherSilentPrayerPresenceToJoin(
-  current: BrotherSilentPrayerJoinResponseDto,
-  presence: SilentPrayerPresenceDto
-): BrotherSilentPrayerJoinResponseDto {
-  if (current.session.id !== presence.eventId) {
-    return current;
-  }
-
-  return {
-    ...current,
-    presence,
-    session: {
-      ...current.session,
-      activeCount: presence.activeCount
-    }
-  };
-}
-
-function applyRoadmapSubmission(
-  response: AssignedRoadmapResponseDto,
-  stepId: string,
-  submission: RoadmapSubmissionSummaryDto
-): AssignedRoadmapResponseDto {
-  if (!response.roadmap) {
-    return response;
-  }
-
-  return {
-    roadmap: {
-      ...response.roadmap,
-      stages: response.roadmap.stages.map((stage) => ({
-        ...stage,
-        steps: stage.steps.map((step) =>
-          step.id === stepId
-            ? {
-                ...step,
-                latestSubmission: submission
-              }
-            : step
-        )
-      }))
-    }
-  };
-}
-
-function buildDemoRoadmapSubmission(
-  response: AssignedRoadmapResponseDto,
-  stepId: string,
-  body: string
-): RoadmapSubmissionSummaryDto {
-  return {
-    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-    assignmentId: response.roadmap?.assignmentId ?? "99999999-9999-4999-8999-999999999999",
-    stepId,
-    status: "pending_review",
-    body,
-    attachmentMetadata: [],
-    reviewComment: null,
-    reviewedAt: null,
-    createdAt: "2026-05-25T00:00:00.000Z",
-    updatedAt: "2026-05-25T00:00:00.000Z"
-  };
 }

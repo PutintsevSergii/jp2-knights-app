@@ -26,6 +26,8 @@ import {
   renderAdminFormField,
   renderAdminHeader
 } from "./admin-render-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminCandidateShellRoute = "/admin/candidates" | `/admin/candidates/${string}`;
 
@@ -51,6 +53,25 @@ export interface RenderedAdminCandidateRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminCandidateRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminCandidateRoute,
+  render: async (context) => ({
+    title: "Admin Candidates",
+    ...(await renderAdminCandidateRoute({
+      ...routeOptions(context),
+      path: context.path as AdminCandidateShellRoute
+    }))
+  })
+};
+
+function isAdminCandidateRoute(path: string): boolean {
+  return path === "/admin/candidates" || isAdminCandidateDetailRoute(path);
+}
+
+function isAdminCandidateDetailRoute(path: string): boolean {
+  return path.startsWith("/admin/candidates/") && path.length > "/admin/candidates/".length;
 }
 
 export const adminCandidateShellRoutes: readonly AdminCandidateShellRouteMetadata[] = [

@@ -39,6 +39,8 @@ import {
   renderRoadmapReadOnlyStyle,
   roadmapReadOnlyStatusClass
 } from "./admin-roadmap-readonly-shell-primitives.js";
+import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
+import { routeOptions } from "./admin-web-route-types.js";
 
 export type AdminRoadmapAssignmentShellRoute =
   | "/admin/roadmap-assignments"
@@ -66,6 +68,25 @@ export interface RenderedAdminRoadmapAssignmentRoute {
   state: AdminContentScreenState;
   statusCode: number;
   document: string;
+}
+
+export const adminRoadmapAssignmentRouteDefinition: AdminWebRouteDefinition = {
+  matches: isAdminRoadmapAssignmentRoute,
+  render: async (context) => ({
+    title: "Admin Roadmap Assignments",
+    ...(await renderAdminRoadmapAssignmentRoute({
+      ...routeOptions(context),
+      path: context.path as AdminRoadmapAssignmentShellRoute
+    }))
+  })
+};
+
+function isAdminRoadmapAssignmentRoute(path: string): boolean {
+  return (
+    path === "/admin/roadmap-assignments" ||
+    (path.startsWith("/admin/roadmap-assignments/") &&
+      path.length > "/admin/roadmap-assignments/".length)
+  );
 }
 
 export const adminRoadmapAssignmentShellRoutes: readonly AdminRoadmapAssignmentShellRouteMetadata[] =

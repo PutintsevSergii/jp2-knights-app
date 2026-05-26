@@ -680,7 +680,14 @@ describe("RoadmapService", () => {
 });
 
 function service(repository: RoadmapRepository, auditLog: TestAuditLog = auditLogRecorder()) {
-  return new RoadmapService(repository, auditLog as unknown as AuditLogService);
+  return new RoadmapService(
+    repository,
+    repository,
+    repository,
+    repository,
+    repository,
+    auditLog as unknown as AuditLogService
+  );
 }
 
 function roadmapRepository(options: {

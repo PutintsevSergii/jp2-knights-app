@@ -1,5 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
+import {
+  contentStatusCreateTimestamps,
+  contentStatusUpdateTimestamps,
+  toContentStatus,
+  toVisibility
+} from "../content/content-contracts.js";
+import {
+  adminManageableContentWhere,
+  adminScopedContentUpdateWhere
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   AdminAnnouncementSummary,
@@ -9,7 +20,7 @@ import type {
 
 export abstract class AdminAnnouncementRepository {
   abstract listManageableAnnouncements(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary[]>;
   abstract createAnnouncement(
     data: CreateAdminAnnouncementRequest
@@ -17,11 +28,11 @@ export abstract class AdminAnnouncementRepository {
   abstract updateAnnouncement(
     id: string,
     data: UpdateAdminAnnouncementRequest,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary | null>;
   abstract findAnnouncementForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary | null>;
 }
 
@@ -30,10 +41,10 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
   constructor(private readonly prisma: PrismaService) {}
 
   async listManageableAnnouncements(
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary[]> {
     const records = await this.prisma.announcement.findMany({
-      where: adminAnnouncementListWhere(scopeOrganizationUnitIds),
+      where: adminAnnouncementListWhere(scope),
       orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }, { title: "asc" }]
     });
 
@@ -51,8 +62,7 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         pinned: data.pinned ?? false,
         status: data.status,
-        publishedAt: data.status === "PUBLISHED" ? new Date() : null,
-        archivedAt: data.status === "ARCHIVED" ? new Date() : null
+        ...contentStatusCreateTimestamps(data.status)
       }
     });
 
@@ -62,7 +72,7 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
   async updateAnnouncement(
     id: string,
     data: UpdateAdminAnnouncementRequest,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary | null> {
     const updateData: Prisma.AnnouncementUncheckedUpdateInput = {};
 
@@ -74,8 +84,7 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
     }
     if (data.pinned !== undefined) updateData.pinned = data.pinned;
     if (data.status !== undefined) updateData.status = data.status;
-    if (data.status === "PUBLISHED") updateData.publishedAt = new Date();
-    if (data.status === "ARCHIVED") updateData.archivedAt = new Date();
+    Object.assign(updateData, contentStatusUpdateTimestamps(data.status));
     if (data.publishedAt !== undefined) {
       updateData.publishedAt = data.publishedAt === null ? null : new Date(data.publishedAt);
     }
@@ -83,7 +92,7 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
       updateData.archivedAt = data.archivedAt === null ? null : new Date(data.archivedAt);
     }
 
-    const where = adminAnnouncementUpdateWhere(id, scopeOrganizationUnitIds);
+    const where = adminAnnouncementUpdateWhere(id, scope);
     const result = await this.prisma.announcement.updateMany({
       where,
       data: updateData
@@ -100,10 +109,10 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
 
   async findAnnouncementForAudit(
     id: string,
-    scopeOrganizationUnitIds: readonly string[] | null
+    scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary | null> {
     const record = await this.prisma.announcement.findFirst({
-      where: adminAnnouncementUpdateWhere(id, scopeOrganizationUnitIds)
+      where: adminAnnouncementUpdateWhere(id, scope)
     });
 
     return record ? toAdminAnnouncementSummary(record) : null;
@@ -111,32 +120,16 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
 }
 
 export function adminAnnouncementListWhere(
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.AnnouncementWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return {};
-  }
-
-  return {
-    OR: [
-      { visibility: { in: ["PUBLIC", "FAMILY_OPEN"] } },
-      { targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] } }
-    ]
-  };
+  return adminManageableContentWhere<Prisma.AnnouncementWhereInput>(scope);
 }
 
 function adminAnnouncementUpdateWhere(
   id: string,
-  scopeOrganizationUnitIds: readonly string[] | null
+  scope: AdminContentScope
 ): Prisma.AnnouncementWhereInput {
-  if (scopeOrganizationUnitIds === null) {
-    return { id };
-  }
-
-  return {
-    id,
-    targetOrganizationUnitId: { in: [...scopeOrganizationUnitIds] }
-  };
+  return adminScopedContentUpdateWhere<Prisma.AnnouncementWhereInput>(id, scope);
 }
 
 interface AdminAnnouncementRecord {
@@ -168,31 +161,9 @@ function toAdminAnnouncementSummary(record: AdminAnnouncementRecord): AdminAnnou
 function toAdminAnnouncementVisibility(
   value: string
 ): AdminAnnouncementSummary["visibility"] {
-  if (
-    value === "PUBLIC" ||
-    value === "FAMILY_OPEN" ||
-    value === "CANDIDATE" ||
-    value === "BROTHER" ||
-    value === "ORGANIZATION_UNIT" ||
-    value === "OFFICER" ||
-    value === "ADMIN"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown announcement visibility.");
+  return toVisibility(value, "announcement");
 }
 
 function toAdminAnnouncementStatus(value: string): AdminAnnouncementSummary["status"] {
-  if (
-    value === "DRAFT" ||
-    value === "REVIEW" ||
-    value === "APPROVED" ||
-    value === "PUBLISHED" ||
-    value === "ARCHIVED"
-  ) {
-    return value;
-  }
-
-  throw new Error("Repository returned an unknown announcement status.");
+  return toContentStatus(value, "announcement");
 }

@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
-  adminScopeFor,
   requireAdminLite,
   requireScopedAdminWrite
 } from "../admin/admin-access.policy.js";
+import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AnnouncementPushRecipientRepository } from "../notifications/announcement-push-recipient.repository.js";
@@ -32,7 +32,7 @@ export class AdminAnnouncementService {
 
     return {
       announcements: await this.adminAnnouncementRepository.listManageableAnnouncements(
-        adminScopeFor(principal)
+        adminContentScopeFor(principal)
       )
     };
   }
@@ -77,15 +77,15 @@ export class AdminAnnouncementService {
       requireAdminLite(principal);
     }
 
-    const scopeOrganizationUnitIds = adminScopeFor(principal);
+    const scope = adminContentScopeFor(principal);
     const beforeAnnouncement = await this.adminAnnouncementRepository.findAnnouncementForAudit(
       id,
-      scopeOrganizationUnitIds
+      scope
     );
     const announcement = await this.adminAnnouncementRepository.updateAnnouncement(
       id,
       data,
-      scopeOrganizationUnitIds
+      scope
     );
 
     if (!announcement) {
