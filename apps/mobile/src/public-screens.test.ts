@@ -35,6 +35,7 @@ describe("mobile public screen models", () => {
     expect(screen.actions.map((action) => action.targetRoute)).toEqual([
       "AboutOrder",
       "PublicPrayerCategories",
+      "PublicSilentPrayer",
       "JoinRequestForm",
       "Login"
     ]);

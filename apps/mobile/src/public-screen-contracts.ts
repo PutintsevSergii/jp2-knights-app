@@ -6,6 +6,7 @@ export type PublicRoute =
   | "AboutOrder"
   | "PublicPrayerCategories"
   | "PublicEventsList"
+  | "PublicSilentPrayer"
   | "PublicPrayerDetail"
   | "PublicEventDetail"
   | "JoinRequestForm"
@@ -80,6 +81,7 @@ export function publicStateCopy(
     | "aboutOrder"
     | "prayerCategories"
     | "eventsList"
+    | "silentPrayer"
     | "prayerDetail"
     | "eventDetail"
     | "joinRequestForm"
@@ -175,6 +177,7 @@ const publicRoutes: readonly PublicRoute[] = [
   "AboutOrder",
   "PublicPrayerCategories",
   "PublicEventsList",
+  "PublicSilentPrayer",
   "PublicPrayerDetail",
   "PublicEventDetail",
   "JoinRequestForm",
@@ -190,6 +193,7 @@ const publicStateCopies: Record<
   | "aboutOrder"
   | "prayerCategories"
   | "eventsList"
+  | "silentPrayer"
   | "prayerDetail"
   | "eventDetail"
   | "joinRequestForm"
@@ -315,6 +319,36 @@ const publicStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh public events."
+    }
+  },
+  silentPrayer: {
+    ready: {
+      title: "Silent Prayer",
+      body: "Public silent-prayer sessions are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Silent-prayer sessions are loading."
+    },
+    empty: {
+      title: "Silent Prayer",
+      body: "No public silent-prayer session is active yet."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Silent-prayer sessions could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: privateContentBody
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Public silent prayer remains available while your private app access is reviewed."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh silent-prayer sessions."
     }
   },
   prayerDetail: {

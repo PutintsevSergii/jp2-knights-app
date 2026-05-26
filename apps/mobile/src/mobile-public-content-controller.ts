@@ -5,7 +5,9 @@ import type {
   PublicEventDetailResponseDto,
   PublicEventListResponseDto,
   PublicPrayerDetailResponseDto,
-  PublicPrayerListResponseDto
+  PublicPrayerListResponseDto,
+  PublicSilentPrayerJoinResponseDto,
+  PublicSilentPrayerListResponseDto
 } from "@jp2/shared-validation";
 import { fetchPublicContentPage, publicContentPageLoadFailureState } from "./public-content-api.js";
 import {
@@ -25,8 +27,18 @@ import {
   fallbackPublicPrayerDetail,
   fallbackPublicPrayers
 } from "./public-content.js";
+import {
+  fetchPublicSilentPrayerSessions,
+  joinPublicSilentPrayerSession,
+  publicSilentPrayerLoadFailureState,
+  silentPrayerAnonymousSessionId
+} from "./silent-prayer-api.js";
+import {
+  fallbackPublicSilentPrayerJoin,
+  fallbackPublicSilentPrayerSessions
+} from "./silent-prayer.js";
 import type { MobileScreenState } from "./navigation.js";
-import type { PublicRoute } from "./public-screens.js";
+import type { PublicRoute, PublicScreenAction } from "./public-screens.js";
 
 export interface MobilePublicContentControllerOptions {
   route: PublicRoute;
@@ -59,6 +71,15 @@ export function useMobilePublicContentController({
   const [publicEvents, setPublicEvents] = useState<PublicEventListResponseDto | undefined>(() =>
     runtimeMode === "demo" ? fallbackPublicEvents : undefined
   );
+  const [publicSilentPrayerState, setPublicSilentPrayerState] =
+    useState<MobileScreenState>(runtimeMode === "demo" ? "ready" : "empty");
+  const [publicSilentPrayerSessions, setPublicSilentPrayerSessions] = useState<
+    PublicSilentPrayerListResponseDto | undefined
+  >(() => (runtimeMode === "demo" ? fallbackPublicSilentPrayerSessions : undefined));
+  const [publicSilentPrayerJoin, setPublicSilentPrayerJoin] = useState<
+    PublicSilentPrayerJoinResponseDto | undefined
+  >();
+  const [anonymousSessionId] = useState(() => silentPrayerAnonymousSessionId());
   const [selectedPublicPrayerId, setSelectedPublicPrayerId] = useState<string | undefined>();
   const [selectedPublicEventId, setSelectedPublicEventId] = useState<string | undefined>();
   const [publicPrayerDetailState, setPublicPrayerDetailState] = useState<MobileScreenState>(
@@ -156,6 +177,33 @@ export function useMobilePublicContentController({
   }, [publicApiBaseUrl, route, runtimeMode]);
 
   useEffect(() => {
+    if (runtimeMode === "demo" || route !== "PublicSilentPrayer") {
+      return;
+    }
+
+    let cancelled = false;
+    setPublicSilentPrayerState("loading");
+
+    fetchPublicSilentPrayerSessions({ baseUrl: publicApiBaseUrl })
+      .then((response) => {
+        if (!cancelled) {
+          setPublicSilentPrayerSessions(response);
+          setPublicSilentPrayerState("ready");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setPublicSilentPrayerSessions(undefined);
+          setPublicSilentPrayerState(publicSilentPrayerLoadFailureState(error));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [publicApiBaseUrl, route, runtimeMode]);
+
+  useEffect(() => {
     if (runtimeMode === "demo" || route !== "PublicPrayerDetail" || !selectedPublicPrayerId) {
       return;
     }
@@ -229,6 +277,42 @@ export function useMobilePublicContentController({
     onRouteChange(nextRoute);
   }
 
+  async function handlePublicAction(action: PublicScreenAction) {
+    if (
+      action.targetRoute === "PublicSilentPrayer" &&
+      action.id === "join-silent-prayer" &&
+      action.targetId
+    ) {
+      if (runtimeMode === "demo") {
+        setPublicSilentPrayerJoin(fallbackPublicSilentPrayerJoin);
+        setPublicSilentPrayerSessions(fallbackPublicSilentPrayerSessions);
+        setPublicSilentPrayerState("ready");
+      } else {
+        setPublicSilentPrayerState("loading");
+
+        try {
+          const response = await joinPublicSilentPrayerSession({
+            id: action.targetId,
+            anonymousSessionId,
+            baseUrl: publicApiBaseUrl
+          });
+          setPublicSilentPrayerJoin(response);
+          setPublicSilentPrayerSessions((current) =>
+            current ? applyPublicSilentPrayerJoin(current, response) : current
+          );
+          setPublicSilentPrayerState("ready");
+        } catch (error: unknown) {
+          setPublicSilentPrayerState(publicSilentPrayerLoadFailureState(error));
+        }
+      }
+
+      onRouteChange("PublicSilentPrayer");
+      return;
+    }
+
+    handlePublicRoute(action.targetRoute, action.targetId);
+  }
+
   return {
     aboutOrderState,
     aboutOrderPage,
@@ -236,10 +320,26 @@ export function useMobilePublicContentController({
     publicPrayers,
     publicEventsState,
     publicEvents,
+    publicSilentPrayerState,
+    publicSilentPrayerSessions,
+    publicSilentPrayerJoin,
     publicPrayerDetailState,
     publicPrayerDetail,
     publicEventDetailState,
     publicEventDetail,
-    handlePublicRoute
+    handlePublicRoute,
+    handlePublicAction
+  };
+}
+
+function applyPublicSilentPrayerJoin(
+  current: PublicSilentPrayerListResponseDto,
+  joined: PublicSilentPrayerJoinResponseDto
+): PublicSilentPrayerListResponseDto {
+  return {
+    ...current,
+    sessions: current.sessions.map((session) =>
+      session.id === joined.session.id ? joined.session : session
+    )
   };
 }

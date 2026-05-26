@@ -10,6 +10,7 @@ export function isPublicRoute(route: MobileAppRoute): route is PublicRoute {
     route === "AboutOrder" ||
     route === "PublicPrayerCategories" ||
     route === "PublicEventsList" ||
+    route === "PublicSilentPrayer" ||
     route === "PublicPrayerDetail" ||
     route === "PublicEventDetail" ||
     route === "JoinRequestForm" ||

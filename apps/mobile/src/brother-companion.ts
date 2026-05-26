@@ -81,6 +81,13 @@ export const fallbackBrotherToday = brotherTodayResponseSchema.parse({
       body: "Review public, brother, and own choragiew events visible to you.",
       targetRoute: "BrotherEvents",
       priority: "normal"
+    },
+    {
+      id: "silent-prayer",
+      label: "Silent prayer",
+      body: "Join active silent prayer sessions with aggregate counters only.",
+      targetRoute: "SilentPrayer",
+      priority: "normal"
     }
   ],
   upcomingEvents: [

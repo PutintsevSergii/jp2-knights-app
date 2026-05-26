@@ -43,6 +43,7 @@ describe("brother screen models", () => {
       "MyOrganizationUnits",
       "BrotherRoadmap",
       "BrotherEvents",
+      "SilentPrayer",
       "BrotherAnnouncements"
     ]);
     expect(screen.upcomingEventCards).toEqual([
@@ -67,6 +68,7 @@ describe("brother screen models", () => {
       "MyOrganizationUnits",
       "BrotherRoadmap",
       "BrotherEvents",
+      "SilentPrayer",
       "BrotherAnnouncements"
     ]);
   });

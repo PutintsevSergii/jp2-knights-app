@@ -21,6 +21,12 @@ export const fallbackPublicHome = publicHomeResponseSchema.parse({
       targetRoute: "PublicPrayerCategories"
     },
     {
+      id: "silent-prayer",
+      label: "Silent Prayer",
+      action: "pray",
+      targetRoute: "PublicSilentPrayer"
+    },
+    {
       id: "join",
       label: "Join",
       action: "join",

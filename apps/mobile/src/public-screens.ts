@@ -2,6 +2,7 @@ import type { PublicEventDetailScreen } from "./public-event-detail-screen.js";
 import type { PublicEventsListScreen } from "./public-events-list-screen.js";
 import type { PublicPrayerCategoriesScreen } from "./public-prayer-categories-screen.js";
 import type { PublicPrayerDetailScreen } from "./public-prayer-detail-screen.js";
+import type { PublicSilentPrayerScreen } from "./public-silent-prayer-screen.js";
 
 export type {
   PublicRoute,
@@ -28,6 +29,10 @@ export {
   type BuildPublicEventsListScreenOptions,
   type PublicEventsListScreen
 } from "./public-events-list-screen.js";
+export {
+  buildPublicSilentPrayerScreen,
+  type PublicSilentPrayerScreen
+} from "./public-silent-prayer-screen.js";
 export {
   buildPublicPrayerDetailScreen,
   type BuildPublicPrayerDetailScreenOptions,
@@ -64,5 +69,8 @@ export {
   type IdleApprovalScreen
 } from "./idle-approval-screen.js";
 
-export type PublicContentListScreen = PublicPrayerCategoriesScreen | PublicEventsListScreen;
+export type PublicContentListScreen =
+  | PublicPrayerCategoriesScreen
+  | PublicEventsListScreen
+  | PublicSilentPrayerScreen;
 export type PublicContentDetailScreen = PublicPrayerDetailScreen | PublicEventDetailScreen;

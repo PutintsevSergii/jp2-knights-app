@@ -14,6 +14,7 @@ import {
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
+  buildPublicSilentPrayerScreen,
   buildSignInScreen
 } from "./public-screens.js";
 import type { PublicRoute } from "./public-screens.js";
@@ -24,6 +25,7 @@ import { JoinRequestFormScreen } from "./screens/JoinRequestFormScreen.js";
 import { PublicContentDetailScreen } from "./screens/PublicContentDetailScreen.js";
 import { PublicContentListScreen } from "./screens/PublicContentListScreen.js";
 import { PublicHomeScreen } from "./screens/PublicHomeScreen.js";
+import { PublicSilentPrayerScreen } from "./screens/PublicSilentPrayerScreen.js";
 import { SignInScreen } from "./screens/SignInScreen.js";
 
 export interface MobilePublicSurfaceProps {
@@ -94,6 +96,22 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
+      />
+    );
+  }
+
+  if (route === "PublicSilentPrayer") {
+    return (
+      <PublicSilentPrayerScreen
+        screen={buildPublicSilentPrayerScreen({
+          state: publicContent.publicSilentPrayerState,
+          response: publicContent.publicSilentPrayerSessions,
+          joined: publicContent.publicSilentPrayerJoin,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          void publicContent.handlePublicAction(action);
+        }}
       />
     );
   }

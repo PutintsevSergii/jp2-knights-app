@@ -92,7 +92,8 @@ export function brotherStateCopy(
     | "announcements"
     | "eventDetail"
     | "prayers"
-    | "organizationUnitDetail",
+    | "organizationUnitDetail"
+    | "silentPrayer",
   state: MobileScreenState
 ): { title: string; body: string } {
   return brotherStateCopies[screen][state];
@@ -107,7 +108,8 @@ const brotherStateCopies: Record<
   | "announcements"
   | "eventDetail"
   | "prayers"
-  | "organizationUnitDetail",
+  | "organizationUnitDetail"
+  | "silentPrayer",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   today: {
@@ -378,6 +380,36 @@ const brotherStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh organization-unit details."
+    }
+  },
+  silentPrayer: {
+    ready: {
+      title: "Silent Prayer",
+      body: "Brother-visible silent-prayer sessions are available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Silent-prayer sessions are loading."
+    },
+    empty: {
+      title: "Silent Prayer",
+      body: "No brother-visible silent-prayer session is active yet."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Silent-prayer sessions could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active brother profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before brother silent prayer is available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh silent-prayer sessions."
     }
   }
 };

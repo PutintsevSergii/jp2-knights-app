@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { RuntimeMode } from "@jp2/shared-types";
 import type {
   AssignedRoadmapResponseDto,
+  BrotherSilentPrayerJoinResponseDto,
+  BrotherSilentPrayerListResponseDto,
   RoadmapSubmissionSummaryDto
 } from "@jp2/shared-validation";
 import {
@@ -32,6 +34,7 @@ import {
   buildBrotherProfileScreen,
   buildBrotherPrayersScreen,
   buildBrotherRoadmapScreen,
+  buildBrotherSilentPrayerScreen,
   buildBrotherTodayScreen,
   buildMyOrganizationUnitsScreen,
   buildOrganizationUnitDetailScreen
@@ -46,11 +49,21 @@ import {
   submitBrotherRoadmapStep
 } from "./roadmap-api.js";
 import { fallbackBrotherRoadmap } from "./roadmap.js";
+import {
+  brotherSilentPrayerLoadFailureState,
+  fetchBrotherSilentPrayerSessions,
+  joinBrotherSilentPrayerSession
+} from "./silent-prayer-api.js";
+import {
+  fallbackBrotherSilentPrayerJoin,
+  fallbackBrotherSilentPrayerSessions
+} from "./silent-prayer.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
 import { BrotherPrayersScreen } from "./screens/BrotherPrayersScreen.js";
 import { BrotherRoadmapScreen } from "./screens/BrotherRoadmapScreen.js";
+import { BrotherSilentPrayerScreen } from "./screens/BrotherSilentPrayerScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { MyOrganizationUnitsScreen } from "./screens/MyOrganizationUnitsScreen.js";
 import { OrganizationUnitDetailScreen } from "./screens/OrganizationUnitDetailScreen.js";
@@ -78,6 +91,9 @@ export function MobileBrotherSurface({
     () => fallbackMyOrganizationUnits.organizationUnits[0]?.id
   );
   const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
+  const [brotherSilentPrayerJoin, setBrotherSilentPrayerJoin] = useState<
+    BrotherSilentPrayerJoinResponseDto | undefined
+  >();
   const brotherToday = usePrivateRouteResource({
     route,
     activeRoute: "BrotherToday",
@@ -184,6 +200,21 @@ export function MobileBrotherSurface({
       }),
     failureState: roadmapLoadFailureState
   });
+  const brotherSilentPrayer = usePrivateRouteResource({
+    route,
+    activeRoute: "SilentPrayer",
+    runtimeMode,
+    authToken,
+    initialApiState: "empty",
+    demoData: fallbackBrotherSilentPrayerSessions,
+    loadKey: publicApiBaseUrl,
+    load: () =>
+      fetchBrotherSilentPrayerSessions({
+        baseUrl: publicApiBaseUrl,
+        authToken: requirePrivateAuthToken(authToken)
+      }),
+    failureState: brotherSilentPrayerLoadFailureState
+  });
   const brotherEventDetail = usePrivateRouteResource({
     route,
     activeRoute: "BrotherEventDetail",
@@ -225,8 +256,31 @@ export function MobileBrotherSurface({
     actionId?: string,
     submissionBody?: string
   ) {
-    if (nextRoute === "SilentPrayer") {
-      onRouteChange("BrotherToday");
+    if (nextRoute === "SilentPrayer" && actionId === "join-silent-prayer" && targetId) {
+      if (runtimeMode === "demo") {
+        setBrotherSilentPrayerJoin(fallbackBrotherSilentPrayerJoin);
+        brotherSilentPrayer.setData(fallbackBrotherSilentPrayerSessions);
+        brotherSilentPrayer.setState("ready");
+      } else if (authToken) {
+        brotherSilentPrayer.setState("loading");
+
+        try {
+          const response = await joinBrotherSilentPrayerSession({
+            id: targetId,
+            baseUrl: publicApiBaseUrl,
+            authToken
+          });
+          setBrotherSilentPrayerJoin(response);
+          brotherSilentPrayer.setData((current) =>
+            current ? applyBrotherSilentPrayerJoin(current, response) : current
+          );
+          brotherSilentPrayer.setState("ready");
+        } catch (error: unknown) {
+          brotherSilentPrayer.setState(brotherSilentPrayerLoadFailureState(error));
+        }
+      }
+
+      onRouteChange("SilentPrayer");
       return;
     }
 
@@ -414,6 +468,20 @@ export function MobileBrotherSurface({
     );
   }
 
+  if (route === "SilentPrayer") {
+    return (
+      <BrotherSilentPrayerScreen
+        screen={buildBrotherSilentPrayerScreen({
+          state: brotherSilentPrayer.state,
+          response: brotherSilentPrayer.data,
+          joined: brotherSilentPrayerJoin,
+          runtimeMode
+        })}
+        onAction={handleBrotherAction}
+      />
+    );
+  }
+
   if (route === "BrotherEventDetail") {
     return (
       <BrotherEventDetailScreen
@@ -437,6 +505,18 @@ export function MobileBrotherSurface({
       onAction={handleBrotherAction}
     />
   );
+}
+
+function applyBrotherSilentPrayerJoin(
+  current: BrotherSilentPrayerListResponseDto,
+  joined: BrotherSilentPrayerJoinResponseDto
+): BrotherSilentPrayerListResponseDto {
+  return {
+    ...current,
+    sessions: current.sessions.map((session) =>
+      session.id === joined.session.id ? joined.session : session
+    )
+  };
 }
 
 function applyRoadmapSubmission(

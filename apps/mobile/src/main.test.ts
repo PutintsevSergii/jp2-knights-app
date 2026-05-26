@@ -28,6 +28,9 @@ import {
   buildBrotherProfileUrl,
   buildBrotherRoadmapScreen,
   buildBrotherRoadmapUrl,
+  buildBrotherSilentPrayerJoinUrl,
+  buildBrotherSilentPrayerScreen,
+  buildBrotherSilentPrayerSessionsUrl,
   buildBrotherTodayScreen,
   buildBrotherTodayUrl,
   buildMyOrganizationUnitsScreen,
@@ -39,6 +42,9 @@ import {
   buildPublicCandidateRequestUrl,
   buildPublicEventDetailScreen,
   buildPublicEventsListScreen,
+  buildPublicSilentPrayerJoinUrl,
+  buildPublicSilentPrayerScreen,
+  buildPublicSilentPrayerSessionsUrl,
   fallbackAboutOrderContentPage,
   fallbackBrotherAnnouncements,
   fallbackBrotherEventDetail,
@@ -46,6 +52,7 @@ import {
   fallbackBrotherEvents,
   fallbackBrotherPrayers,
   fallbackBrotherRoadmap,
+  fallbackBrotherSilentPrayerSessions,
   fallbackBrotherToday,
   fallbackMyOrganizationUnits,
   fallbackCandidateAnnouncements,
@@ -58,6 +65,7 @@ import {
   fallbackPublicEvents,
   fallbackPublicPrayerDetail,
   fallbackPublicPrayers,
+  fallbackPublicSilentPrayerSessions,
   buildPublicHomeScreen,
   buildPublicPrayerDetailScreen,
   buildPublicPrayerCategoriesScreen,
@@ -123,11 +131,13 @@ describe("mobile shell", () => {
     expect(isPublicRoute("PublicHome")).toBe(true);
     expect(isPublicRoute("Login")).toBe(true);
     expect(isPublicRoute("IdleApproval")).toBe(true);
+    expect(isPublicRoute("PublicSilentPrayer")).toBe(true);
     expect(isCandidateRoute("CandidateEvents")).toBe(true);
     expect(isCandidateRoute("CandidateRoadmap")).toBe(true);
     expect(isBrotherRoute("BrotherToday")).toBe(true);
     expect(isBrotherRoute("BrotherRoadmap")).toBe(true);
     expect(isBrotherRoute("OrganizationUnitDetail")).toBe(true);
+    expect(isBrotherRoute("SilentPrayer")).toBe(true);
     expect(isPublicRoute("BrotherToday")).toBe(false);
     expect(isCandidateRoute("PublicHome")).toBe(false);
     expect(isBrotherRoute("CandidateDashboard")).toBe(false);
@@ -243,6 +253,24 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("PublicEventsList");
+    expect(buildPublicSilentPrayerSessionsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/public/silent-prayer-events"
+    );
+    expect(
+      buildPublicSilentPrayerJoinUrl(
+        "12121212-1212-4121-8121-121212121212",
+        "https://api.example.test"
+      )
+    ).toBe(
+      "https://api.example.test/public/silent-prayer-events/12121212-1212-4121-8121-121212121212/join"
+    );
+    expect(
+      buildPublicSilentPrayerScreen({
+        state: "ready",
+        response: fallbackPublicSilentPrayerSessions,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("PublicSilentPrayer");
   });
 
   it("exports public prayer and event detail screen model builders", () => {
@@ -379,6 +407,17 @@ describe("mobile shell", () => {
     expect(buildBrotherRoadmapUrl("https://api.example.test")).toBe(
       "https://api.example.test/brother/roadmap"
     );
+    expect(buildBrotherSilentPrayerSessionsUrl("https://api.example.test")).toBe(
+      "https://api.example.test/brother/silent-prayer-events"
+    );
+    expect(
+      buildBrotherSilentPrayerJoinUrl(
+        "34343434-3434-4343-8343-343434343434",
+        "https://api.example.test"
+      )
+    ).toBe(
+      "https://api.example.test/brother/silent-prayer-events/34343434-3434-4343-8343-343434343434/join"
+    );
     expect(
       buildBrotherEventDetailUrl("44444444-4444-4444-8444-444444444444", "https://api.example.test")
     ).toBe("https://api.example.test/brother/events/44444444-4444-4444-8444-444444444444");
@@ -457,6 +496,13 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("BrotherRoadmap");
+    expect(
+      buildBrotherSilentPrayerScreen({
+        state: "ready",
+        response: fallbackBrotherSilentPrayerSessions,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("SilentPrayer");
   });
 });
 
