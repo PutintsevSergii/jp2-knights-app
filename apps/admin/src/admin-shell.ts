@@ -1,4 +1,8 @@
 import {
+  adminAuditLogShellRoutes,
+  type AdminAuditLogShellRouteMetadata
+} from "./admin-audit-logs-shell.js";
+import {
   adminContentShellRoutes,
   type AdminContentShellRouteMetadata
 } from "./admin-content-shell.js";
@@ -33,6 +37,7 @@ import {
 
 export type AdminShellRoute =
   | "/admin/dashboard"
+  | AdminAuditLogShellRouteMetadata["path"]
   | AdminIdentityAccessShellRouteMetadata["path"]
   | AdminCandidateRequestShellRouteMetadata["path"]
   | AdminCandidateShellRouteMetadata["path"]
@@ -47,6 +52,7 @@ export interface AdminShellRouteMetadata {
   label: string;
   screenRoute:
     | "AdminDashboard"
+    | AdminAuditLogShellRouteMetadata["screenRoute"]
     | AdminIdentityAccessShellRouteMetadata["screenRoute"]
     | AdminCandidateRequestShellRouteMetadata["screenRoute"]
     | AdminCandidateShellRouteMetadata["screenRoute"]
@@ -63,6 +69,7 @@ export const adminShellRoutes: readonly AdminShellRouteMetadata[] = [
     label: "Dashboard",
     screenRoute: "AdminDashboard"
   },
+  ...adminAuditLogShellRoutes,
   ...adminIdentityAccessShellRoutes,
   ...adminCandidateRequestShellRoutes,
   ...adminCandidateShellRoutes,

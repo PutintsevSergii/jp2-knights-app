@@ -79,6 +79,10 @@ function isActiveRoute(routePath: string, currentPath: string): boolean {
     return currentPath === routePath;
   }
 
+  if (routePath === "/admin/audit-logs") {
+    return currentPath === routePath;
+  }
+
   if (routePath === "/admin/candidate-requests") {
     return currentPath === routePath || currentPath.startsWith("/admin/candidate-requests/");
   }

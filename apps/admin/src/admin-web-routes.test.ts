@@ -9,6 +9,7 @@ describe("admin web route registry", () => {
 
   it("delegates matching to feature-owned route definitions", () => {
     expect(findAdminWebRoute("/admin/dashboard")).toBeDefined();
+    expect(findAdminWebRoute("/admin/audit-logs")).toBeDefined();
     expect(findAdminWebRoute("/admin/candidate-requests/request-1")).toBeDefined();
     expect(findAdminWebRoute("/admin/roadmap-assignments/assignment-1")).toBeDefined();
     expect(findAdminWebRoute("/admin/announcements/new")).toBeDefined();

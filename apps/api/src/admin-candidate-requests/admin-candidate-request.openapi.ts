@@ -79,6 +79,15 @@ export const adminCandidateRequestDetailResponseOpenApiSchema = {
   }
 };
 
+export const adminCandidateRequestExportResponseOpenApiSchema = {
+  type: "object",
+  required: ["candidateRequest", "exportedAt"],
+  properties: {
+    candidateRequest: adminCandidateRequestDetailOpenApiSchema,
+    exportedAt: { type: "string", format: "date-time" }
+  }
+};
+
 export const adminCandidateProfileDetailOpenApiSchema = {
   type: "object",
   required: [

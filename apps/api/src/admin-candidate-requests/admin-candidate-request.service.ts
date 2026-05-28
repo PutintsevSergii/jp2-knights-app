@@ -3,6 +3,7 @@ import { hasRole } from "@jp2/shared-auth";
 import {
   adminScopeFor,
   requireAdminLite,
+  requireSuperAdmin,
   requireAdminOrganizationUnitScope
 } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
@@ -11,6 +12,7 @@ import { AdminCandidateRequestRepository } from "./admin-candidate-request.repos
 import type {
   AdminCandidateRequestDetail,
   AdminCandidateRequestDetailResponse,
+  AdminCandidateRequestExportResponse,
   AdminCandidateRequestListResponse,
   AdminCandidateProfileDetailResponse,
   ConvertCandidateRequest,
@@ -54,6 +56,34 @@ export class AdminCandidateRequestService {
     }
 
     return { candidateRequest };
+  }
+
+  async exportCandidateRequest(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminCandidateRequestExportResponse> {
+    requireSuperAdmin(principal);
+
+    const candidateRequest = await this.candidateRequestRepository.findCandidateRequestForExport(id);
+
+    if (!candidateRequest) {
+      throw new NotFoundException("Candidate request was not found.");
+    }
+
+    await this.auditLog.record({
+      action: "admin.candidateRequest.export",
+      actorUserId: principal.id,
+      entityType: "candidate_request",
+      entityId: candidateRequest.id,
+      scopeOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+      beforeSummary: null,
+      afterSummary: summarizeCandidateRequestExportForAudit(candidateRequest)
+    });
+
+    return {
+      candidateRequest,
+      exportedAt: new Date().toISOString()
+    };
   }
 
   async updateCandidateRequest(
@@ -271,5 +301,17 @@ function summarizeCandidateRequestForAudit(
     assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
     hasOfficerNote: Boolean(candidateRequest.officerNote),
     archivedAt: candidateRequest.archivedAt
+  };
+}
+
+function summarizeCandidateRequestExportForAudit(
+  candidateRequest: AdminCandidateRequestDetail
+): AuditSummary {
+  return {
+    candidateRequestId: candidateRequest.id,
+    status: candidateRequest.status,
+    assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+    archived: Boolean(candidateRequest.archivedAt),
+    includesPersonalData: true
   };
 }

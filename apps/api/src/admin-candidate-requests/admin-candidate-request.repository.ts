@@ -17,6 +17,7 @@ export abstract class AdminCandidateRequestRepository {
     id: string,
     scopeOrganizationUnitIds: readonly string[] | null
   ): Promise<AdminCandidateRequestDetail | null>;
+  abstract findCandidateRequestForExport(id: string): Promise<AdminCandidateRequestDetail | null>;
   abstract updateCandidateRequest(
     id: string,
     data: UpdateAdminCandidateRequest,
@@ -61,6 +62,23 @@ export class PrismaAdminCandidateRequestRepository extends AdminCandidateRequest
     const record = await this.prisma.candidateRequest.findFirst({
       where: {
         ...scopedCandidateRequestWhere(scopeOrganizationUnitIds),
+        id
+      },
+      include: {
+        assignedOrganizationUnit: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    return record ? toAdminCandidateRequestDetail(record) : null;
+  }
+
+  async findCandidateRequestForExport(id: string): Promise<AdminCandidateRequestDetail | null> {
+    const record = await this.prisma.candidateRequest.findUnique({
+      where: {
         id
       },
       include: {

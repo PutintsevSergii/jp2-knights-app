@@ -10,6 +10,7 @@ import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   adminCandidateRequestDetailResponseOpenApiSchema,
+  adminCandidateRequestExportResponseOpenApiSchema,
   adminCandidateRequestListResponseOpenApiSchema,
   adminCandidateProfileDetailResponseOpenApiSchema,
   convertCandidateRequestOpenApiSchema,
@@ -18,6 +19,7 @@ import {
 import { AdminCandidateRequestService } from "./admin-candidate-request.service.js";
 import type {
   AdminCandidateRequestDetailResponse,
+  AdminCandidateRequestExportResponse,
   AdminCandidateRequestListResponse,
   AdminCandidateProfileDetailResponse,
   ConvertCandidateRequest,
@@ -71,6 +73,33 @@ export class AdminCandidateRequestController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
   ): Promise<AdminCandidateRequestDetailResponse> {
     return this.candidateRequestService.getCandidateRequest(requirePrincipal(request), id);
+  }
+
+  @Get(":id/export")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin personal-data export for a candidate request.",
+    schema: adminCandidateRequestExportResponseOpenApiSchema
+  })
+  @ApiParam({
+    name: "id",
+    schema: { type: "string", format: "uuid" }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "The current user is not a Super Admin.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate request does not exist.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  exportCandidateRequest(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminCandidateRequestExportResponse> {
+    return this.candidateRequestService.exportCandidateRequest(requirePrincipal(request), id);
   }
 
   @Patch(":id")

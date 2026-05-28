@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  fallbackAdminAuditLogs,
   fallbackAdminAnnouncements,
   fallbackAdminCandidateProfiles,
   fallbackAdminCandidateRequestDetails,
@@ -9,6 +10,7 @@ import {
   fallbackAdminOrganizationUnits,
   fallbackAdminPrayers
 } from "./admin-content-fixtures.js";
+import { GET as getAuditLogs } from "./app/admin/audit-logs/route.js";
 import { GET as getCandidateRequestDetail } from "./app/admin/candidate-requests/[id]/route.js";
 import { GET as getCandidateRequests } from "./app/admin/candidate-requests/route.js";
 import { GET as getCandidateDetail } from "./app/admin/candidates/[id]/route.js";
@@ -45,8 +47,39 @@ describe("Next admin dashboard route scaffold", () => {
     expect(response.headers.get("content-type")).toBe("text/html; charset=utf-8");
     expect(body).toContain("JP2 Admin Lite");
     expect(body).toContain('data-runtime-mode="demo"');
+    expect(body).toContain("Audit Logs");
     expect(body).toContain("Sign-In Reviews");
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("mounts audit logs through the existing API client and bearer forwarding", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminAuditLogs)
+      })
+    );
+    vi.stubEnv("APP_RUNTIME_MODE", "api");
+    vi.stubEnv("API_BASE_URL", "https://api.example.test");
+    vi.stubGlobal("fetch", fetchImpl);
+
+    const response = await getAuditLogs(
+      new Request("https://admin.example.test/admin/audit-logs", {
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      })
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(body).toContain("admin.silentPrayerEvent.update");
+    expect(body).toContain('href="/admin/audit-logs" aria-current="page"');
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/audit-logs", {
+      method: "GET",
+      headers: { authorization: "Bearer token_1" }
+    });
   });
 
   it("reuses the current dashboard API client and bearer forwarding in API mode", async () => {

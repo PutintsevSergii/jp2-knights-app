@@ -34,6 +34,11 @@ export const adminCandidateRequestDetailResponseSchema = z.object({
   candidateRequest: adminCandidateRequestDetailSchema
 });
 
+export const adminCandidateRequestExportResponseSchema = z.object({
+  candidateRequest: adminCandidateRequestDetailSchema,
+  exportedAt: z.iso.datetime()
+});
+
 export const adminCandidateProfileSummarySchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
@@ -117,6 +122,26 @@ export const adminDashboardResponseSchema = z.object({
   tasks: z.array(adminDashboardTaskSchema)
 });
 
+const auditSummaryValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
+export const adminAuditLogSummarySchema = z.object({
+  id: z.uuid(),
+  actorUserId: z.uuid().nullable(),
+  actorDisplayName: z.string().trim().min(1).max(200).nullable(),
+  action: z.string().trim().min(1).max(160),
+  entityType: z.string().trim().min(1).max(120),
+  entityId: z.uuid(),
+  scopeOrganizationUnitId: z.uuid().nullable(),
+  beforeSummary: z.record(z.string(), auditSummaryValueSchema).nullable(),
+  afterSummary: z.record(z.string(), auditSummaryValueSchema).nullable(),
+  requestId: z.string().trim().min(1).max(120).nullable(),
+  createdAt: z.iso.datetime()
+});
+
+export const adminAuditLogListResponseSchema = z.object({
+  auditLogs: z.array(adminAuditLogSummarySchema)
+});
+
 export const identityAccessReviewStatusSchema = z.enum([
   "pending",
   "confirmed",
@@ -174,6 +199,9 @@ export type AdminCandidateRequestListResponseDto = z.infer<
 export type AdminCandidateRequestDetailResponseDto = z.infer<
   typeof adminCandidateRequestDetailResponseSchema
 >;
+export type AdminCandidateRequestExportResponseDto = z.infer<
+  typeof adminCandidateRequestExportResponseSchema
+>;
 export type AdminCandidateProfileSummaryDto = z.infer<typeof adminCandidateProfileSummarySchema>;
 export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfileDetailSchema>;
 export type AdminCandidateProfileDetailResponseDto = z.infer<
@@ -187,6 +215,8 @@ export type ConvertCandidateRequestDto = z.infer<typeof convertCandidateRequestS
 export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidateRequestSchema>;
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
+export type AdminAuditLogSummaryDto = z.infer<typeof adminAuditLogSummarySchema>;
+export type AdminAuditLogListResponseDto = z.infer<typeof adminAuditLogListResponseSchema>;
 export type AdminIdentityAccessReviewSummaryDto = z.infer<
   typeof adminIdentityAccessReviewSummarySchema
 >;

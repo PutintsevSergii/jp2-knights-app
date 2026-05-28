@@ -1,4 +1,5 @@
 import type {
+  AdminAuditLogListResponseDto,
   AdminAnnouncementListResponseDto,
   AdminDashboardResponseDto,
   AdminEventListResponseDto,
@@ -11,6 +12,28 @@ import type {
   AdminRoadmapSubmissionDetailDto,
   AdminPrayerListResponseDto
 } from "@jp2/shared-validation";
+
+export const fallbackAdminAuditLogs: AdminAuditLogListResponseDto = {
+  auditLogs: [
+    {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      actorUserId: "11111111-1111-4111-8111-111111111111",
+      actorDisplayName: "Demo Admin",
+      action: "admin.silentPrayerEvent.update",
+      entityType: "silent_prayer_event",
+      entityId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      scopeOrganizationUnitId: null,
+      beforeSummary: {
+        status: "APPROVED"
+      },
+      afterSummary: {
+        status: "PUBLISHED"
+      },
+      requestId: "req_demo_audit",
+      createdAt: "2026-05-27T08:00:00.000Z"
+    }
+  ]
+};
 
 export const fallbackAdminDashboard: AdminDashboardResponseDto = {
   scope: {

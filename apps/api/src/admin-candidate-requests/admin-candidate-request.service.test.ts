@@ -86,6 +86,69 @@ describe("AdminCandidateRequestService", () => {
     expect(repository.lastScope).toEqual(["11111111-1111-4111-8111-111111111111"]);
   });
 
+  it("exports archived candidate request personal data for Super Admins and audits redacted metadata", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = {
+      ...request,
+      archivedAt: "2026-05-20T10:00:00.000Z",
+      officerNote: "Sensitive officer note"
+    };
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateRequestService(
+      repository,
+      auditLog as unknown as AuditLogService
+    );
+
+    const response = await service.exportCandidateRequest(superAdmin, request.id);
+
+    expect(response.candidateRequest).toEqual(repository.exportRecord);
+    expect(response.exportedAt).toEqual(expect.any(String));
+    expect(repository.lastExportId).toBe(request.id);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateRequest.export",
+      actorUserId: superAdmin.id,
+      entityType: "candidate_request",
+      entityId: request.id,
+      scopeOrganizationUnitId: request.assignedOrganizationUnitId,
+      beforeSummary: null,
+      afterSummary: {
+        candidateRequestId: request.id,
+        status: request.status,
+        assignedOrganizationUnitId: request.assignedOrganizationUnitId,
+        archived: true,
+        includesPersonalData: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("I would like to learn more.");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Sensitive officer note");
+  });
+
+  it("blocks officers from exporting candidate request personal data before loading rows", async () => {
+    const repository = new FakeRepository();
+
+    await expect(
+      new AdminCandidateRequestService(repository, auditLog()).exportCandidateRequest(
+        officer,
+        request.id
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.lastExportId).toBeUndefined();
+  });
+
+  it("returns not found when a Super Admin exports a missing candidate request", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = null;
+
+    await expect(
+      new AdminCandidateRequestService(repository, auditLog()).exportCandidateRequest(
+        superAdmin,
+        request.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it("updates status and writes redacted audit summaries", async () => {
     const repository = new FakeRepository();
     const auditLog = new FakeAuditLog();
@@ -307,7 +370,9 @@ describe("AdminCandidateRequestService", () => {
 class FakeRepository implements AdminCandidateRequestRepository {
   visible = true;
   record = request;
+  exportRecord: AdminCandidateRequestDetail | null = request;
   lastScope: readonly string[] | null | undefined;
+  lastExportId: string | undefined;
   lastConverted:
     | {
         id: string;
@@ -328,6 +393,11 @@ class FakeRepository implements AdminCandidateRequestRepository {
   findCandidateRequest(_id: string, scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
     return Promise.resolve(this.visible ? this.record : null);
+  }
+
+  findCandidateRequestForExport(id: string) {
+    this.lastExportId = id;
+    return Promise.resolve(this.exportRecord);
   }
 
   updateCandidateRequest(

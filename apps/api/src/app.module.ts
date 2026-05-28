@@ -1,4 +1,5 @@
 import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
+import { AdminAuditModule } from "./admin-audit/admin-audit.module.js";
 import { AdminCandidateRequestModule } from "./admin-candidate-requests/admin-candidate-request.module.js";
 import { AdminCandidateModule } from "./admin-candidates/admin-candidate.module.js";
 import { AdminContentModule } from "./admin-content/admin-content.module.js";
@@ -18,6 +19,7 @@ import { SilentPrayerModule } from "./silent-prayer/silent-prayer.module.js";
 
 @Module({
   imports: [
+    AdminAuditModule,
     AdminCandidateRequestModule,
     AdminCandidateModule,
     AdminContentModule,

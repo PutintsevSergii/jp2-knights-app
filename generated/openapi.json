@@ -50,108 +50,114 @@
         ]
       }
     },
-    "/api/admin/candidate-requests": {
+    "/api/admin/audit-logs": {
       "get": {
-        "operationId": "AdminCandidateRequestController_listCandidateRequests",
+        "operationId": "AdminAuditController_listAuditLogs",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Candidate requests visible to the current admin scope.",
+            "description": "Latest redacted audit log entries for Super Admin review.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "required": [
-                    "candidateRequests"
+                    "auditLogs"
                   ],
                   "properties": {
-                    "candidateRequests": {
+                    "auditLogs": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "required": [
                           "id",
-                          "firstName",
-                          "lastName",
-                          "email",
-                          "country",
-                          "city",
-                          "messagePreview",
-                          "status",
-                          "assignedOrganizationUnitId",
-                          "assignedOrganizationUnitName",
-                          "createdAt",
-                          "updatedAt",
-                          "archivedAt"
+                          "actorUserId",
+                          "actorDisplayName",
+                          "action",
+                          "entityType",
+                          "entityId",
+                          "scopeOrganizationUnitId",
+                          "beforeSummary",
+                          "afterSummary",
+                          "requestId",
+                          "createdAt"
                         ],
                         "properties": {
                           "id": {
                             "type": "string",
                             "format": "uuid"
                           },
-                          "firstName": {
+                          "actorUserId": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 120
+                            "format": "uuid",
+                            "nullable": true
                           },
-                          "lastName": {
+                          "actorDisplayName": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 120
+                            "nullable": true
                           },
-                          "email": {
-                            "type": "string",
-                            "format": "email",
-                            "maxLength": 320
+                          "action": {
+                            "type": "string"
                           },
-                          "country": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 120
+                          "entityType": {
+                            "type": "string"
                           },
-                          "city": {
+                          "entityId": {
                             "type": "string",
-                            "minLength": 1,
-                            "maxLength": 120
-                          },
-                          "messagePreview": {
-                            "type": "string",
-                            "nullable": true,
-                            "maxLength": 160
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "new",
-                              "contacted",
-                              "invited",
-                              "rejected",
-                              "converted_to_candidate"
-                            ]
-                          },
-                          "assignedOrganizationUnitId": {
-                            "type": "string",
-                            "nullable": true,
                             "format": "uuid"
                           },
-                          "assignedOrganizationUnitName": {
+                          "scopeOrganizationUnitId": {
                             "type": "string",
-                            "nullable": true,
-                            "minLength": 1,
-                            "maxLength": 200
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "beforeSummary": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "nullable": true
+                          },
+                          "afterSummary": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "nullable": true
+                          },
+                          "requestId": {
+                            "type": "string",
+                            "nullable": true
                           },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
-                          },
-                          "updatedAt": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
-                          "archivedAt": {
-                            "type": "string",
-                            "nullable": true,
-                            "format": "date-time"
                           }
                         }
                       }
@@ -162,7 +168,7 @@
             }
           },
           "403": {
-            "description": "The current user does not have Admin Lite access.",
+            "description": "The current user is not a Super Admin.",
             "content": {
               "application/json": {
                 "schema": {
@@ -209,953 +215,7 @@
           }
         },
         "tags": [
-          "admin-candidate-requests"
-        ]
-      }
-    },
-    "/api/admin/candidate-requests/{id}": {
-      "get": {
-        "operationId": "AdminCandidateRequestController_getCandidateRequest",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Candidate request detail visible to the current admin scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "candidateRequest"
-                  ],
-                  "properties": {
-                    "candidateRequest": {
-                      "allOf": [
-                        {
-                          "type": "object",
-                          "required": [
-                            "id",
-                            "firstName",
-                            "lastName",
-                            "email",
-                            "country",
-                            "city",
-                            "messagePreview",
-                            "status",
-                            "assignedOrganizationUnitId",
-                            "assignedOrganizationUnitName",
-                            "createdAt",
-                            "updatedAt",
-                            "archivedAt"
-                          ],
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "firstName": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "lastName": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email",
-                              "maxLength": 320
-                            },
-                            "country": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "city": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "messagePreview": {
-                              "type": "string",
-                              "nullable": true,
-                              "maxLength": 160
-                            },
-                            "status": {
-                              "type": "string",
-                              "enum": [
-                                "new",
-                                "contacted",
-                                "invited",
-                                "rejected",
-                                "converted_to_candidate"
-                              ]
-                            },
-                            "assignedOrganizationUnitId": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "uuid"
-                            },
-                            "assignedOrganizationUnitName": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 200
-                            },
-                            "createdAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "updatedAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "archivedAt": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "date-time"
-                            }
-                          }
-                        },
-                        {
-                          "type": "object",
-                          "required": [
-                            "phone",
-                            "preferredLanguage",
-                            "message",
-                            "consentTextVersion",
-                            "consentAt",
-                            "officerNote"
-                          ],
-                          "properties": {
-                            "phone": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 40
-                            },
-                            "preferredLanguage": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 2,
-                              "maxLength": 10
-                            },
-                            "message": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 2000
-                            },
-                            "consentTextVersion": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "consentAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "officerNote": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 2000
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The current user does not have Admin Lite access.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The candidate request is not visible in the current admin scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin-candidate-requests"
-        ]
-      },
-      "patch": {
-        "operationId": "AdminCandidateRequestController_updateCandidateRequest",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "minProperties": 1,
-                "additionalProperties": false,
-                "properties": {
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "new",
-                      "contacted",
-                      "invited",
-                      "rejected"
-                    ]
-                  },
-                  "assignedOrganizationUnitId": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "uuid"
-                  },
-                  "officerNote": {
-                    "type": "string",
-                    "nullable": true,
-                    "minLength": 1,
-                    "maxLength": 2000
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updated candidate request status, assignment, or officer note.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "candidateRequest"
-                  ],
-                  "properties": {
-                    "candidateRequest": {
-                      "allOf": [
-                        {
-                          "type": "object",
-                          "required": [
-                            "id",
-                            "firstName",
-                            "lastName",
-                            "email",
-                            "country",
-                            "city",
-                            "messagePreview",
-                            "status",
-                            "assignedOrganizationUnitId",
-                            "assignedOrganizationUnitName",
-                            "createdAt",
-                            "updatedAt",
-                            "archivedAt"
-                          ],
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "firstName": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "lastName": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email",
-                              "maxLength": 320
-                            },
-                            "country": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "city": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "messagePreview": {
-                              "type": "string",
-                              "nullable": true,
-                              "maxLength": 160
-                            },
-                            "status": {
-                              "type": "string",
-                              "enum": [
-                                "new",
-                                "contacted",
-                                "invited",
-                                "rejected",
-                                "converted_to_candidate"
-                              ]
-                            },
-                            "assignedOrganizationUnitId": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "uuid"
-                            },
-                            "assignedOrganizationUnitName": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 200
-                            },
-                            "createdAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "updatedAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "archivedAt": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "date-time"
-                            }
-                          }
-                        },
-                        {
-                          "type": "object",
-                          "required": [
-                            "phone",
-                            "preferredLanguage",
-                            "message",
-                            "consentTextVersion",
-                            "consentAt",
-                            "officerNote"
-                          ],
-                          "properties": {
-                            "phone": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 40
-                            },
-                            "preferredLanguage": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 2,
-                              "maxLength": 10
-                            },
-                            "message": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 2000
-                            },
-                            "consentTextVersion": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 120
-                            },
-                            "consentAt": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "officerNote": {
-                              "type": "string",
-                              "nullable": true,
-                              "minLength": 1,
-                              "maxLength": 2000
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The candidate request update payload failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The current admin cannot update candidate requests in the requested scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The candidate request is not visible in the current admin scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin-candidate-requests"
-        ]
-      }
-    },
-    "/api/admin/candidate-requests/{id}/convert": {
-      "post": {
-        "operationId": "AdminCandidateRequestController_convertCandidateRequest",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "assignedOrganizationUnitId": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "responsibleOfficerId": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "uuid"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Converted candidate request with newly created candidate profile.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "candidateProfile"
-                  ],
-                  "properties": {
-                    "candidateProfile": {
-                      "type": "object",
-                      "required": [
-                        "id",
-                        "userId",
-                        "candidateRequestId",
-                        "displayName",
-                        "email",
-                        "preferredLanguage",
-                        "assignedOrganizationUnitId",
-                        "assignedOrganizationUnitName",
-                        "responsibleOfficerId",
-                        "responsibleOfficerName",
-                        "status",
-                        "createdAt",
-                        "updatedAt",
-                        "archivedAt"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "userId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "candidateRequestId": {
-                          "type": "string",
-                          "nullable": true,
-                          "format": "uuid"
-                        },
-                        "displayName": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 200
-                        },
-                        "email": {
-                          "type": "string",
-                          "format": "email",
-                          "maxLength": 320
-                        },
-                        "preferredLanguage": {
-                          "type": "string",
-                          "nullable": true,
-                          "minLength": 2,
-                          "maxLength": 10
-                        },
-                        "assignedOrganizationUnitId": {
-                          "type": "string",
-                          "nullable": true,
-                          "format": "uuid"
-                        },
-                        "assignedOrganizationUnitName": {
-                          "type": "string",
-                          "nullable": true,
-                          "minLength": 1,
-                          "maxLength": 200
-                        },
-                        "responsibleOfficerId": {
-                          "type": "string",
-                          "nullable": true,
-                          "format": "uuid"
-                        },
-                        "responsibleOfficerName": {
-                          "type": "string",
-                          "nullable": true,
-                          "minLength": 1,
-                          "maxLength": 200
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "paused",
-                            "converted_to_brother",
-                            "archived"
-                          ]
-                        },
-                        "createdAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "archivedAt": {
-                          "type": "string",
-                          "nullable": true,
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The conversion payload failed validation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The current admin cannot convert the request in the requested scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The candidate request is not visible in the current admin scope.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "The candidate request cannot be converted from its current state.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "required": [
-                        "code",
-                        "message",
-                        "details",
-                        "requestId",
-                        "timestamp"
-                      ],
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "requestId": {
-                          "type": "string"
-                        },
-                        "timestamp": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin-candidate-requests"
+          "admin-audit"
         ]
       }
     },
@@ -2083,6 +1143,1386 @@
         },
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/admin/candidate-requests": {
+      "get": {
+        "operationId": "AdminCandidateRequestController_listCandidateRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Candidate requests visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequests"
+                  ],
+                  "properties": {
+                    "candidateRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "email",
+                          "country",
+                          "city",
+                          "messagePreview",
+                          "status",
+                          "assignedOrganizationUnitId",
+                          "assignedOrganizationUnitName",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "firstName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "lastName": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "maxLength": 320
+                          },
+                          "country": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "city": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "messagePreview": {
+                            "type": "string",
+                            "nullable": true,
+                            "maxLength": 160
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "new",
+                              "contacted",
+                              "invited",
+                              "rejected",
+                              "converted_to_candidate"
+                            ]
+                          },
+                          "assignedOrganizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "assignedOrganizationUnitName": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      }
+    },
+    "/api/admin/candidate-requests/{id}": {
+      "get": {
+        "operationId": "AdminCandidateRequestController_getCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate request detail visible to the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequest"
+                  ],
+                  "properties": {
+                    "candidateRequest": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "country",
+                            "city",
+                            "messagePreview",
+                            "status",
+                            "assignedOrganizationUnitId",
+                            "assignedOrganizationUnitName",
+                            "createdAt",
+                            "updatedAt",
+                            "archivedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email",
+                              "maxLength": 320
+                            },
+                            "country": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "city": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "messagePreview": {
+                              "type": "string",
+                              "nullable": true,
+                              "maxLength": 160
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "contacted",
+                                "invited",
+                                "rejected",
+                                "converted_to_candidate"
+                              ]
+                            },
+                            "assignedOrganizationUnitId": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "uuid"
+                            },
+                            "assignedOrganizationUnitName": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "archivedAt": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "phone",
+                            "preferredLanguage",
+                            "message",
+                            "consentTextVersion",
+                            "consentAt",
+                            "officerNote"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 2,
+                              "maxLength": 10
+                            },
+                            "message": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            },
+                            "consentTextVersion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "consentAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "officerNote": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user does not have Admin Lite access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminCandidateRequestController_updateCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "contacted",
+                      "invited",
+                      "rejected"
+                    ]
+                  },
+                  "assignedOrganizationUnitId": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uuid"
+                  },
+                  "officerNote": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated candidate request status, assignment, or officer note.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequest"
+                  ],
+                  "properties": {
+                    "candidateRequest": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "country",
+                            "city",
+                            "messagePreview",
+                            "status",
+                            "assignedOrganizationUnitId",
+                            "assignedOrganizationUnitName",
+                            "createdAt",
+                            "updatedAt",
+                            "archivedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email",
+                              "maxLength": 320
+                            },
+                            "country": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "city": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "messagePreview": {
+                              "type": "string",
+                              "nullable": true,
+                              "maxLength": 160
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "contacted",
+                                "invited",
+                                "rejected",
+                                "converted_to_candidate"
+                              ]
+                            },
+                            "assignedOrganizationUnitId": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "uuid"
+                            },
+                            "assignedOrganizationUnitName": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "archivedAt": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "phone",
+                            "preferredLanguage",
+                            "message",
+                            "consentTextVersion",
+                            "consentAt",
+                            "officerNote"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 2,
+                              "maxLength": 10
+                            },
+                            "message": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            },
+                            "consentTextVersion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "consentAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "officerNote": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The candidate request update payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current admin cannot update candidate requests in the requested scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      }
+    },
+    "/api/admin/candidate-requests/{id}/export": {
+      "get": {
+        "operationId": "AdminCandidateRequestController_exportCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Super Admin personal-data export for a candidate request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateRequest",
+                    "exportedAt"
+                  ],
+                  "properties": {
+                    "candidateRequest": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "country",
+                            "city",
+                            "messagePreview",
+                            "status",
+                            "assignedOrganizationUnitId",
+                            "assignedOrganizationUnitName",
+                            "createdAt",
+                            "updatedAt",
+                            "archivedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email",
+                              "maxLength": 320
+                            },
+                            "country": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "city": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "messagePreview": {
+                              "type": "string",
+                              "nullable": true,
+                              "maxLength": 160
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "contacted",
+                                "invited",
+                                "rejected",
+                                "converted_to_candidate"
+                              ]
+                            },
+                            "assignedOrganizationUnitId": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "uuid"
+                            },
+                            "assignedOrganizationUnitName": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "archivedAt": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "phone",
+                            "preferredLanguage",
+                            "message",
+                            "consentTextVersion",
+                            "consentAt",
+                            "officerNote"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
+                            "preferredLanguage": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 2,
+                              "maxLength": 10
+                            },
+                            "message": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            },
+                            "consentTextVersion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "consentAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "officerNote": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "exportedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current user is not a Super Admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
+        ]
+      }
+    },
+    "/api/admin/candidate-requests/{id}/convert": {
+      "post": {
+        "operationId": "AdminCandidateRequestController_convertCandidateRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "assignedOrganizationUnitId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "responsibleOfficerId": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Converted candidate request with newly created candidate profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateProfile"
+                  ],
+                  "properties": {
+                    "candidateProfile": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "userId",
+                        "candidateRequestId",
+                        "displayName",
+                        "email",
+                        "preferredLanguage",
+                        "assignedOrganizationUnitId",
+                        "assignedOrganizationUnitName",
+                        "responsibleOfficerId",
+                        "responsibleOfficerName",
+                        "status",
+                        "createdAt",
+                        "updatedAt",
+                        "archivedAt"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "candidateRequestId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "displayName": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "maxLength": 320
+                        },
+                        "preferredLanguage": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 2,
+                          "maxLength": 10
+                        },
+                        "assignedOrganizationUnitId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "assignedOrganizationUnitName": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "responsibleOfficerId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "responsibleOfficerName": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "paused",
+                            "converted_to_brother",
+                            "archived"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "archivedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The conversion payload failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The current admin cannot convert the request in the requested scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The candidate request is not visible in the current admin scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The candidate request cannot be converted from its current state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId",
+                        "timestamp"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin-candidate-requests"
         ]
       }
     },

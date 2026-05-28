@@ -1,3 +1,4 @@
+import { adminAuditLogRouteDefinition } from "./admin-audit-logs-shell.js";
 import { adminCandidateRequestRouteDefinition } from "./admin-candidate-requests-shell.js";
 import { adminCandidateRouteDefinition } from "./admin-candidates-shell.js";
 import { adminContentRouteDefinition } from "./admin-content-shell.js";
@@ -21,6 +22,7 @@ export function findAdminWebRoute(path: string): AdminWebRouteDefinition | undef
 
 const adminWebRouteDefinitions: readonly AdminWebRouteDefinition[] = [
   adminDashboardRouteDefinition,
+  adminAuditLogRouteDefinition,
   adminIdentityAccessRouteDefinition,
   adminCandidateRequestRouteDefinition,
   adminCandidateRouteDefinition,
