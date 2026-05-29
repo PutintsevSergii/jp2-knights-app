@@ -76,6 +76,15 @@ describe("AdminCandidateRequestController", () => {
           exportedAt: "2026-05-27T08:00:00.000Z"
         });
       },
+      eraseCandidateRequest: (receivedPrincipal: CurrentUserPrincipal, id: string) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(id).toBe(candidateRequest.id);
+        return Promise.resolve({
+          candidateRequestId: candidateRequest.id,
+          erasedAt: "2026-05-29T08:00:00.000Z",
+          archivedAt: "2026-05-29T08:00:00.000Z"
+        });
+      },
       updateCandidateRequest: (
         receivedPrincipal: CurrentUserPrincipal,
         id: string,
@@ -126,6 +135,13 @@ describe("AdminCandidateRequestController", () => {
       exportedAt: "2026-05-27T08:00:00.000Z"
     });
     await expect(
+      controller.eraseCandidateRequest({ principal }, candidateRequest.id)
+    ).resolves.toEqual({
+      candidateRequestId: candidateRequest.id,
+      erasedAt: "2026-05-29T08:00:00.000Z",
+      archivedAt: "2026-05-29T08:00:00.000Z"
+    });
+    await expect(
       controller.updateCandidateRequest({ principal }, candidateRequest.id, {
         status: "contacted",
         officerNote: "Followed up by email."
@@ -154,6 +170,9 @@ describe("AdminCandidateRequestController", () => {
       "CurrentUserGuard"
     );
     expect(() => controller.exportCandidateRequest({}, candidateRequest.id)).toThrow(
+      "CurrentUserGuard"
+    );
+    expect(() => controller.eraseCandidateRequest({}, candidateRequest.id)).toThrow(
       "CurrentUserGuard"
     );
     expect(() =>

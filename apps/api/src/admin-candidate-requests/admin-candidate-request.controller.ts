@@ -10,6 +10,7 @@ import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   adminCandidateRequestDetailResponseOpenApiSchema,
+  adminCandidateRequestErasureResponseOpenApiSchema,
   adminCandidateRequestExportResponseOpenApiSchema,
   adminCandidateRequestListResponseOpenApiSchema,
   adminCandidateProfileDetailResponseOpenApiSchema,
@@ -19,6 +20,7 @@ import {
 import { AdminCandidateRequestService } from "./admin-candidate-request.service.js";
 import type {
   AdminCandidateRequestDetailResponse,
+  AdminCandidateRequestErasureResponse,
   AdminCandidateRequestExportResponse,
   AdminCandidateRequestListResponse,
   AdminCandidateProfileDetailResponse,
@@ -100,6 +102,33 @@ export class AdminCandidateRequestController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
   ): Promise<AdminCandidateRequestExportResponse> {
     return this.candidateRequestService.exportCandidateRequest(requirePrincipal(request), id);
+  }
+
+  @Post(":id/erase")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin legal-erasure action for candidate request personal identifiers.",
+    schema: adminCandidateRequestErasureResponseOpenApiSchema
+  })
+  @ApiParam({
+    name: "id",
+    schema: { type: "string", format: "uuid" }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "The current user is not a Super Admin.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate request does not exist.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  eraseCandidateRequest(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminCandidateRequestErasureResponse> {
+    return this.candidateRequestService.eraseCandidateRequest(requirePrincipal(request), id);
   }
 
   @Patch(":id")

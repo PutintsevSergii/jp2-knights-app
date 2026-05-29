@@ -88,6 +88,16 @@ export const adminCandidateRequestExportResponseOpenApiSchema = {
   }
 };
 
+export const adminCandidateRequestErasureResponseOpenApiSchema = {
+  type: "object",
+  required: ["candidateRequestId", "erasedAt", "archivedAt"],
+  properties: {
+    candidateRequestId: { type: "string", format: "uuid" },
+    erasedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", format: "date-time" }
+  }
+};
+
 export const adminCandidateProfileDetailOpenApiSchema = {
   type: "object",
   required: [

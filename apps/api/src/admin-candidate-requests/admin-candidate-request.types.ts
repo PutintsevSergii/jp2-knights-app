@@ -1,6 +1,7 @@
 import type {
   AdminCandidateRequestDetailDto,
   AdminCandidateRequestDetailResponseDto,
+  AdminCandidateRequestErasureResponseDto,
   AdminCandidateRequestExportResponseDto,
   AdminCandidateRequestListResponseDto,
   AdminCandidateRequestSummaryDto,
@@ -15,6 +16,7 @@ export type AdminCandidateRequestDetail = AdminCandidateRequestDetailDto;
 export type AdminCandidateRequestListResponse = AdminCandidateRequestListResponseDto;
 export type AdminCandidateRequestDetailResponse = AdminCandidateRequestDetailResponseDto;
 export type AdminCandidateRequestExportResponse = AdminCandidateRequestExportResponseDto;
+export type AdminCandidateRequestErasureResponse = AdminCandidateRequestErasureResponseDto;
 export type AdminCandidateProfileDetail = AdminCandidateProfileDetailDto;
 export type AdminCandidateProfileDetailResponse = AdminCandidateProfileDetailResponseDto;
 export type ConvertCandidateRequest = ConvertCandidateRequestDto;

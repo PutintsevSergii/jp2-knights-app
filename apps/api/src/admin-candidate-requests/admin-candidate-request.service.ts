@@ -12,6 +12,7 @@ import { AdminCandidateRequestRepository } from "./admin-candidate-request.repos
 import type {
   AdminCandidateRequestDetail,
   AdminCandidateRequestDetailResponse,
+  AdminCandidateRequestErasureResponse,
   AdminCandidateRequestExportResponse,
   AdminCandidateRequestListResponse,
   AdminCandidateProfileDetailResponse,
@@ -83,6 +84,46 @@ export class AdminCandidateRequestService {
     return {
       candidateRequest,
       exportedAt: new Date().toISOString()
+    };
+  }
+
+  async eraseCandidateRequest(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminCandidateRequestErasureResponse> {
+    requireSuperAdmin(principal);
+
+    const beforeCandidateRequest =
+      await this.candidateRequestRepository.findCandidateRequestForExport(id);
+
+    if (!beforeCandidateRequest) {
+      throw new NotFoundException("Candidate request was not found.");
+    }
+
+    const erasedAt = new Date();
+    const erasedCandidateRequest = await this.candidateRequestRepository.eraseCandidateRequest(
+      id,
+      erasedAt
+    );
+
+    if (!erasedCandidateRequest) {
+      throw new NotFoundException("Candidate request was not found.");
+    }
+
+    await this.auditLog.record({
+      action: "admin.candidateRequest.erase",
+      actorUserId: principal.id,
+      entityType: "candidate_request",
+      entityId: beforeCandidateRequest.id,
+      scopeOrganizationUnitId: beforeCandidateRequest.assignedOrganizationUnitId,
+      beforeSummary: summarizeCandidateRequestErasureBeforeAudit(beforeCandidateRequest),
+      afterSummary: summarizeCandidateRequestErasureAfterAudit(erasedCandidateRequest)
+    });
+
+    return {
+      candidateRequestId: erasedCandidateRequest.id,
+      erasedAt: erasedAt.toISOString(),
+      archivedAt: erasedCandidateRequest.archivedAt ?? erasedAt.toISOString()
     };
   }
 
@@ -313,5 +354,29 @@ function summarizeCandidateRequestExportForAudit(
     assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
     archived: Boolean(candidateRequest.archivedAt),
     includesPersonalData: true
+  };
+}
+
+function summarizeCandidateRequestErasureBeforeAudit(
+  candidateRequest: AdminCandidateRequestDetail
+): AuditSummary {
+  return {
+    candidateRequestId: candidateRequest.id,
+    status: candidateRequest.status,
+    assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+    archived: Boolean(candidateRequest.archivedAt),
+    hadPersonalData: true
+  };
+}
+
+function summarizeCandidateRequestErasureAfterAudit(
+  candidateRequest: AdminCandidateRequestDetail
+): AuditSummary {
+  return {
+    candidateRequestId: candidateRequest.id,
+    status: candidateRequest.status,
+    assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+    archived: Boolean(candidateRequest.archivedAt),
+    erasedPersonalData: true
   };
 }

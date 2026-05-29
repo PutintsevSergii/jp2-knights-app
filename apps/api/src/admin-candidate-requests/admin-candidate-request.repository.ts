@@ -18,6 +18,10 @@ export abstract class AdminCandidateRequestRepository {
     scopeOrganizationUnitIds: readonly string[] | null
   ): Promise<AdminCandidateRequestDetail | null>;
   abstract findCandidateRequestForExport(id: string): Promise<AdminCandidateRequestDetail | null>;
+  abstract eraseCandidateRequest(
+    id: string,
+    erasedAt: Date
+  ): Promise<AdminCandidateRequestDetail | null>;
   abstract updateCandidateRequest(
     id: string,
     data: UpdateAdminCandidateRequest,
@@ -91,6 +95,46 @@ export class PrismaAdminCandidateRequestRepository extends AdminCandidateRequest
     });
 
     return record ? toAdminCandidateRequestDetail(record) : null;
+  }
+
+  async eraseCandidateRequest(
+    id: string,
+    erasedAt: Date
+  ): Promise<AdminCandidateRequestDetail | null> {
+    const existing = await this.prisma.candidateRequest.findUnique({
+      where: { id },
+      select: { id: true }
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    const record = await this.prisma.candidateRequest.update({
+      where: { id },
+      data: {
+        firstName: "Erased",
+        lastName: "Subject",
+        email: erasedCandidateRequestEmail(id),
+        phone: null,
+        country: "Erased",
+        city: "Erased",
+        preferredLanguage: null,
+        message: null,
+        idempotencyKey: null,
+        officerNote: null,
+        archivedAt: erasedAt
+      },
+      include: {
+        assignedOrganizationUnit: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    return toAdminCandidateRequestDetail(record);
   }
 
   async updateCandidateRequest(
@@ -348,6 +392,10 @@ function toAdminCandidateRequestDetail(record: CandidateRequestRecord): AdminCan
     consentAt: record.consentAt.toISOString(),
     officerNote: record.officerNote
   };
+}
+
+function erasedCandidateRequestEmail(id: string): string {
+  return `erased+${id}@privacy.local`;
 }
 
 function toAdminCandidateProfileDetail(

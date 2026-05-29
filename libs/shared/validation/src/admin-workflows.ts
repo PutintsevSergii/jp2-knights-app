@@ -39,6 +39,12 @@ export const adminCandidateRequestExportResponseSchema = z.object({
   exportedAt: z.iso.datetime()
 });
 
+export const adminCandidateRequestErasureResponseSchema = z.object({
+  candidateRequestId: z.uuid(),
+  erasedAt: z.iso.datetime(),
+  archivedAt: z.iso.datetime()
+});
+
 export const adminCandidateProfileSummarySchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
@@ -201,6 +207,9 @@ export type AdminCandidateRequestDetailResponseDto = z.infer<
 >;
 export type AdminCandidateRequestExportResponseDto = z.infer<
   typeof adminCandidateRequestExportResponseSchema
+>;
+export type AdminCandidateRequestErasureResponseDto = z.infer<
+  typeof adminCandidateRequestErasureResponseSchema
 >;
 export type AdminCandidateProfileSummaryDto = z.infer<typeof adminCandidateProfileSummarySchema>;
 export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfileDetailSchema>;

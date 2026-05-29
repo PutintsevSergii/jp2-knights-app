@@ -149,6 +149,77 @@ describe("AdminCandidateRequestService", () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it("erases candidate request personal identifiers for Super Admins and audits without erased values", async () => {
+    const repository = new FakeRepository();
+    repository.eraseRecord = {
+      ...request,
+      firstName: "Erased",
+      lastName: "Subject",
+      email: "erased+55555555-5555-4555-8555-555555555555@privacy.local",
+      phone: null,
+      country: "Erased",
+      city: "Erased",
+      messagePreview: null,
+      preferredLanguage: null,
+      message: null,
+      officerNote: null,
+      archivedAt: "2026-05-29T08:00:00.000Z"
+    };
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateRequestService(
+      repository,
+      auditLog as unknown as AuditLogService
+    );
+
+    const response = await service.eraseCandidateRequest(superAdmin, request.id);
+
+    expect(response).toEqual({
+      candidateRequestId: request.id,
+      erasedAt: response.erasedAt,
+      archivedAt: response.archivedAt
+    });
+    expect(typeof response.erasedAt).toBe("string");
+    expect(typeof response.archivedAt).toBe("string");
+    expect(response.archivedAt).toBe(response.erasedAt);
+    expect(repository.lastEraseId).toBe(request.id);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateRequest.erase",
+      actorUserId: superAdmin.id,
+      entityType: "candidate_request",
+      entityId: request.id,
+      scopeOrganizationUnitId: request.assignedOrganizationUnitId,
+      beforeSummary: {
+        candidateRequestId: request.id,
+        status: request.status,
+        assignedOrganizationUnitId: request.assignedOrganizationUnitId,
+        archived: false,
+        hadPersonalData: true
+      },
+      afterSummary: {
+        candidateRequestId: request.id,
+        status: request.status,
+        assignedOrganizationUnitId: request.assignedOrganizationUnitId,
+        archived: true,
+        erasedPersonalData: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("I would like to learn more.");
+  });
+
+  it("blocks officers from erasing candidate request personal data before loading rows", async () => {
+    const repository = new FakeRepository();
+
+    await expect(
+      new AdminCandidateRequestService(repository, auditLog()).eraseCandidateRequest(
+        officer,
+        request.id
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.lastEraseId).toBeUndefined();
+  });
+
   it("updates status and writes redacted audit summaries", async () => {
     const repository = new FakeRepository();
     const auditLog = new FakeAuditLog();
@@ -371,8 +442,10 @@ class FakeRepository implements AdminCandidateRequestRepository {
   visible = true;
   record = request;
   exportRecord: AdminCandidateRequestDetail | null = request;
+  eraseRecord: AdminCandidateRequestDetail | null = request;
   lastScope: readonly string[] | null | undefined;
   lastExportId: string | undefined;
+  lastEraseId: string | undefined;
   lastConverted:
     | {
         id: string;
@@ -398,6 +471,13 @@ class FakeRepository implements AdminCandidateRequestRepository {
   findCandidateRequestForExport(id: string) {
     this.lastExportId = id;
     return Promise.resolve(this.exportRecord);
+  }
+
+  eraseCandidateRequest(id: string, erasedAt: Date) {
+    this.lastEraseId = id;
+    return Promise.resolve(
+      this.eraseRecord ? { ...this.eraseRecord, archivedAt: erasedAt.toISOString() } : null
+    );
   }
 
   updateCandidateRequest(

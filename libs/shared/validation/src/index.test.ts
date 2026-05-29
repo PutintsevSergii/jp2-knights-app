@@ -6,6 +6,7 @@ import {
   adminCandidateProfileListResponseSchema,
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
+  adminCandidateRequestErasureResponseSchema,
   adminCandidateRequestListResponseSchema,
   adminEventDetailResponseSchema,
   adminEventListResponseSchema,
@@ -776,6 +777,17 @@ describe("shared validation", () => {
       })
     ).toEqual({
       candidateRequest
+    });
+    expect(
+      adminCandidateRequestErasureResponseSchema.parse({
+        candidateRequestId: candidateRequest.id,
+        erasedAt: "2026-05-29T08:00:00.000Z",
+        archivedAt: "2026-05-29T08:00:00.000Z"
+      })
+    ).toEqual({
+      candidateRequestId: candidateRequest.id,
+      erasedAt: "2026-05-29T08:00:00.000Z",
+      archivedAt: "2026-05-29T08:00:00.000Z"
     });
     expect(
       adminCandidateProfileListResponseSchema.parse({
