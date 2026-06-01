@@ -53,6 +53,26 @@ export const adminCandidateProfileDetailResponseOpenApiSchema = {
   }
 };
 
+export const adminCandidateProfileExportResponseOpenApiSchema = {
+  type: "object",
+  required: ["candidateProfile", "exportedAt"],
+  properties: {
+    candidateProfile: adminCandidateProfileOpenApiSchema,
+    exportedAt: { type: "string", format: "date-time" }
+  }
+};
+
+export const adminCandidateProfileErasureResponseOpenApiSchema = {
+  type: "object",
+  required: ["candidateProfileId", "userId", "erasedAt", "archivedAt"],
+  properties: {
+    candidateProfileId: { type: "string", format: "uuid" },
+    userId: { type: "string", format: "uuid" },
+    erasedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", format: "date-time" }
+  }
+};
+
 export const updateAdminCandidateProfileOpenApiSchema = {
   type: "object",
   minProperties: 1,

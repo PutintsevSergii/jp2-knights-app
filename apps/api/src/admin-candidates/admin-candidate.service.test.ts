@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -82,6 +82,161 @@ describe("AdminCandidateService", () => {
     expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
   });
 
+  it("exports archived candidate profile personal data for Super Admins and audits redacted metadata", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = {
+      ...profile,
+      status: "archived",
+      archivedAt: "2026-05-30T08:00:00.000Z"
+    };
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateService(repository, auditLog as unknown as AuditLogService);
+
+    const response = await service.exportCandidateProfile(superAdmin, profile.id);
+
+    expect(response.candidateProfile).toEqual(repository.exportRecord);
+    expect(response.exportedAt).toEqual(expect.any(String));
+    expect(repository.lastExportId).toBe(profile.id);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateProfile.export",
+      entityType: "candidate_profile",
+      entityId: profile.id,
+      scopeOrganizationUnitId: profile.assignedOrganizationUnitId,
+      beforeSummary: null,
+      afterSummary: {
+        candidateProfileId: profile.id,
+        userId: profile.userId,
+        candidateRequestId: profile.candidateRequestId,
+        assignedOrganizationUnitId: profile.assignedOrganizationUnitId,
+        responsibleOfficerId: profile.responsibleOfficerId,
+        status: "archived",
+        archived: true,
+        includesPersonalData: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Anna Nowak");
+  });
+
+  it("blocks officers from exporting candidate profile personal data before loading rows", async () => {
+    const repository = new FakeRepository();
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).exportCandidateProfile(officer, profile.id)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.lastExportId).toBeUndefined();
+  });
+
+  it("erases candidate-only profile personal identifiers and audits without erased values", async () => {
+    const repository = new FakeRepository();
+    repository.erasedRecord = {
+      ...profile,
+      displayName: "Erased candidate",
+      email: "erased-candidate-profile+77777777-7777-4777-8777-777777777777@privacy.local",
+      preferredLanguage: null,
+      status: "archived",
+      archivedAt: "2026-06-01T17:05:00.000Z"
+    };
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateService(repository, auditLog as unknown as AuditLogService);
+
+    const response = await service.eraseCandidateProfile(superAdmin, profile.id);
+
+    expect(response).toMatchObject({
+      candidateProfileId: profile.id,
+      userId: profile.userId,
+      archivedAt: "2026-06-01T17:05:00.000Z"
+    });
+    expect(response.erasedAt).toEqual(expect.any(String));
+    expect(repository.lastExportId).toBe(profile.id);
+    expect(repository.lastNonCandidateAccessUserId).toBe(profile.userId);
+    expect(repository.lastErasureId).toBe(profile.id);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateProfile.erase",
+      entityType: "candidate_profile",
+      entityId: profile.id,
+      beforeSummary: {
+        candidateProfileId: profile.id,
+        userId: profile.userId,
+        status: "active",
+        hadPersonalData: true
+      },
+      afterSummary: {
+        candidateProfileId: profile.id,
+        userId: profile.userId,
+        status: "archived",
+        erasedPersonalData: true,
+        revokedCandidateAccess: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Anna Nowak");
+  });
+
+  it("rejects candidate profile erasure when the linked user has active non-candidate access", async () => {
+    const repository = new FakeRepository();
+    repository.hasActiveNonCandidateAccess = true;
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).eraseCandidateProfile(
+        superAdmin,
+        profile.id
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(repository.lastErasureId).toBeUndefined();
+  });
+
+  it("rejects converted candidate profile erasure before checking linked access", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = { ...profile, status: "converted_to_brother" };
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).eraseCandidateProfile(
+        superAdmin,
+        profile.id
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(repository.lastNonCandidateAccessUserId).toBeUndefined();
+    expect(repository.lastErasureId).toBeUndefined();
+  });
+
+  it("blocks officers from erasing candidate profile personal data before loading rows", async () => {
+    const repository = new FakeRepository();
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).eraseCandidateProfile(officer, profile.id)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.lastExportId).toBeUndefined();
+    expect(repository.lastErasureId).toBeUndefined();
+  });
+
+  it("returns not found when a Super Admin exports a missing candidate profile", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = null;
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).exportCandidateProfile(
+        superAdmin,
+        profile.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it("returns not found when a Super Admin erases a missing candidate profile", async () => {
+    const repository = new FakeRepository();
+    repository.exportRecord = null;
+
+    await expect(
+      new AdminCandidateService(repository, auditLog()).eraseCandidateProfile(
+        superAdmin,
+        profile.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(repository.lastErasureId).toBeUndefined();
+  });
+
   it("rejects non-admin access and out-of-scope officer assignment changes", async () => {
     const service = new AdminCandidateService(new FakeRepository(), auditLog());
 
@@ -116,7 +271,13 @@ describe("AdminCandidateService", () => {
 
 class FakeRepository implements AdminCandidateRepository {
   visible = true;
+  exportRecord: AdminCandidateProfileDetail | null = profile;
+  erasedRecord: AdminCandidateProfileDetail | null = { ...profile, status: "archived" };
+  hasActiveNonCandidateAccess = false;
   lastScope: readonly string[] | null | undefined;
+  lastExportId: string | undefined;
+  lastErasureId: string | undefined;
+  lastNonCandidateAccessUserId: string | undefined;
 
   listCandidateProfiles(scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
@@ -126,6 +287,21 @@ class FakeRepository implements AdminCandidateRepository {
   findCandidateProfile(_id: string, scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
     return Promise.resolve(this.visible ? profile : null);
+  }
+
+  findCandidateProfileForExport(id: string) {
+    this.lastExportId = id;
+    return Promise.resolve(this.exportRecord);
+  }
+
+  candidateProfileUserHasActiveNonCandidateAccess(userId: string) {
+    this.lastNonCandidateAccessUserId = userId;
+    return Promise.resolve(this.hasActiveNonCandidateAccess);
+  }
+
+  eraseCandidateProfile(id: string) {
+    this.lastErasureId = id;
+    return Promise.resolve(this.erasedRecord);
   }
 
   updateCandidateProfile(

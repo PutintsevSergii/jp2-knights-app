@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { candidateProfileStatusSchema, candidateRequestStatusSchema, roleSchema } from "./common.js";
+import {
+  candidateProfileStatusSchema,
+  candidateRequestStatusSchema,
+  roleSchema
+} from "./common.js";
 
 export const adminCandidateRequestSummarySchema = z.object({
   id: z.uuid(),
@@ -66,6 +70,18 @@ export const adminCandidateProfileDetailSchema = adminCandidateProfileSummarySch
 
 export const adminCandidateProfileDetailResponseSchema = z.object({
   candidateProfile: adminCandidateProfileDetailSchema
+});
+
+export const adminCandidateProfileExportResponseSchema = z.object({
+  candidateProfile: adminCandidateProfileDetailSchema,
+  exportedAt: z.iso.datetime()
+});
+
+export const adminCandidateProfileErasureResponseSchema = z.object({
+  candidateProfileId: z.uuid(),
+  userId: z.uuid(),
+  erasedAt: z.iso.datetime(),
+  archivedAt: z.iso.datetime()
 });
 
 export const adminCandidateProfileListResponseSchema = z.object({
@@ -215,6 +231,12 @@ export type AdminCandidateProfileSummaryDto = z.infer<typeof adminCandidateProfi
 export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfileDetailSchema>;
 export type AdminCandidateProfileDetailResponseDto = z.infer<
   typeof adminCandidateProfileDetailResponseSchema
+>;
+export type AdminCandidateProfileExportResponseDto = z.infer<
+  typeof adminCandidateProfileExportResponseSchema
+>;
+export type AdminCandidateProfileErasureResponseDto = z.infer<
+  typeof adminCandidateProfileErasureResponseSchema
 >;
 export type AdminCandidateProfileListResponseDto = z.infer<
   typeof adminCandidateProfileListResponseSchema

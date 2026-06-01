@@ -1,14 +1,15 @@
 import {
   adminCandidateProfileDetailResponseSchema,
+  adminCandidateProfileErasureResponseSchema,
+  adminCandidateProfileExportResponseSchema,
   adminCandidateProfileListResponseSchema,
   type AdminCandidateProfileDetailResponseDto,
+  type AdminCandidateProfileErasureResponseDto,
+  type AdminCandidateProfileExportResponseDto,
   type AdminCandidateProfileListResponseDto,
   type UpdateAdminCandidateProfileDto
 } from "@jp2/shared-validation";
-import {
-  requestAdminApi,
-  type AdminContentRequestOptions
-} from "./admin-content-api.js";
+import { requestAdminApi, type AdminContentRequestOptions } from "./admin-content-api.js";
 
 export async function fetchAdminCandidateProfiles(
   options: AdminContentRequestOptions = {}
@@ -25,6 +26,26 @@ export async function fetchAdminCandidateProfile(
   const response = await requestAdminApi(`admin/candidates/${id}`, options);
 
   return adminCandidateProfileDetailResponseSchema.parse(await response.json());
+}
+
+export async function exportAdminCandidateProfile(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminCandidateProfileExportResponseDto> {
+  const response = await requestAdminApi(`admin/candidates/${id}/export`, options);
+
+  return adminCandidateProfileExportResponseSchema.parse(await response.json());
+}
+
+export async function eraseAdminCandidateProfile(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminCandidateProfileErasureResponseDto> {
+  const response = await requestAdminApi(`admin/candidates/${id}/erase`, options, {
+    method: "POST"
+  });
+
+  return adminCandidateProfileErasureResponseSchema.parse(await response.json());
 }
 
 export async function updateAdminCandidateProfile(

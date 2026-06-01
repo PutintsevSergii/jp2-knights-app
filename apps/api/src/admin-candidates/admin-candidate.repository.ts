@@ -15,6 +15,15 @@ export abstract class AdminCandidateRepository {
     id: string,
     scopeOrganizationUnitIds: readonly string[] | null
   ): Promise<AdminCandidateProfileDetail | null>;
+  abstract findCandidateProfileForExport(id: string): Promise<AdminCandidateProfileDetail | null>;
+  abstract candidateProfileUserHasActiveNonCandidateAccess(
+    userId: string,
+    asOf: Date
+  ): Promise<boolean>;
+  abstract eraseCandidateProfile(
+    id: string,
+    erasedAt: Date
+  ): Promise<AdminCandidateProfileDetail | null>;
   abstract updateCandidateProfile(
     id: string,
     data: UpdateAdminCandidateProfile,
@@ -53,6 +62,128 @@ export class PrismaAdminCandidateRepository extends AdminCandidateRepository {
     });
 
     return record ? toAdminCandidateProfile(record) : null;
+  }
+
+  async findCandidateProfileForExport(id: string): Promise<AdminCandidateProfileDetail | null> {
+    const record = await this.prisma.candidateProfile.findUnique({
+      where: { id },
+      include: candidateProfileInclude
+    });
+
+    return record ? toAdminCandidateProfile(record) : null;
+  }
+
+  async candidateProfileUserHasActiveNonCandidateAccess(
+    userId: string,
+    asOf: Date
+  ): Promise<boolean> {
+    const [role, membership, officerAssignment] = await Promise.all([
+      this.prisma.userRole.findFirst({
+        where: {
+          userId,
+          role: { in: ["BROTHER", "OFFICER", "SUPER_ADMIN"] },
+          revokedAt: null
+        },
+        select: { id: true }
+      }),
+      this.prisma.membership.findFirst({
+        where: {
+          userId,
+          status: "active",
+          archivedAt: null
+        },
+        select: { id: true }
+      }),
+      this.prisma.officerAssignment.findFirst({
+        where: {
+          userId,
+          OR: [{ endsAt: null }, { endsAt: { gte: asOf } }]
+        },
+        select: { id: true }
+      })
+    ]);
+
+    return Boolean(role || membership || officerAssignment);
+  }
+
+  async eraseCandidateProfile(
+    id: string,
+    erasedAt: Date
+  ): Promise<AdminCandidateProfileDetail | null> {
+    const existing = await this.prisma.candidateProfile.findUnique({
+      where: { id },
+      select: { id: true, userId: true }
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.userRole.updateMany({
+        where: {
+          userId: existing.userId,
+          role: "CANDIDATE",
+          revokedAt: null
+        },
+        data: {
+          revokedAt: erasedAt
+        }
+      });
+      await tx.identityProviderAccount.updateMany({
+        where: {
+          userId: existing.userId,
+          revokedAt: null
+        },
+        data: {
+          provider: "erased",
+          providerSubject: erasedCandidateProfileProviderSubject(id),
+          email: null,
+          emailVerified: null,
+          phone: null,
+          displayName: null,
+          photoUrl: null,
+          revokedAt: erasedAt
+        }
+      });
+      await tx.deviceToken.updateMany({
+        where: {
+          userId: existing.userId,
+          revokedAt: null
+        },
+        data: {
+          revokedAt: erasedAt
+        }
+      });
+      await tx.user.update({
+        where: { id: existing.userId },
+        data: {
+          email: erasedCandidateProfileEmail(id),
+          phone: null,
+          displayName: "Erased candidate",
+          preferredLanguage: null,
+          status: "archived",
+          archivedAt: erasedAt
+        }
+      });
+      await tx.candidateProfile.updateMany({
+        where: {
+          userId: existing.userId,
+          status: { in: ["active", "paused"] }
+        },
+        data: {
+          status: "archived",
+          archivedAt: erasedAt
+        }
+      });
+
+      const record = await tx.candidateProfile.findUnique({
+        where: { id },
+        include: candidateProfileInclude
+      });
+
+      return record ? toAdminCandidateProfile(record) : null;
+    });
   }
 
   async updateCandidateProfile(
@@ -170,4 +301,12 @@ function toAdminCandidateProfile(record: CandidateProfileRecord): AdminCandidate
     updatedAt: record.updatedAt.toISOString(),
     archivedAt: record.archivedAt?.toISOString() ?? null
   };
+}
+
+function erasedCandidateProfileEmail(id: string): string {
+  return `erased-candidate-profile+${id}@privacy.local`;
+}
+
+function erasedCandidateProfileProviderSubject(id: string): string {
+  return `erased-candidate-profile:${id}`;
 }

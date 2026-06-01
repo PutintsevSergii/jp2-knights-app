@@ -3,6 +3,8 @@ import {
   adminAnnouncementDetailResponseSchema,
   adminAnnouncementListResponseSchema,
   adminCandidateProfileDetailResponseSchema,
+  adminCandidateProfileErasureResponseSchema,
+  adminCandidateProfileExportResponseSchema,
   adminCandidateProfileListResponseSchema,
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
@@ -854,6 +856,44 @@ describe("shared validation", () => {
         displayName: "Anna Nowak",
         status: "active"
       }
+    });
+    expect(
+      adminCandidateProfileExportResponseSchema.parse({
+        candidateProfile: {
+          id: "77777777-7777-4777-8777-777777777777",
+          userId: "88888888-8888-4888-8888-888888888888",
+          candidateRequestId: candidateRequest.id,
+          displayName: "Anna Nowak",
+          email: candidateRequest.email,
+          preferredLanguage: "en",
+          assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+          responsibleOfficerId: "99999999-9999-4999-8999-999999999999",
+          responsibleOfficerName: "Demo Officer",
+          status: "archived",
+          createdAt: candidateRequest.createdAt,
+          updatedAt: candidateRequest.updatedAt,
+          archivedAt: "2026-05-30T08:00:00.000Z"
+        },
+        exportedAt: "2026-06-01T17:00:00.000Z"
+      })
+    ).toMatchObject({
+      candidateProfile: {
+        displayName: "Anna Nowak",
+        status: "archived"
+      },
+      exportedAt: "2026-06-01T17:00:00.000Z"
+    });
+    expect(
+      adminCandidateProfileErasureResponseSchema.parse({
+        candidateProfileId: "77777777-7777-4777-8777-777777777777",
+        userId: "88888888-8888-4888-8888-888888888888",
+        erasedAt: "2026-06-01T17:05:00.000Z",
+        archivedAt: "2026-06-01T17:05:00.000Z"
+      })
+    ).toMatchObject({
+      candidateProfileId: "77777777-7777-4777-8777-777777777777",
+      userId: "88888888-8888-4888-8888-888888888888"
     });
   });
 

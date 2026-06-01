@@ -41,6 +41,24 @@ describe("AdminCandidateController", () => {
         expect(id).toBe(candidateProfile.id);
         return Promise.resolve({ candidateProfile });
       },
+      exportCandidateProfile: (receivedPrincipal: CurrentUserPrincipal, id: string) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(id).toBe(candidateProfile.id);
+        return Promise.resolve({
+          candidateProfile,
+          exportedAt: "2026-06-01T17:00:00.000Z"
+        });
+      },
+      eraseCandidateProfile: (receivedPrincipal: CurrentUserPrincipal, id: string) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(id).toBe(candidateProfile.id);
+        return Promise.resolve({
+          candidateProfileId: candidateProfile.id,
+          userId: candidateProfile.userId,
+          erasedAt: "2026-06-01T17:05:00.000Z",
+          archivedAt: "2026-06-01T17:05:00.000Z"
+        });
+      },
       updateCandidateProfile: (
         receivedPrincipal: CurrentUserPrincipal,
         id: string,
@@ -62,6 +80,20 @@ describe("AdminCandidateController", () => {
       controller.getCandidateProfile({ principal }, candidateProfile.id)
     ).resolves.toEqual({ candidateProfile });
     await expect(
+      controller.exportCandidateProfile({ principal }, candidateProfile.id)
+    ).resolves.toEqual({
+      candidateProfile,
+      exportedAt: "2026-06-01T17:00:00.000Z"
+    });
+    await expect(controller.eraseCandidateProfile({ principal }, candidateProfile.id)).resolves.toEqual(
+      {
+        candidateProfileId: candidateProfile.id,
+        userId: candidateProfile.userId,
+        erasedAt: "2026-06-01T17:05:00.000Z",
+        archivedAt: "2026-06-01T17:05:00.000Z"
+      }
+    );
+    await expect(
       controller.updateCandidateProfile({ principal }, candidateProfile.id, { status: "paused" })
     ).resolves.toMatchObject({
       candidateProfile: { status: "paused" }
@@ -73,6 +105,12 @@ describe("AdminCandidateController", () => {
 
     expect(() => controller.listCandidateProfiles({})).toThrow("CurrentUserGuard");
     expect(() => controller.getCandidateProfile({}, candidateProfile.id)).toThrow(
+      "CurrentUserGuard"
+    );
+    expect(() => controller.exportCandidateProfile({}, candidateProfile.id)).toThrow(
+      "CurrentUserGuard"
+    );
+    expect(() => controller.eraseCandidateProfile({}, candidateProfile.id)).toThrow(
       "CurrentUserGuard"
     );
     expect(() =>

@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Req,
+  UseGuards
+} from "@nestjs/common";
 import { ApiBody, ApiOkResponse, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { updateAdminCandidateProfileSchema } from "@jp2/shared-validation";
 import { CurrentUserGuard } from "../auth/current-user.guard.js";
@@ -7,12 +17,16 @@ import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   adminCandidateProfileDetailResponseOpenApiSchema,
+  adminCandidateProfileErasureResponseOpenApiSchema,
+  adminCandidateProfileExportResponseOpenApiSchema,
   adminCandidateProfileListResponseOpenApiSchema,
   updateAdminCandidateProfileOpenApiSchema
 } from "./admin-candidate.openapi.js";
 import { AdminCandidateService } from "./admin-candidate.service.js";
 import type {
   AdminCandidateProfileDetailResponse,
+  AdminCandidateProfileErasureResponse,
+  AdminCandidateProfileExportResponse,
   AdminCandidateProfileListResponse,
   UpdateAdminCandidateProfile
 } from "./admin-candidate.types.js";
@@ -37,6 +51,59 @@ export class AdminCandidateController {
     @Req() request: RequestWithPrincipal
   ): Promise<AdminCandidateProfileListResponse> {
     return this.candidateService.listCandidateProfiles(requirePrincipal(request));
+  }
+
+  @Get(":id/export")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin personal-data export for a candidate profile.",
+    schema: adminCandidateProfileExportResponseOpenApiSchema
+  })
+  @ApiParam({ name: "id", schema: { type: "string", format: "uuid" } })
+  @ApiResponse({
+    status: 403,
+    description: "The current user is not a Super Admin.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate profile does not exist.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  exportCandidateProfile(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminCandidateProfileExportResponse> {
+    return this.candidateService.exportCandidateProfile(requirePrincipal(request), id);
+  }
+
+  @Post(":id/erase")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin legal-erasure action for candidate profile personal identifiers.",
+    schema: adminCandidateProfileErasureResponseOpenApiSchema
+  })
+  @ApiParam({ name: "id", schema: { type: "string", format: "uuid" } })
+  @ApiResponse({
+    status: 403,
+    description: "The current user is not a Super Admin.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate profile does not exist.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 409,
+    description: "The linked user has non-candidate access requiring a different retention path.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  eraseCandidateProfile(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminCandidateProfileErasureResponse> {
+    return this.candidateService.eraseCandidateProfile(requirePrincipal(request), id);
   }
 
   @Get(":id")

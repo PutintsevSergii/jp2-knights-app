@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { AdminContentHttpError } from "./admin-content-api.js";
 import { fallbackAdminCandidateProfiles } from "./admin-content-fixtures.js";
 import {
+  eraseAdminCandidateProfile,
+  exportAdminCandidateProfile,
   fetchAdminCandidateProfile,
   fetchAdminCandidateProfiles,
   updateAdminCandidateProfile
@@ -25,6 +27,34 @@ describe("admin candidate API client", () => {
         json: () => Promise.resolve({ candidateProfile })
       })
     );
+    const exportFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            candidateProfile: {
+              ...candidateProfile,
+              status: "archived",
+              archivedAt: "2026-05-30T08:00:00.000Z"
+            },
+            exportedAt: "2026-06-01T17:00:00.000Z"
+          })
+      })
+    );
+    const eraseFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            candidateProfileId: candidateProfile.id,
+            userId: candidateProfile.userId,
+            erasedAt: "2026-06-01T17:05:00.000Z",
+            archivedAt: "2026-06-01T17:05:00.000Z"
+          })
+      })
+    );
 
     await expect(
       fetchAdminCandidateProfiles({
@@ -40,6 +70,42 @@ describe("admin candidate API client", () => {
         fetchImpl: detailFetch
       })
     ).resolves.toEqual({ candidateProfile });
+    await expect(
+      exportAdminCandidateProfile(candidateProfile.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: exportFetch
+      })
+    ).resolves.toMatchObject({
+      candidateProfile: { id: candidateProfile.id, status: "archived" },
+      exportedAt: "2026-06-01T17:00:00.000Z"
+    });
+    expect(exportFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/candidates/${candidateProfile.id}/export`,
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
+    await expect(
+      eraseAdminCandidateProfile(candidateProfile.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: eraseFetch
+      })
+    ).resolves.toEqual({
+      candidateProfileId: candidateProfile.id,
+      userId: candidateProfile.userId,
+      erasedAt: "2026-06-01T17:05:00.000Z",
+      archivedAt: "2026-06-01T17:05:00.000Z"
+    });
+    expect(eraseFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/candidates/${candidateProfile.id}/erase`,
+      {
+        method: "POST",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("sends profile updates as JSON and maps non-OK responses", async () => {
