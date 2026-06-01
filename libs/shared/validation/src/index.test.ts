@@ -40,6 +40,7 @@ import {
   createRoadmapSubmissionRequestSchema,
   currentUserResponseSchema,
   deviceTokenRegistrationResponseSchema,
+  deviceTokenRevocationResponseSchema,
   eventParticipationResponseSchema,
   membershipStatusSchema,
   myOrganizationUnitsResponseSchema,
@@ -63,6 +64,7 @@ import {
   reviewRoadmapSubmissionRequestSchema,
   roleSchema,
   registerDeviceTokenRequestSchema,
+  revokeDeviceTokenRequestSchema,
   updateAdminAnnouncementRequestSchema,
   updateAdminEventRequestSchema,
   updateAdminCandidateProfileSchema,
@@ -1283,6 +1285,13 @@ describe("shared validation", () => {
       }).success
     ).toBe(false);
     expect(
+      revokeDeviceTokenRequestSchema.parse({
+        token: "ExponentPushToken[abc1234567890]"
+      })
+    ).toEqual({
+      token: "ExponentPushToken[abc1234567890]"
+    });
+    expect(
       deviceTokenRegistrationResponseSchema.parse({
         deviceToken: {
           id: "55555555-5555-4555-8555-555555555555",
@@ -1298,6 +1307,15 @@ describe("shared validation", () => {
         lastSeenAt: "2026-05-07T10:00:00.000Z",
         revokedAt: null
       }
+    });
+    expect(
+      deviceTokenRevocationResponseSchema.parse({
+        revoked: true,
+        revokedAt: "2026-05-07T11:00:00.000Z"
+      })
+    ).toEqual({
+      revoked: true,
+      revokedAt: "2026-05-07T11:00:00.000Z"
     });
     expect(
       updateNotificationPreferencesRequestSchema.parse({

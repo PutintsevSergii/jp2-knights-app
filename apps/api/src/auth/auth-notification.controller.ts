@@ -2,21 +2,26 @@ import { Body, Controller, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiOkResponse, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
   registerDeviceTokenRequestSchema,
+  revokeDeviceTokenRequestSchema,
   updateNotificationPreferencesRequestSchema
 } from "@jp2/shared-validation";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   deviceTokenRegistrationResponseOpenApiSchema,
+  deviceTokenRevocationResponseOpenApiSchema,
   notificationPreferencesResponseOpenApiSchema,
   registerDeviceTokenRequestOpenApiSchema,
+  revokeDeviceTokenRequestOpenApiSchema,
   updateNotificationPreferencesRequestOpenApiSchema
 } from "./auth.openapi.js";
 import { AuthNotificationService } from "./auth-notification.service.js";
 import type {
   DeviceTokenRegistrationResponse,
+  DeviceTokenRevocationResponse,
   NotificationPreferencesResponse,
   RegisterDeviceTokenRequest,
+  RevokeDeviceTokenRequest,
   UpdateNotificationPreferencesRequest
 } from "./auth-notification.types.js";
 import { CurrentUserGuard } from "./current-user.guard.js";
@@ -44,6 +49,25 @@ export class AuthNotificationController {
     @Body(new ZodValidationPipe(registerDeviceTokenRequestSchema)) body: RegisterDeviceTokenRequest
   ): Promise<DeviceTokenRegistrationResponse> {
     return this.authNotificationService.registerDeviceToken(requirePrincipal(request), body);
+  }
+
+  @Post("device-tokens/revoke")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Device token revoked for the current authenticated user.",
+    schema: deviceTokenRevocationResponseOpenApiSchema
+  })
+  @ApiBody({ schema: revokeDeviceTokenRequestOpenApiSchema })
+  @ApiResponse({
+    status: 403,
+    description: "Authentication, active account, or approved private app access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  revokeDeviceToken(
+    @Req() request: RequestWithPrincipal,
+    @Body(new ZodValidationPipe(revokeDeviceTokenRequestSchema)) body: RevokeDeviceTokenRequest
+  ): Promise<DeviceTokenRevocationResponse> {
+    return this.authNotificationService.revokeDeviceToken(requirePrincipal(request), body);
   }
 
   @Put("notification-preferences")

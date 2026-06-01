@@ -7,6 +7,7 @@
 | POST   | `/auth/refresh`                  | Refresh/session | Any                                   | provider-managed refresh/session context             | refreshed current user/session where applicable | 401               | Expired or revoked provider session rejected                                         |
 | GET    | `/auth/me`                       | Yes             | Any                                   | bearer Firebase ID token or session cookie           | user, roles, mode, memberships summary, approval state | 401 invalid token, 403 missing/inactive | App can resolve mode from local authorization data                                   |
 | POST   | `/auth/device-tokens`            | Yes             | Candidate/Brother/Officer/Super Admin | platform, token                                      | registered token id                             | 400               | Token belongs to current user                                                        |
+| POST   | `/auth/device-tokens/revoke`     | Yes             | Candidate/Brother/Officer/Super Admin | token                                                | revocation status                               | 400,403           | Active token for current user is revoked without returning token material            |
 | PUT    | `/auth/notification-preferences` | Yes             | Candidate/Brother                     | category booleans                                    | updated preferences                             | 400               | Preferences respected                                                                |
 
 ## Current Implementation Notes
@@ -21,6 +22,10 @@
   `PUT /auth/notification-preferences`. Device token registration requires an
   approved private principal, stores only a SHA-256 token hash plus last-four
   metadata, and transfers duplicate token ownership to the current user.
+  Phase 12 adds `POST /auth/device-tokens/revoke`; it hashes the submitted raw
+  token, revokes only an active token owned by the current user, is idempotent
+  for already-missing/current-user-inactive tokens, and returns only
+  `revoked`/`revokedAt` metadata.
   Notification preferences are self-only for candidates and brothers, accept
   category booleans (`events`, `announcements`, `roadmapUpdates`,
   `prayerReminders`), and return all categories with defaults filled in.

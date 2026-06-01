@@ -151,6 +151,19 @@ export const registerDeviceTokenRequestOpenApiSchema = {
   }
 };
 
+export const revokeDeviceTokenRequestOpenApiSchema = {
+  type: "object",
+  required: ["token"],
+  additionalProperties: false,
+  properties: {
+    token: {
+      type: "string",
+      minLength: 16,
+      maxLength: 4096
+    }
+  }
+};
+
 export const deviceTokenRegistrationResponseOpenApiSchema = {
   type: "object",
   required: ["deviceToken"],
@@ -179,6 +192,22 @@ export const deviceTokenRegistrationResponseOpenApiSchema = {
           nullable: true
         }
       }
+    }
+  }
+};
+
+export const deviceTokenRevocationResponseOpenApiSchema = {
+  type: "object",
+  required: ["revoked", "revokedAt"],
+  additionalProperties: false,
+  properties: {
+    revoked: {
+      type: "boolean"
+    },
+    revokedAt: {
+      type: "string",
+      format: "date-time",
+      nullable: true
     }
   }
 };

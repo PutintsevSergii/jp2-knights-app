@@ -56,6 +56,44 @@ describe("AuthNotificationService", () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it("revokes the current private user's device token by hash without returning token material", async () => {
+    const repository = new FakeAuthNotificationRepository();
+    const service = new AuthNotificationService(repository);
+
+    const response = await service.revokeDeviceToken(candidatePrincipal(), {
+      token: "ExponentPushToken[abcdef1234567890]"
+    });
+
+    expect(response).toEqual({
+      revoked: true,
+      revokedAt: response.revokedAt
+    });
+    expect(typeof response.revokedAt).toBe("string");
+    expect(repository.revoked).toEqual([
+      {
+        userId: "11111111-1111-4111-8111-111111111111",
+        tokenHash: hashDeviceToken("ExponentPushToken[abcdef1234567890]"),
+        revokedAt: expect.any(Date) as Date
+      }
+    ]);
+    expect(JSON.stringify(repository.revoked)).not.toContain("ExponentPushToken");
+  });
+
+  it("returns an idempotent no-op response when the current user's token is not active", async () => {
+    const repository = new FakeAuthNotificationRepository();
+    repository.revokeResult = false;
+    const service = new AuthNotificationService(repository);
+
+    await expect(
+      service.revokeDeviceToken(candidatePrincipal(), {
+        token: "ExponentPushToken[abcdef1234567890]"
+      })
+    ).resolves.toEqual({
+      revoked: false,
+      revokedAt: null
+    });
+  });
+
   it("rejects idle approval principals before storing tokens or preferences", async () => {
     const service = new AuthNotificationService(new FakeAuthNotificationRepository());
     const principal = {
@@ -77,15 +115,26 @@ describe("AuthNotificationService", () => {
     await expect(
       service.updateNotificationPreferences(principal, { events: false })
     ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      service.revokeDeviceToken(principal, {
+        token: "ExponentPushToken[abcdef1234567890]"
+      })
+    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 });
 
 class FakeAuthNotificationRepository implements AuthNotificationRepository {
+  revokeResult = true;
   readonly registered: Array<{
     userId: string;
     platform: "ios" | "android" | "web";
     tokenHash: string;
     tokenLast4: string;
+  }> = [];
+  readonly revoked: Array<{
+    userId: string;
+    tokenHash: string;
+    revokedAt: Date;
   }> = [];
 
   registerDeviceToken(input: {
@@ -102,6 +151,12 @@ class FakeAuthNotificationRepository implements AuthNotificationRepository {
       lastSeenAt: "2026-05-07T10:00:00.000Z",
       revokedAt: null
     });
+  }
+
+  revokeDeviceToken(input: { userId: string; tokenHash: string; revokedAt: Date }) {
+    this.revoked.push(input);
+
+    return Promise.resolve(this.revokeResult);
   }
 
   updateNotificationPreferences(

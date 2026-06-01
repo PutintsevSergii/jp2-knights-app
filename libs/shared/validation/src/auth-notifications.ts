@@ -59,6 +59,12 @@ export const registerDeviceTokenRequestSchema = z
   })
   .strict();
 
+export const revokeDeviceTokenRequestSchema = z
+  .object({
+    token: z.string().trim().min(16).max(4096)
+  })
+  .strict();
+
 export const deviceTokenRegistrationResponseSchema = z
   .object({
     deviceToken: z
@@ -69,6 +75,13 @@ export const deviceTokenRegistrationResponseSchema = z
         revokedAt: z.iso.datetime().nullable()
       })
       .strict()
+  })
+  .strict();
+
+export const deviceTokenRevocationResponseSchema = z
+  .object({
+    revoked: z.boolean(),
+    revokedAt: z.iso.datetime().nullable()
   })
   .strict();
 
@@ -98,8 +111,12 @@ export type AuthSessionRequestDto = z.infer<typeof authSessionRequestSchema>;
 export type AuthSessionResponseDto = z.infer<typeof authSessionResponseSchema>;
 export type CurrentUserResponseDto = z.infer<typeof currentUserResponseSchema>;
 export type RegisterDeviceTokenRequestDto = z.infer<typeof registerDeviceTokenRequestSchema>;
+export type RevokeDeviceTokenRequestDto = z.infer<typeof revokeDeviceTokenRequestSchema>;
 export type DeviceTokenRegistrationResponseDto = z.infer<
   typeof deviceTokenRegistrationResponseSchema
+>;
+export type DeviceTokenRevocationResponseDto = z.infer<
+  typeof deviceTokenRevocationResponseSchema
 >;
 export type NotificationPreferenceSettingsDto = z.infer<
   typeof notificationPreferenceSettingsSchema

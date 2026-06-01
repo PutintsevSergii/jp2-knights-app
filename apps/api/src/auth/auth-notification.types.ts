@@ -1,12 +1,16 @@
 import type {
   DeviceTokenRegistrationResponseDto,
+  DeviceTokenRevocationResponseDto,
   NotificationPreferencesResponseDto,
   RegisterDeviceTokenRequestDto,
+  RevokeDeviceTokenRequestDto,
   UpdateNotificationPreferencesRequestDto
 } from "@jp2/shared-validation";
 
 export type RegisterDeviceTokenRequest = RegisterDeviceTokenRequestDto;
+export type RevokeDeviceTokenRequest = RevokeDeviceTokenRequestDto;
 export type DeviceTokenRegistrationResponse = DeviceTokenRegistrationResponseDto;
+export type DeviceTokenRevocationResponse = DeviceTokenRevocationResponseDto;
 export type UpdateNotificationPreferencesRequest = UpdateNotificationPreferencesRequestDto;
 export type NotificationPreferencesResponse = NotificationPreferencesResponseDto;
 

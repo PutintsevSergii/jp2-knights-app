@@ -4,8 +4,10 @@ import { assertNotIdleApprovalPrincipal } from "./idle-approval.exception.js";
 import { AuthNotificationRepository } from "./auth-notification.repository.js";
 import type {
   DeviceTokenRegistrationResponse,
+  DeviceTokenRevocationResponse,
   NotificationPreferencesResponse,
   RegisterDeviceTokenRequest,
+  RevokeDeviceTokenRequest,
   UpdateNotificationPreferencesRequest
 } from "./auth-notification.types.js";
 import type { CurrentUserPrincipal } from "./current-user.types.js";
@@ -31,6 +33,26 @@ export class AuthNotificationService {
 
     return {
       deviceToken: registration
+    };
+  }
+
+  async revokeDeviceToken(
+    principal: CurrentUserPrincipal,
+    data: RevokeDeviceTokenRequest
+  ): Promise<DeviceTokenRevocationResponse> {
+    assertNotIdleApprovalPrincipal(principal);
+    assertHasAnyPrivateRole(principal);
+
+    const revokedAt = new Date();
+    const revoked = await this.authNotificationRepository.revokeDeviceToken({
+      userId: principal.id,
+      tokenHash: hashDeviceToken(data.token.trim()),
+      revokedAt
+    });
+
+    return {
+      revoked,
+      revokedAt: revoked ? revokedAt.toISOString() : null
     };
   }
 

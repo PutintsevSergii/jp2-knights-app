@@ -24,8 +24,15 @@ export interface RegisterDeviceTokenInput {
   tokenLast4: string;
 }
 
+export interface RevokeDeviceTokenInput {
+  userId: string;
+  tokenHash: string;
+  revokedAt: Date;
+}
+
 export abstract class AuthNotificationRepository {
   abstract registerDeviceToken(input: RegisterDeviceTokenInput): Promise<DeviceTokenRegistration>;
+  abstract revokeDeviceToken(input: RevokeDeviceTokenInput): Promise<boolean>;
   abstract updateNotificationPreferences(
     userId: string,
     updates: NotificationPreferenceUpdate
@@ -57,6 +64,21 @@ export class PrismaAuthNotificationRepository implements AuthNotificationReposit
     });
 
     return toDeviceTokenRegistration(record);
+  }
+
+  async revokeDeviceToken(input: RevokeDeviceTokenInput): Promise<boolean> {
+    const result = await this.prisma.deviceToken.updateMany({
+      where: {
+        userId: input.userId,
+        tokenHash: input.tokenHash,
+        revokedAt: null
+      },
+      data: {
+        revokedAt: input.revokedAt
+      }
+    });
+
+    return result.count > 0;
   }
 
   async updateNotificationPreferences(

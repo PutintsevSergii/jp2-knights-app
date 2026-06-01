@@ -32,6 +32,10 @@ Push notifications are for authenticated candidates and brothers only. Public gu
 - Phase 9 adds `device_tokens` and `notification_preferences` persistence.
   Device tokens are registered through `POST /auth/device-tokens`; raw tokens are
   accepted only in the request, hashed before storage, and never returned.
+- Phase 12 adds self-service token revocation through
+  `POST /auth/device-tokens/revoke`. The request token is hashed before lookup,
+  only the current user's active matching token can be revoked, and the response
+  contains no token id, raw token, hash, or last-four value.
 - `PUT /auth/notification-preferences` is self-scoped to candidates and
   brothers. Missing preference rows resolve to the documented defaults.
 - Announcement first publication resolves recipients server-side from

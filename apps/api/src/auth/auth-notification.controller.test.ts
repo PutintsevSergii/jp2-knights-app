@@ -3,6 +3,7 @@ import { AuthNotificationController } from "./auth-notification.controller.js";
 import type { AuthNotificationService } from "./auth-notification.service.js";
 import type {
   RegisterDeviceTokenRequest,
+  RevokeDeviceTokenRequest,
   UpdateNotificationPreferencesRequest
 } from "./auth-notification.types.js";
 import type { CurrentUserPrincipal } from "./current-user.types.js";
@@ -55,6 +56,35 @@ describe("AuthNotificationController", () => {
     });
   });
 
+  it("delegates device token revocation using the guard-attached principal", async () => {
+    const controller = new AuthNotificationController({
+      revokeDeviceToken: (
+        receivedPrincipal: CurrentUserPrincipal,
+        body: RevokeDeviceTokenRequest
+      ) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(body.token).toBe("ExponentPushToken[abcdef1234567890]");
+
+        return Promise.resolve({
+          revoked: true,
+          revokedAt: "2026-05-07T11:00:00.000Z"
+        });
+      }
+    } as unknown as AuthNotificationService);
+
+    await expect(
+      controller.revokeDeviceToken(
+        { principal },
+        {
+          token: "ExponentPushToken[abcdef1234567890]"
+        }
+      )
+    ).resolves.toEqual({
+      revoked: true,
+      revokedAt: "2026-05-07T11:00:00.000Z"
+    });
+  });
+
   it("delegates notification preference updates", async () => {
     const controller = new AuthNotificationController({
       updateNotificationPreferences: (
@@ -100,6 +130,14 @@ describe("AuthNotificationController", () => {
     ).toThrow("CurrentUserGuard");
     expect(() =>
       controller.updateNotificationPreferences({}, { announcements: false })
+    ).toThrow("CurrentUserGuard");
+    expect(() =>
+      controller.revokeDeviceToken(
+        {},
+        {
+          token: "ExponentPushToken[abcdef1234567890]"
+        }
+      )
     ).toThrow("CurrentUserGuard");
   });
 });
