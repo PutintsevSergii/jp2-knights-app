@@ -60,6 +60,11 @@ describe("admin shell routes", () => {
         screenRoute: "AdminEventList"
       },
       {
+        path: "/admin/silent-prayer-events",
+        label: "Silent Prayer",
+        screenRoute: "AdminSilentPrayerList"
+      },
+      {
         path: "/admin/announcements",
         label: "Announcements",
         screenRoute: "AdminAnnouncementList"

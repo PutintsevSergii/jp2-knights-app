@@ -9,7 +9,8 @@ import {
   fallbackAdminRoadmapAssignments,
   fallbackAdminRoadmapDefinitions,
   fallbackAdminRoadmapSubmissions,
-  fallbackAdminPrayers
+  fallbackAdminPrayers,
+  fallbackAdminSilentPrayerEvents
 } from "./admin-content-fixtures.js";
 import { renderAdminWebRequest } from "./admin-web-shell.js";
 
@@ -187,6 +188,47 @@ describe("admin web shell", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+  });
+
+  it("mounts the silent-prayer content route through the shared Admin Lite shell", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminSilentPrayerEvents)
+      })
+    );
+
+    const response = await renderAdminWebRequest(
+      {
+        path: "/admin/silent-prayer-events",
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        canWrite: true,
+        fetchImpl
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain("JP2 Admin Lite");
+    expect(response.body).toContain(
+      'href="/admin/silent-prayer-events" aria-current="page"'
+    );
+    expect(response.body).toContain("Evening Silent Prayer");
+    expect(response.body).toContain('data-target-route="AdminSilentPrayerEditor"');
+    expect(response.body).not.toContain("participant");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/silent-prayer-events",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("mounts announcement create and detail editor routes", async () => {

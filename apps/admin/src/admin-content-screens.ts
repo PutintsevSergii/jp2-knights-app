@@ -20,6 +20,10 @@ export {
   type BuildAdminAnnouncementListScreenOptions
 } from "./admin-announcement-list-screen.js";
 export {
+  buildAdminSilentPrayerListScreen,
+  type BuildAdminSilentPrayerListScreenOptions
+} from "./admin-silent-prayer-list-screen.js";
+export {
   buildAdminAnnouncementEditorScreen,
   type AdminAnnouncementEditorScreen,
   type AdminAnnouncementFormField,

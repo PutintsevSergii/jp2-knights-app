@@ -31,6 +31,7 @@ describe("admin shell", () => {
       "/admin/roadmap-submissions",
       "/admin/prayers",
       "/admin/events",
+      "/admin/silent-prayer-events",
       "/admin/announcements"
     ]);
   });

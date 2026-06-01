@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import type {
   AdminAnnouncementListResponseDto,
   AdminEventListResponseDto,
-  AdminPrayerListResponseDto
+  AdminPrayerListResponseDto,
+  AdminSilentPrayerEventListResponseDto
 } from "@jp2/shared-validation";
 import {
   adminContentTheme,
   buildAdminAnnouncementEditorScreen,
   buildAdminAnnouncementListScreen,
   buildAdminEventListScreen,
-  buildAdminPrayerListScreen
+  buildAdminPrayerListScreen,
+  buildAdminSilentPrayerListScreen
 } from "./admin-content-screens.js";
 
 const prayerResponse: AdminPrayerListResponseDto = {
@@ -63,6 +65,25 @@ const announcementResponse: AdminAnnouncementListResponseDto = {
       status: "DRAFT",
       approvedAt: null,
       publishedAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
+const silentPrayerResponse: AdminSilentPrayerEventListResponseDto = {
+  silentPrayerEvents: [
+    {
+      id: "66666666-6666-4666-8666-666666666667",
+      title: "Evening Silent Prayer",
+      intention: "For pilot families and brothers.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "DRAFT",
+      startsAt: "2026-06-12T18:00:00.000Z",
+      endsAt: "2026-06-12T18:30:00.000Z",
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
       archivedAt: null
     }
   ]
@@ -169,6 +190,38 @@ describe("admin content screen models", () => {
     ]);
   });
 
+  it("builds a writable silent-prayer list without participant identity actions", () => {
+    const screen = buildAdminSilentPrayerListScreen({
+      state: "ready",
+      response: silentPrayerResponse,
+      runtimeMode: "api",
+      canWrite: true
+    });
+
+    expect(screen).toMatchObject({
+      route: "AdminSilentPrayerList",
+      state: "ready",
+      title: "Silent Prayer Events",
+      demoChromeVisible: false
+    });
+    expect(screen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
+    expect(screen.rows[0]).toMatchObject({
+      id: "66666666-6666-4666-8666-666666666667",
+      title: "Evening Silent Prayer",
+      primaryMeta: "Organization Unit / 2026-06-12T18:00:00.000Z",
+      secondaryMeta: "Ends 2026-06-12T18:30:00.000Z",
+      status: "DRAFT",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111"
+    });
+    expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual([
+      "edit",
+      "approve",
+      "archive"
+    ]);
+    expect(screen.rows[0]?.actions.map((action) => action.label)).not.toContain("Participants");
+  });
+
   it("shows publish only after approval metadata is present", () => {
     const approvedPrayerResponse: AdminPrayerListResponseDto = {
       prayers: [
@@ -202,6 +255,22 @@ describe("admin content screen models", () => {
       buildAdminEventListScreen({
         state: "ready",
         response: approvedEventResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.actions.map((action) => action.id)
+    ).toEqual(["edit", "publish", "archive"]);
+    expect(
+      buildAdminSilentPrayerListScreen({
+        state: "ready",
+        response: {
+          silentPrayerEvents: [
+            {
+              ...silentPrayerResponse.silentPrayerEvents[0]!,
+              status: "APPROVED",
+              approvedAt: "2026-05-04T00:00:00.000Z"
+            }
+          ]
+        },
         runtimeMode: "api",
         canWrite: true
       }).rows[0]?.actions.map((action) => action.id)
@@ -308,6 +377,18 @@ describe("admin content screen models", () => {
       state: "forbidden",
       rows: [],
       actions: []
+    });
+    expect(
+      buildAdminSilentPrayerListScreen({
+        state: "ready",
+        response: { silentPrayerEvents: [] },
+        runtimeMode: "api",
+        canWrite: true
+      })
+    ).toMatchObject({
+      route: "AdminSilentPrayerList",
+      state: "empty",
+      actions: [expect.objectContaining({ id: "refresh" })]
     });
   });
 });

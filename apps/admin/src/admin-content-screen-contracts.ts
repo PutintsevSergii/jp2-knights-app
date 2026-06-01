@@ -9,6 +9,8 @@ export type AdminContentRoute =
   | "AdminEventEditor"
   | "AdminAnnouncementList"
   | "AdminAnnouncementEditor"
+  | "AdminSilentPrayerList"
+  | "AdminSilentPrayerEditor"
   | "AdminOrganizationUnitList"
   | "AdminOrganizationUnitEditor";
 
@@ -58,6 +60,7 @@ export interface AdminContentListScreen {
     | "AdminPrayerList"
     | "AdminEventList"
     | "AdminAnnouncementList"
+    | "AdminSilentPrayerList"
     | "AdminOrganizationUnitList";
   state: AdminContentScreenState;
   title: string;
@@ -71,7 +74,8 @@ export interface AdminContentListScreen {
 export type AdminContentEditorRoute =
   | "AdminPrayerEditor"
   | "AdminEventEditor"
-  | "AdminAnnouncementEditor";
+  | "AdminAnnouncementEditor"
+  | "AdminSilentPrayerEditor";
 
 export const adminContentTheme: AdminContentTheme = {
   background: designTokens.color.background.app,
@@ -167,7 +171,11 @@ export function buildAdminContentStatusActions(options: {
     });
   }
 
-  if (options.targetRoute === "AdminEventEditor" && isPublished) {
+  if (
+    (options.targetRoute === "AdminEventEditor" ||
+      options.targetRoute === "AdminSilentPrayerEditor") &&
+    isPublished
+  ) {
     actions.push({
       id: "cancel",
       label: "Cancel",
@@ -189,7 +197,7 @@ export function buildAdminContentStatusActions(options: {
 }
 
 export function stateOnlyAdminContentList(
-  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList",
+  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList" | "AdminSilentPrayerList",
   state: AdminContentScreenState,
   runtimeMode: RuntimeMode
 ): AdminContentListScreen {
@@ -221,7 +229,7 @@ export function formatAdminDateTime(value: string): string {
 }
 
 function editorRouteFor(
-  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList"
+  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList" | "AdminSilentPrayerList"
 ): AdminContentEditorRoute {
   if (route === "AdminPrayerList") {
     return "AdminPrayerEditor";
@@ -231,7 +239,11 @@ function editorRouteFor(
     return "AdminEventEditor";
   }
 
-  return "AdminAnnouncementEditor";
+  if (route === "AdminAnnouncementList") {
+    return "AdminAnnouncementEditor";
+  }
+
+  return "AdminSilentPrayerEditor";
 }
 
 const prayerStateCopy: Record<AdminContentScreenState, { title: string; body: string }> = {
@@ -315,8 +327,35 @@ const announcementStateCopy: Record<AdminContentScreenState, { title: string; bo
   }
 };
 
+const silentPrayerStateCopy: Record<AdminContentScreenState, { title: string; body: string }> = {
+  ready: {
+    title: "Silent Prayer Events",
+    body: "Silent-prayer event content is ready."
+  },
+  loading: {
+    title: "Loading Silent Prayer Events",
+    body: "Silent-prayer events are loading."
+  },
+  empty: {
+    title: "Silent Prayer Events",
+    body: "No manageable silent-prayer events are available."
+  },
+  error: {
+    title: "Unable to Load Silent Prayer Events",
+    body: "Silent-prayer events could not be loaded."
+  },
+  offline: {
+    title: "Offline",
+    body: "Reconnect to refresh silent-prayer events."
+  },
+  forbidden: {
+    title: "Access Denied",
+    body: "Admin Lite access is required to manage silent-prayer events."
+  }
+};
+
 function stateCopyForRoute(
-  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList"
+  route: "AdminPrayerList" | "AdminEventList" | "AdminAnnouncementList" | "AdminSilentPrayerList"
 ): Record<AdminContentScreenState, { title: string; body: string }> {
   if (route === "AdminPrayerList") {
     return prayerStateCopy;
@@ -326,5 +365,9 @@ function stateCopyForRoute(
     return eventStateCopy;
   }
 
-  return announcementStateCopy;
+  if (route === "AdminAnnouncementList") {
+    return announcementStateCopy;
+  }
+
+  return silentPrayerStateCopy;
 }

@@ -37,6 +37,25 @@ const announcementPayload = {
   ]
 };
 
+const silentPrayerPayload = {
+  silentPrayerEvents: [
+    {
+      id: "66666666-6666-4666-8666-666666666667",
+      title: "Evening Silent Prayer",
+      intention: "For pilot families and brothers.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "DRAFT",
+      startsAt: "2026-06-12T18:00:00.000Z",
+      endsAt: "2026-06-12T18:30:00.000Z",
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
 describe("admin content shell routes", () => {
   it("exposes prayer, event, and announcement shell routes", () => {
     expect(adminContentShellRoutes).toEqual([
@@ -49,6 +68,11 @@ describe("admin content shell routes", () => {
         path: "/admin/events",
         label: "Events",
         screenRoute: "AdminEventList"
+      },
+      {
+        path: "/admin/silent-prayer-events",
+        label: "Silent Prayer",
+        screenRoute: "AdminSilentPrayerList"
       },
       {
         path: "/admin/announcements",
@@ -146,6 +170,43 @@ describe("admin content shell routes", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+  });
+
+  it("renders the silent-prayer route through the API client", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(silentPrayerPayload)
+      })
+    );
+
+    const rendered = await renderAdminContentRoute({
+      path: "/admin/silent-prayer-events",
+      runtimeMode: "api",
+      canWrite: true,
+      authToken: "token_1",
+      baseUrl: "https://api.example.test",
+      fetchImpl
+    });
+
+    expect(rendered).toMatchObject({
+      path: "/admin/silent-prayer-events",
+      route: "AdminSilentPrayerList",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(rendered.document).toContain("<title>Admin Silent Prayer Events</title>");
+    expect(rendered.document).toContain("Evening Silent Prayer");
+    expect(rendered.document).toContain('data-target-route="AdminSilentPrayerEditor"');
+    expect(rendered.document).not.toContain("guest-");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/silent-prayer-events",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("renders announcement create and detail editor forms", async () => {

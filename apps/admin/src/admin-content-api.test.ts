@@ -5,21 +5,28 @@ import {
   approveAdminAnnouncement,
   approveAdminEvent,
   approveAdminPrayer,
+  approveAdminSilentPrayerEvent,
   archiveAdminAnnouncement,
   archiveAdminEvent,
   archiveAdminPrayer,
+  archiveAdminSilentPrayerEvent,
   buildAdminContentUrl,
   cancelAdminEvent,
+  cancelAdminSilentPrayerEvent,
   createAdminAnnouncement,
   createAdminEvent,
+  createAdminSilentPrayerEvent,
   fetchAdminAnnouncements,
   fetchAdminEvents,
   fetchAdminPrayers,
+  fetchAdminSilentPrayerEvents,
   publishAdminAnnouncement,
   publishAdminEvent,
   publishAdminPrayer,
+  publishAdminSilentPrayerEvent,
   updateAdminAnnouncement,
-  updateAdminPrayer
+  updateAdminPrayer,
+  updateAdminSilentPrayerEvent
 } from "./admin-content-api.js";
 
 const prayersPayload = {
@@ -78,6 +85,25 @@ const announcementsPayload = {
   ]
 };
 
+const silentPrayerPayload = {
+  silentPrayerEvents: [
+    {
+      id: "66666666-6666-4666-8666-666666666667",
+      title: "Evening Silent Prayer",
+      intention: "For pilot families and brothers.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "DRAFT",
+      startsAt: "2026-06-12T18:00:00.000Z",
+      endsAt: "2026-06-12T18:30:00.000Z",
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
 describe("admin content API client", () => {
   it("builds admin content URLs under the API prefix", () => {
     expect(buildAdminContentUrl("admin/prayers", "https://api.example.test")).toBe(
@@ -85,7 +111,7 @@ describe("admin content API client", () => {
     );
   });
 
-  it("fetches and validates admin prayer, event, and announcement lists", async () => {
+  it("fetches and validates admin prayer, event, announcement, and silent-prayer lists", async () => {
     const prayerFetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
@@ -105,6 +131,13 @@ describe("admin content API client", () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve(announcementsPayload)
+      })
+    );
+    const silentPrayerFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(silentPrayerPayload)
       })
     );
 
@@ -129,6 +162,13 @@ describe("admin content API client", () => {
         fetchImpl: announcementFetch
       })
     ).resolves.toEqual(announcementsPayload);
+    await expect(
+      fetchAdminSilentPrayerEvents({
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: silentPrayerFetch
+      })
+    ).resolves.toEqual(silentPrayerPayload);
 
     expect(prayerFetch).toHaveBeenCalledWith("https://api.example.test/admin/prayers", {
       method: "GET",
@@ -138,6 +178,13 @@ describe("admin content API client", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+    expect(silentPrayerFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/silent-prayer-events",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("sends create and update mutations with JSON bodies", async () => {
@@ -173,6 +220,27 @@ describe("admin content API client", () => {
           })
       })
     );
+    const createSilentPrayerFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({ silentPrayerEvent: silentPrayerPayload.silentPrayerEvents[0] })
+      })
+    );
+    const updateSilentPrayerFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            silentPrayerEvent: {
+              ...silentPrayerPayload.silentPrayerEvents[0],
+              status: "PUBLISHED"
+            }
+          })
+      })
+    );
 
     await createAdminEvent(
       {
@@ -204,6 +272,23 @@ describe("admin content API client", () => {
       "55555555-5555-4555-8555-555555555555",
       { status: "PUBLISHED" },
       { baseUrl: "https://api.example.test", fetchImpl: updateAnnouncementFetch }
+    );
+    await createAdminSilentPrayerEvent(
+      {
+        title: "Evening Silent Prayer",
+        intention: "For pilot families and brothers.",
+        visibility: "ORGANIZATION_UNIT",
+        targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+        status: "DRAFT",
+        startsAt: "2026-06-12T18:00:00.000Z",
+        endsAt: "2026-06-12T18:30:00.000Z"
+      },
+      { baseUrl: "https://api.example.test", fetchImpl: createSilentPrayerFetch }
+    );
+    await updateAdminSilentPrayerEvent(
+      "66666666-6666-4666-8666-666666666667",
+      { status: "PUBLISHED" },
+      { baseUrl: "https://api.example.test", fetchImpl: updateSilentPrayerFetch }
     );
 
     expect(createFetch).toHaveBeenCalledWith("https://api.example.test/admin/events", {
@@ -248,6 +333,30 @@ describe("admin content API client", () => {
         body: JSON.stringify({ status: "PUBLISHED" })
       }
     );
+    expect(createSilentPrayerFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/silent-prayer-events",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Evening Silent Prayer",
+          intention: "For pilot families and brothers.",
+          visibility: "ORGANIZATION_UNIT",
+          targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+          status: "DRAFT",
+          startsAt: "2026-06-12T18:00:00.000Z",
+          endsAt: "2026-06-12T18:30:00.000Z"
+        })
+      }
+    );
+    expect(updateSilentPrayerFetch).toHaveBeenCalledWith(
+      "https://api.example.test/admin/silent-prayer-events/66666666-6666-4666-8666-666666666667",
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "PUBLISHED" })
+      }
+    );
   });
 
   it("sends typed lifecycle mutations for approve, publish, cancel, and archive actions", async () => {
@@ -283,6 +392,21 @@ describe("admin content API client", () => {
     });
     const announcementArchiveFetch = jsonFetch({
       announcement: { ...announcementsPayload.announcements[0], status: "ARCHIVED" }
+    });
+    const silentPrayerApproveFetch = jsonFetch({
+      silentPrayerEvent: { ...silentPrayerPayload.silentPrayerEvents[0], status: "APPROVED" }
+    });
+    const silentPrayerPublishFetch = jsonFetch({
+      silentPrayerEvent: { ...silentPrayerPayload.silentPrayerEvents[0], status: "PUBLISHED" }
+    });
+    const silentPrayerCancelFetch = jsonFetch({
+      silentPrayerEvent: {
+        ...silentPrayerPayload.silentPrayerEvents[0],
+        cancelledAt: "2026-06-01T17:00:00.000Z"
+      }
+    });
+    const silentPrayerArchiveFetch = jsonFetch({
+      silentPrayerEvent: { ...silentPrayerPayload.silentPrayerEvents[0], status: "ARCHIVED" }
     });
 
     await approveAdminPrayer("33333333-3333-4333-8333-333333333333", {
@@ -326,6 +450,22 @@ describe("admin content API client", () => {
       baseUrl: "https://api.example.test",
       fetchImpl: announcementArchiveFetch
     });
+    await approveAdminSilentPrayerEvent("66666666-6666-4666-8666-666666666667", {
+      baseUrl: "https://api.example.test",
+      fetchImpl: silentPrayerApproveFetch
+    });
+    await publishAdminSilentPrayerEvent("66666666-6666-4666-8666-666666666667", {
+      baseUrl: "https://api.example.test",
+      fetchImpl: silentPrayerPublishFetch
+    });
+    await cancelAdminSilentPrayerEvent("66666666-6666-4666-8666-666666666667", {
+      baseUrl: "https://api.example.test",
+      fetchImpl: silentPrayerCancelFetch
+    });
+    await archiveAdminSilentPrayerEvent("66666666-6666-4666-8666-666666666667", {
+      baseUrl: "https://api.example.test",
+      fetchImpl: silentPrayerArchiveFetch
+    });
 
     expect(patchBody(prayerApproveFetch)).toEqual({ status: "APPROVED" });
     expect(patchBody(prayerPublishFetch)).toEqual({ status: "PUBLISHED" });
@@ -339,6 +479,12 @@ describe("admin content API client", () => {
     expect(patchBody(announcementApproveFetch)).toEqual({ status: "APPROVED" });
     expect(patchBody(announcementPublishFetch)).toEqual({ status: "PUBLISHED" });
     expect(patchBody(announcementArchiveFetch)).toEqual({ status: "ARCHIVED" });
+    expect(patchBody(silentPrayerApproveFetch)).toEqual({ status: "APPROVED" });
+    expect(patchBody(silentPrayerPublishFetch)).toEqual({ status: "PUBLISHED" });
+    expect(patchBody(silentPrayerCancelFetch)).toEqual({
+      cancelledAt: expect.any(String) as string
+    });
+    expect(patchBody(silentPrayerArchiveFetch)).toEqual({ status: "ARCHIVED" });
   });
 
   it("rejects invalid admin content and maps failures into screen states", async () => {

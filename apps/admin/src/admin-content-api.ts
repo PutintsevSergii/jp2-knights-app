@@ -5,18 +5,24 @@ import {
   adminEventListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
+  adminSilentPrayerEventDetailResponseSchema,
+  adminSilentPrayerEventListResponseSchema,
   type AdminAnnouncementDetailResponseDto,
   type AdminAnnouncementListResponseDto,
   type AdminEventDetailResponseDto,
   type AdminEventListResponseDto,
   type AdminPrayerDetailResponseDto,
   type AdminPrayerListResponseDto,
+  type AdminSilentPrayerEventDetailResponseDto,
+  type AdminSilentPrayerEventListResponseDto,
+  type CreateAdminSilentPrayerEventRequestDto,
   type CreateAdminAnnouncementRequestDto,
   type CreateAdminEventRequestDto,
   type CreateAdminPrayerRequestDto,
   type UpdateAdminAnnouncementRequestDto,
   type UpdateAdminEventRequestDto,
-  type UpdateAdminPrayerRequestDto
+  type UpdateAdminPrayerRequestDto,
+  type UpdateAdminSilentPrayerEventRequestDto
 } from "@jp2/shared-validation";
 export {
   adminContentFailureState,
@@ -209,4 +215,65 @@ export async function archiveAdminAnnouncement(
   options: AdminContentRequestOptions = {}
 ): Promise<AdminAnnouncementDetailResponseDto> {
   return updateAdminAnnouncement(id, { status: "ARCHIVED" }, options);
+}
+
+export async function fetchAdminSilentPrayerEvents(
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventListResponseDto> {
+  const response = await requestAdminApi("admin/silent-prayer-events", options);
+
+  return adminSilentPrayerEventListResponseSchema.parse(await response.json());
+}
+
+export async function createAdminSilentPrayerEvent(
+  data: CreateAdminSilentPrayerEventRequestDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  const response = await requestAdminApi("admin/silent-prayer-events", options, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  return adminSilentPrayerEventDetailResponseSchema.parse(await response.json());
+}
+
+export async function updateAdminSilentPrayerEvent(
+  id: string,
+  data: UpdateAdminSilentPrayerEventRequestDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  const response = await requestAdminApi(`admin/silent-prayer-events/${id}`, options, {
+    method: "PATCH",
+    body: JSON.stringify(data)
+  });
+
+  return adminSilentPrayerEventDetailResponseSchema.parse(await response.json());
+}
+
+export async function approveAdminSilentPrayerEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  return updateAdminSilentPrayerEvent(id, { status: "APPROVED" }, options);
+}
+
+export async function publishAdminSilentPrayerEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  return updateAdminSilentPrayerEvent(id, { status: "PUBLISHED" }, options);
+}
+
+export async function cancelAdminSilentPrayerEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  return updateAdminSilentPrayerEvent(id, { cancelledAt: new Date().toISOString() }, options);
+}
+
+export async function archiveAdminSilentPrayerEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminSilentPrayerEventDetailResponseDto> {
+  return updateAdminSilentPrayerEvent(id, { status: "ARCHIVED" }, options);
 }

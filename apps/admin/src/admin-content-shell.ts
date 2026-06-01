@@ -2,7 +2,8 @@ import type { RuntimeMode } from "@jp2/shared-types";
 import type {
   AdminAnnouncementListResponseDto,
   AdminEventListResponseDto,
-  AdminPrayerListResponseDto
+  AdminPrayerListResponseDto,
+  AdminSilentPrayerEventListResponseDto
 } from "@jp2/shared-validation";
 import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 import { routeOptions } from "./admin-web-route-types.js";
@@ -12,12 +13,14 @@ import {
   type AdminContentScreenState,
   fetchAdminAnnouncements,
   fetchAdminEvents,
-  fetchAdminPrayers
+  fetchAdminPrayers,
+  fetchAdminSilentPrayerEvents
 } from "./admin-content-api.js";
 import {
   fallbackAdminAnnouncements,
   fallbackAdminEvents,
-  fallbackAdminPrayers
+  fallbackAdminPrayers,
+  fallbackAdminSilentPrayerEvents
 } from "./admin-content-fixtures.js";
 import {
   type AdminAnnouncementEditorScreen,
@@ -25,7 +28,8 @@ import {
   buildAdminAnnouncementEditorScreen,
   buildAdminAnnouncementListScreen,
   buildAdminEventListScreen,
-  buildAdminPrayerListScreen
+  buildAdminPrayerListScreen,
+  buildAdminSilentPrayerListScreen
 } from "./admin-content-screens.js";
 import { renderAdminContentListScreen } from "./admin-content-render.js";
 import {
@@ -41,6 +45,7 @@ import {
 export type AdminContentShellRoute =
   | "/admin/prayers"
   | "/admin/events"
+  | "/admin/silent-prayer-events"
   | "/admin/announcements"
   | "/admin/announcements/new"
   | `/admin/announcements/${string}`;
@@ -80,6 +85,11 @@ export const adminContentShellRoutes: readonly AdminContentShellRouteMetadata[] 
     path: "/admin/events",
     label: "Events",
     screenRoute: "AdminEventList"
+  },
+  {
+    path: "/admin/silent-prayer-events",
+    label: "Silent Prayer",
+    screenRoute: "AdminSilentPrayerList"
   },
   {
     path: "/admin/announcements",
@@ -128,6 +138,12 @@ const announcementListResolver: AdminContentListResolver<AdminAnnouncementListRe
   buildScreen: buildAdminAnnouncementListScreen
 };
 
+const silentPrayerListResolver: AdminContentListResolver<AdminSilentPrayerEventListResponseDto> = {
+  demoResponse: fallbackAdminSilentPrayerEvents,
+  fetchResponse: fetchAdminSilentPrayerEvents,
+  buildScreen: buildAdminSilentPrayerListScreen
+};
+
 export async function renderAdminContentRoute(
   options: RenderAdminContentRouteOptions
 ): Promise<RenderedAdminContentRoute> {
@@ -136,9 +152,11 @@ export async function renderAdminContentRoute(
       ? await resolvePrayerScreen(options)
       : options.path === "/admin/events"
         ? await resolveEventScreen(options)
-        : options.path === "/admin/announcements"
-          ? await resolveAnnouncementScreen(options)
-          : await resolveAnnouncementEditorScreen(options);
+        : options.path === "/admin/silent-prayer-events"
+          ? await resolveSilentPrayerScreen(options)
+          : options.path === "/admin/announcements"
+            ? await resolveAnnouncementScreen(options)
+            : await resolveAnnouncementEditorScreen(options);
   const rendered =
     screen.route === "AdminAnnouncementEditor"
       ? renderAdminAnnouncementEditorScreen(screen)
@@ -171,6 +189,12 @@ async function resolveAnnouncementScreen(
   options: RenderAdminContentRouteOptions
 ): Promise<AdminContentListScreen> {
   return resolveContentListScreen(options, announcementListResolver);
+}
+
+async function resolveSilentPrayerScreen(
+  options: RenderAdminContentRouteOptions
+): Promise<AdminContentListScreen> {
+  return resolveContentListScreen(options, silentPrayerListResolver);
 }
 
 async function resolveContentListScreen<TResponse>(
@@ -259,6 +283,10 @@ function titleForRoute(
     return "Admin Events";
   }
 
+  if (route === "AdminSilentPrayerList") {
+    return "Admin Silent Prayer Events";
+  }
+
   return "Admin Announcements";
 }
 
@@ -266,6 +294,7 @@ function isAdminContentRoute(path: string): boolean {
   return (
     path === "/admin/prayers" ||
     path === "/admin/events" ||
+    path === "/admin/silent-prayer-events" ||
     path === "/admin/announcements" ||
     isAdminAnnouncementEditorRoute(path)
   );
@@ -278,6 +307,10 @@ function titleForAdminContentRoute(path: string): string {
 
   if (path === "/admin/events") {
     return "Admin Events";
+  }
+
+  if (path === "/admin/silent-prayer-events") {
+    return "Admin Silent Prayer Events";
   }
 
   return "Admin Announcements";

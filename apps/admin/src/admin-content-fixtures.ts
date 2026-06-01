@@ -10,7 +10,8 @@ import type {
   AdminRoadmapAssignmentDetailDto,
   AdminRoadmapDefinitionDetailDto,
   AdminRoadmapSubmissionDetailDto,
-  AdminPrayerListResponseDto
+  AdminPrayerListResponseDto,
+  AdminSilentPrayerEventListResponseDto
 } from "@jp2/shared-validation";
 
 export const fallbackAdminAuditLogs: AdminAuditLogListResponseDto = {
@@ -318,6 +319,25 @@ export const fallbackAdminAnnouncements: AdminAnnouncementListResponseDto = {
       status: "DRAFT",
       approvedAt: null,
       publishedAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
+export const fallbackAdminSilentPrayerEvents: AdminSilentPrayerEventListResponseDto = {
+  silentPrayerEvents: [
+    {
+      id: "66666666-6666-4666-8666-666666666667",
+      title: "Evening Silent Prayer",
+      intention: "For pilot families and brothers.",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "DRAFT",
+      startsAt: "2026-06-12T18:00:00.000Z",
+      endsAt: "2026-06-12T18:30:00.000Z",
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
       archivedAt: null
     }
   ]
