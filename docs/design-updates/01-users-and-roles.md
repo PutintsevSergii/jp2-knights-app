@@ -47,7 +47,8 @@ The current implementation uses the product RBAC model as the source of truth:
   - Manage event participation (planning to attend/cancel)
   - View candidate-specific roadmap and formation materials
   - Receive push notifications for events and announcements
-  - Update profile contact information (phone, preferred language)
+  - View profile/contact metadata supplied by the server. Self-service contact
+    updates remain future account-settings work unless explicitly approved.
 
 **Candidate Progression States:**
 - `new` → Initial request submission

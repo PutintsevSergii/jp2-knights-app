@@ -90,19 +90,27 @@ A person in the system. Users have identity (name, email, phone), roles, and mem
 
 An account linked to an external identity provider (e.g., Firebase). Allows a user to log in via provider-backed verification without storing passwords locally.
 
-**Schema**: `identity_provider_accounts` table with `user_id`, `provider_name`, `provider_user_id`, `created_at`.
+**Schema**: `identity_provider_accounts` table with `user_id`, `provider`,
+`provider_subject`, mirrored provider profile metadata, and revocation
+timestamps.
 
 ### Session
 
-A temporary authenticated state for a user. Sessions are backed by secure cookies or tokens, refreshed periodically, and revoked on logout or inactivity.
+A temporary authenticated state for a user. Sessions are backed by secure
+cookies or bearer tokens, refreshed periodically, and local cookie state is
+cleared on logout.
 
 **Implementation**: Adapter-based, initially Firebase-backed; test/fake provider available for development.
 
 ### Device Token
 
-A push notification identifier for mobile devices. Stored with user consent and revoked on logout or explicit disable. Hashed where possible.
+A push notification identifier for mobile devices. Raw token material is
+accepted only in registration/revocation requests; persisted records store a
+hash and safe metadata. Tokens can be explicitly revoked and are also revoked by
+approved candidate erasure workflows.
 
-**Schema**: `device_tokens` table with `user_id`, `token_hash`, `platform` (ios/android), `created_at`.
+**Schema**: `device_tokens` table with `user_id`, `token_hash`, `token_last4`,
+`platform` (ios/android/web), timestamps, and `revoked_at`.
 
 ## Content & Visibility
 

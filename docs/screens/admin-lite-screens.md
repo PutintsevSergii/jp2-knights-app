@@ -12,7 +12,7 @@
 | Candidate Request List     | `/admin/candidate-requests`       | Incoming interests              | filter/open                          | empty               | Scoped/unassigned policy                       |
 | Candidate Request Detail   | `/admin/candidate-requests/:id`   | Process interest                | status, note, assign, convert/reject | conflict            | Consent visible to admin                       |
 | Candidate List             | `/admin/candidates`               | Manage authenticated candidates | filter/open                          | empty               | Scoped                                         |
-| Candidate Detail           | `/admin/candidates/:id`           | Candidate management            | edit status/contact/convert          | forbidden           | Scoped                                         |
+| Candidate Detail           | `/admin/candidates/:id`           | Candidate management            | edit status/assignment/responsible officer | forbidden           | Scoped                                         |
 | Prayer List                | `/admin/prayers`                  | Prayer content                  | create/filter/open                   | empty               | Role policy                                    |
 | Prayer Editor              | `/admin/prayers/:id`              | Edit prayer                     | save/submit/approve/publish/archive  | validation          | Pastoral/content approval                      |
 | Event List                 | `/admin/events`                   | Events                          | create/filter/open                   | empty               | Scoped                                         |
@@ -38,6 +38,10 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
 
 - Phase 4 admin prayer/event workflow foundations are implemented in the admin app as tested API clients and list view models.
 - Phase 4 admin prayer/event list renderers produce framework-neutral HTML templates from those models with action metadata for create/edit/publish/cancel/archive workflows.
+- Candidate profile management currently updates status, assigned organization
+  unit, and responsible officer. Linked user contact fields are not edited from
+  this screen; legal export/erasure actions are separate Super Admin privacy
+  workflows.
 - Phase 4 admin shell routes now expose `/admin/prayers` and `/admin/events`, resolving API/demo data into rendered documents.
 - Phase 6 admin dashboard foundations now expose `/admin/dashboard` route metadata, a typed dashboard API client, demo fixture, scoped navigation, and a framework-neutral rendered dashboard document.
 - Phase 6 also includes a dependency-free HTTP web shell that mounts `/admin`, `/admin/dashboard`, `/admin/organization-units`, `/admin/organization-units/new`, `/admin/organization-units/:id`, `/admin/prayers`, and `/admin/events`.

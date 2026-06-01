@@ -7,7 +7,7 @@ The following are outside the default V1 scope. They may be proposed only when t
 | Payments | Fees, donations, payment history, treasurer workflows |
 | Social | Chat, comments, likes, social feed, public rankings |
 | Maps | Brother map, church map, mass time integrations, geocheck-ins |
-| Analytics | Growth dashboards, conversion analytics, complex reports, authority exports |
+| Analytics | Growth dashboards, conversion analytics, complex reports, authority/reporting/bulk exports |
 | Hierarchy | Full Generalate/Province/Commandery hierarchy and approval chains |
 | Formation | Automated degree awarding, advanced canonical/official validation, gamification, streaks |
 | Documents | Electronic signatures, formal document repository, versioned official corpus |
@@ -25,6 +25,10 @@ The human owner approved pulling the design-update/Figma alignment work into V1 
 - role/RBAC UI-state alignment for Guest, Idle, Candidate, Brother, Officer, and Super Admin modes.
 
 This approval does not add chat, payments, maps, analytics, hierarchy-derived permissions, authenticated family accounts, or a native Expo officer/admin app.
+
+Legal/privacy subject-access exports implemented for Phase 12 candidate
+request/profile records are privacy controls and do not approve analytics,
+authority, reporting, or bulk export features.
 
 ## Rule for Agents
 

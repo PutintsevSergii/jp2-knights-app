@@ -49,7 +49,10 @@ V1 includes four modes:
 - participation intent only, not verified attendance;
 - aggregate silent prayer counters only, not participant lists;
 - basic content approval, not a complex editorial workflow;
-- no payment, chat, feed, comments, social ranking, maps, geocheck-ins, analytics suite, or exports.
+- no payment, chat, feed, comments, social ranking, maps, geocheck-ins,
+  analytics suite, reporting exports, authority exports, or bulk data exports.
+  Phase 12 legal/privacy subject-access exports for candidate request/profile
+  records are V1 privacy controls, not analytics/reporting features.
 
 ## Launch Target
 

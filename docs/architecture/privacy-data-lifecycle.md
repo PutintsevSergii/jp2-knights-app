@@ -18,7 +18,10 @@ This document defines minimum lifecycle behavior for V1. Legal wording, exact re
 - Candidate requests store consent timestamp, consent text/version, source, and preferred language.
 - Candidate requests can be archived/deactivated for normal operations; hard deletion is reserved for legal erasure workflows.
 - Roadmap submissions and officer notes are never public and are excluded from analytics-style reporting in V1.
-- Device tokens store token hashes where possible and are revoked on logout, explicit disable, or ownership change.
+- Device tokens store token hashes where possible and are revoked on explicit
+  token disable, ownership change, or approved account/candidate erasure.
+  Logout currently clears local session state only; logout-wide device-token
+  revocation requires a separate product/security decision.
 - Silent prayer anonymous participation uses random session identifiers or hashes, not names or contact data.
 - Authenticated silent prayer participation may temporarily reference `user_id` only for duplicate prevention, reconnect behavior, and aggregate counter correctness. It is not a spiritual history record.
 - Audit summaries redact prayer text, candidate private messages, token values, storage keys, and unnecessary PII.
@@ -38,7 +41,9 @@ Exact durations are configured per deployment after legal review. The implementa
 
 ## Erasure and Export
 
-- Personal data export must be possible for a single user or candidate request.
+- Personal data export must be possible for candidate request/profile subject
+  records in V1. Broader whole-user export requires legal/product review before
+  production.
 - Legal erasure must remove or anonymize personal identifiers while preserving required audit event existence.
 - Silent prayer export must not produce participant lists. If retained technical rows still reference a user, export only the minimum legally required technical record and never frame it as prayer activity history.
 - Hard-deleted binary files must also remove provider objects, thumbnails, and derived metadata.

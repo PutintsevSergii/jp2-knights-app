@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: June 1, 2026 (Phases 0–9 and Phase 11 complete; Phase 10A/10B and Phase 12 privacy/audit/content-approval hardening in progress; candidate request export/erasure privacy controls and content approval workflow hardening expanded)
+**Last Updated**: June 1, 2026 (Phases 0–9 and Phase 11 complete; Phase 10A/10B and Phase 12 privacy/audit/content-approval hardening in progress; candidate request/profile export-erasure, device-token revocation, and product/API scope wording aligned)
 
 ---
 

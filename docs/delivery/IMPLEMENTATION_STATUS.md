@@ -804,6 +804,6 @@ Every week (or per phase):
 
 ---
 
-**Last Updated**: May 29, 2026
-**Current Phase**: Phase 10 Figma/RBAC alignment and Formation Roadmap remains in progress; Phase 11 realtime foundation is complete; Phase 12 privacy/audit hardening has started; Phases 0–9 complete
+**Last Updated**: June 1, 2026
+**Current Phase**: Phase 10 Figma/RBAC alignment and Formation Roadmap remains in progress; Phase 11 realtime foundation is complete; Phase 12 privacy/audit hardening is in progress; Phases 0–9 complete
 **Next Major Milestone**: Continue Phase 12 retention/content approval hardening; definition mutation remains pending owner confirmation of exact formation wording.
