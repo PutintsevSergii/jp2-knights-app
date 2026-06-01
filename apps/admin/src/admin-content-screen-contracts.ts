@@ -15,6 +15,7 @@ export type AdminContentRoute =
 export type AdminContentActionId =
   | "create"
   | "edit"
+  | "approve"
   | "publish"
   | "cancel"
   | "archive"
@@ -109,13 +110,14 @@ export function buildAdminContentListActions(
   return actions;
 }
 
-export function buildAdminContentRowActions(
-  targetRoute: AdminContentEditorRoute,
-  targetId: string,
-  status: string,
-  canWrite: boolean
-): AdminContentAction[] {
-  if (!canWrite) {
+export function buildAdminContentRowActions(options: {
+  targetRoute: AdminContentEditorRoute;
+  targetId: string;
+  status: string;
+  approvedAt?: string | null | undefined;
+  canWrite: boolean;
+}): AdminContentAction[] {
+  if (!options.canWrite) {
     return [];
   }
 
@@ -123,35 +125,63 @@ export function buildAdminContentRowActions(
     {
       id: "edit",
       label: "Edit",
-      targetRoute,
-      targetId
+      targetRoute: options.targetRoute,
+      targetId: options.targetId
     }
   ];
 
-  if (status !== "PUBLISHED" && status !== "published" && status !== "archived") {
+  actions.push(...buildAdminContentStatusActions(options));
+
+  return actions;
+}
+
+export function buildAdminContentStatusActions(options: {
+  targetRoute: AdminContentEditorRoute;
+  targetId: string;
+  status: string;
+  approvedAt?: string | null | undefined;
+}): AdminContentAction[] {
+  const actions: AdminContentAction[] = [];
+  const status = options.status.toLowerCase();
+  const isPublished = status === "published";
+  const isArchived = status === "archived";
+  const isCancelled = status === "cancelled";
+  const isApproved = Boolean(options.approvedAt) || status === "approved" || status === "published";
+  const canAdvance = !isPublished && !isArchived && !isCancelled;
+
+  if (canAdvance && !isApproved) {
+    actions.push({
+      id: "approve",
+      label: "Approve",
+      targetRoute: options.targetRoute,
+      targetId: options.targetId
+    });
+  }
+
+  if (canAdvance && isApproved) {
     actions.push({
       id: "publish",
       label: "Publish",
-      targetRoute,
-      targetId
+      targetRoute: options.targetRoute,
+      targetId: options.targetId
     });
   }
 
-  if (targetRoute === "AdminEventEditor" && status === "published") {
+  if (options.targetRoute === "AdminEventEditor" && isPublished) {
     actions.push({
       id: "cancel",
       label: "Cancel",
-      targetRoute,
-      targetId
+      targetRoute: options.targetRoute,
+      targetId: options.targetId
     });
   }
 
-  if (status !== "ARCHIVED" && status !== "archived") {
+  if (!isArchived) {
     actions.push({
       id: "archive",
       label: "Archive",
-      targetRoute,
-      targetId
+      targetRoute: options.targetRoute,
+      targetId: options.targetId
     });
   }
 

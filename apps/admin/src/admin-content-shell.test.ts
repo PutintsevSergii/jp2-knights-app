@@ -179,7 +179,9 @@ describe("admin content shell routes", () => {
       statusCode: 200
     });
     expect(createRendered.document).toContain("Create Announcement");
-    expect(createRendered.document).toContain('name="visibility" required value="ORGANIZATION_UNIT"');
+    expect(createRendered.document).toContain(
+      'name="visibility" required value="ORGANIZATION_UNIT"'
+    );
     expect(detailRendered).toMatchObject({
       path: "/admin/announcements/55555555-5555-4555-8555-555555555555",
       route: "AdminAnnouncementEditor",
@@ -191,9 +193,9 @@ describe("admin content shell routes", () => {
       'data-announcement-id="55555555-5555-4555-8555-555555555555"'
     );
     expect(detailRendered.document).toContain(
-      "<textarea class=\"admin-content__input admin-content__textarea\" name=\"body\" required>The June service rota has been updated.</textarea>"
+      '<textarea class="admin-content__input admin-content__textarea" name="body" required>The June service rota has been updated.</textarea>'
     );
-    expect(detailRendered.document).toContain('data-action="publish"');
+    expect(detailRendered.document).toContain('data-action="approve"');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/announcements", {
       method: "GET",

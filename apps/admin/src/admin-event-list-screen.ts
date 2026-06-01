@@ -50,6 +50,12 @@ function eventRow(event: AdminEventSummaryDto, canWrite: boolean): AdminContentR
     status: event.status,
     visibility: event.visibility,
     targetOrganizationUnitId: event.targetOrganizationUnitId,
-    actions: buildAdminContentRowActions("AdminEventEditor", event.id, event.status, canWrite)
+    actions: buildAdminContentRowActions({
+      targetRoute: "AdminEventEditor",
+      targetId: event.id,
+      status: event.status,
+      approvedAt: event.approvedAt,
+      canWrite
+    })
   };
 }

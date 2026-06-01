@@ -52,6 +52,12 @@ function prayerRow(prayer: AdminPrayerSummaryDto, canWrite: boolean): AdminConte
     status: prayer.status,
     visibility: prayer.visibility,
     targetOrganizationUnitId: prayer.targetOrganizationUnitId,
-    actions: buildAdminContentRowActions("AdminPrayerEditor", prayer.id, prayer.status, canWrite)
+    actions: buildAdminContentRowActions({
+      targetRoute: "AdminPrayerEditor",
+      targetId: prayer.id,
+      status: prayer.status,
+      approvedAt: prayer.approvedAt,
+      canWrite
+    })
   };
 }

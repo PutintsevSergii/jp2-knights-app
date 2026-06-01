@@ -25,8 +25,8 @@ const readyPrayerScreen: AdminContentListScreen = {
           targetId: "33333333-3333-4333-8333-333333333333"
         },
         {
-          id: "publish",
-          label: "Publish",
+          id: "approve",
+          label: "Approve",
           targetRoute: "AdminPrayerEditor",
           targetId: "33333333-3333-4333-8333-333333333333"
         },
@@ -65,7 +65,7 @@ describe("admin content renderer", () => {
     expect(rendered.html).toContain("<table");
     expect(rendered.html).toContain('<th scope="col">Title</th>');
     expect(rendered.html).toContain('data-action="create"');
-    expect(rendered.html).toContain('data-action="publish"');
+    expect(rendered.html).toContain('data-action="approve"');
     expect(rendered.html).toContain('data-target-id="33333333-3333-4333-8333-333333333333"');
   });
 

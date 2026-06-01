@@ -32,6 +32,10 @@ export {
 } from "./admin-api-client.js";
 import { requestAdminApi, type AdminContentRequestOptions } from "./admin-api-client.js";
 
+export interface ApproveAdminEventOptions extends AdminContentRequestOptions {
+  approvedAt?: string | undefined;
+}
+
 export async function fetchAdminPrayers(
   options: AdminContentRequestOptions = {}
 ): Promise<AdminPrayerListResponseDto> {
@@ -63,6 +67,27 @@ export async function updateAdminPrayer(
   });
 
   return adminPrayerDetailResponseSchema.parse(await response.json());
+}
+
+export async function approveAdminPrayer(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminPrayerDetailResponseDto> {
+  return updateAdminPrayer(id, { status: "APPROVED" }, options);
+}
+
+export async function publishAdminPrayer(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminPrayerDetailResponseDto> {
+  return updateAdminPrayer(id, { status: "PUBLISHED" }, options);
+}
+
+export async function archiveAdminPrayer(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminPrayerDetailResponseDto> {
+  return updateAdminPrayer(id, { status: "ARCHIVED" }, options);
 }
 
 export async function fetchAdminEvents(
@@ -98,6 +123,40 @@ export async function updateAdminEvent(
   return adminEventDetailResponseSchema.parse(await response.json());
 }
 
+export async function approveAdminEvent(
+  id: string,
+  options: ApproveAdminEventOptions = {}
+): Promise<AdminEventDetailResponseDto> {
+  const { approvedAt, ...requestOptions } = options;
+
+  return updateAdminEvent(
+    id,
+    { approvedAt: approvedAt ?? new Date().toISOString() },
+    requestOptions
+  );
+}
+
+export async function publishAdminEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminEventDetailResponseDto> {
+  return updateAdminEvent(id, { status: "published" }, options);
+}
+
+export async function cancelAdminEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminEventDetailResponseDto> {
+  return updateAdminEvent(id, { status: "cancelled" }, options);
+}
+
+export async function archiveAdminEvent(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminEventDetailResponseDto> {
+  return updateAdminEvent(id, { status: "archived" }, options);
+}
+
 export async function fetchAdminAnnouncements(
   options: AdminContentRequestOptions = {}
 ): Promise<AdminAnnouncementListResponseDto> {
@@ -129,4 +188,25 @@ export async function updateAdminAnnouncement(
   });
 
   return adminAnnouncementDetailResponseSchema.parse(await response.json());
+}
+
+export async function approveAdminAnnouncement(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementDetailResponseDto> {
+  return updateAdminAnnouncement(id, { status: "APPROVED" }, options);
+}
+
+export async function publishAdminAnnouncement(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementDetailResponseDto> {
+  return updateAdminAnnouncement(id, { status: "PUBLISHED" }, options);
+}
+
+export async function archiveAdminAnnouncement(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminAnnouncementDetailResponseDto> {
+  return updateAdminAnnouncement(id, { status: "ARCHIVED" }, options);
 }

@@ -62,11 +62,12 @@ function announcementRow(
     status: announcement.status,
     visibility: announcement.visibility,
     targetOrganizationUnitId: announcement.targetOrganizationUnitId,
-    actions: buildAdminContentRowActions(
-      "AdminAnnouncementEditor",
-      announcement.id,
-      announcement.status,
+    actions: buildAdminContentRowActions({
+      targetRoute: "AdminAnnouncementEditor",
+      targetId: announcement.id,
+      status: announcement.status,
+      approvedAt: announcement.approvedAt,
       canWrite
-    )
+    })
   };
 }

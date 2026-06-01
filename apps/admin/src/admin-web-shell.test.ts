@@ -226,7 +226,7 @@ describe("admin web shell", () => {
     expect(createResponse.body).toContain('href="/admin/announcements" aria-current="page"');
     expect(detailResponse.statusCode).toBe(200);
     expect(detailResponse.body).toContain("Announcement: Service Schedule Update");
-    expect(detailResponse.body).toContain('data-action="publish"');
+    expect(detailResponse.body).toContain('data-action="approve"');
     expect(detailResponse.body).toContain('href="/admin/announcements" aria-current="page"');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/announcements", {

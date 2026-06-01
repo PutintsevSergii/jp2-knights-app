@@ -95,7 +95,7 @@ describe("admin content screen models", () => {
         visibility: "PUBLIC",
         actions: [
           expect.objectContaining({ id: "edit" }),
-          expect.objectContaining({ id: "publish" }),
+          expect.objectContaining({ id: "approve" }),
           expect.objectContaining({ id: "archive" })
         ]
       })
@@ -164,9 +164,48 @@ describe("admin content screen models", () => {
     });
     expect(screen.rows[0]?.actions.map((action) => action.id)).toEqual([
       "edit",
-      "publish",
+      "approve",
       "archive"
     ]);
+  });
+
+  it("shows publish only after approval metadata is present", () => {
+    const approvedPrayerResponse: AdminPrayerListResponseDto = {
+      prayers: [
+        {
+          ...prayerResponse.prayers[0]!,
+          status: "APPROVED",
+          approvedAt: "2026-05-04T00:00:00.000Z"
+        }
+      ]
+    };
+    const approvedEventResponse: AdminEventListResponseDto = {
+      events: [
+        {
+          ...eventResponse.events[0]!,
+          status: "draft",
+          approvedAt: "2026-05-04T00:00:00.000Z",
+          publishedAt: null
+        }
+      ]
+    };
+
+    expect(
+      buildAdminPrayerListScreen({
+        state: "ready",
+        response: approvedPrayerResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.actions.map((action) => action.id)
+    ).toEqual(["edit", "publish", "archive"]);
+    expect(
+      buildAdminEventListScreen({
+        state: "ready",
+        response: approvedEventResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.actions.map((action) => action.id)
+    ).toEqual(["edit", "publish", "archive"]);
   });
 
   it("builds announcement create, edit, and readonly editor models", () => {
@@ -211,7 +250,7 @@ describe("admin content screen models", () => {
     expect(editScreen.actions.map((action) => action.id)).toEqual([
       "edit",
       "refresh",
-      "publish",
+      "approve",
       "archive"
     ]);
     expect(readonlyScreen).toMatchObject({

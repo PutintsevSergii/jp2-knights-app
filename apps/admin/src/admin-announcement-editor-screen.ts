@@ -6,6 +6,7 @@ import type {
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import {
   adminContentTheme,
+  buildAdminContentStatusActions,
   type AdminContentAction,
   type AdminContentTheme
 } from "./admin-content-screen-contracts.js";
@@ -59,16 +60,14 @@ export function buildAdminAnnouncementEditorScreen(
     state: "ready",
     mode,
     title:
-      mode === "create"
-        ? "Create Announcement"
-        : `Announcement: ${announcement?.title ?? "New"}`,
+      mode === "create" ? "Create Announcement" : `Announcement: ${announcement?.title ?? "New"}`,
     body:
       mode === "readonly"
         ? "Review the scoped announcement. Write access is required to change it."
         : "Set the announcement audience, pinning, status, and body for one-way delivery.",
     announcementId: announcement?.id ?? null,
     fields: buildAnnouncementFields(announcement, mode === "readonly"),
-    actions: buildAnnouncementEditorActions(mode, announcement?.id),
+    actions: buildAnnouncementEditorActions(mode, announcement),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: adminContentTheme
   };
@@ -146,7 +145,7 @@ function buildAnnouncementFields(
 
 function buildAnnouncementEditorActions(
   mode: AdminAnnouncementEditorScreen["mode"],
-  targetId?: string
+  announcement?: AdminAnnouncementSummaryDto
 ): AdminContentAction[] {
   const actions: AdminContentAction[] = [
     {
@@ -164,25 +163,21 @@ function buildAnnouncementEditorActions(
     });
   }
 
-  if (mode === "edit" && targetId) {
+  if (mode === "edit" && announcement) {
     actions.unshift({
       id: "edit",
       label: "Save",
       targetRoute: "AdminAnnouncementEditor",
-      targetId
+      targetId: announcement.id
     });
-    actions.push({
-      id: "publish",
-      label: "Publish",
-      targetRoute: "AdminAnnouncementEditor",
-      targetId
-    });
-    actions.push({
-      id: "archive",
-      label: "Archive",
-      targetRoute: "AdminAnnouncementEditor",
-      targetId
-    });
+    actions.push(
+      ...buildAdminContentStatusActions({
+        targetRoute: "AdminAnnouncementEditor",
+        targetId: announcement.id,
+        status: announcement.status,
+        approvedAt: announcement.approvedAt
+      })
+    );
   }
 
   return actions;
