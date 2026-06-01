@@ -17,6 +17,7 @@ const prayer: AdminPrayerSummary = {
   visibility: "PUBLIC",
   targetOrganizationUnitId: null,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };

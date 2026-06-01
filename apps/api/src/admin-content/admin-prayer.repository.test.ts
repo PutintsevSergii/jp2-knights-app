@@ -3,6 +3,8 @@ import { adminManageableContentScope } from "../admin/admin-content-access.polic
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminPrayerRepository } from "./admin-prayer.repository.js";
 
+const actorUserId = "3f3f3f3f-3333-4333-8333-333333333333";
+
 const prayerRecord = {
   id: "33333333-3333-4333-8333-333333333333",
   categoryId: null,
@@ -12,6 +14,7 @@ const prayerRecord = {
   visibility: "PUBLIC",
   targetOrganizationUnitId: null,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };
@@ -25,6 +28,7 @@ type PrayerRecord = {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedAt: Date | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
 };
@@ -37,6 +41,7 @@ const scopedPrayerRecord = {
   visibility: "ORGANIZATION_UNIT",
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   status: "PUBLISHED",
+  approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
 
@@ -58,6 +63,7 @@ describe("PrismaAdminPrayerRepository", () => {
         visibility: "PUBLIC",
         targetOrganizationUnitId: null,
         status: "DRAFT",
+        approvedAt: null,
         publishedAt: null,
         archivedAt: null
       }
@@ -85,6 +91,7 @@ describe("PrismaAdminPrayerRepository", () => {
         visibility: "ORGANIZATION_UNIT",
         targetOrganizationUnitId: scopedPrayerRecord.targetOrganizationUnitId,
         status: "PUBLISHED",
+        approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         archivedAt: null
       }
@@ -115,7 +122,7 @@ describe("PrismaAdminPrayerRepository", () => {
         language: "en",
         visibility: "PUBLIC",
         status: "DRAFT"
-      })
+      }, actorUserId)
     ).resolves.toEqual({
       id: prayerRecord.id,
       categoryId: null,
@@ -125,6 +132,7 @@ describe("PrismaAdminPrayerRepository", () => {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     });
@@ -137,33 +145,47 @@ describe("PrismaAdminPrayerRepository", () => {
         visibility: "PUBLIC",
         targetOrganizationUnitId: null,
         status: "DRAFT",
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        approvedBy: null,
+        publishedBy: null,
+        approvedAt: null,
         publishedAt: null,
         archivedAt: null
       }
     });
 
-    await repository.createPrayer({
-      title: "Published Prayer",
-      body: "Published prayer body.",
-      language: "en",
-      visibility: "PUBLIC",
-      status: "PUBLISHED"
-    });
+    await repository.createPrayer(
+      {
+        title: "Published Prayer",
+        body: "Published prayer body.",
+        language: "en",
+        visibility: "PUBLIC",
+        status: "PUBLISHED"
+      },
+      actorUserId
+    );
     expect(prayerCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "PUBLISHED",
+        approvedBy: actorUserId,
+        publishedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
         publishedAt: expect.any(Date) as Date,
         archivedAt: null
       }) as unknown
     });
 
-    await repository.createPrayer({
-      title: "Archived Prayer",
-      body: "Archived prayer body.",
-      language: "en",
-      visibility: "PUBLIC",
-      status: "ARCHIVED"
-    });
+    await repository.createPrayer(
+      {
+        title: "Archived Prayer",
+        body: "Archived prayer body.",
+        language: "en",
+        visibility: "PUBLIC",
+        status: "ARCHIVED"
+      },
+      actorUserId
+    );
     expect(prayerCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "ARCHIVED",
@@ -186,7 +208,7 @@ describe("PrismaAdminPrayerRepository", () => {
         targetOrganizationUnitId: scopedPrayerRecord.targetOrganizationUnitId,
         status: "PUBLISHED",
         archivedAt: null
-      })
+      }, actorUserId)
     ).resolves.toEqual({
       id: scopedPrayerRecord.id,
       categoryId: scopedPrayerRecord.categoryId,
@@ -196,6 +218,7 @@ describe("PrismaAdminPrayerRepository", () => {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: scopedPrayerRecord.targetOrganizationUnitId,
       status: "PUBLISHED",
+      approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       archivedAt: null
     });
@@ -209,18 +232,27 @@ describe("PrismaAdminPrayerRepository", () => {
         visibility: "ORGANIZATION_UNIT",
         targetOrganizationUnitId: scopedPrayerRecord.targetOrganizationUnitId,
         status: "PUBLISHED",
+        updatedBy: actorUserId,
+        approvedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
+        publishedBy: actorUserId,
         publishedAt: expect.any(Date) as Date,
         archivedAt: null
       }
     });
 
-    await new PrismaAdminPrayerRepository(prisma).updatePrayer(prayerRecord.id, {
-      status: "ARCHIVED",
-      archivedAt: "2026-05-04T09:00:00.000Z"
-    });
+    await new PrismaAdminPrayerRepository(prisma).updatePrayer(
+      prayerRecord.id,
+      {
+        status: "ARCHIVED",
+        archivedAt: "2026-05-04T09:00:00.000Z"
+      },
+      actorUserId
+    );
     expect(prayerUpdate).toHaveBeenLastCalledWith({
       where: { id: prayerRecord.id },
       data: {
+        updatedBy: actorUserId,
         status: "ARCHIVED",
         archivedAt: new Date("2026-05-04T09:00:00.000Z")
       }

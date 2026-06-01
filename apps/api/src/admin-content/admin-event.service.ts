@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertEventPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminEventRepository } from "./admin-event.repository.js";
 import type {
   AdminEventDetailResponse,
@@ -40,8 +41,9 @@ export class AdminEventService {
       data.targetOrganizationUnitId ?? null,
       "Officer event writes must stay within assigned organization units."
     );
+    assertEventPublishHasPriorApproval(data.status, null, "Event");
 
-    const event = await this.adminEventRepository.createEvent(data);
+    const event = await this.adminEventRepository.createEvent(data, principal.id);
     await this.auditLog.record({
       action: "admin.event.create",
       actorUserId: principal.id,
@@ -77,7 +79,13 @@ export class AdminEventService {
       id,
       scope
     );
-    const event = await this.adminEventRepository.updateEvent(id, data, scope);
+    assertEventPublishHasPriorApproval(data.status, beforeEvent, "Event");
+    const event = await this.adminEventRepository.updateEvent(
+      id,
+      data,
+      scope,
+      principal.id
+    );
 
     if (!event) {
       throw new NotFoundException("Event was not found in the current admin scope.");
@@ -107,6 +115,7 @@ function summarizeEventForAudit(event: AdminEventDetailResponse["event"]): Audit
     visibility: event.visibility,
     targetOrganizationUnitId: event.targetOrganizationUnitId,
     status: event.status,
+    approvedAt: event.approvedAt,
     publishedAt: event.publishedAt,
     cancelledAt: event.cancelledAt,
     archivedAt: event.archivedAt

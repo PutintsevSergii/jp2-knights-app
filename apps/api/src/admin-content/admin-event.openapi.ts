@@ -16,6 +16,7 @@ export const adminEventSummaryOpenApiSchema = {
     "visibility",
     "targetOrganizationUnitId",
     "status",
+    "approvedAt",
     "publishedAt",
     "cancelledAt",
     "archivedAt"
@@ -32,6 +33,7 @@ export const adminEventSummaryOpenApiSchema = {
     visibility: visibilityOpenApiSchema,
     targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
     status: eventStatusOpenApiSchema,
+    approvedAt: { type: "string", nullable: true, format: "date-time" },
     publishedAt: { type: "string", nullable: true, format: "date-time" },
     cancelledAt: { type: "string", nullable: true, format: "date-time" },
     archivedAt: { type: "string", nullable: true, format: "date-time" }
@@ -90,6 +92,7 @@ export const updateAdminEventRequestOpenApiSchema = {
     visibility: visibilityOpenApiSchema,
     targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
     status: eventStatusOpenApiSchema,
+    approvedAt: { type: "string", nullable: true, format: "date-time" },
     publishedAt: { type: "string", nullable: true, format: "date-time" },
     cancelledAt: { type: "string", nullable: true, format: "date-time" },
     archivedAt: { type: "string", nullable: true, format: "date-time" }

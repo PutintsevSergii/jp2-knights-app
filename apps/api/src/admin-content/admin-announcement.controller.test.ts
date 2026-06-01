@@ -16,6 +16,7 @@ const announcement: AdminAnnouncementSummary = {
   targetOrganizationUnitId: null,
   pinned: false,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };

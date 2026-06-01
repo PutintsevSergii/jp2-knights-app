@@ -23,6 +23,7 @@ const prayerResponse: AdminPrayerListResponseDto = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }
@@ -42,6 +43,7 @@ const eventResponse: AdminEventListResponseDto = {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       status: "published",
+      approvedAt: "2026-05-03T23:55:00.000Z",
       publishedAt: "2026-05-04T00:00:00.000Z",
       cancelledAt: null,
       archivedAt: null
@@ -59,6 +61,7 @@ const announcementResponse: AdminAnnouncementListResponseDto = {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }

@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
 import {
-  eventStatusCreateTimestamps,
-  eventStatusUpdateTimestamps,
+  eventStatusCreateMetadata,
+  eventStatusUpdateMetadata,
   toEventStatus,
   toVisibility
 } from "../content/content-contracts.js";
@@ -22,11 +22,15 @@ export abstract class AdminEventRepository {
   abstract listManageableEvents(
     scope: AdminContentScope
   ): Promise<AdminEventSummary[]>;
-  abstract createEvent(data: CreateAdminEventRequest): Promise<AdminEventSummary>;
+  abstract createEvent(
+    data: CreateAdminEventRequest,
+    actorUserId: string
+  ): Promise<AdminEventSummary>;
   abstract updateEvent(
     id: string,
     data: UpdateAdminEventRequest,
-    scope: AdminContentScope
+    scope: AdminContentScope,
+    actorUserId: string
   ): Promise<AdminEventSummary | null>;
   abstract findEventForAudit(
     id: string,
@@ -49,7 +53,10 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
     return records.map(toAdminEventSummary);
   }
 
-  async createEvent(data: CreateAdminEventRequest): Promise<AdminEventSummary> {
+  async createEvent(
+    data: CreateAdminEventRequest,
+    actorUserId: string
+  ): Promise<AdminEventSummary> {
     const record = await this.prisma.event.create({
       data: {
         title: data.title,
@@ -61,7 +68,9 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
         visibility: data.visibility,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         status: data.status,
-        ...eventStatusCreateTimestamps(data.status)
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        ...eventStatusCreateMetadata(data.status, actorUserId)
       }
     });
 
@@ -71,9 +80,12 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
   async updateEvent(
     id: string,
     data: UpdateAdminEventRequest,
-    scope: AdminContentScope
+    scope: AdminContentScope,
+    actorUserId: string
   ): Promise<AdminEventSummary | null> {
-    const updateData: Prisma.EventUncheckedUpdateInput = {};
+    const updateData: Prisma.EventUncheckedUpdateInput = {
+      updatedBy: actorUserId
+    };
 
     if (data.title !== undefined) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
@@ -87,7 +99,11 @@ export class PrismaAdminEventRepository implements AdminEventRepository {
       updateData.targetOrganizationUnitId = data.targetOrganizationUnitId;
     }
     if (data.status !== undefined) updateData.status = data.status;
-    Object.assign(updateData, eventStatusUpdateTimestamps(data.status));
+    Object.assign(updateData, eventStatusUpdateMetadata(data.status, actorUserId));
+    if (data.approvedAt !== undefined) {
+      updateData.approvedAt = data.approvedAt === null ? null : new Date(data.approvedAt);
+      updateData.approvedBy = data.approvedAt === null ? null : actorUserId;
+    }
     if (data.publishedAt !== undefined) {
       updateData.publishedAt = data.publishedAt === null ? null : new Date(data.publishedAt);
     }
@@ -151,6 +167,7 @@ interface AdminEventRecord {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
   archivedAt: Date | null;
@@ -168,6 +185,7 @@ function toAdminEventSummary(record: AdminEventRecord): AdminEventSummary {
     visibility: toAdminEventVisibility(record.visibility),
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     status: toAdminEventStatus(record.status),
+    approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null,
     archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null

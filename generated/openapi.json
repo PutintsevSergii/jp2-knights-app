@@ -3385,6 +3385,7 @@
                           "targetOrganizationUnitId",
                           "pinned",
                           "status",
+                          "approvedAt",
                           "publishedAt",
                           "archivedAt"
                         ],
@@ -3433,6 +3434,11 @@
                               "PUBLISHED",
                               "ARCHIVED"
                             ]
+                          },
+                          "approvedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
                           },
                           "publishedAt": {
                             "type": "string",
@@ -3587,6 +3593,7 @@
                         "targetOrganizationUnitId",
                         "pinned",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "archivedAt"
                       ],
@@ -3635,6 +3642,11 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",
@@ -3851,6 +3863,7 @@
                         "targetOrganizationUnitId",
                         "pinned",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "archivedAt"
                       ],
@@ -3899,6 +3912,11 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",
@@ -4092,6 +4110,7 @@
                           "visibility",
                           "targetOrganizationUnitId",
                           "status",
+                          "approvedAt",
                           "publishedAt",
                           "cancelledAt",
                           "archivedAt"
@@ -4158,6 +4177,11 @@
                               "cancelled",
                               "archived"
                             ]
+                          },
+                          "approvedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
                           },
                           "publishedAt": {
                             "type": "string",
@@ -4338,6 +4362,7 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "cancelledAt",
                         "archivedAt"
@@ -4404,6 +4429,11 @@
                             "cancelled",
                             "archived"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",
@@ -4605,6 +4635,11 @@
                       "archived"
                     ]
                   },
+                  "approvedAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
                   "publishedAt": {
                     "type": "string",
                     "nullable": true,
@@ -4650,6 +4685,7 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "cancelledAt",
                         "archivedAt"
@@ -4716,6 +4752,11 @@
                             "cancelled",
                             "archived"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",
@@ -4912,6 +4953,7 @@
                           "visibility",
                           "targetOrganizationUnitId",
                           "status",
+                          "approvedAt",
                           "publishedAt",
                           "archivedAt"
                         ],
@@ -4967,6 +5009,11 @@
                               "PUBLISHED",
                               "ARCHIVED"
                             ]
+                          },
+                          "approvedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
                           },
                           "publishedAt": {
                             "type": "string",
@@ -5130,6 +5177,7 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "archivedAt"
                       ],
@@ -5185,6 +5233,11 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",
@@ -5404,6 +5457,7 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedAt",
                         "publishedAt",
                         "archivedAt"
                       ],
@@ -5459,6 +5513,11 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
                         },
                         "publishedAt": {
                           "type": "string",

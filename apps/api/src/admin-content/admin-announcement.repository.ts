@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
 import {
-  contentStatusCreateTimestamps,
-  contentStatusUpdateTimestamps,
+  approvalContentStatusCreateMetadata,
+  approvalContentStatusUpdateMetadata,
   toContentStatus,
   toVisibility
 } from "../content/content-contracts.js";
@@ -23,12 +23,14 @@ export abstract class AdminAnnouncementRepository {
     scope: AdminContentScope
   ): Promise<AdminAnnouncementSummary[]>;
   abstract createAnnouncement(
-    data: CreateAdminAnnouncementRequest
+    data: CreateAdminAnnouncementRequest,
+    actorUserId: string
   ): Promise<AdminAnnouncementSummary>;
   abstract updateAnnouncement(
     id: string,
     data: UpdateAdminAnnouncementRequest,
-    scope: AdminContentScope
+    scope: AdminContentScope,
+    actorUserId: string
   ): Promise<AdminAnnouncementSummary | null>;
   abstract findAnnouncementForAudit(
     id: string,
@@ -52,7 +54,8 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
   }
 
   async createAnnouncement(
-    data: CreateAdminAnnouncementRequest
+    data: CreateAdminAnnouncementRequest,
+    actorUserId: string
   ): Promise<AdminAnnouncementSummary> {
     const record = await this.prisma.announcement.create({
       data: {
@@ -62,7 +65,9 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         pinned: data.pinned ?? false,
         status: data.status,
-        ...contentStatusCreateTimestamps(data.status)
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        ...approvalContentStatusCreateMetadata(data.status, actorUserId)
       }
     });
 
@@ -72,9 +77,12 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
   async updateAnnouncement(
     id: string,
     data: UpdateAdminAnnouncementRequest,
-    scope: AdminContentScope
+    scope: AdminContentScope,
+    actorUserId: string
   ): Promise<AdminAnnouncementSummary | null> {
-    const updateData: Prisma.AnnouncementUncheckedUpdateInput = {};
+    const updateData: Prisma.AnnouncementUncheckedUpdateInput = {
+      updatedBy: actorUserId
+    };
 
     if (data.title !== undefined) updateData.title = data.title;
     if (data.body !== undefined) updateData.body = data.body;
@@ -84,7 +92,10 @@ export class PrismaAdminAnnouncementRepository implements AdminAnnouncementRepos
     }
     if (data.pinned !== undefined) updateData.pinned = data.pinned;
     if (data.status !== undefined) updateData.status = data.status;
-    Object.assign(updateData, contentStatusUpdateTimestamps(data.status));
+    Object.assign(
+      updateData,
+      approvalContentStatusUpdateMetadata(data.status, actorUserId)
+    );
     if (data.publishedAt !== undefined) {
       updateData.publishedAt = data.publishedAt === null ? null : new Date(data.publishedAt);
     }
@@ -140,6 +151,7 @@ interface AdminAnnouncementRecord {
   targetOrganizationUnitId: string | null;
   pinned: boolean;
   status: string;
+  approvedAt: Date | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
 }
@@ -153,6 +165,7 @@ function toAdminAnnouncementSummary(record: AdminAnnouncementRecord): AdminAnnou
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     pinned: record.pinned,
     status: toAdminAnnouncementStatus(record.status),
+    approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null
   };

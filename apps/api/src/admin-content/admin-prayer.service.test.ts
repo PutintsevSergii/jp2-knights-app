@@ -1,4 +1,4 @@
-import { ForbiddenException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -15,6 +15,7 @@ const publicPrayer: AdminPrayerSummary = {
   visibility: "PUBLIC",
   targetOrganizationUnitId: null,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };
@@ -131,6 +132,44 @@ describe("AdminPrayerService", () => {
     });
   });
 
+  it("blocks publishing prayers that have not been approved first", async () => {
+    const auditLog = auditLogRecorder();
+    const adminPrayerService = service(repository(), auditLog);
+
+    await expect(
+      adminPrayerService.createAdminPrayer(superAdmin, {
+        title: "New Prayer",
+        body: "New prayer body.",
+        language: "en",
+        visibility: "PUBLIC",
+        status: "PUBLISHED"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      adminPrayerService.updateAdminPrayer(superAdmin, publicPrayer.id, {
+        status: "PUBLISHED"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toHaveLength(0);
+  });
+
+  it("publishes prayers after an approved status has been recorded", async () => {
+    await expect(
+      service(
+        repository({ beforeResult: { ...publicPrayer, status: "APPROVED" } })
+      ).updateAdminPrayer(superAdmin, publicPrayer.id, {
+        status: "PUBLISHED"
+      })
+    ).resolves.toEqual({
+      prayer: {
+        ...publicPrayer,
+        status: "PUBLISHED",
+        approvedAt: "2026-05-04T00:00:00.000Z",
+        publishedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+  });
+
   it("blocks officers from creating or updating prayer records in this slice", async () => {
     await expect(
       service().createAdminPrayer(officer, {
@@ -156,7 +195,9 @@ function service(
   return new AdminPrayerService(repositoryOverride, auditLog as unknown as AuditLogService);
 }
 
-function repository(): AdminPrayerRepository {
+function repository(
+  options: { beforeResult?: AdminPrayerSummary | null } = {}
+): AdminPrayerRepository {
   return {
     listManageablePrayers: () => Promise.resolve([publicPrayer, scopedPrayer]),
     createPrayer: (data) =>
@@ -165,6 +206,10 @@ function repository(): AdminPrayerRepository {
         ...data,
         categoryId: data.categoryId ?? null,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
+        approvedAt:
+          data.status === "APPROVED" || data.status === "PUBLISHED"
+            ? "2026-05-04T00:00:00.000Z"
+            : null,
         publishedAt: data.status === "PUBLISHED" ? "2026-05-04T00:00:00.000Z" : null,
         archivedAt: null
       }),
@@ -180,11 +225,20 @@ function repository(): AdminPrayerRepository {
         updated.targetOrganizationUnitId = data.targetOrganizationUnitId;
       }
       if (data.status !== undefined) updated.status = data.status;
+      if (data.status === "APPROVED" || data.status === "PUBLISHED") {
+        updated.approvedAt = "2026-05-04T00:00:00.000Z";
+      }
+      if (data.status === "PUBLISHED") {
+        updated.publishedAt = "2026-05-04T00:00:00.000Z";
+      }
       if (data.status === "ARCHIVED") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);
     },
     findPrayerForAudit: (id) => {
+      if (options.beforeResult !== undefined) {
+        return Promise.resolve(options.beforeResult);
+      }
       if (id === publicPrayer.id) {
         return Promise.resolve(publicPrayer);
       }

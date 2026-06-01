@@ -19,6 +19,7 @@ const event: AdminEventSummary = {
   visibility: "FAMILY_OPEN",
   targetOrganizationUnitId: null,
   status: "draft",
+  approvedAt: null,
   publishedAt: null,
   cancelledAt: null,
   archivedAt: null

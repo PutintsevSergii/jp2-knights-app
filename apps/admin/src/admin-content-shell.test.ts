@@ -13,6 +13,7 @@ const prayerPayload = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }
@@ -29,6 +30,7 @@ const announcementPayload = {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }

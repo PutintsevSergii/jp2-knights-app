@@ -17,6 +17,7 @@ const requiredInputs = [
   "prisma/migrations/000010_notifications/migration.sql",
   "prisma/migrations/000011_roadmap_foundation/migration.sql",
   "prisma/migrations/000012_silent_prayer_events/migration.sql",
+  "prisma/migrations/000013_event_approval_metadata/migration.sql",
   "prisma/seed.mjs"
 ];
 
@@ -350,6 +351,29 @@ if (missingSilentPrayerMigrationSnippets.length > 0) {
   );
 }
 
+const eventApprovalMigrationSql = readFileSync(
+  "prisma/migrations/000013_event_approval_metadata/migration.sql",
+  "utf8"
+);
+
+const requiredEventApprovalMigrationSnippets = [
+  "ALTER TABLE events",
+  "approved_by uuid REFERENCES users(id) ON DELETE SET NULL",
+  "approved_at timestamptz"
+];
+
+const missingEventApprovalMigrationSnippets = requiredEventApprovalMigrationSnippets.filter(
+  (snippet) => !eventApprovalMigrationSql.includes(snippet)
+);
+
+if (missingEventApprovalMigrationSnippets.length > 0) {
+  throw new Error(
+    `Event approval migration is missing required SQL: ${missingEventApprovalMigrationSnippets.join(
+      ", "
+    )}`
+  );
+}
+
 const seedScript = readFileSync("prisma/seed.mjs", "utf8");
 const requiredSeedSnippets = [
   "admin@example.test",
@@ -410,5 +434,5 @@ if (missingSeedSnippets.length > 0) {
 }
 
 console.log(
-  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, Phase 9 notification tables, Phase 10B roadmap data/contracts fixtures, and Phase 11 silent-prayer event fixtures."
+  "Database migration baseline includes Phase 2 identity, organization-unit, scope fixtures, Phase 3 public content-page fixtures, Phase 4 public prayer/event fixtures, Phase 5 provider-link fixtures, Phase 5/6 identity access review fixtures, Phase 7 candidate request/profile fixtures, Phase 9 event participation, Phase 9 announcement fixtures, Phase 9 notification tables, Phase 10B roadmap data/contracts fixtures, Phase 11 silent-prayer event fixtures, and Phase 12 event approval metadata."
 );

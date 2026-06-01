@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -17,6 +17,7 @@ const publicEvent: AdminEventSummary = {
   visibility: "FAMILY_OPEN",
   targetOrganizationUnitId: null,
   status: "draft",
+  approvedAt: null,
   publishedAt: null,
   cancelledAt: null,
   archivedAt: null
@@ -200,6 +201,49 @@ describe("AdminEventService", () => {
       })
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it("blocks publishing events that have not been approved first", async () => {
+    const auditLog = auditLogRecorder();
+    const adminEventService = service(repository(), auditLog);
+
+    await expect(
+      adminEventService.createAdminEvent(superAdmin, {
+        title: "Global Event",
+        type: "open-evening",
+        startAt: "2026-05-10T18:00:00.000Z",
+        visibility: "PUBLIC",
+        status: "published"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      adminEventService.updateAdminEvent(officer, scopedEvent.id, {
+        status: "published"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toHaveLength(0);
+  });
+
+  it("publishes events after approval metadata has been recorded", async () => {
+    await expect(
+      service(
+        repository({
+          beforeResult: {
+            ...scopedEvent,
+            approvedAt: "2026-05-04T00:00:00.000Z"
+          }
+        })
+      ).updateAdminEvent(officer, scopedEvent.id, {
+        status: "published"
+      })
+    ).resolves.toEqual({
+      event: {
+        ...scopedEvent,
+        status: "published",
+        approvedAt: "2026-05-04T00:00:00.000Z",
+        publishedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+  });
 });
 
 function service(
@@ -209,7 +253,12 @@ function service(
   return new AdminEventService(repositoryOverride, auditLog as unknown as AuditLogService);
 }
 
-function repository(options: { updateResult?: AdminEventSummary | null } = {}): AdminEventRepository {
+function repository(
+  options: {
+    updateResult?: AdminEventSummary | null;
+    beforeResult?: AdminEventSummary | null;
+  } = {}
+): AdminEventRepository {
   return {
     listManageableEvents: () => Promise.resolve([publicEvent, scopedEvent]),
     createEvent: (data) =>
@@ -220,6 +269,7 @@ function repository(options: { updateResult?: AdminEventSummary | null } = {}): 
         endAt: data.endAt ?? null,
         locationLabel: data.locationLabel ?? null,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
+        approvedAt: data.status === "published" ? "2026-05-04T00:00:00.000Z" : null,
         publishedAt: data.status === "published" ? "2026-05-04T00:00:00.000Z" : null,
         cancelledAt: data.status === "cancelled" ? "2026-05-04T00:00:00.000Z" : null,
         archivedAt: data.status === "archived" ? "2026-05-04T00:00:00.000Z" : null
@@ -241,13 +291,21 @@ function repository(options: { updateResult?: AdminEventSummary | null } = {}): 
       if (data.targetOrganizationUnitId !== undefined) {
         updated.targetOrganizationUnitId = data.targetOrganizationUnitId;
       }
+      if (data.approvedAt !== undefined) updated.approvedAt = data.approvedAt;
       if (data.status !== undefined) updated.status = data.status;
+      if (data.status === "published") {
+        updated.approvedAt = updated.approvedAt ?? "2026-05-04T00:00:00.000Z";
+        updated.publishedAt = "2026-05-04T00:00:00.000Z";
+      }
       if (data.status === "cancelled") updated.cancelledAt = "2026-05-04T00:00:00.000Z";
       if (data.status === "archived") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);
     },
     findEventForAudit: (id) => {
+      if (options.beforeResult !== undefined) {
+        return Promise.resolve(options.beforeResult);
+      }
       if (id === scopedEvent.id) {
         return Promise.resolve(scopedEvent);
       }

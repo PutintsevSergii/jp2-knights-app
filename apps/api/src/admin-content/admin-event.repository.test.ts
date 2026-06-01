@@ -3,6 +3,8 @@ import { adminManageableContentScope } from "../admin/admin-content-access.polic
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminEventRepository } from "./admin-event.repository.js";
 
+const actorUserId = "3f3f3f3f-3333-4333-8333-333333333333";
+
 const eventRecord = {
   id: "44444444-4444-4444-8444-444444444444",
   title: "Open Evening",
@@ -14,6 +16,7 @@ const eventRecord = {
   visibility: "FAMILY_OPEN",
   targetOrganizationUnitId: null,
   status: "draft",
+  approvedAt: null,
   publishedAt: null,
   cancelledAt: null,
   archivedAt: null
@@ -30,6 +33,7 @@ type EventRecord = {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
   archivedAt: Date | null;
@@ -42,6 +46,7 @@ const scopedEventRecord = {
   visibility: "ORGANIZATION_UNIT",
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   status: "published",
+  approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
 
@@ -65,6 +70,7 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "FAMILY_OPEN",
         targetOrganizationUnitId: null,
         status: "draft",
+        approvedAt: null,
         publishedAt: null,
         cancelledAt: null,
         archivedAt: null
@@ -95,6 +101,7 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "ORGANIZATION_UNIT",
         targetOrganizationUnitId: scopedEventRecord.targetOrganizationUnitId,
         status: "published",
+        approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         cancelledAt: null,
         archivedAt: null
@@ -126,7 +133,7 @@ describe("PrismaAdminEventRepository", () => {
         startAt: "2026-05-10T18:00:00.000Z",
         visibility: "PUBLIC",
         status: "draft"
-      })
+      }, actorUserId)
     ).resolves.toEqual({
       id: eventRecord.id,
       title: eventRecord.title,
@@ -138,6 +145,7 @@ describe("PrismaAdminEventRepository", () => {
       visibility: "FAMILY_OPEN",
       targetOrganizationUnitId: null,
       status: "draft",
+      approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
       archivedAt: null
@@ -153,35 +161,49 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "PUBLIC",
         targetOrganizationUnitId: null,
         status: "draft",
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        approvedBy: null,
+        publishedBy: null,
+        approvedAt: null,
         publishedAt: null,
         cancelledAt: null,
         archivedAt: null
       }
     });
 
-    await repository.createEvent({
-      title: "Published Event",
-      type: "retreat",
-      startAt: "2026-05-10T18:00:00.000Z",
-      visibility: "PUBLIC",
-      status: "published"
-    });
+    await repository.createEvent(
+      {
+        title: "Published Event",
+        type: "retreat",
+        startAt: "2026-05-10T18:00:00.000Z",
+        visibility: "PUBLIC",
+        status: "published"
+      },
+      actorUserId
+    );
     expect(eventCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "published",
+        approvedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
+        publishedBy: actorUserId,
         publishedAt: expect.any(Date) as Date,
         cancelledAt: null,
         archivedAt: null
       }) as unknown
     });
 
-    await repository.createEvent({
-      title: "Cancelled Event",
-      type: "retreat",
-      startAt: "2026-05-10T18:00:00.000Z",
-      visibility: "PUBLIC",
-      status: "cancelled"
-    });
+    await repository.createEvent(
+      {
+        title: "Cancelled Event",
+        type: "retreat",
+        startAt: "2026-05-10T18:00:00.000Z",
+        visibility: "PUBLIC",
+        status: "cancelled"
+      },
+      actorUserId
+    );
     expect(eventCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "cancelled",
@@ -210,7 +232,8 @@ describe("PrismaAdminEventRepository", () => {
           status: "published",
           archivedAt: null
         },
-        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"]),
+        actorUserId
       )
     ).resolves.toEqual({
       id: scopedEventRecord.id,
@@ -223,6 +246,7 @@ describe("PrismaAdminEventRepository", () => {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: scopedEventRecord.targetOrganizationUnitId,
       status: "published",
+      approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       cancelledAt: null,
       archivedAt: null
@@ -242,6 +266,10 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "ORGANIZATION_UNIT",
         targetOrganizationUnitId: scopedEventRecord.targetOrganizationUnitId,
         status: "published",
+        updatedBy: actorUserId,
+        approvedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
+        publishedBy: actorUserId,
         publishedAt: expect.any(Date) as Date,
         archivedAt: null
       }
@@ -258,7 +286,8 @@ describe("PrismaAdminEventRepository", () => {
       new PrismaAdminEventRepository(scopedOut.prisma).updateEvent(
         eventRecord.id,
         { status: "archived" },
-        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"])
+        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"]),
+        actorUserId
       )
     ).resolves.toBeNull();
     expect(scopedOut.eventFindFirst).not.toHaveBeenCalled();

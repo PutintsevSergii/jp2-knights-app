@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import type { AdminContentScope } from "../admin/admin-content-access.policy.js";
 import {
-  contentStatusCreateTimestamps,
-  contentStatusUpdateTimestamps,
+  approvalContentStatusCreateMetadata,
+  approvalContentStatusUpdateMetadata,
   toContentStatus,
   toVisibility
 } from "../content/content-contracts.js";
@@ -19,8 +19,15 @@ export abstract class AdminPrayerRepository {
   abstract listManageablePrayers(
     scope: AdminContentScope
   ): Promise<AdminPrayerSummary[]>;
-  abstract createPrayer(data: CreateAdminPrayerRequest): Promise<AdminPrayerSummary>;
-  abstract updatePrayer(id: string, data: UpdateAdminPrayerRequest): Promise<AdminPrayerSummary>;
+  abstract createPrayer(
+    data: CreateAdminPrayerRequest,
+    actorUserId: string
+  ): Promise<AdminPrayerSummary>;
+  abstract updatePrayer(
+    id: string,
+    data: UpdateAdminPrayerRequest,
+    actorUserId: string
+  ): Promise<AdminPrayerSummary>;
   abstract findPrayerForAudit(id: string): Promise<AdminPrayerSummary | null>;
 }
 
@@ -39,7 +46,10 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
     return records.map(toAdminPrayerSummary);
   }
 
-  async createPrayer(data: CreateAdminPrayerRequest): Promise<AdminPrayerSummary> {
+  async createPrayer(
+    data: CreateAdminPrayerRequest,
+    actorUserId: string
+  ): Promise<AdminPrayerSummary> {
     const record = await this.prisma.prayer.create({
       data: {
         categoryId: data.categoryId ?? null,
@@ -49,15 +59,23 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
         visibility: data.visibility,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         status: data.status,
-        ...contentStatusCreateTimestamps(data.status)
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        ...approvalContentStatusCreateMetadata(data.status, actorUserId)
       }
     });
 
     return toAdminPrayerSummary(record);
   }
 
-  async updatePrayer(id: string, data: UpdateAdminPrayerRequest): Promise<AdminPrayerSummary> {
-    const updateData: Prisma.PrayerUncheckedUpdateInput = {};
+  async updatePrayer(
+    id: string,
+    data: UpdateAdminPrayerRequest,
+    actorUserId: string
+  ): Promise<AdminPrayerSummary> {
+    const updateData: Prisma.PrayerUncheckedUpdateInput = {
+      updatedBy: actorUserId
+    };
 
     if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
     if (data.title !== undefined) updateData.title = data.title;
@@ -68,7 +86,7 @@ export class PrismaAdminPrayerRepository implements AdminPrayerRepository {
       updateData.targetOrganizationUnitId = data.targetOrganizationUnitId;
     }
     if (data.status !== undefined) updateData.status = data.status;
-    Object.assign(updateData, contentStatusUpdateTimestamps(data.status));
+    Object.assign(updateData, approvalContentStatusUpdateMetadata(data.status, actorUserId));
     if (data.archivedAt !== undefined) {
       updateData.archivedAt = data.archivedAt === null ? null : new Date(data.archivedAt);
     }
@@ -107,6 +125,7 @@ interface AdminPrayerRecord {
   status: string;
   publishedAt: Date | null;
   archivedAt: Date | null;
+  approvedAt: Date | null;
 }
 
 function toAdminPrayerSummary(record: AdminPrayerRecord): AdminPrayerSummary {
@@ -119,6 +138,7 @@ function toAdminPrayerSummary(record: AdminPrayerRecord): AdminPrayerSummary {
     visibility: toAdminPrayerVisibility(record.visibility),
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     status: toAdminPrayerStatus(record.status),
+    approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null
   };

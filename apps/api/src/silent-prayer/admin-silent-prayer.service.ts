@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminSilentPrayerRepository } from "./admin-silent-prayer.repository.js";
 import type {
   AdminSilentPrayerEventDetailResponse,
@@ -43,6 +44,7 @@ export class AdminSilentPrayerService {
       data.targetOrganizationUnitId ?? null,
       "Officer silent-prayer event writes must stay within assigned organization units."
     );
+    assertPublishHasPriorApproval(data.status, null, "Silent-prayer event");
 
     const silentPrayerEvent = await this.adminSilentPrayerRepository.createEvent(
       data,
@@ -81,6 +83,11 @@ export class AdminSilentPrayerService {
     const scope = adminContentScopeFor(principal);
     const beforeSilentPrayerEvent =
       await this.adminSilentPrayerRepository.findEventForAudit(id, scope);
+    assertPublishHasPriorApproval(
+      data.status,
+      beforeSilentPrayerEvent,
+      "Silent-prayer event"
+    );
     const silentPrayerEvent = await this.adminSilentPrayerRepository.updateEvent(
       id,
       data,

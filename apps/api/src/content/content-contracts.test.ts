@@ -4,7 +4,9 @@ import {
   approvalContentStatusUpdateMetadata,
   contentStatusCreateTimestamps,
   contentStatusUpdateTimestamps,
+  eventStatusCreateMetadata,
   eventStatusCreateTimestamps,
+  eventStatusUpdateMetadata,
   eventStatusUpdateTimestamps,
   toContentStatus,
   toEventStatus,
@@ -107,5 +109,31 @@ describe("content contract helpers", () => {
     expect(eventStatusUpdateTimestamps("cancelled", now)).toEqual({ cancelledAt: now });
     expect(eventStatusUpdateTimestamps("archived", now)).toEqual({ archivedAt: now });
     expect(eventStatusUpdateTimestamps(undefined, now)).toEqual({});
+  });
+
+  it("creates and updates event approval metadata by status", () => {
+    expect(eventStatusCreateMetadata("published", "actor-1", now)).toEqual({
+      approvedBy: "actor-1",
+      publishedBy: "actor-1",
+      approvedAt: now,
+      publishedAt: now,
+      cancelledAt: null,
+      archivedAt: null
+    });
+    expect(eventStatusCreateMetadata("draft", "actor-1", now)).toEqual({
+      approvedBy: null,
+      publishedBy: null,
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    });
+    expect(eventStatusUpdateMetadata("published", "actor-1", now)).toEqual({
+      approvedBy: "actor-1",
+      approvedAt: now,
+      publishedBy: "actor-1",
+      publishedAt: now
+    });
+    expect(eventStatusUpdateMetadata(undefined, "actor-1", now)).toEqual({});
   });
 });

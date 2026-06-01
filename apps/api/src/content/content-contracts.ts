@@ -71,11 +71,37 @@ export function eventStatusCreateTimestamps(status: EventStatus, now = new Date(
   };
 }
 
+export function eventStatusCreateMetadata(
+  status: EventStatus,
+  actorUserId: string,
+  now = new Date()
+) {
+  return {
+    approvedBy: status === "published" ? actorUserId : null,
+    publishedBy: status === "published" ? actorUserId : null,
+    approvedAt: status === "published" ? now : null,
+    ...eventStatusCreateTimestamps(status, now)
+  };
+}
+
 export function eventStatusUpdateTimestamps(status: EventStatus | undefined, now = new Date()) {
   return {
     ...(status === "published" ? { publishedAt: now } : {}),
     ...(status === "cancelled" ? { cancelledAt: now } : {}),
     ...(status === "archived" ? { archivedAt: now } : {})
+  };
+}
+
+export function eventStatusUpdateMetadata(
+  status: EventStatus | undefined,
+  actorUserId: string,
+  now = new Date()
+) {
+  return {
+    ...(status === "published"
+      ? { approvedBy: actorUserId, approvedAt: now, publishedBy: actorUserId }
+      : {}),
+    ...eventStatusUpdateTimestamps(status, now)
   };
 }
 

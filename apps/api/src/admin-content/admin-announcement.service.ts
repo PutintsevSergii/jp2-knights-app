@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AnnouncementPushRecipientRepository } from "../notifications/announcement-push-recipient.repository.js";
 import { PushNotificationAdapter } from "../notifications/push-notification.adapter.js";
 import { AdminAnnouncementRepository } from "./admin-announcement.repository.js";
@@ -46,8 +47,12 @@ export class AdminAnnouncementService {
       data.targetOrganizationUnitId ?? null,
       "Officer announcement writes must stay within assigned organization units."
     );
+    assertPublishHasPriorApproval(data.status, null, "Announcement");
 
-    const announcement = await this.adminAnnouncementRepository.createAnnouncement(data);
+    const announcement = await this.adminAnnouncementRepository.createAnnouncement(
+      data,
+      principal.id
+    );
     await this.dispatchAnnouncementPushIfNeeded(principal, null, announcement);
     await this.auditLog.record({
       action: "admin.announcement.create",
@@ -82,10 +87,12 @@ export class AdminAnnouncementService {
       id,
       scope
     );
+    assertPublishHasPriorApproval(data.status, beforeAnnouncement, "Announcement");
     const announcement = await this.adminAnnouncementRepository.updateAnnouncement(
       id,
       data,
-      scope
+      scope,
+      principal.id
     );
 
     if (!announcement) {
@@ -173,6 +180,7 @@ function summarizeAnnouncementForAudit(
     targetOrganizationUnitId: announcement.targetOrganizationUnitId,
     pinned: announcement.pinned,
     status: announcement.status,
+    approvedAt: announcement.approvedAt,
     publishedAt: announcement.publishedAt,
     archivedAt: announcement.archivedAt
   };

@@ -3,6 +3,7 @@ import { requireAdminLite, requireSuperAdmin } from "../admin/admin-access.polic
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminPrayerRepository } from "./admin-prayer.repository.js";
 import type {
   AdminPrayerDetailResponse,
@@ -33,8 +34,9 @@ export class AdminPrayerService {
     data: CreateAdminPrayerRequest
   ): Promise<AdminPrayerDetailResponse> {
     requireSuperAdmin(principal);
+    assertPublishHasPriorApproval(data.status, null, "Prayer");
 
-    const prayer = await this.adminPrayerRepository.createPrayer(data);
+    const prayer = await this.adminPrayerRepository.createPrayer(data, principal.id);
     await this.auditLog.record({
       action: "admin.prayer.create",
       actorUserId: principal.id,
@@ -58,7 +60,8 @@ export class AdminPrayerService {
     requireSuperAdmin(principal);
 
     const beforePrayer = await this.adminPrayerRepository.findPrayerForAudit(id);
-    const prayer = await this.adminPrayerRepository.updatePrayer(id, data);
+    assertPublishHasPriorApproval(data.status, beforePrayer, "Prayer");
+    const prayer = await this.adminPrayerRepository.updatePrayer(id, data, principal.id);
     await this.auditLog.record({
       action: "admin.prayer.update",
       actorUserId: principal.id,
@@ -82,6 +85,7 @@ function summarizePrayerForAudit(prayer: AdminPrayerDetailResponse["prayer"]): A
     visibility: prayer.visibility,
     targetOrganizationUnitId: prayer.targetOrganizationUnitId,
     status: prayer.status,
+    approvedAt: prayer.approvedAt,
     publishedAt: prayer.publishedAt,
     archivedAt: prayer.archivedAt
   };

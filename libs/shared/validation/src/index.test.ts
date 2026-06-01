@@ -476,6 +476,7 @@ describe("shared validation", () => {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     };
@@ -526,6 +527,7 @@ describe("shared validation", () => {
       visibility: "FAMILY_OPEN",
       targetOrganizationUnitId: null,
       status: "draft",
+      approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
       archivedAt: null
@@ -659,6 +661,7 @@ describe("shared validation", () => {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "PUBLISHED",
+      approvedAt: "2026-05-07T17:55:00.000Z",
       publishedAt: "2026-05-07T18:00:00.000Z",
       archivedAt: null
     };

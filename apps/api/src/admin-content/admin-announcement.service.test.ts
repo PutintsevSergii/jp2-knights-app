@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -19,6 +19,7 @@ const publicAnnouncement: AdminAnnouncementSummary = {
   targetOrganizationUnitId: null,
   pinned: false,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };
@@ -200,12 +201,40 @@ describe("AdminAnnouncementService", () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it("blocks publishing announcements that have not been approved first", async () => {
+    const auditLog = auditLogRecorder();
+    const pushRecipients = pushRecipientRepository(["token_1"]);
+    const adminAnnouncementService = service(
+      repository(),
+      auditLog,
+      pushRecipients,
+      pushNotificationAdapter()
+    );
+
+    await expect(
+      adminAnnouncementService.createAdminAnnouncement(superAdmin, {
+        title: "Global",
+        body: "Global announcement.",
+        visibility: "PUBLIC",
+        status: "PUBLISHED"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      adminAnnouncementService.updateAdminAnnouncement(officer, scopedAnnouncement.id, {
+        status: "PUBLISHED"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(pushRecipients.requests).toEqual([]);
+    expect(auditLog.records).toHaveLength(0);
+  });
+
   it("dispatches audience-safe push metadata when an announcement is first published", async () => {
     const auditLog = auditLogRecorder();
     const pushRecipients = pushRecipientRepository(["token_1", "token_2"]);
     const pushAdapter = pushNotificationAdapter();
     const adminAnnouncementService = service(
-      repository(),
+      repository({ beforeResult: { ...scopedAnnouncement, status: "APPROVED" } }),
       auditLog,
       pushRecipients,
       pushAdapter
@@ -219,6 +248,7 @@ describe("AdminAnnouncementService", () => {
       announcement: {
         ...scopedAnnouncement,
         status: "PUBLISHED",
+        approvedAt: "2026-05-04T00:00:00.000Z",
         publishedAt: "2026-05-04T00:00:00.000Z"
       }
     });
@@ -227,6 +257,7 @@ describe("AdminAnnouncementService", () => {
       {
         ...scopedAnnouncement,
         status: "PUBLISHED",
+        approvedAt: "2026-05-04T00:00:00.000Z",
         publishedAt: "2026-05-04T00:00:00.000Z"
       }
     ]);
@@ -309,6 +340,10 @@ function repository(
         ...data,
         targetOrganizationUnitId: data.targetOrganizationUnitId ?? null,
         pinned: data.pinned ?? false,
+        approvedAt:
+          data.status === "APPROVED" || data.status === "PUBLISHED"
+            ? "2026-05-04T00:00:00.000Z"
+            : null,
         publishedAt: data.status === "PUBLISHED" ? "2026-05-04T00:00:00.000Z" : null,
         archivedAt: data.status === "ARCHIVED" ? "2026-05-04T00:00:00.000Z" : null
       }),
@@ -327,7 +362,12 @@ function repository(
       }
       if (data.pinned !== undefined) updated.pinned = data.pinned;
       if (data.status !== undefined) updated.status = data.status;
-      if (data.status === "PUBLISHED") updated.publishedAt = "2026-05-04T00:00:00.000Z";
+      if (data.status === "APPROVED" || data.status === "PUBLISHED") {
+        updated.approvedAt = "2026-05-04T00:00:00.000Z";
+      }
+      if (data.status === "PUBLISHED") {
+        updated.publishedAt = "2026-05-04T00:00:00.000Z";
+      }
       if (data.status === "ARCHIVED") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);

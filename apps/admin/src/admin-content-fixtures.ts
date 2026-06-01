@@ -262,6 +262,7 @@ export const fallbackAdminPrayers: AdminPrayerListResponseDto = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }
@@ -297,6 +298,7 @@ export const fallbackAdminEvents: AdminEventListResponseDto = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "draft",
+      approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
       archivedAt: null
@@ -314,6 +316,7 @@ export const fallbackAdminAnnouncements: AdminAnnouncementListResponseDto = {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     }

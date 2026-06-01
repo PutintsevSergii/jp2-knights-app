@@ -3,6 +3,8 @@ import { adminManageableContentScope } from "../admin/admin-content-access.polic
 import type { PrismaService } from "../database/prisma.service.js";
 import { PrismaAdminAnnouncementRepository } from "./admin-announcement.repository.js";
 
+const actorUserId = "3f3f3f3f-3333-4333-8333-333333333333";
+
 const announcementRecord = {
   id: "44444444-4444-4444-8444-444444444444",
   title: "Open Evening",
@@ -11,6 +13,7 @@ const announcementRecord = {
   targetOrganizationUnitId: null,
   pinned: false,
   status: "DRAFT",
+  approvedAt: null,
   publishedAt: null,
   archivedAt: null
 };
@@ -23,6 +26,7 @@ type AnnouncementRecord = {
   targetOrganizationUnitId: string | null;
   pinned: boolean;
   status: string;
+  approvedAt: Date | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
 };
@@ -35,6 +39,7 @@ const scopedAnnouncementRecord = {
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   pinned: true,
   status: "PUBLISHED",
+  approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
 
@@ -55,6 +60,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: null,
         pinned: false,
         status: "DRAFT",
+        approvedAt: null,
         publishedAt: null,
         archivedAt: null
       }
@@ -81,6 +87,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: scopedAnnouncementRecord.targetOrganizationUnitId,
         pinned: true,
         status: "PUBLISHED",
+        approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         archivedAt: null
       }
@@ -110,7 +117,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
         body: "Announcement body.",
         visibility: "PUBLIC",
         status: "DRAFT"
-      })
+      }, actorUserId)
     ).resolves.toEqual({
       id: announcementRecord.id,
       title: announcementRecord.title,
@@ -119,6 +126,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
       targetOrganizationUnitId: null,
       pinned: false,
       status: "DRAFT",
+      approvedAt: null,
       publishedAt: null,
       archivedAt: null
     });
@@ -130,31 +138,45 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: null,
         pinned: false,
         status: "DRAFT",
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+        approvedBy: null,
+        publishedBy: null,
+        approvedAt: null,
         publishedAt: null,
         archivedAt: null
       }
     });
 
-    await repository.createAnnouncement({
-      title: "Published",
-      body: "Published body.",
-      visibility: "PUBLIC",
-      status: "PUBLISHED"
-    });
+    await repository.createAnnouncement(
+      {
+        title: "Published",
+        body: "Published body.",
+        visibility: "PUBLIC",
+        status: "PUBLISHED"
+      },
+      actorUserId
+    );
     expect(announcementCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "PUBLISHED",
+        approvedBy: actorUserId,
+        publishedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
         publishedAt: expect.any(Date) as Date,
         archivedAt: null
       }) as unknown
     });
 
-    await repository.createAnnouncement({
-      title: "Archived",
-      body: "Archived body.",
-      visibility: "PUBLIC",
-      status: "ARCHIVED"
-    });
+    await repository.createAnnouncement(
+      {
+        title: "Archived",
+        body: "Archived body.",
+        visibility: "PUBLIC",
+        status: "ARCHIVED"
+      },
+      actorUserId
+    );
     expect(announcementCreate).toHaveBeenLastCalledWith({
       data: expect.objectContaining({
         status: "ARCHIVED",
@@ -181,7 +203,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
           status: "PUBLISHED",
           archivedAt: null
         },
-        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"])
+        adminManageableContentScope(["11111111-1111-4111-8111-111111111111"]),
+        actorUserId
       )
     ).resolves.toEqual({
       id: scopedAnnouncementRecord.id,
@@ -191,6 +214,7 @@ describe("PrismaAdminAnnouncementRepository", () => {
       targetOrganizationUnitId: scopedAnnouncementRecord.targetOrganizationUnitId,
       pinned: true,
       status: "PUBLISHED",
+      approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       archivedAt: null
     });
@@ -206,6 +230,10 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: scopedAnnouncementRecord.targetOrganizationUnitId,
         pinned: true,
         status: "PUBLISHED",
+        updatedBy: actorUserId,
+        approvedBy: actorUserId,
+        approvedAt: expect.any(Date) as Date,
+        publishedBy: actorUserId,
         publishedAt: expect.any(Date) as Date,
         archivedAt: null
       }
@@ -222,7 +250,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
       new PrismaAdminAnnouncementRepository(scopedOut.prisma).updateAnnouncement(
         announcementRecord.id,
         { status: "ARCHIVED" },
-        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"])
+        adminManageableContentScope(["22222222-2222-4222-8222-222222222222"]),
+        actorUserId
       )
     ).resolves.toBeNull();
     expect(scopedOut.announcementFindFirst).not.toHaveBeenCalled();

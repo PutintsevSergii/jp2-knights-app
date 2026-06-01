@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { AuditLogInput, AuditLogService } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -196,6 +196,49 @@ describe("AdminSilentPrayerService", () => {
       )
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it("blocks publishing silent-prayer events that have not been approved first", async () => {
+    const auditLog = auditLogRecorder();
+    const adminSilentPrayerService = service(repository(), auditLog);
+
+    await expect(
+      adminSilentPrayerService.createAdminSilentPrayerEvent(superAdmin, {
+        title: "Global Prayer",
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
+        startsAt: "2026-05-10T18:00:00.000Z"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      adminSilentPrayerService.updateAdminSilentPrayerEvent(
+        officer,
+        scopedSilentPrayerEvent.id,
+        {
+          status: "PUBLISHED"
+        }
+      )
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toHaveLength(0);
+  });
+
+  it("publishes silent-prayer events after an approved status has been recorded", async () => {
+    await expect(
+      service(
+        repository({
+          beforeResult: { ...scopedSilentPrayerEvent, status: "APPROVED" }
+        })
+      ).updateAdminSilentPrayerEvent(officer, scopedSilentPrayerEvent.id, {
+        status: "PUBLISHED"
+      })
+    ).resolves.toEqual({
+      silentPrayerEvent: {
+        ...scopedSilentPrayerEvent,
+        status: "PUBLISHED",
+        approvedAt: "2026-05-04T00:00:00.000Z",
+        publishedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+  });
 });
 
 function service(
@@ -209,7 +252,10 @@ function service(
 }
 
 function repository(
-  options: { updateResult?: AdminSilentPrayerEventSummary | null } = {}
+  options: {
+    updateResult?: AdminSilentPrayerEventSummary | null;
+    beforeResult?: AdminSilentPrayerEventSummary | null;
+  } = {}
 ): AdminSilentPrayerRepository {
   return {
     listManageableEvents: () =>
@@ -244,11 +290,20 @@ function repository(
       if (data.status !== undefined) updated.status = data.status;
       if (data.startsAt !== undefined) updated.startsAt = data.startsAt;
       if (data.endsAt !== undefined) updated.endsAt = data.endsAt;
+      if (data.status === "APPROVED" || data.status === "PUBLISHED") {
+        updated.approvedAt = "2026-05-04T00:00:00.000Z";
+      }
+      if (data.status === "PUBLISHED") {
+        updated.publishedAt = "2026-05-04T00:00:00.000Z";
+      }
       if (data.status === "ARCHIVED") updated.archivedAt = "2026-05-04T00:00:00.000Z";
 
       return Promise.resolve(updated);
     },
     findEventForAudit: (id) => {
+      if (options.beforeResult !== undefined) {
+        return Promise.resolve(options.beforeResult);
+      }
       if (id === scopedSilentPrayerEvent.id) {
         return Promise.resolve(scopedSilentPrayerEvent);
       }

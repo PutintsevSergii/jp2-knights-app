@@ -2,7 +2,7 @@
 
 **LIVE PROGRESS TRACKER — Visual Status of All 13 Phases**
 
-Updated: May 29, 2026
+Updated: May 31, 2026
 Canonical source: [docs/traceability.md](../traceability.md)  
 Synchronization rule: Update this dashboard whenever traceability.md is updated
 
@@ -24,7 +24,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **9**     | ✅ COMPLETE    | 100%     | ████████████████████ | Candidate/brother event reads, mobile event/announcement models, event participation intent API, announcement read APIs, admin announcement API/UI, notification prefs/device tokens, announcement push dispatch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Phase 10                      |
 | **10**    | 🟡 IN PROGRESS | 92%      | ██████████████████░░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, Google/Firebase auth-entry styling/session bridge/Expo adapter, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, responsive Admin Lite Candidate Requests, Phase 10B localization foundation, roadmap data/contracts, candidate/brother roadmap read APIs/screen models, brother roadmap submission API and mobile flow, realistic multi-scope roadmap seed/load fixtures, Admin Lite roadmap review workflow, Super Admin read-only roadmap definition inspection, Super Admin roadmap assignment inspection, Super Admin roadmap assignment creation API/client/rendered form support, roadmap assignment/submission/definition localization cleanup, and SOLID/Clean Architecture aggregation cleanup complete | Phase 10 wrap-up / Phase 12 |
 | **11**    | ✅ COMPLETE    | 100%     | ████████████████████ | Silent-prayer event table/migration/fixtures, public and brother REST list/join contracts, Redis-shaped presence boundary, deterministic in-memory store, Socket.IO namespace/gateway, Redis-backed presence store, Socket.IO Redis adapter, production Redis fail-fast config, Admin Lite silent-prayer event management API/audit workflow, mobile public/brother silent-prayer REST list/join screens, mobile Socket.IO heartbeat/leave/reconnect client, and duplicate-join/reconnect/TTL/scope/socket/Redis/admin/mobile tests                                                             | Phase 12 privacy/security    |
-| **12**    | 🟡 IN PROGRESS | 18%      | ████░░░░░░░░░░░░░░░░ | Super Admin read-only audit-log API, Admin Lite audit review route, candidate request personal-data export, and candidate request legal erasure started                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Continue retention/content approval hardening |
+| **12**    | 🟡 IN PROGRESS | 30%      | ██████░░░░░░░░░░░░░░ | Super Admin read-only audit-log API, Admin Lite audit review route, candidate request personal-data export, candidate request legal erasure, and content publish approval enforcement for prayer/event/announcement/silent-prayer content started                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Continue retention/export/content approval hardening |
 | **13**    | ⏳ PENDING     | 0%       | ░░░░░░░░░░░░░░░░░░░░ | Pilot readiness                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | After Phase 12               |
 
 ---
@@ -437,7 +437,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 ### Phase 12: Privacy/Security/Audit/Content Approval 🟡
 
-**Status**: IN PROGRESS (~18%)
+**Status**: IN PROGRESS (~30%)
 
 **Completed**:
 
@@ -448,16 +448,17 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - ✅ Admin Lite `/admin/audit-logs` route mounted in API and demo modes with Next route/navigation coverage
 - ✅ Super Admin-only `GET /admin/candidate-requests/:id/export` added for candidate request personal-data export, including archived requests, with redacted export audit summaries
 - ✅ Super Admin-only `POST /admin/candidate-requests/:id/erase` added for candidate request legal erasure; it anonymizes personal identifiers, clears message/officer-note/idempotency fields, archives instead of deleting, returns only erasure metadata, denies officers before rows load, and writes redacted audit summaries
+- ✅ Content approval enforcement started for prayer, event, announcement, and silent-prayer admin content: direct publish create/update attempts now fail unless prior approval exists, prayer/event/announcement admin responses expose `approvedAt`, event approval metadata is backed by migration `000013_event_approval_metadata`, and announcement publish rejection happens before push/audit side effects
 
 **In Progress**:
 
 - 🟡 Remaining retention/erasure workflow design and implementation
-- 🟡 Content approval enforcement hardening for production/pilot content
+- 🟡 Remaining content approval surfaces and production/pilot approval workflow polish
 - 🟡 Security/privacy regression expansion across remaining high-risk read/write paths
 
-**Exit criteria**: 🟡 Audit review surface and candidate request export/erasure started; broader retention, remaining erasure/export coverage, content approval, and final privacy/security hardening still pending
+**Exit criteria**: 🟡 Audit review surface, candidate request export/erasure, and first publish approval guard across core admin content started; broader retention, remaining erasure/export coverage, content approval workflow polish, and final privacy/security hardening still pending
 
-**Next step**: Continue Phase 12 retention/content approval hardening
+**Next step**: Continue Phase 12 retention/export/content approval hardening
 
 ---
 
