@@ -31,6 +31,7 @@ This is not a full ERP for the whole Order. Implementation agents must build pha
 | [screens](screens/mobile-public-screens.md) | Screen descriptions for mobile and Admin Lite |
 | [flows](flows/guest-discovery-flow.md) | User and admin workflows with rules and data effects |
 | [delivery](delivery/implementation-roadmap.md) | Roadmap, phases, testing, release plan, support, risk register |
+| [deployment](deployment/README.md) | Google Cloud launch plan, Terraform plan, environment/secrets matrix, manual owner tasks |
 | [agent](agent/working-agreement.md) | Operating contract, quality gates, no-duplicate policy, component boundary contracts, instructions |
 
 ### Strategy & Governance
@@ -76,6 +77,7 @@ It contains:
 | API style and DTO contract rules | [api/api-design-principles.md](api/api-design-principles.md), [api/api-contract-format.md](api/api-contract-format.md) |
 | Data model and lifecycle | [data/database-design.md](data/database-design.md), [architecture/privacy-data-lifecycle.md](architecture/privacy-data-lifecycle.md) |
 | Delivery sequence | [delivery/implementation-roadmap.md](delivery/implementation-roadmap.md), [delivery/phase-breakdown.md](delivery/phase-breakdown.md) |
+| Google Cloud deployment | [deployment/google-cloud-launch-plan.md](deployment/google-cloud-launch-plan.md), [deployment/terraform-plan.md](deployment/terraform-plan.md), [deployment/environment-and-secrets.md](deployment/environment-and-secrets.md), [deployment/manual-google-tasks.md](deployment/manual-google-tasks.md) |
 
 ### Historical Context
 

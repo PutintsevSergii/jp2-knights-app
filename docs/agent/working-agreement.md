@@ -17,6 +17,10 @@
 - Keep the pipeline green before completing a task.
 - Reuse existing shared contracts/utilities instead of duplicating logic.
 - Update traceability, OpenAPI/DTOs, migrations, seeds, and tests together when behavior changes.
+- Keep Google Cloud deployment implementation near the end of V1: plan it in
+  docs during Phase 12, but implement Docker/Terraform/Cloud Run/Cloud SQL
+  rollout as Phase 13 pilot readiness after privacy, approval, retention,
+  Firebase, and runtime requirements are stable.
 
 ## Non-Negotiables
 

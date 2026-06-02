@@ -17,8 +17,19 @@ This roadmap mirrors `JP2_APP_IMPLEMENTATION_ROADMAP.md` and must be followed un
 | 10    | Design/RBAC alignment + Formation roadmap | Bring approved V1 Figma Gold/Grey screens and role-state UI into launch shape, then implement human-reviewed formation                | Figma token extraction, mobile shell split, dedicated member screens, responsive Admin Lite parity, RBAC state QA, localization foundation, roadmap definitions, assignments, submissions, review |
 | 11    | Silent online prayer                    | Aggregate real-time prayer                                                                                                           | Sessions, sockets, Redis presence                                                                                                          |
 | 12    | Privacy/security/audit/content approval | Pilot safety                                                                                                                         | privacy controls, audit logs, approval, retention/export/erasure support                                                                   |
-| 13    | Release hardening/pilot                 | Real pilot readiness                                                                                                                 | seed data, launch-readiness wrap-up, restore test, support runbook, scenario validation                                                    |
+| 13    | Release hardening/pilot                 | Real pilot readiness                                                                                                                 | seed data, launch-readiness wrap-up, Google Cloud Docker/Terraform deployment foundation, restore test, support runbook, scenario validation |
 
 ## Rule
 
 V2 backlog items are not part of the default V1 phase plan. If there is a strong product, security, or architectural argument to pull one forward, pause implementation, ask the human owner for explicit permission, and update scope/backlog/traceability plus affected API/data/screen/test docs before or with implementation.
+
+## Deployment Timing
+
+Google Cloud deployment belongs near the end of implementation. Keep the
+deployment plan and environment/secrets matrix current while Phase 12
+privacy/security/content-approval hardening is in progress, then implement
+Dockerfiles, Terraform, Cloud Run services, Cloud SQL, Memorystore Redis,
+Secret Manager wiring, migration jobs, and deployment smoke checks as Phase 13
+pilot-readiness work. Starting infrastructure implementation earlier is allowed
+only for local container smoke checks or if the human owner explicitly asks for
+a staging deployment before Phase 12 stabilizes.

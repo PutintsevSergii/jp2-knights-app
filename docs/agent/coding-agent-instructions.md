@@ -18,6 +18,25 @@
 
 Follow `/docs/delivery/implementation-roadmap.md`.
 
+## Deployment Workflow Timing
+
+Google Cloud deployment work is part of late V1 hardening, not early feature
+implementation.
+
+- Keep deployment planning docs current during Phase 12 when privacy,
+  retention, approval, and operational requirements become clear.
+- Do not implement production Dockerfiles, Terraform resources, Cloud Run
+  services, migration jobs, or Google/Firebase deployment scripts until Phase
+  12 is stable enough that remaining API/data/runtime changes are unlikely to
+  reshape infrastructure.
+- Start deployment implementation as a Phase 13 pilot-readiness workstream:
+  first containerize API/Admin locally, then add Terraform foundation, then
+  wire secrets/Firebase, then deploy staging/pilot and run restore/smoke checks.
+- Treat `docs/deployment` and `infra/terraform/README.md` as the source for the
+  owner/agent split: agents write repo artifacts and scripts; the human owner
+  handles billing, project access, DNS, secret values, Firebase console setup,
+  and launch approval.
+
 ## Task Creation
 
 Break work into small stories using `/docs/agent/backlog-format.md`. Each story must include acceptance criteria, tests required, and out-of-scope notes.

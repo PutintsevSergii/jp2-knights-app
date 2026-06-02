@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: June 1, 2026 (Phases 0–9 and Phase 11 complete; Phase 10A/10B and Phase 12 privacy/audit/content-approval hardening in progress; candidate request/profile export-erasure, device-token revocation, Admin Lite silent-prayer workflow, and product/API scope wording aligned)
+**Last Updated**: June 2, 2026 (Phases 0–9 and Phase 11 complete; Phase 10A/10B and Phase 12 privacy/audit/content-approval hardening in progress; candidate request/profile export-erasure, device-token revocation, Admin Lite silent-prayer workflow, Google Cloud launch planning, and product/API scope wording aligned)
 
 ---
 
@@ -826,6 +826,11 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   helpers, and route/navigation coverage. The screen remains aggregate-only:
   it exposes no participant list, anonymous session id, user id, roster, chat,
   comments, or prayer-history action.
+- Phase 13 pilot readiness planning has started with deployment documentation
+  for Google Cloud: launch sequence, owner/agent role split, environment and
+  secret matrix, manual Google/Firebase tasks, and Terraform implementation
+  plan. No production Dockerfiles, Terraform resources, or Cloud Run deployment
+  scripts have been implemented yet.
 - Phase 13 pilot readiness is not implemented yet unless explicitly listed
   above.
 

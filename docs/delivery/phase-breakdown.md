@@ -17,13 +17,30 @@
 | 10    | Approved V1 Figma/RBAC alignment is implemented for launch-critical screens, then roadmap submission and officer review work                                                                                                                                                                                                          |
 | 11    | Silent prayer counters work across reconnects                                                                                                                                                                                                                                                                                         |
 | 12    | Audit/privacy/content approval checks pass; retention/export/erasure support exists for sensitive V1 records                                                                                                                                                                                                                          |
-| 13    | Pilot scenarios pass with seed data; launch-readiness wrap-up, restore test, and support runbook are complete                                                                                                                                                                                                                         |
+| 13    | Pilot scenarios pass with seed data; Google Cloud Docker/Terraform deployment foundation is implemented; launch-readiness wrap-up, restore test, and support runbook are complete                                                                                                                                                      |
 
 ## Files Expected per Phase
 
 Implementation agents should touch only relevant app/domain/test/docs files for each phase. Broad unrelated refactors require approval.
 
 Every phase that changes an API must update OpenAPI/DTO contracts and the traceability matrix. Every phase that changes persistence must include a migration, seed impact note, and rollback/restore consideration.
+
+## Deployment Phase Placement
+
+Deployment implementation should start after Phase 12 hardening is stable
+enough that infrastructure inputs are known. The expected sequence is:
+
+1. Phase 12: keep Google Cloud launch docs, environment/secrets, manual owner
+   tasks, and Terraform plan current.
+2. Late Phase 12 or Phase 13 entry: add local Dockerfiles and container smoke
+   checks if they help validate runtime assumptions.
+3. Phase 13: implement Terraform, Cloud Run, Cloud SQL, Memorystore Redis,
+   Secret Manager, migration jobs, custom-domain guidance, backup restore
+   checks, and pilot deployment runbooks.
+
+Do not let deployment implementation displace remaining Phase 12 privacy,
+content approval, retention, or security work unless the human owner explicitly
+asks for an earlier staging deployment.
 
 ## Launchability Rule
 
