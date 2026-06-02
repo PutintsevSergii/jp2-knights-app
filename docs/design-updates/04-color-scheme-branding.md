@@ -30,6 +30,13 @@ The Phase 10A Figma extraction is now cached locally in
 styles, so the shared implementation tokens are based on frame-derived colors,
 type, spacing, and screenshots from the priority Gold/Grey screens.
 
+June 3, 2026 update: public mobile screens now use the Google Stitch
+`JP2 Knights Companion` public screen set as the active implementation reference.
+The shared implementation tokens have been realigned to Stitch's `Ecclesia`
+theme: parchment background, muted papal gold, stone borders, and Inter mobile
+typography. The older Figma Gold/Grey cache remains a reference for private and
+admin frames that do not yet have Stitch replacements.
+
 Rules for the in-progress update:
 
 - Do not guess or hardcode gold/grey hex values in mobile or admin screens.
@@ -39,15 +46,15 @@ Rules for the in-progress update:
 
 Implemented Phase 10A token values now include:
 
-- Gold action: `#FECC00`
-- Gold text/link: `#745C00`
-- App background: `#FBF8FF`
+- Gold action: `#D6A21E`
+- Gold text/link: `#795900`
+- App background: `#FEF9EF`
 - Surface: `#FFFFFF`
-- Primary text: `#1A1B22`
-- Muted text: `#4E4632`
-- Card border: `#D1C5AB`
-- Chrome border: `#E3E1EC`
-- Primary font family: `Work Sans`
+- Primary text: `#1D1C16`
+- Muted text: `#4F4634`
+- Card border: `#D3C5AE`
+- Chrome border: `#E7E2D8`
+- Primary mobile functional font family: `Inter`
 
 ### Blue: The Primary Color
 - **Hex:** `#1d4ed8`

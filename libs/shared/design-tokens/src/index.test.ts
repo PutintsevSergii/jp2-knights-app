@@ -7,7 +7,7 @@ describe("design tokens", () => {
   });
 
   it("centralizes documented mobile typography roles", () => {
-    expect(designTokens.typography.fontFamily.mobile).toBe("Work Sans");
+    expect(designTokens.typography.fontFamily.mobile).toBe("Inter");
     expect(designTokens.typography.size.display).toBe(48);
     expect(designTokens.typography.size.screenTitle).toBe(32);
     expect(designTokens.typography.size.sectionTitle).toBe(24);
@@ -17,11 +17,11 @@ describe("design tokens", () => {
     expect(Object.values(designTokens.typography.letterSpacing)).toEqual([0, 0, 0, 0]);
   });
 
-  it("centralizes the extracted Figma Gold/Grey palette", () => {
-    expect(designTokens.color.background.app).toBe("#FBF8FF");
-    expect(designTokens.color.brand.gold).toBe("#FECC00");
-    expect(designTokens.color.brand.goldDark).toBe("#745C00");
-    expect(designTokens.color.text.primary).toBe("#1A1B22");
-    expect(designTokens.color.border.chrome).toBe("#E3E1EC");
+  it("centralizes the extracted Stitch Ecclesia palette", () => {
+    expect(designTokens.color.background.app).toBe("#FEF9EF");
+    expect(designTokens.color.brand.gold).toBe("#D6A21E");
+    expect(designTokens.color.brand.goldDark).toBe("#795900");
+    expect(designTokens.color.text.primary).toBe("#1D1C16");
+    expect(designTokens.color.border.chrome).toBe("#E7E2D8");
   });
 });

@@ -24,11 +24,11 @@ describe("JoinRequestFormScreen", () => {
     firstNameInput?.props.onChangeText?.("Maria");
     expect(onChangeField).toHaveBeenCalledWith("firstName", "Maria");
 
-    const switchElement = findElementWithOnValueChange(element);
-    switchElement?.props.onValueChange?.(true);
+    const consentCheckbox = findElementByAccessibilityLabel(element, "Consent");
+    consentCheckbox?.props.onPress?.();
     expect(onConsentAcceptedChange).toHaveBeenCalledWith(true);
 
-    const submitButton = findElementByAccessibilityLabel(element, "Submit interest");
+    const submitButton = findElementByAccessibilityLabel(element, "Submit Request");
     submitButton?.props.onPress?.();
     expect(onSubmit).toHaveBeenCalled();
     expect(findText(element, "Demo mode")).toBe(true);
@@ -46,10 +46,10 @@ describe("JoinRequestFormScreen", () => {
       consentAccepted: false,
       onNavigate
     });
-    const homeButton = findElementByAccessibilityLabel(element, "Home");
+    const backButton = findElementByAccessibilityLabel(element, "Go back");
 
     expect(findText(element, "Check the required fields and consent, then try again.")).toBe(true);
-    homeButton?.props.onPress?.();
+    backButton?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("PublicHome");
   });
 });
@@ -61,41 +61,22 @@ interface TestElement {
     children?: TestNode;
     onChangeText?: (value: string) => void;
     onPress?: () => void;
-    onValueChange?: (value: boolean) => void;
   };
 }
 
 type TestNode = TestElement | string | number | boolean | null | undefined | readonly TestNode[];
 type TestComponent = (props: TestElement["props"]) => TestNode;
 
-function findElementWithOnValueChange(node: TestNode): TestElement | undefined {
-  if (isTestNodeArray(node)) {
-    for (const child of node) {
-      const match = findElementWithOnValueChange(child);
-
-      if (match) {
-        return match;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!isTestElement(node)) {
-    return undefined;
-  }
-
-  if (typeof node.props.onValueChange === "function") {
-    return node;
-  }
-
-  return findElementWithOnValueChange(node.props.children);
-}
-
 function findElementByAccessibilityLabel(
   node: TestNode,
   accessibilityLabel: string
 ): TestElement | undefined {
+  const resolved = resolveElement(node);
+
+  if (resolved !== node) {
+    return findElementByAccessibilityLabel(resolved, accessibilityLabel);
+  }
+
   if (isTestNodeArray(node)) {
     for (const child of node) {
       const match = findElementByAccessibilityLabel(child, accessibilityLabel);

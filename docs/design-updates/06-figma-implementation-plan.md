@@ -48,10 +48,12 @@ contracts:
 - Public and selected dashboard screens have React Native screen components.
 - Candidate event list/detail, candidate announcement list, Brother Today, Brother Events, Brother Event Detail, and Brother Announcements now use dedicated Phase 10A React Native renderers.
 - The Expo root component (`apps/mobile/src/App.tsx`) has now been split for Phase 10A: it reads runtime/auth launch state and delegates to public, candidate, or brother route surfaces. Brother announcement/detail routes now render through dedicated Figma-aligned components instead of the generic private renderer.
-- Figma targets a Gold/Grey visual system, and shared design tokens now include
-  the extracted Gold/Grey semantic palette, radius, shadow, and Work Sans roles.
-  Remaining screen work should continue consuming those tokens instead of local
-  visual constants.
+- Figma targets a Gold/Grey visual system, and public mobile now uses the Google
+  Stitch `JP2 Knights Companion` public screens as the active visual reference.
+  Shared design tokens now include the Stitch Ecclesia parchment/gold/stone
+  semantic palette, radius, shadow, and Inter mobile typography roles. Remaining
+  screen work should continue consuming those tokens instead of local visual
+  constants.
 - Officer/admin workflows are implemented in Admin Lite web routes, not as a V1 mobile officer app.
 - Candidate Contact, Candidate Roadmap, Silent Prayer, and several admin
   management screens must now be placed deliberately in V1 phases rather than
@@ -128,14 +130,14 @@ In-progress update target:
 
 | Token area     | Current state                                                                                                          | Required design update                                                                |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Brand palette  | Figma-derived Gold/Grey semantic aliases are now in shared tokens                                                      | Continue migrating screen themes away from legacy blue assumptions                    |
+| Brand palette  | Stitch Ecclesia parchment/gold/stone semantic aliases are now in shared tokens                                        | Continue migrating screen themes away from legacy blue assumptions                    |
 | Status palette | Success/warning/danger tokens exist                                                                                    | Keep semantic status tokens; do not replace with decorative brand colors              |
 | Spacing        | 4/8/12/16/24/32 scale exists                                                                                           | Reuse for Figma frame spacing; add only if Figma requires a repeated missing token    |
 | Radius         | 4 and 8 exist                                                                                                          | Keep cards/buttons at 8px or less unless Figma frame proves otherwise                 |
-| Typography     | Shared roles now use extracted Work Sans frame specs for display, screen, section, card, body, label, and button roles; letter-spacing is normalized to `0` by the app UI rule | Load or package Work Sans in Expo only if pilot devices require bundled font fidelity |
+| Typography     | Shared roles now use Inter for mobile functional text; letter-spacing is normalized to `0` by the app UI rule          | Add bundled fonts only if pilot devices require exact Stitch font rendering           |
 | Navigation     | Mode-specific action arrays                                                                                            | Add tab/header component tokens for Figma bottom nav/top app bar parity               |
 
-Exact Gold/Grey values are now cached locally and added to
+Exact Stitch public-screen values are now added to
 `libs/shared/design-tokens/src/index.ts`. Screens should consume those semantic
 tokens instead of repeating hex values.
 

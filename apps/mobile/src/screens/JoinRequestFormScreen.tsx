@@ -1,11 +1,13 @@
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { JoinRequestFormDraft } from "../public-candidate-request.js";
 import type {
   JoinRequestFieldId,
+  JoinRequestFormField,
   JoinRequestFormScreen as JoinRequestFormScreenModel
 } from "../public-screens.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { PublicScreenTopBar } from "./shared/PublicScreenTopBar.js";
 
 export interface JoinRequestFormScreenProps {
   screen: JoinRequestFormScreenModel;
@@ -26,179 +28,188 @@ export function JoinRequestFormScreen({
   onSubmit,
   onNavigate
 }: JoinRequestFormScreenProps) {
+  const visibleFields = screen.fields.filter((field) => field.id !== "preferredLanguage");
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
-      <ScrollView
-        contentContainerStyle={{
-          gap: screen.theme.spacing,
-          padding: screen.theme.spacing,
-          paddingTop: screen.theme.spacing * 2
-        }}
-      >
+      <PublicScreenTopBar title="Request to Join" onBack={() => onNavigate?.("PublicHome")} />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
-        <View
-          style={[
-            {
-              borderColor: screen.theme.border,
-              borderWidth: 1,
-              backgroundColor: screen.theme.surface,
-              borderRadius: screen.theme.radius,
-              gap: screen.theme.spacing / 2,
-              padding: screen.theme.spacing
-            }
-          ]}
-        >
-          <Text style={[styles.title, { color: screen.theme.text }]}>{screen.title}</Text>
-          <Text style={{ color: screen.theme.mutedText }}>{screen.body}</Text>
+        <View style={styles.introBand}>
+          <Text style={styles.introText}>
+            Membership in the JP2 Knights is a commitment to fraternity and spiritual formation.
+            Please submit this request for review by a local officer.
+          </Text>
+        </View>
+
+        <View style={styles.formCard}>
           {screen.errorMessage ? (
-            <Text accessibilityRole="alert" style={{ color: screen.theme.text }}>
+            <Text accessibilityRole="alert" style={styles.errorText}>
               {screen.errorMessage}
             </Text>
           ) : null}
-        </View>
 
-        {screen.fields.map((field) => (
-          <View
-            key={field.id}
-            style={[
-              {
-                borderColor: screen.theme.border,
-                borderWidth: 1,
-                backgroundColor: screen.theme.surface,
-                borderRadius: screen.theme.radius,
-                gap: screen.theme.spacing / 2,
-                padding: screen.theme.spacing
-              }
-            ]}
-          >
-            <Text style={[styles.fieldLabel, { color: screen.theme.text }]}>
-              {field.required ? `${field.label} *` : field.label}
-            </Text>
-            <TextInput
-              accessibilityLabel={field.label}
-              autoCapitalize={field.id === "email" ? "none" : "sentences"}
-              keyboardType={field.keyboardType}
-              multiline={field.multiline}
-              onChangeText={(value) => onChangeField?.(field.id, value)}
-              style={[
-                styles.input,
-                {
-                  borderColor: screen.theme.border,
-                  borderRadius: screen.theme.radius,
-                  color: screen.theme.text,
-                  minHeight: field.multiline ? screen.theme.spacing * 6 : screen.theme.spacing * 3,
-                  padding: screen.theme.spacing / 2
-                }
-              ]}
-              value={draft[field.id]}
-            />
-          </View>
-        ))}
-
-        {screen.state === "ready" ? (
-          <View
-            style={[
-              {
-                borderColor: screen.theme.border,
-                borderWidth: 1,
-                backgroundColor: screen.theme.surface,
-                borderRadius: screen.theme.radius,
-                gap: screen.theme.spacing / 2,
-                padding: screen.theme.spacing
-              }
-            ]}
-          >
-            <View style={styles.consentRow}>
-              <Switch value={consentAccepted} onValueChange={onConsentAcceptedChange} />
-              <Text style={[styles.consentText, { color: screen.theme.mutedText }]}>
-                {screen.consent.label}
-              </Text>
+          {visibleFields.map((field) => (
+            <View key={field.id} style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>{fieldLabel(field)}</Text>
+              <TextInput
+                accessibilityLabel={field.label}
+                autoCapitalize={field.id === "email" ? "none" : "sentences"}
+                keyboardType={field.keyboardType}
+                multiline={field.multiline}
+                onChangeText={(value) => onChangeField?.(field.id, value)}
+                style={[styles.input, field.multiline ? styles.messageInput : undefined]}
+                value={draft[field.id]}
+              />
             </View>
-          </View>
-        ) : null}
+          ))}
 
-        <View style={{ gap: screen.theme.spacing - screen.theme.spacing / 4 }}>
           {screen.state === "ready" ? (
             <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Submit interest"
-              onPress={onSubmit}
-              style={[
-                styles.action,
-                {
-                  backgroundColor: screen.theme.primaryAction,
-                  borderRadius: screen.theme.radius,
-                  paddingHorizontal: screen.theme.spacing,
-                  paddingVertical: screen.theme.spacing - screen.theme.spacing / 4
-                }
-              ]}
+              accessibilityLabel="Consent"
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: consentAccepted }}
+              onPress={() => onConsentAcceptedChange?.(!consentAccepted)}
+              style={styles.consentRow}
             >
-              <Text style={[styles.actionText, { color: screen.theme.primaryActionText }]}>
-                Submit Interest
+              <View style={[styles.checkbox, consentAccepted ? styles.checkboxChecked : undefined]}>
+                <Text style={styles.checkboxMark}>{consentAccepted ? "✓" : ""}</Text>
+              </View>
+              <Text style={styles.consentText}>
+                I understand this is a request for information and does not guarantee membership.
               </Text>
             </Pressable>
           ) : null}
-          {screen.actions.map((action) => (
+
+          {screen.state === "ready" ? (
             <Pressable
-              key={action.id}
+              accessibilityLabel="Submit Request"
               accessibilityRole="button"
-              accessibilityLabel={action.label}
-              onPress={() => onNavigate?.(action.targetRoute)}
-              style={[
-                styles.secondaryAction,
-                {
-                  borderColor: screen.theme.border,
-                  borderRadius: screen.theme.radius,
-                  paddingHorizontal: screen.theme.spacing,
-                  paddingVertical: screen.theme.spacing - screen.theme.spacing / 4
-                }
-              ]}
+              onPress={onSubmit}
+              style={styles.submitButton}
             >
-              <Text style={[styles.actionText, { color: screen.theme.text }]}>{action.label}</Text>
+              <Text style={styles.submitButtonText}>Submit Request</Text>
             </Pressable>
-          ))}
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function fieldLabel(field: JoinRequestFormField): string {
+  if (field.id === "firstName") return "First Name";
+  if (field.id === "lastName") return "Last Name";
+  if (field.id === "phone") return "Phone (Optional)";
+
+  return field.label;
+}
+
+const colors = designTokens.color;
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1
   },
-  title: {
-    fontSize: designTokens.typography.size.screenTitle,
+  content: {
+    paddingBottom: 112
+  },
+  introBand: {
+    backgroundColor: colors.text.primary,
+    paddingHorizontal: designTokens.space[4],
+    paddingVertical: designTokens.space[3]
+  },
+  introText: {
+    color: colors.border.chrome,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    lineHeight: designTokens.typography.lineHeight.secondary,
+    textAlign: "center"
+  },
+  formCard: {
+    backgroundColor: colors.background.surface,
+    gap: designTokens.space[1],
+    margin: designTokens.space[4],
+    padding: designTokens.space[3]
+  },
+  errorText: {
+    color: colors.status.danger,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.screenTitle
+    lineHeight: designTokens.typography.lineHeight.secondary
+  },
+  fieldGroup: {
+    gap: designTokens.space[1]
   },
   fieldLabel: {
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.body
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
   input: {
-    borderWidth: 1
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.sm,
+    borderWidth: 1,
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    height: 28,
+    paddingHorizontal: designTokens.space[2],
+    paddingVertical: 0
+  },
+  messageInput: {
+    height: 64,
+    textAlignVertical: "top"
   },
   consentRow: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    gap: 12
+    gap: designTokens.space[2],
+    paddingVertical: designTokens.space[1]
+  },
+  checkbox: {
+    alignItems: "center",
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.sm,
+    borderWidth: 1,
+    height: 16,
+    justifyContent: "center",
+    width: 16
+  },
+  checkboxChecked: {
+    backgroundColor: colors.brand.gold
+  },
+  checkboxMark: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
   consentText: {
-    flex: 1
+    color: colors.text.muted,
+    flex: 1,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
-  action: {
-    alignItems: "center"
-  },
-  secondaryAction: {
+  submitButton: {
     alignItems: "center",
-    borderWidth: 1
+    backgroundColor: colors.brand.gold,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.sm,
+    borderWidth: 1,
+    paddingVertical: designTokens.space[2]
   },
-  actionText: {
+  submitButtonText: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.button,
-    fontWeight: designTokens.typography.weight.medium,
+    fontWeight: designTokens.typography.weight.bold,
     lineHeight: designTokens.typography.lineHeight.button
   }
 });

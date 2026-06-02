@@ -14,6 +14,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     backgroundColor: designTokens.color.brand.gold,
     borderRadius: designTokens.radius.pill,
+    marginTop: designTokens.space[2],
     paddingHorizontal: designTokens.space[3],
     paddingVertical: designTokens.space[1]
   },

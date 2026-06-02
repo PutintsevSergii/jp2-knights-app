@@ -1,39 +1,39 @@
 export const designTokens = {
   color: {
     brand: {
-      gold: "#FECC00",
-      goldPressed: "#F0C100",
-      goldDark: "#745C00",
-      goldDarker: "#6E5700",
-      goldDeep: "#574500",
-      ink: "#1A1B22",
-      brown: "#4E4632",
-      taupe: "#80765F",
-      parchment: "#FBF8FF",
-      linen: "#F4F2FD",
-      line: "#D1C5AB",
-      chromeLine: "#E3E1EC",
-      softLine: "#EEEDF7"
+      gold: "#D6A21E",
+      goldPressed: "#F6BE3C",
+      goldDark: "#795900",
+      goldDarker: "#5C4300",
+      goldDeep: "#523B00",
+      ink: "#1D1C16",
+      brown: "#4F4634",
+      taupe: "#817662",
+      parchment: "#FEF9EF",
+      linen: "#F2EDE3",
+      line: "#D3C5AE",
+      chromeLine: "#E7E2D8",
+      softLine: "#ECE8DE"
     },
     background: {
-      app: "#FBF8FF",
+      app: "#FEF9EF",
       surface: "#ffffff"
     },
     border: {
-      subtle: "#D1C5AB",
-      chrome: "#E3E1EC",
-      soft: "#EEEDF7"
+      subtle: "#D3C5AE",
+      chrome: "#E7E2D8",
+      soft: "#ECE8DE"
     },
     text: {
-      primary: "#1A1B22",
-      muted: "#4E4632",
-      subdued: "#80765F",
+      primary: "#1D1C16",
+      muted: "#4F4634",
+      subdued: "#817662",
       inverse: "#ffffff"
     },
     action: {
-      primary: "#FECC00",
-      primaryText: "#1A1B22",
-      secondary: "#745C00",
+      primary: "#D6A21E",
+      primaryText: "#1D1C16",
+      secondary: "#356382",
       secondaryText: "#ffffff"
     },
     status: {
@@ -74,7 +74,7 @@ export const designTokens = {
   },
   typography: {
     fontFamily: {
-      mobile: "Work Sans",
+      mobile: "Inter",
       web: 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
     },
     size: {

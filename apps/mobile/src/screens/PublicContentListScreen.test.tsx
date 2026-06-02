@@ -19,7 +19,7 @@ describe("PublicContentListScreen", () => {
 
     expect(element).toBeTruthy();
     expect(element.props.style).toBeDefined();
-    expect(findText(element, "Public Prayers")).toBe(true);
+    expect(findText(element, "Prayer Library")).toBe(true);
     expect(findText(element, "Morning Offering")).toBe(true);
   });
 
@@ -37,6 +37,7 @@ describe("PublicContentListScreen", () => {
 
     expect(findText(element, "Demo mode")).toBe(true);
     expect(findText(element, "Open Evening")).toBe(true);
+    expect(findText(element, "View Details ›")).toBe(true);
     pressable?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith(
       "PublicEventDetail",

@@ -1,4 +1,6 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import type { ReactNode } from "react";
+import { StyleSheet, View } from "react-native";
 import type { MobileProviderSession, MobileProviderSignIn } from "./mobile-provider-sign-in.js";
 import { fallbackPublicCandidateRequestResponse } from "./public-candidate-request.js";
 import type { MobileLaunchState } from "./navigation.js";
@@ -27,6 +29,7 @@ import { PublicContentListScreen } from "./screens/PublicContentListScreen.js";
 import { PublicHomeScreen } from "./screens/PublicHomeScreen.js";
 import { PublicSilentPrayerScreen } from "./screens/PublicSilentPrayerScreen.js";
 import { SignInScreen } from "./screens/SignInScreen.js";
+import { PublicBottomNav } from "./screens/shared/PublicBottomNav.js";
 
 export interface MobilePublicSurfaceProps {
   route: PublicRoute;
@@ -62,7 +65,7 @@ export function MobilePublicSurface({
   });
 
   if (route === "AboutOrder") {
-    return (
+    return renderPublicShell(
       <AboutOrderScreen
         screen={buildAboutOrderScreen({
           state: publicContent.aboutOrderState,
@@ -70,12 +73,14 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "PublicPrayerCategories") {
-    return (
+    return renderPublicShell(
       <PublicContentListScreen
         screen={buildPublicPrayerCategoriesScreen({
           state: publicContent.publicPrayersState,
@@ -83,12 +88,14 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "PublicEventsList") {
-    return (
+    return renderPublicShell(
       <PublicContentListScreen
         screen={buildPublicEventsListScreen({
           state: publicContent.publicEventsState,
@@ -96,12 +103,14 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "PublicSilentPrayer") {
-    return (
+    return renderPublicShell(
       <PublicSilentPrayerScreen
         screen={buildPublicSilentPrayerScreen({
           state: publicContent.publicSilentPrayerState,
@@ -112,12 +121,14 @@ export function MobilePublicSurface({
         onAction={(action) => {
           void publicContent.handlePublicAction(action);
         }}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "PublicPrayerDetail") {
-    return (
+    return renderPublicShell(
       <PublicContentDetailScreen
         screen={buildPublicPrayerDetailScreen({
           state: publicContent.publicPrayerDetailState,
@@ -125,12 +136,14 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "PublicEventDetail") {
-    return (
+    return renderPublicShell(
       <PublicContentDetailScreen
         screen={buildPublicEventDetailScreen({
           state: publicContent.publicEventDetailState,
@@ -138,12 +151,14 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "JoinRequestForm") {
-    return (
+    return renderPublicShell(
       <JoinRequestFormScreen
         screen={buildJoinRequestFormScreen({
           state: publicForms.joinRequestState,
@@ -158,12 +173,14 @@ export function MobilePublicSurface({
           void publicForms.handleJoinRequestSubmit();
         }}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "Login") {
-    return (
+    return renderPublicShell(
       <SignInScreen
         screen={buildSignInScreen({
           state: publicForms.signInState,
@@ -174,21 +191,25 @@ export function MobilePublicSurface({
           void publicForms.handleSignInSubmit();
         }}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "IdleApproval") {
-    return (
+    return renderPublicShell(
       <IdleApprovalScreen
         screen={buildIdleApprovalScreen({ launchState })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
   if (route === "JoinRequestConfirmation") {
-    return (
+    return renderPublicShell(
       <JoinRequestConfirmationScreen
         screen={buildJoinRequestConfirmationScreen({
           state: "ready",
@@ -199,14 +220,41 @@ export function MobilePublicSurface({
           runtimeMode
         })}
         onNavigate={publicContent.handlePublicRoute}
-      />
+      />,
+      route,
+      onRouteChange
     );
   }
 
-  return (
+  return renderPublicShell(
     <PublicHomeScreen
       screen={buildPublicHomeScreen(launchState)}
       onNavigate={publicContent.handlePublicRoute}
-    />
+    />,
+    route,
+    onRouteChange
   );
 }
+
+function renderPublicShell(
+  screen: ReactNode,
+  route: PublicRoute,
+  onRouteChange: (route: PublicRoute) => void
+) {
+  return (
+    <View style={styles.publicShell}>
+      <View style={styles.publicScreenSlot}>{screen}</View>
+      <PublicBottomNav activeRoute={route} onNavigate={onRouteChange} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  publicShell: {
+    flex: 1
+  },
+  publicScreenSlot: {
+    flex: 1,
+    paddingBottom: 74
+  }
+});
