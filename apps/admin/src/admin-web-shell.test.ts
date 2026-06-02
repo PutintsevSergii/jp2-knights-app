@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   fallbackAdminAnnouncements,
+  fallbackAdminAuditLogs,
   fallbackAdminCandidateRequestDetails,
   fallbackAdminCandidateProfiles,
   fallbackAdminDashboard,
@@ -78,6 +79,39 @@ describe("admin web shell", () => {
       method: "GET",
       headers: { cookie: "jp2_session=session_1" }
     });
+  });
+
+  it("preserves audit-log query filters on mounted admin routes", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(fallbackAdminAuditLogs)
+      })
+    );
+
+    const response = await renderAdminWebRequest(
+      {
+        path: "/admin/audit-logs?entityType=candidate_request&limit=10&ignored=true",
+        headers: {
+          authorization: "Bearer token_1"
+        }
+      },
+      {
+        runtimeMode: "api",
+        baseUrl: "https://api.example.test",
+        fetchImpl
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/audit-logs?limit=10&entityType=candidate_request",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("mounts the identity access review route", async () => {

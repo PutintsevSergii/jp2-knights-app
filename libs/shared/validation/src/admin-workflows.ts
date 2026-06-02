@@ -146,6 +146,30 @@ export const adminDashboardResponseSchema = z.object({
 
 const auditSummaryValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
+export const adminAuditLogListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).default(50),
+    offset: z.coerce.number().int().min(0).max(5000).default(0),
+    action: z.string().trim().min(1).max(160).optional(),
+    entityType: z.string().trim().min(1).max(120).optional(),
+    actorUserId: z.uuid().optional(),
+    entityId: z.uuid().optional(),
+    scopeOrganizationUnitId: z.uuid().optional(),
+    createdFrom: z.iso.datetime().optional(),
+    createdTo: z.iso.datetime().optional()
+  })
+  .strict()
+  .refine(
+    (query) =>
+      !query.createdFrom ||
+      !query.createdTo ||
+      new Date(query.createdFrom).getTime() <= new Date(query.createdTo).getTime(),
+    {
+      path: ["createdTo"],
+      message: "createdTo must be after or equal to createdFrom."
+    }
+  );
+
 export const adminAuditLogSummarySchema = z.object({
   id: z.uuid(),
   actorUserId: z.uuid().nullable(),
@@ -161,7 +185,12 @@ export const adminAuditLogSummarySchema = z.object({
 });
 
 export const adminAuditLogListResponseSchema = z.object({
-  auditLogs: z.array(adminAuditLogSummarySchema)
+  auditLogs: z.array(adminAuditLogSummarySchema),
+  pagination: z.object({
+    limit: z.number().int().min(1).max(100),
+    offset: z.number().int().min(0).max(5000),
+    total: z.number().int().min(0)
+  })
 });
 
 export const identityAccessReviewStatusSchema = z.enum([
@@ -247,6 +276,7 @@ export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidate
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;
 export type AdminDashboardResponseDto = z.infer<typeof adminDashboardResponseSchema>;
 export type AdminAuditLogSummaryDto = z.infer<typeof adminAuditLogSummarySchema>;
+export type AdminAuditLogListQueryDto = z.infer<typeof adminAuditLogListQuerySchema>;
 export type AdminAuditLogListResponseDto = z.infer<typeof adminAuditLogListResponseSchema>;
 export type AdminIdentityAccessReviewSummaryDto = z.infer<
   typeof adminIdentityAccessReviewSummarySchema

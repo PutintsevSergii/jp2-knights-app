@@ -38,7 +38,7 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | GET/PATCH      | `/admin/roadmap-submissions/:id`           | Officer/Super Admin      | approve/reject/comment            | submission                 | 403,404,409 | Decision audited                                               |
 | GET/POST       | `/admin/silent-prayer-events`              | Officer/Super Admin      | session payload                   | list/detail                | 403,400     | Participant lists hidden; audit summaries redact intention     |
 | PATCH          | `/admin/silent-prayer-events/:id`          | Officer/Super Admin      | edit/lifecycle payload            | detail                     | 403,404     | Scope required; no participant/session identity                |
-| GET            | `/admin/audit-logs`                        | Super Admin              | filters/pagination                | logs                       | 403         | Limited officer view only if approved                          |
+| GET            | `/admin/audit-logs`                        | Super Admin              | filters/pagination                | logs + pagination          | 403,400     | Server-side filters; redacted summaries only                    |
 
 ## Admin Validation Rules
 
@@ -47,6 +47,26 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - Officer writes must use assigned organization units unless super admin.
 - Mutations that create records accept an optional `idempotencyKey`.
 - Critical mutations record before/after summaries with sensitive fields redacted.
+
+## Implemented Audit Log Rules
+
+- `GET /admin/audit-logs` requires Super Admin access. Officers and Idle users
+  are denied before audit rows load.
+- Supported query filters are `limit`, `offset`, `action`, `entityType`,
+  `actorUserId`, `entityId`, `scopeOrganizationUnitId`, `createdFrom`, and
+  `createdTo`. Date bounds must be chronological.
+- Responses include redacted before/after summaries, actor display name, entity,
+  scope, request id, timestamp, and pagination metadata with the exact filtered
+  total. Raw IP addresses, actor email, nested JSON, and unredacted source
+  payloads are not returned.
+- Mounted Admin Lite audit-log web and Next routes preserve only the supported
+  audit-log query keys before forwarding requests to the API client.
+- The mounted Admin Lite audit-log screen renders the supported query fields as
+  a GET filter form and retains active values across ready, empty, and error
+  states.
+- The same screen renders Previous/Next pagination links from response
+  pagination metadata, uses the server total to decide whether a next page
+  exists, and preserves active filter parameters in page links.
 
 ## Implemented Dashboard Rules
 

@@ -17,14 +17,23 @@ describe("admin audit logs API client", () => {
       fetchAdminAuditLogs({
         baseUrl: "https://api.example.test",
         authToken: "token_1",
+        query: {
+          limit: 10,
+          offset: 20,
+          entityType: "candidate_request",
+          createdFrom: "2026-05-01T00:00:00.000Z"
+        },
         fetchImpl
       })
     ).resolves.toEqual(fallbackAdminAuditLogs);
 
-    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/audit-logs", {
-      method: "GET",
-      headers: { authorization: "Bearer token_1" }
-    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/audit-logs?limit=10&offset=20&entityType=candidate_request&createdFrom=2026-05-01T00%3A00%3A00.000Z",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("maps non-OK responses", async () => {

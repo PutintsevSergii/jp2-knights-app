@@ -4,6 +4,7 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import type { AdminAuditRepository } from "./admin-audit.repository.js";
 import { AdminAuditService } from "./admin-audit.service.js";
+import type { AdminAuditLogListQuery } from "./admin-audit.types.js";
 
 const superAdmin: CurrentUserPrincipal = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -36,10 +37,16 @@ const idleUser: CurrentUserPrincipal = {
 };
 
 describe("AdminAuditService", () => {
-  it("returns latest redacted audit logs for Super Admins only", async () => {
+  it("returns filtered redacted audit logs for Super Admins only", async () => {
     const repository = auditRepository();
+    const query = auditQuery({
+      action: "admin.prayer.create",
+      entityType: "prayer"
+    });
 
-    await expect(new AdminAuditService(repository).listAuditLogs(superAdmin)).resolves.toEqual({
+    await expect(
+      new AdminAuditService(repository).listAuditLogs(superAdmin, query)
+    ).resolves.toEqual({
       auditLogs: [
         {
           id: "55555555-5555-4555-8555-555555555555",
@@ -57,55 +64,73 @@ describe("AdminAuditService", () => {
           requestId: "req_123",
           createdAt: "2026-05-27T08:00:00.000Z"
         }
-      ]
+      ],
+      pagination: {
+        limit: 25,
+        offset: 10,
+        total: 42
+      }
     });
-    expect(repository.calls).toBe(1);
+    expect(repository.calls).toEqual([query]);
   });
 
   it("blocks officers before loading audit rows", async () => {
     const repository = auditRepository();
 
-    await expect(new AdminAuditService(repository).listAuditLogs(officer)).rejects.toBeInstanceOf(
-      ForbiddenException
-    );
-    expect(repository.calls).toBe(0);
+    await expect(
+      new AdminAuditService(repository).listAuditLogs(officer, auditQuery())
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.calls).toEqual([]);
   });
 
   it("blocks idle users with the approval-required code before loading audit rows", async () => {
     const repository = auditRepository();
 
-    await expect(new AdminAuditService(repository).listAuditLogs(idleUser)).rejects.toMatchObject({
+    await expect(
+      new AdminAuditService(repository).listAuditLogs(idleUser, auditQuery())
+    ).rejects.toMatchObject({
       response: {
         code: IDLE_APPROVAL_REQUIRED_CODE
       }
     });
-    expect(repository.calls).toBe(0);
+    expect(repository.calls).toEqual([]);
   });
 });
 
-function auditRepository(): AdminAuditRepository & { calls: number } {
+function auditQuery(overrides: Partial<AdminAuditLogListQuery> = {}): AdminAuditLogListQuery {
   return {
-    calls: 0,
-    listLatest() {
-      this.calls += 1;
-      return Promise.resolve([
-        {
-          id: "55555555-5555-4555-8555-555555555555",
-          actorUserId: superAdmin.id,
-          actorDisplayName: "Demo Admin",
-          action: "admin.prayer.create",
-          entityType: "prayer",
-          entityId: "66666666-6666-4666-8666-666666666666",
-          scopeOrganizationUnitId: null,
-          beforeSummary: null,
-          afterSummary: {
-            title: "Morning Prayer",
-            status: "published"
-          },
-          requestId: "req_123",
-          createdAt: "2026-05-27T08:00:00.000Z"
-        }
-      ]);
+    limit: 25,
+    offset: 10,
+    ...overrides
+  };
+}
+
+function auditRepository(): AdminAuditRepository & { calls: AdminAuditLogListQuery[] } {
+  return {
+    calls: [],
+    list(query) {
+      this.calls.push(query);
+      return Promise.resolve({
+        auditLogs: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            actorUserId: superAdmin.id,
+            actorDisplayName: "Demo Admin",
+            action: "admin.prayer.create",
+            entityType: "prayer",
+            entityId: "66666666-6666-4666-8666-666666666666",
+            scopeOrganizationUnitId: null,
+            beforeSummary: null,
+            afterSummary: {
+              title: "Morning Prayer",
+              status: "published"
+            },
+            requestId: "req_123",
+            createdAt: "2026-05-27T08:00:00.000Z"
+          }
+        ],
+        total: 42
+      });
     }
   };
 }

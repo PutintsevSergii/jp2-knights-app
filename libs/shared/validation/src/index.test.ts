@@ -6,6 +6,8 @@ import {
   adminCandidateProfileErasureResponseSchema,
   adminCandidateProfileExportResponseSchema,
   adminCandidateProfileListResponseSchema,
+  adminAuditLogListQuerySchema,
+  adminAuditLogListResponseSchema,
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
   adminCandidateRequestErasureResponseSchema,
@@ -929,6 +931,66 @@ describe("shared validation", () => {
         tasks: [{ ...response.tasks[0], targetRoute: "/admin/brothers" }]
       }).success
     ).toBe(false);
+  });
+
+  it("validates admin audit log filters and redacted paginated responses", () => {
+    expect(
+      adminAuditLogListQuerySchema.parse({
+        limit: "25",
+        offset: "10",
+        action: "admin.candidateRequest.erase",
+        entityType: "candidate_request",
+        actorUserId: "11111111-1111-4111-8111-111111111111",
+        entityId: "22222222-2222-4222-8222-222222222222",
+        scopeOrganizationUnitId: "33333333-3333-4333-8333-333333333333",
+        createdFrom: "2026-05-01T00:00:00.000Z",
+        createdTo: "2026-05-31T23:59:59.000Z"
+      })
+    ).toEqual({
+      limit: 25,
+      offset: 10,
+      action: "admin.candidateRequest.erase",
+      entityType: "candidate_request",
+      actorUserId: "11111111-1111-4111-8111-111111111111",
+      entityId: "22222222-2222-4222-8222-222222222222",
+      scopeOrganizationUnitId: "33333333-3333-4333-8333-333333333333",
+      createdFrom: "2026-05-01T00:00:00.000Z",
+      createdTo: "2026-05-31T23:59:59.000Z"
+    });
+    expect(adminAuditLogListQuerySchema.parse({})).toEqual({ limit: 50, offset: 0 });
+    expect(
+      adminAuditLogListQuerySchema.safeParse({
+        createdFrom: "2026-06-01T00:00:00.000Z",
+        createdTo: "2026-05-01T00:00:00.000Z"
+      }).success
+    ).toBe(false);
+
+    const response = {
+      auditLogs: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          actorUserId: null,
+          actorDisplayName: null,
+          action: "system.cleanup",
+          entityType: "device_token",
+          entityId: "55555555-5555-4555-8555-555555555555",
+          scopeOrganizationUnitId: null,
+          beforeSummary: null,
+          afterSummary: {
+            revoked: true
+          },
+          requestId: null,
+          createdAt: "2026-05-27T08:00:00.000Z"
+        }
+      ],
+      pagination: {
+        limit: 25,
+        offset: 10,
+        total: 73
+      }
+    };
+
+    expect(adminAuditLogListResponseSchema.parse(response)).toEqual(response);
   });
 
   it("validates candidate dashboard profile, next step, and safe event visibility", () => {

@@ -4,7 +4,7 @@ import { renderAdminWebRequest } from "./admin-web-shell.js";
 export async function renderAdminNextRoute(request: Request, path: string): Promise<Response> {
   const rendered = await renderAdminWebRequest(
     {
-      path,
+      path: pathWithRequestQuery(path, request),
       headers: headersFromRequest(request)
     },
     {
@@ -20,6 +20,12 @@ export async function renderAdminNextRoute(request: Request, path: string): Prom
     status: rendered.statusCode,
     headers: rendered.headers
   });
+}
+
+function pathWithRequestQuery(path: string, request: Request): string {
+  const query = new URL(request.url).search;
+
+  return query ? `${path}${query}` : path;
 }
 
 function headersFromRequest(request: Request): Record<string, string> {

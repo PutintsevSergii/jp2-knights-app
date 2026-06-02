@@ -37,11 +37,20 @@ export const adminAuditLogSummaryOpenApiSchema = {
 
 export const adminAuditLogListResponseOpenApiSchema = {
   type: "object",
-  required: ["auditLogs"],
+  required: ["auditLogs", "pagination"],
   properties: {
     auditLogs: {
       type: "array",
       items: adminAuditLogSummaryOpenApiSchema
+    },
+    pagination: {
+      type: "object",
+      required: ["limit", "offset", "total"],
+      properties: {
+        limit: { type: "integer", minimum: 1, maximum: 100 },
+        offset: { type: "integer", minimum: 0, maximum: 5000 },
+        total: { type: "integer", minimum: 0 }
+      }
     }
   }
 };

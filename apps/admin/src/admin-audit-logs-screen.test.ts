@@ -28,13 +28,51 @@ describe("admin audit logs screen model", () => {
     expect(
       buildAdminAuditLogListScreen({
         state: "ready",
-        response: { auditLogs: [] },
+        response: { auditLogs: [], pagination: { limit: 50, offset: 0, total: 0 } },
         runtimeMode: "demo"
       })
     ).toMatchObject({
       state: "empty",
       demoChromeVisible: true
     });
+  });
+
+  it("builds audit filter fields with defaults and active filter state", () => {
+    const screen = buildAdminAuditLogListScreen({
+      state: "ready",
+      response: fallbackAdminAuditLogs,
+      runtimeMode: "api",
+      filters: {
+        action: "admin.prayer.create",
+        limit: "10",
+        offset: "0"
+      }
+    });
+
+    expect(screen.hasActiveFilters).toBe(true);
+    expect(screen.filters).toEqual([
+      { name: "action", label: "Action", value: "admin.prayer.create" },
+      { name: "entityType", label: "Entity type", value: "" },
+      { name: "actorUserId", label: "Actor user ID", value: "" },
+      { name: "entityId", label: "Entity ID", value: "" },
+      {
+        name: "scopeOrganizationUnitId",
+        label: "Scope organization unit ID",
+        value: ""
+      },
+      { name: "createdFrom", label: "Created from", value: "" },
+      { name: "createdTo", label: "Created to", value: "" },
+      { name: "limit", label: "Limit", value: "10" },
+      { name: "offset", label: "Offset", value: "0" }
+    ]);
+
+    expect(
+      buildAdminAuditLogListScreen({
+        state: "ready",
+        response: fallbackAdminAuditLogs,
+        runtimeMode: "api"
+      }).hasActiveFilters
+    ).toBe(false);
   });
 
   it("uses safe fallbacks for system actors and missing summaries", () => {
@@ -55,7 +93,12 @@ describe("admin audit logs screen model", () => {
             requestId: null,
             createdAt: "2026-05-27T08:00:00.000Z"
           }
-        ]
+        ],
+        pagination: {
+          limit: 50,
+          offset: 0,
+          total: 1
+        }
       },
       runtimeMode: "api"
     });

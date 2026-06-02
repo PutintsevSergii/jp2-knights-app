@@ -33,6 +33,7 @@ export async function renderAdminWebRequest(
   request: AdminWebRequest,
   options: AdminWebShellOptions = {}
 ): Promise<AdminWebResponse> {
+  const url = new URL(request.path, "http://admin.local");
   const path = normalizeAdminPath(request.path);
   const runtimeMode =
     options.runtimeMode ?? parseRuntimeMode(undefined, { nodeEnv: options.nodeEnv });
@@ -46,6 +47,7 @@ export async function renderAdminWebRequest(
   const authCookie = cookieFromHeaders(request.headers);
   const rendered = await route.render({
     path,
+    query: queryFromSearchParams(url.searchParams),
     runtimeMode,
     canWrite: options.canWrite ?? false,
     ...(authToken ? { authToken } : {}),
@@ -63,6 +65,16 @@ export async function renderAdminWebRequest(
       runtimeMode
     })
   };
+}
+
+function queryFromSearchParams(searchParams: URLSearchParams): Record<string, string> {
+  const query: Record<string, string> = {};
+
+  searchParams.forEach((value, key) => {
+    query[key] = value;
+  });
+
+  return query;
 }
 
 export function startAdminWebServer(options: AdminWebShellOptions & { port?: number } = {}) {

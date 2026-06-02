@@ -3,6 +3,7 @@ import type { AdminContentFetch } from "./admin-content-api.js";
 
 export interface AdminWebRouteContext {
   path: string;
+  query: Readonly<Record<string, string>>;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
   authToken?: string;

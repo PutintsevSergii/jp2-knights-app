@@ -33,7 +33,12 @@ export const fallbackAdminAuditLogs: AdminAuditLogListResponseDto = {
       requestId: "req_demo_audit",
       createdAt: "2026-05-27T08:00:00.000Z"
     }
-  ]
+  ],
+  pagination: {
+    limit: 50,
+    offset: 0,
+    total: 1
+  }
 };
 
 export const fallbackAdminDashboard: AdminDashboardResponseDto = {

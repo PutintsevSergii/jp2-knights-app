@@ -65,7 +65,7 @@ describe("Next admin dashboard route scaffold", () => {
     vi.stubGlobal("fetch", fetchImpl);
 
     const response = await getAuditLogs(
-      new Request("https://admin.example.test/admin/audit-logs", {
+      new Request("https://admin.example.test/admin/audit-logs?action=admin.prayer.create&limit=5", {
         headers: {
           authorization: "Bearer token_1"
         }
@@ -76,10 +76,13 @@ describe("Next admin dashboard route scaffold", () => {
     expect(response.status).toBe(200);
     expect(body).toContain("admin.silentPrayerEvent.update");
     expect(body).toContain('href="/admin/audit-logs" aria-current="page"');
-    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/audit-logs", {
-      method: "GET",
-      headers: { authorization: "Bearer token_1" }
-    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/admin/audit-logs?limit=5&action=admin.prayer.create",
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
   });
 
   it("reuses the current dashboard API client and bearer forwarding in API mode", async () => {
