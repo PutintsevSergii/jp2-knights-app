@@ -32,7 +32,7 @@ Exact durations are configured per deployment after legal review. The implementa
 
 | Bucket | Typical records | Required capability |
 | --- | --- | --- |
-| Short-lived | Anonymous silent prayer presence, transient rate-limit state | Automatic expiry through Redis TTL or cleanup job |
+| Short-lived | Anonymous silent prayer presence, transient rate-limit state | Automatic expiry through Redis TTL, RTDB `expiresAt` cleanup, or cleanup job |
 | Short-lived technical | Authenticated silent prayer participation identifiers | Automatic purge or anonymization after the configured reconnect/operational window |
 | Operational | Device tokens, notification preferences, session records | Revoke/delete when obsolete |
 | Community record | Membership, officer assignments, published content | Archive instead of hard delete |

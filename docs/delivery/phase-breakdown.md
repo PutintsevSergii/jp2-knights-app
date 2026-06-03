@@ -34,9 +34,12 @@ enough that infrastructure inputs are known. The expected sequence is:
    tasks, and Terraform plan current.
 2. Late Phase 12 or Phase 13 entry: add local Dockerfiles and container smoke
    checks if they help validate runtime assumptions.
-3. Phase 13: implement Terraform, Cloud Run, Cloud SQL, Memorystore Redis,
-   Secret Manager, migration jobs, custom-domain guidance, backup restore
-   checks, and pilot deployment runbooks.
+3. Phase 13: implement Terraform, Cloud Run, Cloud SQL, the selected
+   silent-prayer realtime provider, Secret Manager, migration jobs,
+   custom-domain guidance, backup restore checks, and pilot deployment runbooks.
+   The planned pilot default is Firebase RTDB for silent-prayer aggregate
+   counts; provision Memorystore Redis only if the Redis/Socket.IO fallback
+   remains selected after the RTDB migration slice is tested.
 
 Do not let deployment implementation displace remaining Phase 12 privacy,
 content approval, retention, or security work unless the human owner explicitly

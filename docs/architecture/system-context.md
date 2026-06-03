@@ -10,7 +10,7 @@ flowchart TD
   Mobile --> API["Backend API"]
   Admin --> API
   API --> DB["PostgreSQL"]
-  API --> Cache["Redis"]
+  API --> Realtime["Redis / Firebase RTDB realtime provider"]
   API --> Push["Push Notification Provider"]
   API --> Email["Optional Email Provider"]
 ```
@@ -23,11 +23,10 @@ flowchart TD
 | Admin Lite | Scoped officer/super admin operations |
 | Backend API | Authentication, authorization, domain logic, visibility filtering |
 | PostgreSQL | Durable V1 data |
-| Redis | Real-time silent prayer presence and transient counters |
+| Realtime provider | Implemented Redis path for silent-prayer presence and transient counters; planned Firebase RTDB aggregate-count provider for pilot cost reduction |
 | Push Provider | Authenticated notification delivery |
 | Optional Email Provider | Candidate invitation and admin notifications if selected |
 
 ## Future Integrations
 
 Future integrations such as payments, maps, document stores, official hierarchy systems, or analytics must remain outside V1 unless explicitly approved.
-

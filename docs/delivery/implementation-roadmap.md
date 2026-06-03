@@ -15,7 +15,7 @@ This roadmap mirrors `JP2_APP_IMPLEMENTATION_ROADMAP.md` and must be followed un
 | 8     | Brother companion core                  | Daily brother utility                                                                                                                | Today, profile, assigned organization units                                                                                                |
 | 9     | Events/announcements/push               | Community coordination                                                                                                               | Participation intent, announcements, push prefs                                                                                            |
 | 10    | Design/RBAC alignment + Formation roadmap | Bring approved V1 Figma Gold/Grey screens and role-state UI into launch shape, then implement human-reviewed formation                | Figma token extraction, mobile shell split, dedicated member screens, responsive Admin Lite parity, RBAC state QA, localization foundation, roadmap definitions, assignments, submissions, review |
-| 11    | Silent online prayer                    | Aggregate real-time prayer                                                                                                           | Sessions, sockets, Redis presence                                                                                                          |
+| 11    | Silent online prayer                    | Aggregate real-time prayer                                                                                                           | Sessions, sockets, implemented Redis presence, planned RTDB cost-reduction provider                                                        |
 | 12    | Privacy/security/audit/content approval | Pilot safety                                                                                                                         | privacy controls, audit logs, approval, retention/export/erasure support                                                                   |
 | 13    | Release hardening/pilot                 | Real pilot readiness                                                                                                                 | seed data, launch-readiness wrap-up, Google Cloud Docker/Terraform deployment foundation, restore test, support runbook, scenario validation |
 
@@ -28,8 +28,12 @@ V2 backlog items are not part of the default V1 phase plan. If there is a strong
 Google Cloud deployment belongs near the end of implementation. Keep the
 deployment plan and environment/secrets matrix current while Phase 12
 privacy/security/content-approval hardening is in progress, then implement
-Dockerfiles, Terraform, Cloud Run services, Cloud SQL, Memorystore Redis,
-Secret Manager wiring, migration jobs, and deployment smoke checks as Phase 13
-pilot-readiness work. Starting infrastructure implementation earlier is allowed
-only for local container smoke checks or if the human owner explicitly asks for
-a staging deployment before Phase 12 stabilizes.
+Dockerfiles, Terraform, Cloud Run services, Cloud SQL, the selected
+silent-prayer realtime provider, Secret Manager wiring, migration jobs, and
+deployment smoke checks as Phase 13 pilot-readiness work. The planned pilot
+default is Firebase RTDB for silent-prayer aggregate counts to avoid
+Memorystore idle cost; provision Memorystore Redis only if the Redis/Socket.IO
+fallback remains selected after the RTDB migration slice is tested. Starting
+infrastructure implementation earlier is allowed only for local container smoke
+checks or if the human owner explicitly asks for a staging deployment before
+Phase 12 stabilizes.

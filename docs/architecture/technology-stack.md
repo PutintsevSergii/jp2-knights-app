@@ -59,7 +59,7 @@ This stack is selected for long-term maintainability, typed contracts, strong pr
 | Authorization   | Central RBAC and scope guards                                                                                                       |
 | Database access | Prisma ORM with explicit, committed migrations                                                                                      |
 | Jobs            | Nest-compatible worker process for notifications, cleanup, and scheduled maintenance                                                |
-| WebSocket       | Socket.IO gateway for silent prayer rooms                                                                                           |
+| WebSocket       | Implemented Socket.IO gateway for silent prayer rooms; planned RTDB mobile listener provider for pilot cost reduction                |
 
 ## Database and Real-Time
 
@@ -70,7 +70,7 @@ This stack is selected for long-term maintainability, typed contracts, strong pr
 | Migrations        | Prisma migrations committed to source; deploy-only in staging/production                                                     |
 | Indexes           | Role/scope/status/visibility/date indexes on all main list paths                                                             |
 | Database security | Service-layer authorization first; PostgreSQL RLS for high-risk tables when transaction claims are implemented safely        |
-| Redis             | Socket.IO adapter, presence keys, heartbeat TTL, lightweight job coordination                                                |
+| Realtime provider | Implemented Redis/Socket.IO adapter and presence TTL keys; planned Firebase RTDB aggregate-count provider behind adapters    |
 | Storage           | No binary uploads in early V1 unless approved; if enabled, use private object storage behind signed, short-lived access URLs |
 
 ## Testing Strategy

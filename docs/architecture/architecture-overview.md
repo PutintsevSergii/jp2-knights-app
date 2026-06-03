@@ -9,7 +9,8 @@ V1 uses three applications and shared libraries inside an Nx monorepo:
   HTTP shell with a Next.js App Router target still available for the full UI;
 - NestJS backend API;
 - PostgreSQL as source of truth;
-- Redis for real-time silent prayer presence and background coordination;
+- implemented Redis path for real-time silent prayer presence; planned Firebase
+  RTDB provider for pilot aggregate-count presence to reduce idle cost;
 - push notification provider for authenticated users.
 - generated OpenAPI/TypeScript contracts shared by mobile, admin, and API.
 - explicit runtime modes so mobile/admin can run against the API or against local demo fixtures.
@@ -19,7 +20,7 @@ flowchart LR
   Mobile["React Native Mobile"] --> API["NestJS API"]
   Admin["Admin Lite Web"] --> API
   API --> PG["PostgreSQL"]
-  API --> Redis["Redis"]
+  API --> Redis["Redis / RTDB realtime provider"]
   API --> Push["Push Provider"]
   API --> Email["Optional Email Provider"]
 ```

@@ -16,8 +16,11 @@ deployment artifacts close to the end of V1:
    production runtime assumptions.
 3. Start Terraform and Google Cloud rollout as Phase 13 pilot-readiness work.
 
-This timing avoids building infrastructure around API, secret, Redis, Firebase,
-or migration assumptions that may still change during hardening.
+This timing avoids building infrastructure around API, secret, realtime
+provider, Firebase, or migration assumptions that may still change during
+hardening. Before provisioning Memorystore for pilot, implement and validate the
+Firebase Realtime Database silent-prayer migration plan so pilot can avoid Redis
+idle cost if aggregate-count realtime behavior passes security and device tests.
 
 ## Target Architecture
 
@@ -26,7 +29,9 @@ flowchart LR
   mobile["Expo Mobile App"] --> api["Cloud Run API"]
   admin["Cloud Run Admin"] --> api
   api --> sql["Cloud SQL PostgreSQL"]
-  api --> redis["Memorystore Redis"]
+  api --> rtdb["Firebase Realtime Database"]
+  api -. fallback .-> redis["Memorystore Redis"]
+  mobile --> rtdb
   api --> firebase["Firebase Authentication"]
   api --> secrets["Secret Manager"]
   api --> logs["Cloud Logging"]
@@ -44,6 +49,7 @@ flowchart LR
 | Repo implementation | Dockerfiles, Terraform modules, scripts, docs, smoke checks | Review and approval |
 | Google Cloud access | Exact commands, validation steps, error triage | Billing, project creation, IAM access, command execution when credentials are required |
 | Firebase | Config docs, app env wiring, API secret names | Firebase project, Google sign-in, OAuth client IDs, authorized domains |
+| Silent-prayer realtime | RTDB provider plan, rules, API/mobile adapter work, tests, rollback docs | Approve cost/security tradeoff and Firebase database creation |
 | DNS/domains | Terraform/DNS instructions and validation checks | Domain ownership, DNS provider updates |
 | Secrets | Secret names, templates, safe setter scripts | Real secret values |
 | Launch approval | Readiness checklist and rollback runbook | Legal/content/privacy approval and final launch decision |
@@ -58,6 +64,9 @@ Agent deliverables:
 - Produce final environment and secret list.
 - Confirm whether staging and pilot production are separate projects.
 - Confirm migration strategy and rollback assumptions.
+- Confirm the selected silent-prayer realtime provider. Default pilot target is
+  Firebase RTDB after the migration slice passes; Redis/Memorystore remains the
+  fallback provider if owner accepts the idle cost.
 
 Human tasks:
 

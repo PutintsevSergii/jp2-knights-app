@@ -22,6 +22,7 @@ infra/terraform/
     cloud-run-service/
     cloud-run-job/
     cloud-sql-postgres/
+    firebase-realtime-database/
     memorystore-redis/
     secret-manager/
     service-accounts/
@@ -31,11 +32,12 @@ infra/terraform/
 
 | Resource group | Purpose |
 | --- | --- |
-| Project services | Enable Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, Cloud Build, Redis/Memorystore APIs |
+| Project services | Enable Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, Cloud Build, Firebase/RTDB, and Redis/Memorystore APIs only when the selected realtime provider needs them |
 | Service accounts | Separate identities for API, Admin, migration job, and CI/deploy |
 | Artifact Registry | Store API and Admin container images |
 | Cloud SQL PostgreSQL | Production database |
-| Memorystore Redis | Silent-prayer presence and Socket.IO adapter support |
+| Firebase Realtime Database | Planned pilot silent-prayer aggregate-count provider to avoid Memorystore idle cost |
+| Memorystore Redis | Current silent-prayer presence and Socket.IO adapter support; provision for pilot only if `SILENT_PRAYER_REALTIME_PROVIDER=redis-socket` remains selected |
 | Secret Manager | Secret shells and IAM access to deployed services |
 | Cloud Run API service | NestJS REST/Socket.IO API |
 | Cloud Run Admin service | Next.js Admin Lite |
@@ -56,6 +58,8 @@ admin_image      = "REGION-docker.pkg.dev/PROJECT/jp2/admin:TAG"
 api_public_url   = "https://api.example.org"
 admin_public_url = "https://admin.example.org"
 firebase_project_id = "firebase-project-id"
+firebase_database_url = "https://firebase-project-id-default-rtdb.region.firebasedatabase.app"
+silent_prayer_realtime_provider = "firebase-rtdb"
 ```
 
 ## State And Secrets Rules
@@ -98,6 +102,12 @@ The first implementation milestone should create:
 - Secret Manager secret shells;
 - placeholder Cloud Run services that reference already-built images.
 
-Cloud SQL, Redis, migration job, and domain mapping can follow in the second
-Terraform milestone if we want smaller, easier-to-review commits.
+Cloud SQL, the selected silent-prayer realtime provider, migration job, and
+domain mapping can follow in the second Terraform milestone if we want smaller,
+easier-to-review commits.
 
+Before implementing the Memorystore module for pilot, implement and verify the
+Firebase RTDB silent-prayer migration plan in
+[realtime-db-silent-prayer-migration-plan.md](realtime-db-silent-prayer-migration-plan.md).
+The pilot Terraform path should not create Memorystore Redis by default once the
+RTDB provider is passing tests and device smoke checks.

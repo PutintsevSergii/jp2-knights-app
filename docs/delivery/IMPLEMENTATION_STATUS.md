@@ -25,7 +25,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **10**    | 🟡 IN PROGRESS | 94%      | ███████████████████░ | V1 Figma/RBAC alignment started; mobile shell split complete; Figma cache, Gold/Grey tokens, Google/Firebase auth-entry styling/session bridge/Expo adapter, latest Google Stitch role-aware mobile homes for anonymous guest/candidate/brother/Idle approval, Candidate Events list/detail, Candidate Announcements, Brother Today, Brother Events, Brother Event Detail, Brother Announcements, Brother Prayer Library, Organization Unit Detail, responsive Admin Lite Candidate Requests, Phase 10B localization foundation, roadmap data/contracts, candidate/brother roadmap read APIs/screen models, brother roadmap submission API and mobile flow, realistic multi-scope roadmap seed/load fixtures, Admin Lite roadmap review workflow, Super Admin read-only roadmap definition inspection, Super Admin roadmap assignment inspection, Super Admin roadmap assignment creation API/client/rendered form support, roadmap assignment/submission/definition localization cleanup, and SOLID/Clean Architecture aggregation cleanup complete | Phase 10 wrap-up / Phase 12 |
 | **11**    | ✅ COMPLETE    | 100%     | ████████████████████ | Silent-prayer event table/migration/fixtures, public and brother REST list/join contracts, Redis-shaped presence boundary, deterministic in-memory store, Socket.IO namespace/gateway, Redis-backed presence store, Socket.IO Redis adapter, production Redis fail-fast config, Admin Lite silent-prayer event management API/audit workflow, mobile public/brother silent-prayer REST list/join screens, mobile Socket.IO heartbeat/leave/reconnect client, and duplicate-join/reconnect/TTL/scope/socket/Redis/admin/mobile tests                                                             | Phase 12 privacy/security    |
 | **12**    | 🟡 IN PROGRESS | 52%      | ██████████░░░░░░░░░░ | Super Admin audit-log API with shared filters/pagination and exact filtered totals, mounted Admin Lite query pass-through, visible audit filter form and pagination links, Admin Lite audit review route/client validation, candidate request personal-data export, candidate profile personal-data export, candidate request legal erasure, candidate profile legal erasure for candidate-only users, self-service device-token revocation, content publish approval enforcement for prayer/event/announcement/silent-prayer content, Admin Lite approval-before-publish action workflow including silent-prayer list route, and typed lifecycle mutation helpers started                                                                                                                                                                                | Continue retention/export/content approval hardening |
-| **13**    | ⏳ PENDING     | 3%       | █░░░░░░░░░░░░░░░░░░░ | Pilot readiness planning started with Google Cloud launch docs, Terraform plan, environment/secrets matrix, manual owner task split, and workflow timing that keeps Docker/Terraform implementation near the end of V1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Implement Docker/Terraform foundation after Phase 12 |
+| **13**    | ⏳ PENDING     | 4%       | █░░░░░░░░░░░░░░░░░░░ | Pilot readiness planning started with Google Cloud launch docs, Terraform plan, environment/secrets matrix, manual owner task split, workflow timing that keeps Docker/Terraform implementation near the end of V1, and Firebase Realtime Database silent-prayer migration plan to remove Memorystore idle cost while preserving API-owned authorization                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Implement RTDB silent-prayer cost-reduction slice before Memorystore Terraform |
 
 ---
 
@@ -395,7 +395,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 | **10** | Figma/RBAC Alignment + Formation Roadmap | 🟡 In progress | Current         |
 | **11** | Silent Online Prayer                     | ✅ Complete    | Completed May 26 |
 | **12** | Privacy/Security/Audit                   | 🟡 In progress | Started May 27  |
-| **13** | Release Hardening & Pilot                | ⏳ Not started | After Phase 12  |
+| **13** | Release Hardening & Pilot                | ⏳ Not started | After Phase 12; RTDB cost-reduction slice queued |
 
 ---
 
@@ -433,7 +433,7 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 
 **Exit criteria**: ✅ Event persistence, public/brother REST presence, Socket.IO gateway, Redis wiring, admin workflow, mobile REST session screens, and mobile socket heartbeat/leave/reconnect behavior complete
 
-**Next step**: Start Phase 12 privacy/security/audit/content approval hardening
+**Next step**: Continue Phase 12 privacy/security/audit/content approval hardening, then implement the documented Firebase RTDB silent-prayer cost-reduction slice before provisioning Memorystore for pilot.
 
 ### Phase 12: Privacy/Security/Audit/Content Approval 🟡
 
@@ -723,6 +723,8 @@ Synchronization rule: Update this dashboard whenever traceability.md is updated
 - [x] Replace remaining Phase 10B roadmap definition user-facing copy with localization keys while preserving approved content loaded from content tables
 - [x] Queue Phase 11 Redis TTL/reconnect/duplicate-join/multi-instance tests for silent prayer before implementing realtime sockets
 - [x] Add Google Cloud launch planning docs with owner/agent role split, environment/secrets matrix, manual Firebase/GCP tasks, Terraform implementation plan, and workflow placement near Phase 13 after Phase 12 hardening stabilizes
+- [x] Document the next silent-prayer cost-reduction slice: Firebase Realtime Database aggregate-count provider with API-owned authorization, deny-by-default rules, private read grants, hashed participant keys, REST heartbeat/leave contracts, provider-neutral adapters, mobile listener port, rollout, rollback, and test gates
+- [ ] Implement the Firebase RTDB silent-prayer provider before pilot Memorystore/Terraform work: keep Redis/Socket.IO as a fallback provider, add API heartbeat/leave contracts, add RTDB rules/tests, switch mobile realtime through a provider-neutral client, and verify aggregate-only public/brother counts on a device
 - [ ] Possible improvement after existing items: prepare the Cloud Run + Cloud SQL low-cost deployment optimization slice by adding a Redis read-aside cache module/decorators, caching the identified high-traffic read paths, hardening Prisma pool/retry/shutdown behavior, moving production migrations to a standalone Cloud Run Job, and keeping readiness checks shallow on `/api/health`
 
 ### Medium Term (Next 5–10 commits)
@@ -824,4 +826,4 @@ Every week (or per phase):
 
 **Last Updated**: June 2, 2026
 **Current Phase**: Phase 10 Figma/RBAC alignment and Formation Roadmap remains in progress; Phase 11 realtime foundation is complete; Phase 12 privacy/audit hardening is in progress; Phases 0–9 complete
-**Next Major Milestone**: Continue Phase 12 retention/content approval hardening, then implement the documented Google Cloud Docker/Terraform foundation during Phase 13 pilot readiness.
+**Next Major Milestone**: Continue Phase 12 retention/content approval hardening, implement the Firebase RTDB silent-prayer cost-reduction slice, then build the Google Cloud Docker/Terraform foundation during Phase 13 pilot readiness.
