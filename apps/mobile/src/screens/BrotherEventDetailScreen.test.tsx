@@ -26,7 +26,7 @@ describe("BrotherEventDetailScreen", () => {
     findPressableByLabel(element, "Cancel intent")?.props.onPress?.();
     findPressableByLabel(element, "Brother Events")?.props.onPress?.();
     findPressableByLabel(element, "Prayer")?.props.onPress?.();
-    findPressableByLabel(element, "Account")?.props.onPress?.();
+    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "cancel-participation",
@@ -46,7 +46,7 @@ describe("BrotherEventDetailScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "profile",
-      label: "Account",
+      label: "Profile",
       targetRoute: "BrotherProfile"
     });
   });

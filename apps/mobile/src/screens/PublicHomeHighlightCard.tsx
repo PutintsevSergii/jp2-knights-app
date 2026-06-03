@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { PublicRoute, PublicScreenAction, PublicScreenSection } from "../public-screens.js";
+import { MaterialSymbol } from "./shared/MaterialSymbol.js";
 
 export interface PublicHomeHighlightCardProps {
   section: PublicScreenSection;
@@ -25,16 +26,24 @@ export function PublicHomeHighlightCard({
       onPress={() => (action ? onNavigate?.(action.targetRoute) : undefined)}
       style={[styles.root, isEvent ? styles.eventRoot : undefined]}
     >
-      {isEvent ? (
-        <View style={styles.eventDate}>
-          <Text style={styles.eventDateMonth}>Soon</Text>
-          <Text style={styles.eventDateDay}>--</Text>
-        </View>
-      ) : null}
       <View style={styles.content}>
-        <Text style={styles.title}>{section.title}</Text>
+        <View style={styles.titleRow}>
+          <MaterialSymbol name={isEvent ? "event" : "wb_sunny"} size={22} />
+          <Text style={styles.title}>{section.title}</Text>
+          {isEvent ? (
+            <View style={styles.eventBadge}>
+              <Text style={styles.eventBadgeText}>Family Open</Text>
+            </View>
+          ) : null}
+        </View>
         <Text style={[styles.body, isEvent ? styles.eventBody : undefined]}>{section.body}</Text>
-        {action && !isEvent ? <Text style={styles.link}>Read Full</Text> : null}
+        {isEvent ? (
+          <View style={styles.metaRow}>
+            <MaterialSymbol name="info" size={18} color={colors.text.subdued} />
+            <Text style={styles.metaText}>Guests may attend</Text>
+          </View>
+        ) : null}
+        {action ? <Text style={styles.link}>{isEvent ? "View Details" : "Read Prayer"}</Text> : null}
       </View>
     </Pressable>
   );
@@ -53,40 +62,22 @@ const styles = StyleSheet.create({
     padding: designTokens.space[4]
   },
   eventRoot: {
-    alignItems: "center",
     backgroundColor: colors.background.surface,
-    flexDirection: "row",
-    gap: designTokens.space[4],
-    minHeight: 96
-  },
-  eventDate: {
-    alignItems: "center",
-    backgroundColor: colors.brand.linen,
-    borderRadius: designTokens.radius.lg,
-    minWidth: 70,
-    paddingHorizontal: designTokens.space[3],
-    paddingVertical: designTokens.space[3]
-  },
-  eventDateMonth: {
-    color: colors.brand.goldDark,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.compactLabel
-  },
-  eventDateDay: {
-    color: colors.text.primary,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.cardTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.cardTitle
+    minHeight: 148
   },
   content: {
     flex: 1,
     gap: designTokens.space[2]
   },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.space[2]
+  },
   title: {
     color: colors.text.primary,
+    flexShrink: 1,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.cardTitle,
     fontWeight: designTokens.typography.weight.bold,
@@ -99,12 +90,31 @@ const styles = StyleSheet.create({
     lineHeight: designTokens.typography.lineHeight.body
   },
   eventBody: {
-    backgroundColor: colors.brand.linen,
+    color: colors.text.subdued
+  },
+  eventBadge: {
+    backgroundColor: colors.action.secondary,
     borderRadius: designTokens.radius.pill,
-    color: colors.text.subdued,
-    overflow: "hidden",
-    paddingHorizontal: designTokens.space[3],
+    paddingHorizontal: designTokens.space[2],
     paddingVertical: designTokens.space[1]
+  },
+  eventBadgeText: {
+    color: colors.text.inverse,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: 10,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: 12
+  },
+  metaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: designTokens.space[2]
+  },
+  metaText: {
+    color: colors.text.subdued,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
   link: {
     color: colors.brand.goldDark,

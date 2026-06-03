@@ -23,14 +23,14 @@ describe("BrotherPrayersScreen", () => {
       /participant|attendee|tracking|complete|roster|chat|comment/i
     );
 
-    findPressableByLabel(element, "Dashboard")?.props.onPress?.();
+    findPressableByLabel(element, "Home")?.props.onPress?.();
     findPressableByLabel(element, "Events")?.props.onPress?.();
-    findPressableByLabel(element, "Choragiew")?.props.onPress?.();
-    findPressableByLabel(element, "Account")?.props.onPress?.();
+    findPressableByLabel(element, "Formation")?.props.onPress?.();
+    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "today",
-      label: "Dashboard",
+      label: "Home",
       targetRoute: "BrotherToday"
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
@@ -40,12 +40,12 @@ describe("BrotherPrayersScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
       id: "organization-units",
-      label: "Choragiew",
+      label: "Formation",
       targetRoute: "MyOrganizationUnits"
     });
     expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "profile",
-      label: "Account",
+      label: "Profile",
       targetRoute: "BrotherProfile"
     });
   });

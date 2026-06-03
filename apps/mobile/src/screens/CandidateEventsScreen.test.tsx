@@ -43,10 +43,10 @@ describe("CandidateEventsScreen", () => {
       targetId: fallbackCandidateEvents.events[0]!.id
     });
 
-    expect(findPressableByLabel(element, "Dashboard")?.props.disabled).toBeUndefined();
+    expect(findPressableByLabel(element, "Home")?.props.disabled).toBeUndefined();
     expect(findPressableByLabel(element, "Prayer")?.props.disabled).toBe(true);
-    expect(findPressableByLabel(element, "Choragiew")?.props.disabled).toBe(true);
-    expect(findPressableByLabel(element, "Account")?.props.disabled).toBe(true);
+    expect(findPressableByLabel(element, "Formation")?.props.disabled).toBe(true);
+    expect(findPressableByLabel(element, "Profile")?.props.disabled).toBe(true);
   });
 });
 

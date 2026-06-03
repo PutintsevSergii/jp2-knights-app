@@ -24,7 +24,7 @@ describe("BrotherSilentPrayerScreen", () => {
     expect(findText(element, "Your choragiew")).toBe(true);
 
     findPressableByLabel(element, "Refresh Counter")?.props.onPress?.();
-    findPressableByLabel(element, "Dashboard")?.props.onPress?.();
+    findPressableByLabel(element, "Home")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "join-silent-prayer",
@@ -34,7 +34,7 @@ describe("BrotherSilentPrayerScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "today",
-      label: "Dashboard",
+      label: "Home",
       targetRoute: "BrotherToday"
     });
   });

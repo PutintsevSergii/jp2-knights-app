@@ -34,7 +34,8 @@ describe("AboutOrderScreen", () => {
     expect(findText(element, "Demo mode")).toBe(true);
     expect(pressable).toBeDefined();
     pressable?.props.onPress?.();
-    expect(onNavigate).toHaveBeenCalledWith("JoinRequestForm");
+    expect(onNavigate).toHaveBeenCalledWith("PublicHome");
+    expect(onNavigate).not.toHaveBeenCalledWith("JoinRequestForm");
   });
 });
 

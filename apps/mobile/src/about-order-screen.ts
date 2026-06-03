@@ -49,11 +49,6 @@ export function buildAboutOrderScreen(options: BuildAboutOrderScreenOptions): Ab
     ],
     actions: [
       {
-        id: "join",
-        label: "Join",
-        targetRoute: "JoinRequestForm"
-      },
-      {
         id: "home",
         label: "Home",
         targetRoute: "PublicHome"

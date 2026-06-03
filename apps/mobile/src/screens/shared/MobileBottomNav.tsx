@@ -5,6 +5,7 @@ import { MobileBottomNavItem } from "./MobileBottomNavItem.js";
 export interface MobileBottomNavEntry {
   id: string;
   label: string;
+  icon?: string | undefined;
   active: boolean;
   disabled?: boolean | undefined;
   onPress?: (() => void) | undefined;
@@ -21,6 +22,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
         <MobileBottomNavItem
           key={item.id}
           label={item.label}
+          icon={item.icon}
           active={item.active}
           disabled={item.disabled}
           onPress={item.onPress}

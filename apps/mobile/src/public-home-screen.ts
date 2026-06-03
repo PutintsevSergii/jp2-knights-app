@@ -37,6 +37,8 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
     return stateOnlyPublicHome("empty", launchState.demoChromeVisible);
   }
 
+  const isAnonymousGuest = !launchState.idleApproval;
+
   return {
     route: "PublicHome",
     state: launchState.state,
@@ -48,11 +50,13 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
     ],
     actions: [
       ...(launchState.idleApproval ? [idleApprovalAction] : []),
-      ...publicHome.ctas.map((cta) => ({
-        id: cta.id,
-        label: cta.label,
-        targetRoute: toPublicRoute(cta.targetRoute)
-      }))
+      ...publicHome.ctas
+        .map((cta) => ({
+          id: cta.id,
+          label: cta.label,
+          targetRoute: toPublicRoute(cta.targetRoute)
+        }))
+        .filter((action) => isAnonymousGuest || action.targetRoute !== "JoinRequestForm")
     ],
     demoChromeVisible: launchState.demoChromeVisible,
     theme: publicScreenTheme

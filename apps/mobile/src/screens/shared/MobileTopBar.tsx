@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
-import { MenuIcon } from "./MenuIcon.js";
+import { MaterialSymbol } from "./MaterialSymbol.js";
 
 export interface MobileTopBarProps {
   title: string;
@@ -11,7 +11,9 @@ export interface MobileTopBarProps {
 export function MobileTopBar({ title, avatarText, tone = "default" }: MobileTopBarProps) {
   return (
     <View style={styles.root}>
-      <MenuIcon />
+      <View style={styles.iconButton}>
+        <MaterialSymbol name="menu" size={24} />
+      </View>
       <Text style={[styles.brand, tone === "gold" ? styles.brandGold : styles.brandDefault]}>
         {title}
       </Text>
@@ -30,10 +32,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.app,
     borderBottomColor: colors.border.chrome,
     borderBottomWidth: 1,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     flexDirection: "row",
-    height: 56,
+    height: 64,
     justifyContent: "space-between",
-    paddingHorizontal: designTokens.space[6]
+    paddingHorizontal: designTokens.space[4]
+  },
+  iconButton: {
+    alignItems: "center",
+    borderRadius: designTokens.radius.pill,
+    height: 40,
+    justifyContent: "center",
+    width: 40
   },
   brand: {
     flex: 1,
@@ -41,7 +52,7 @@ const styles = StyleSheet.create({
     fontSize: 21,
     fontWeight: designTokens.typography.weight.bold,
     lineHeight: 28,
-    marginLeft: designTokens.space[6]
+    marginLeft: designTokens.space[4]
   },
   brandDefault: {
     color: colors.text.primary

@@ -25,8 +25,9 @@ describe("PublicHomeScreen", () => {
 
     expect(findText(element, "Demo mode")).toBe(true);
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Daily Prayers")).toBe(true);
-    expect(findText(element, "Upcoming Events")).toBe(true);
+    expect(findText(element, "Prayer, fraternity, and formation")).toBe(true);
+    expect(findText(element, "Morning Office Intention")).toBe(true);
+    expect(findText(element, "The Path to Membership")).toBe(true);
     expect(joinButton).toBeDefined();
     expect(aboutCard).toBeDefined();
 
@@ -105,16 +106,13 @@ describe("PublicHomeScreen", () => {
     });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Daily Prayers")).toBe(true);
-    expect(findText(element, "Upcoming Events")).toBe(true);
+    expect(findText(element, "Prayer, fraternity, and formation")).toBe(true);
+    expect(findText(element, "Morning Office Intention")).toBe(true);
+    expect(findText(element, "The Path to Membership")).toBe(true);
     expect(findText(element, "About the Order")).toBe(true);
     expect(findText(element, "Prayer Library")).toBe(true);
-    expect(findText(element, "Discover our mission and history.")).toBe(true);
-    expect(findText(element, "Access spiritual resources.")).toBe(true);
-    expect(findText(element, "Calendar of gatherings.")).toBe(true);
-    expect(findText(element, "Join a live aggregate prayer count.")).toBe(true);
-    expect(findText(element, "Member access.")).toBe(true);
-    expect(findText(element, "Read Full")).toBe(true);
+    expect(findText(element, "Read Prayer")).toBe(true);
+    expect(findText(element, "View Details")).toBe(true);
 
     findElementByAccessibilityLabel(element, "Prayer of the Day")?.props.onPress?.();
     findElementByAccessibilityLabel(element, "Public Family Event")?.props.onPress?.();

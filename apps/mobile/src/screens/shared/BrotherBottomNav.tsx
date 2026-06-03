@@ -29,7 +29,8 @@ export function BrotherBottomNav({
       items={[
         {
           id: "dashboard",
-          label: "Dashboard",
+          label: "Home",
+          icon: "home",
           active: active === "dashboard",
           onPress:
             active === "dashboard"
@@ -37,13 +38,14 @@ export function BrotherBottomNav({
               : () =>
                   onAction?.({
                     id: "today",
-                    label: "Dashboard",
+                    label: "Home",
                     targetRoute: "BrotherToday"
                   })
         },
         {
           id: "events",
           label: "Events",
+          icon: "calendar_month",
           active: active === "events",
           onPress:
             active === "events" && !eventsAction
@@ -60,6 +62,7 @@ export function BrotherBottomNav({
         {
           id: "prayer",
           label: "Prayer",
+          icon: "auto_stories",
           active: active === "prayer",
           onPress:
             active === "prayer"
@@ -75,11 +78,13 @@ export function BrotherBottomNav({
           ? {
               id: "announcements",
               label: "News",
+              icon: "campaign",
               active: active === "announcements"
             }
           : {
               id: "choragiew",
-              label: "Choragiew",
+              label: "Formation",
+              icon: "menu_book",
               active: active === "choragiew",
               onPress:
                 active === "choragiew" && !choragiewAction
@@ -89,13 +94,14 @@ export function BrotherBottomNav({
                     : () =>
                         onAction?.({
                           id: "organization-units",
-                          label: "Choragiew",
+                          label: "Formation",
                           targetRoute: "MyOrganizationUnits"
                         })
             },
         {
           id: "account",
-          label: "Account",
+          label: "Profile",
+          icon: "person",
           active: active === "account",
           onPress:
             active === "account"
@@ -103,7 +109,7 @@ export function BrotherBottomNav({
               : () =>
                   onAction?.({
                     id: "profile",
-                    label: "Account",
+                    label: "Profile",
                     targetRoute: "BrotherProfile"
                   })
         }

@@ -50,14 +50,7 @@ export function buildSignInScreen(options: BuildSignInScreenOptions): SignInScre
         body: "Google verifies identity through Firebase. Private app access still depends on the local JP2 approval state."
       }
     ],
-    actions: [
-      {
-        id: "create-account",
-        label: "Create Account",
-        targetRoute: "JoinRequestForm"
-      },
-      homeAction
-    ],
+    actions: [homeAction],
     demoChromeVisible: options.runtimeMode === "demo",
     theme: publicScreenTheme
   };

@@ -3,6 +3,12 @@
 
 > **See also:** [Functional Requirements](../product/functional-requirements.md) | [Screen Structure & UX Design](02-screen-structure-ux-design.md)
 
+> **Current Stitch prompt:** Use
+> [07-google-stitch-main-screen-redesign-prompt.md](07-google-stitch-main-screen-redesign-prompt.md)
+> for the next role-aware anonymous/candidate/brother main-screen redesign. This
+> older prompt remains as historical coverage for the broader mockup package and
+> should not override the Stitch Ecclesia palette now used by public mobile.
+
 **This prompt generates visual mockups for the screens defined in [02-screen-structure-ux-design.md](02-screen-structure-ux-design.md).** Each screen maps to a Functional Requirement (FR-###) for requirements verification.
 
 ---
@@ -434,4 +440,3 @@ Once mockups are created:
 - [ ] Text has sufficient contrast
 - [ ] Images have alt text
 - [ ] Icons have labels or tooltips
-

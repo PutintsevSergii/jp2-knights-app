@@ -239,6 +239,7 @@ describe("mobile public screen models", () => {
     });
     expect(screen.actions.map((action) => action.targetRoute)).toContain("AboutOrder");
     expect(screen.actions.map((action) => action.targetRoute)).toContain("IdleApproval");
+    expect(screen.actions.map((action) => action.targetRoute)).not.toContain("JoinRequestForm");
     expect(screen.sections.at(0)).toEqual({
       id: "identity-approval",
       title: "Account Approval Pending",
@@ -316,11 +317,6 @@ describe("mobile public screen models", () => {
       }
     ]);
     expect(screen.actions).toEqual([
-      {
-        id: "join",
-        label: "Join",
-        targetRoute: "JoinRequestForm"
-      },
       {
         id: "home",
         label: "Home",

@@ -5,6 +5,7 @@ import type { PublicHomeScreen as PublicHomeScreenModel } from "../public-screen
 import { PublicHomeHighlightCard } from "./PublicHomeHighlightCard.js";
 import { PublicHomeQuickActionCard } from "./PublicHomeQuickActionCard.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { MaterialSymbol } from "./shared/MaterialSymbol.js";
 
 export interface PublicHomeScreenProps {
   screen: PublicHomeScreenModel;
@@ -13,10 +14,12 @@ export interface PublicHomeScreenProps {
 
 export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) {
   const joinAction = screen.actions.find((action) => action.targetRoute === "JoinRequestForm");
-  const aboutAction = screen.actions.find((action) => action.targetRoute === "AboutOrder");
   const prayerSections = screen.sections.filter((section) => section.id.includes("prayer"));
   const eventSections = screen.sections.filter((section) => section.id.includes("event"));
   const quickActions = orderedPublicActions(screen.actions);
+  const silentPrayerAction = screen.actions.find(
+    (action) => action.targetRoute === "PublicSilentPrayer"
+  );
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
@@ -28,21 +31,59 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
 
         <View style={styles.appHeader}>
           <Pressable accessibilityLabel="Menu" accessibilityRole="button" style={styles.headerIcon}>
-            <Text style={styles.headerIconText}>≡</Text>
+            <MaterialSymbol name="menu" size={24} />
           </Pressable>
           <Text style={styles.headerTitle}>JP2 Knights</Text>
           <Pressable
-            accessibilityLabel="Member profile"
+            accessibilityLabel="Sign in"
             accessibilityRole="button"
             style={styles.headerAvatar}
+            onPress={() => onNavigate?.("Login")}
           >
-            <Text style={styles.headerAvatarText}>J</Text>
+            <MaterialSymbol name="login" size={22} />
           </Pressable>
         </View>
 
+        <View style={styles.todayStrip}>
+          <Text style={styles.todayDate}>Wednesday, June 3</Text>
+          <Text style={styles.todayTitle}>Memorial of Saint Charles Lwanga and Companions</Text>
+          <View style={styles.chipRow}>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>Ordinary Time</Text>
+            </View>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>Memorial</Text>
+            </View>
+            <View style={styles.redChip}>
+              <Text style={styles.redChipText}>Red</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.hero}>
-          <Text style={styles.title}>{screen.title}</Text>
+          <View style={styles.heroWash} />
+          <Text style={styles.title}>Prayer, fraternity, and formation</Text>
           <Text style={styles.heroBody}>{screen.body}</Text>
+          <View style={styles.heroActions}>
+            {joinAction ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Request to Join"
+                onPress={() => onNavigate?.("JoinRequestForm")}
+                style={styles.primaryHeroButton}
+              >
+                <Text style={styles.primaryHeroButtonText}>Request to Join</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sign In"
+              onPress={() => onNavigate?.("Login")}
+              style={styles.secondaryHeroButton}
+            >
+              <Text style={styles.secondaryHeroButtonText}>Sign In</Text>
+            </Pressable>
+          </View>
         </View>
 
         <View style={styles.actionGrid}>
@@ -50,20 +91,13 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
             <PublicHomeQuickActionCard
               key={action.id}
               action={action}
-              featured={action.id === joinAction?.id}
               onNavigate={onNavigate}
-              wide={action.id === aboutAction?.id}
+              wide={false}
             />
           ))}
         </View>
 
-        <View style={styles.dailyPanel}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Text style={styles.sectionIconText}>☼</Text>
-            </View>
-            <Text style={styles.sectionTitle}>Daily Prayers</Text>
-          </View>
+        <View style={styles.moduleGrid}>
           <View style={styles.highlightGrid}>
             {prayerSections.map((section) => (
               <PublicHomeHighlightCard
@@ -74,15 +108,26 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
               />
             ))}
           </View>
-        </View>
 
-        <View style={styles.eventsSection}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.secondarySectionIcon}>
-              <Text style={styles.secondarySectionIconText}>□</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Join Prayer"
+            onPress={() =>
+              silentPrayerAction ? onNavigate?.(silentPrayerAction.targetRoute) : undefined
+            }
+            style={styles.silentPrayerCard}
+          >
+            <View style={styles.moduleTitleRow}>
+              <MaterialSymbol name="candle" size={24} />
+              <Text style={styles.moduleTitle}>Morning Office Intention</Text>
             </View>
-            <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          </View>
+            <View style={styles.counterRow}>
+              <MaterialSymbol name="group" size={20} color={colors.text.subdued} />
+              <Text style={styles.counterText}>18 praying now</Text>
+            </View>
+            <Text style={styles.silentPrayerButton}>Join Prayer</Text>
+          </Pressable>
+
           <View style={styles.eventGrid}>
             {eventSections.map((section) => (
               <PublicHomeHighlightCard
@@ -94,6 +139,22 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
               />
             ))}
           </View>
+        </View>
+
+        <View style={styles.pathPanel}>
+          <Text style={styles.pathTitle}>The Path to Membership</Text>
+          <View style={styles.pathStack}>
+            {["Request", "Officer Review", "Formation Begins"].map((label, index) => (
+              <View key={label} style={styles.pathStep}>
+                <View style={index === 0 ? styles.pathStepActive : styles.pathStepNumber}>
+                  <Text style={styles.pathStepText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.pathStepLabel}>{label}</Text>
+                {index < 2 ? <MaterialSymbol name="arrow_downward" size={18} color={colors.text.subdued} /> : null}
+              </View>
+            ))}
+          </View>
+          <Text style={styles.pathFootnote}>* No guarantee of membership</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -118,11 +179,11 @@ function actionForSection(
 function orderedPublicActions(actions: PublicHomeScreenModel["actions"]) {
   const routeOrder = new Map<PublicScreenAction["targetRoute"], number>([
     ["AboutOrder", 0],
-    ["JoinRequestForm", 1],
-    ["PublicPrayerCategories", 2],
-    ["PublicEventsList", 3],
-    ["Login", 4],
-    ["PublicSilentPrayer", 5],
+    ["PublicPrayerCategories", 1],
+    ["PublicEventsList", 2],
+    ["PublicSilentPrayer", 3],
+    ["JoinRequestForm", 4],
+    ["Login", 5],
     ["IdleApproval", 6]
   ]);
 
@@ -142,17 +203,17 @@ const styles = StyleSheet.create({
     gap: designTokens.space[4],
     padding: designTokens.space[4],
     paddingBottom: 104,
-    paddingTop: designTokens.space[2]
+    paddingTop: 0
   },
   appHeader: {
     alignItems: "center",
     backgroundColor: colors.background.app,
     borderBottomColor: colors.border.chrome,
     borderBottomWidth: 1,
-    borderBottomLeftRadius: designTokens.radius.lg,
-    borderBottomRightRadius: designTokens.radius.lg,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     flexDirection: "row",
-    height: 56,
+    height: 64,
     justifyContent: "space-between",
     marginHorizontal: -designTokens.space[4],
     paddingHorizontal: designTokens.space[4]
@@ -171,13 +232,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 40
   },
-  headerIconText: {
-    color: colors.brand.goldDark,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.sectionTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle
-  },
   headerAvatar: {
     alignItems: "center",
     backgroundColor: colors.background.surface,
@@ -188,25 +242,86 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 40
   },
-  headerAvatarText: {
+  todayStrip: {
+    alignItems: "center",
+    gap: designTokens.space[2],
+    paddingTop: designTokens.space[4]
+  },
+  todayDate: {
     color: colors.text.subdued,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
+    fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.secondary
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
+  todayTitle: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.semibold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle,
+    textAlign: "center"
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.space[2],
+    justifyContent: "center"
+  },
+  chip: {
+    backgroundColor: colors.brand.linen,
+    borderRadius: designTokens.radius.pill,
+    paddingHorizontal: designTokens.space[3],
+    paddingVertical: designTokens.space[1]
+  },
+  chipText: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
+  },
+  redChip: {
+    backgroundColor: colors.background.surface,
+    borderColor: colors.status.danger,
+    borderRadius: designTokens.radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: designTokens.space[3],
+    paddingVertical: designTokens.space[1]
+  },
+  redChipText: {
+    color: colors.status.danger,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
   hero: {
     alignItems: "center",
-    gap: designTokens.space[2],
-    paddingHorizontal: designTokens.space[2],
-    paddingVertical: designTokens.space[6]
+    backgroundColor: colors.brand.linen,
+    borderColor: colors.border.soft,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    overflow: "hidden",
+    padding: designTokens.space[6]
+  },
+  heroWash: {
+    backgroundColor: colors.brand.gold,
+    bottom: 0,
+    left: 0,
+    opacity: 0.08,
+    position: "absolute",
+    right: 0,
+    top: 0
   },
   title: {
-    color: colors.brand.goldDark,
+    color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.sectionTitle,
+    fontSize: designTokens.typography.size.screenTitle,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle,
+    lineHeight: designTokens.typography.lineHeight.screenTitle,
     textAlign: "center"
   },
   heroBody: {
@@ -216,71 +331,163 @@ const styles = StyleSheet.create({
     lineHeight: designTokens.typography.lineHeight.body,
     textAlign: "center"
   },
+  heroActions: {
+    gap: designTokens.space[3],
+    width: "100%"
+  },
+  primaryHeroButton: {
+    alignItems: "center",
+    backgroundColor: colors.brand.gold,
+    borderRadius: designTokens.radius.pill,
+    paddingVertical: designTokens.space[3]
+  },
+  primaryHeroButtonText: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
+  secondaryHeroButton: {
+    alignItems: "center",
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.pill,
+    borderWidth: 1,
+    paddingVertical: designTokens.space[3]
+  },
+  secondaryHeroButtonText: {
+    color: colors.brand.goldDark,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
   actionGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: designTokens.space[3]
   },
-  sectionHeader: {
+  moduleGrid: {
+    gap: designTokens.space[3]
+  },
+  moduleTitleRow: {
     alignItems: "center",
     flexDirection: "row",
     gap: designTokens.space[2]
   },
-  sectionIcon: {
+  moduleTitle: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle
+  },
+  silentPrayerCard: {
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.soft,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[4]
+  },
+  counterRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: designTokens.space[2]
+  },
+  counterText: {
+    color: colors.text.subdued,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    lineHeight: designTokens.typography.lineHeight.secondary
+  },
+  silentPrayerButton: {
+    backgroundColor: colors.brand.linen,
+    borderRadius: designTokens.radius.pill,
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    overflow: "hidden",
+    paddingHorizontal: designTokens.space[4],
+    paddingVertical: designTokens.space[2],
+    textAlign: "center",
+    textTransform: "uppercase"
+  },
+  highlightGrid: {
+    gap: designTokens.space[3]
+  },
+  eventGrid: {
+    gap: designTokens.space[2]
+  },
+  pathPanel: {
+    alignItems: "center",
+    backgroundColor: colors.brand.linen,
+    borderColor: colors.border.soft,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: designTokens.space[4],
+    padding: designTokens.space[6]
+  },
+  pathTitle: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle,
+    textAlign: "center"
+  },
+  pathStack: {
+    alignItems: "center",
+    gap: designTokens.space[2]
+  },
+  pathStep: {
+    alignItems: "center",
+    gap: designTokens.space[2]
+  },
+  pathStepActive: {
     alignItems: "center",
     backgroundColor: colors.brand.gold,
     borderRadius: designTokens.radius.pill,
-    height: 32,
+    height: 40,
     justifyContent: "center",
-    width: 32
+    width: 40
   },
-  sectionIconText: {
-    color: colors.brand.goldDeep,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.body
-  },
-  secondarySectionIcon: {
+  pathStepNumber: {
     alignItems: "center",
     backgroundColor: colors.background.surface,
     borderColor: colors.border.soft,
     borderRadius: designTokens.radius.pill,
     borderWidth: 1,
-    height: 32,
+    height: 40,
     justifyContent: "center",
-    width: 32
+    width: 40
   },
-  secondarySectionIconText: {
-    color: colors.brand.goldDark,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.body
-  },
-  sectionTitle: {
+  pathStepText: {
     color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.sectionTitle,
+    fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle
+    lineHeight: designTokens.typography.lineHeight.compactLabel
   },
-  dailyPanel: {
-    backgroundColor: colors.brand.linen,
-    borderColor: colors.border.soft,
-    borderRadius: designTokens.radius.lg,
-    borderWidth: 1,
-    gap: designTokens.space[4],
-    padding: designTokens.space[4]
+  pathStepLabel: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.secondary,
+    textAlign: "center"
   },
-  highlightGrid: {
-    gap: designTokens.space[3]
-  },
-  eventsSection: {
-    gap: designTokens.space[3]
-  },
-  eventGrid: {
-    gap: designTokens.space[2],
-    paddingHorizontal: designTokens.space[1]
+  pathFootnote: {
+    color: colors.text.subdued,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontStyle: "italic",
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textAlign: "center"
   }
 });

@@ -1,7 +1,9 @@
-import { designTokens } from "@jp2/shared-design-tokens";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { designTokens } from "@jp2/shared-design-tokens";
 import type { IdleApprovalScreen as IdleApprovalScreenModel } from "../public-screens.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { MaterialSymbol } from "./shared/MaterialSymbol.js";
+import { MobileTopBar } from "./shared/MobileTopBar.js";
 
 export interface IdleApprovalScreenProps {
   screen: IdleApprovalScreenModel;
@@ -11,136 +13,178 @@ export interface IdleApprovalScreenProps {
 export function IdleApprovalScreen({ screen, onNavigate }: IdleApprovalScreenProps) {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-      >
-        {screen.demoChromeVisible ? <DemoModeBanner /> : null}
+      <View style={styles.root}>
+        <MobileTopBar title="JP2 Knights" avatarText="ID" tone="gold" />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+          {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
-        <View style={styles.header}>
-          <View style={styles.logo}>
-            <Text style={styles.logoCross}>JP2</Text>
-          </View>
-          <Text style={[styles.title, { color: screen.theme.text }]}>{screen.title}</Text>
-          <Text style={[styles.body, { color: screen.theme.mutedText }]}>{screen.body}</Text>
-        </View>
-
-        <View style={styles.formCard}>
-          {screen.sections.map((section) => (
-            <View key={section.id} style={styles.statusSection}>
-              <Text style={[styles.sectionTitle, { color: screen.theme.text }]}>
-                {section.title}
-              </Text>
-              <Text style={[styles.body, { color: screen.theme.mutedText }]}>{section.body}</Text>
+          <View style={styles.statusPanel}>
+            <View style={styles.statusIcon}>
+              <MaterialSymbol name="hourglass_empty" size={32} color={colors.text.primary} />
             </View>
-          ))}
-        </View>
-
-        <View style={styles.footer}>
-          {screen.actions.map((action) => (
+            <Text style={styles.title}>{screen.title}</Text>
+            <Text style={styles.body}>{screen.body}</Text>
             <Pressable
-              key={action.id}
               accessibilityRole="button"
-              accessibilityLabel={action.label}
-              onPress={() => onNavigate?.(action.targetRoute)}
-              style={styles.footerAction}
+              accessibilityLabel="Sign Out"
+              style={styles.signOutButton}
             >
-              <Text style={[styles.footerLink, { color: screen.theme.text }]}>{action.label}</Text>
+              <MaterialSymbol name="logout" size={18} color={colors.text.primary} />
+              <Text style={styles.signOutText}>Sign Out</Text>
             </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+          </View>
+
+          <View style={styles.publicActionGrid}>
+            {publicActions().map((action) => (
+              <Pressable
+                key={action.label}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={() => onNavigate?.(action.route)}
+                style={styles.publicActionCard}
+              >
+                <View style={styles.publicActionIcon}>
+                  <MaterialSymbol name={action.icon} size={24} />
+                </View>
+                <Text style={styles.publicActionLabel}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.lockNote}>
+            <MaterialSymbol name="lock" size={16} color={colors.text.subdued} />
+            <Text style={styles.lockNoteText}>
+              Private candidate and brother areas stay locked until approval.
+            </Text>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
+
+function publicActions(): Array<{
+  label: string;
+  route: IdleApprovalScreenModel["actions"][number]["targetRoute"];
+  icon: string;
+}> {
+  return [
+    { label: "Return Home", route: "PublicHome", icon: "home" },
+    { label: "Prayer Library", route: "PublicPrayerCategories", icon: "auto_stories" },
+    { label: "Public Events", route: "PublicEventsList", icon: "calendar_month" }
+  ];
+}
+
+const colors = designTokens.color;
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1
   },
+  root: {
+    flex: 1,
+    backgroundColor: colors.background.app
+  },
   content: {
-    alignItems: "center",
-    gap: 48,
-    paddingHorizontal: 32,
-    paddingVertical: 80
-  },
-  header: {
-    alignItems: "center",
     gap: designTokens.space[4],
-    width: "100%"
+    padding: designTokens.space[4],
+    paddingBottom: 112
   },
-  logo: {
+  statusPanel: {
     alignItems: "center",
-    backgroundColor: designTokens.color.brand.ink,
-    borderRadius: designTokens.radius.lg,
-    height: 80,
-    justifyContent: "center",
-    shadowColor: designTokens.elevation.subtle.color,
-    shadowOffset: {
-      width: designTokens.elevation.subtle.offsetX,
-      height: designTokens.elevation.subtle.offsetY
-    },
-    shadowOpacity: designTokens.elevation.subtle.opacity,
-    shadowRadius: designTokens.elevation.subtle.radius,
-    width: 80
+    backgroundColor: colors.brand.linen,
+    borderColor: colors.border.soft,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[6]
   },
-  logoCross: {
-    color: designTokens.color.brand.gold,
-    fontSize: designTokens.typography.size.sectionTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle
+  statusIcon: {
+    alignItems: "center",
+    backgroundColor: colors.action.secondary,
+    borderRadius: designTokens.radius.pill,
+    height: 64,
+    justifyContent: "center",
+    width: 64
   },
   title: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.display,
-    fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: 0,
-    lineHeight: designTokens.typography.lineHeight.display,
-    textAlign: "center"
-  },
-  body: {
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.regular,
-    lineHeight: designTokens.typography.lineHeight.body,
-    textAlign: "center"
-  },
-  formCard: {
-    backgroundColor: designTokens.color.background.surface,
-    borderColor: designTokens.color.border.subtle,
-    borderRadius: designTokens.radius.lg,
-    borderWidth: 1,
-    gap: 24,
-    padding: 48,
-    shadowColor: designTokens.elevation.subtle.color,
-    shadowOffset: {
-      width: designTokens.elevation.subtle.offsetX,
-      height: designTokens.elevation.subtle.offsetY
-    },
-    shadowOpacity: designTokens.elevation.subtle.opacity,
-    shadowRadius: designTokens.elevation.subtle.radius,
-    width: "100%"
-  },
-  statusSection: {
-    gap: designTokens.space[2]
-  },
-  sectionTitle: {
+    color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.sectionTitle,
-    fontWeight: designTokens.typography.weight.semibold,
+    fontWeight: designTokens.typography.weight.bold,
     lineHeight: designTokens.typography.lineHeight.sectionTitle,
     textAlign: "center"
   },
-  footer: {
-    alignItems: "center",
-    gap: designTokens.space[2]
-  },
-  footerAction: {
-    padding: designTokens.space[1]
-  },
-  footerLink: {
+  body: {
+    color: colors.text.muted,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.body,
     lineHeight: designTokens.typography.lineHeight.body,
-    textDecorationLine: "underline"
+    textAlign: "center"
+  },
+  signOutButton: {
+    alignItems: "center",
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.pill,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: designTokens.space[2],
+    paddingHorizontal: designTokens.space[6],
+    paddingVertical: designTokens.space[3]
+  },
+  signOutText: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
+  publicActionGrid: {
+    gap: designTokens.space[3]
+  },
+  publicActionCard: {
+    alignItems: "center",
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.soft,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[6]
+  },
+  publicActionIcon: {
+    alignItems: "center",
+    backgroundColor: colors.brand.linen,
+    borderRadius: designTokens.radius.pill,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  publicActionLabel: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle,
+    textAlign: "center"
+  },
+  lockNote: {
+    alignItems: "center",
+    backgroundColor: colors.brand.linen,
+    borderRadius: designTokens.radius.lg,
+    flexDirection: "row",
+    gap: designTokens.space[2],
+    justifyContent: "center",
+    padding: designTokens.space[4]
+  },
+  lockNoteText: {
+    color: colors.text.subdued,
+    flex: 1,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontStyle: "italic",
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textAlign: "center"
   }
 });

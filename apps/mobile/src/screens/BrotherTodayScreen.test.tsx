@@ -14,16 +14,16 @@ describe("BrotherTodayScreen", () => {
     const element = BrotherTodayScreen({ screen, onAction });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Good morning, Brother")).toBe(true);
-    expect(findText(element, "Demo Brother")).toBe(true);
+    expect(findTextContaining(element, "Peace, Demo")).toBe(true);
     expect(findText(element, "First Degree")).toBe(true);
-    expect(findText(element, "Upcoming Action")).toBe(true);
+    expect(findText(element, "Today's Focus")).toBe(true);
     expect(findText(element, "Brother Gathering")).toBe(true);
-    expect(findText(element, "Announcements")).toBe(true);
+    expect(findText(element, "Community Board")).toBe(true);
+    expect(findText(element, "Quick Actions")).toBe(true);
 
     findPressableByLabel(element, "Review profile")?.props.onPress?.();
     findPressableByLabel(element, "Open event")?.props.onPress?.();
-    findPressableByLabel(element, "View all brother events")?.props.onPress?.();
+    findPressableByLabel(element, "Join Silent Prayer")?.props.onPress?.();
     findPressableByLabel(element, "Prayer")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
@@ -38,9 +38,9 @@ describe("BrotherTodayScreen", () => {
       targetId: fallbackBrotherToday.upcomingEvents[0]!.id
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
-      id: "view-all-events",
-      label: "View All",
-      targetRoute: "BrotherEvents"
+      id: "join-silent-prayer",
+      label: "Join Silent Prayer",
+      targetRoute: "SilentPrayer"
     });
     expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "prayers",
@@ -58,7 +58,7 @@ describe("BrotherTodayScreen", () => {
 
     expect(findText(element, "Access Denied")).toBe(true);
     expect(findText(element, "An active brother profile is required.")).toBe(true);
-    expect(findText(element, "Good morning, Brother")).toBe(false);
+    expect(findText(element, "Peace, Brother")).toBe(false);
   });
 });
 
@@ -124,6 +124,34 @@ function findText(node: TestNode, text: string): boolean {
   }
 
   return findText(node.props.children, text);
+}
+
+function findTextContaining(node: TestNode, text: string): boolean {
+  const flattened = collectText(node).join("");
+
+  return flattened.includes(text);
+}
+
+function collectText(node: TestNode): string[] {
+  const resolved = resolveElement(node);
+
+  if (resolved !== node) {
+    return collectText(resolved);
+  }
+
+  if (isTestNodeArray(node)) {
+    return node.flatMap((child) => collectText(child));
+  }
+
+  if (typeof node === "string" || typeof node === "number") {
+    return [String(node)];
+  }
+
+  if (!isTestElement(node)) {
+    return [];
+  }
+
+  return collectText(node.props.children);
 }
 
 function isTestElement(node: TestNode): node is TestElement {

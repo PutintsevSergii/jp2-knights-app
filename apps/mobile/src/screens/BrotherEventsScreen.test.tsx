@@ -21,9 +21,9 @@ describe("BrotherEventsScreen", () => {
     expect(findText(element, "No attendee list shown")).toBe(true);
 
     findPressableByLabel(element, "View Details")?.props.onPress?.();
-    findPressableByLabel(element, "Dashboard")?.props.onPress?.();
+    findPressableByLabel(element, "Home")?.props.onPress?.();
     findPressableByLabel(element, "Prayer")?.props.onPress?.();
-    findPressableByLabel(element, "Account")?.props.onPress?.();
+    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "view-event-detail",
@@ -33,7 +33,7 @@ describe("BrotherEventsScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "today",
-      label: "Dashboard",
+      label: "Home",
       targetRoute: "BrotherToday"
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
@@ -43,7 +43,7 @@ describe("BrotherEventsScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(4, {
       id: "profile",
-      label: "Account",
+      label: "Profile",
       targetRoute: "BrotherProfile"
     });
   });

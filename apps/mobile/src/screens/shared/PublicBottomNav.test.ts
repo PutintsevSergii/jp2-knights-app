@@ -13,15 +13,14 @@ describe("PublicBottomNav", () => {
     expect(findText(element, "About")).toBe(true);
     expect(findText(element, "Prayers")).toBe(true);
     expect(findText(element, "Events")).toBe(true);
-    expect(findText(element, "Join")).toBe(true);
+    expect(findText(element, "Join")).toBe(false);
 
     findElementByAccessibilityLabel(element, "Home")?.props.onPress?.();
     findElementByAccessibilityLabel(element, "Prayers")?.props.onPress?.();
-    findElementByAccessibilityLabel(element, "Join")?.props.onPress?.();
 
     expect(onNavigate).toHaveBeenCalledWith("PublicHome");
     expect(onNavigate).toHaveBeenCalledWith("PublicPrayerCategories");
-    expect(onNavigate).toHaveBeenCalledWith("JoinRequestForm");
+    expect(onNavigate).not.toHaveBeenCalledWith("JoinRequestForm");
   });
 
   it("marks detail routes as active under their parent tab", () => {

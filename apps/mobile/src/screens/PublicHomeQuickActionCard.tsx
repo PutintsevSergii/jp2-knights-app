@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { PublicRoute, PublicScreenAction } from "../public-screens.js";
+import { MaterialSymbol } from "./shared/MaterialSymbol.js";
 
 export interface PublicHomeQuickActionCardProps {
   action: PublicScreenAction;
@@ -27,17 +28,15 @@ export function PublicHomeQuickActionCard({
       ]}
     >
       <View style={styles.icon}>
-        <Text style={[styles.iconText, featured ? styles.featuredIconText : undefined]}>
-          {actionIcon(action)}
-        </Text>
+        <MaterialSymbol
+          name={actionIcon(action)}
+          size={24}
+          color={featured ? colors.text.primary : colors.brand.goldDark}
+        />
       </View>
       <Text style={[styles.title, featured ? styles.featuredTitle : undefined]}>
         {friendlyActionLabel(action)}
       </Text>
-      <Text style={[styles.body, featured ? styles.featuredBody : undefined]}>
-        {friendlyActionBody(action)}
-      </Text>
-      <Text style={[styles.arrow, featured ? styles.featuredArrow : undefined]}>›</Text>
     </Pressable>
   );
 }
@@ -52,26 +51,15 @@ function friendlyActionLabel(action: PublicScreenAction): string {
   return action.label;
 }
 
-function friendlyActionBody(action: PublicScreenAction): string {
-  if (action.targetRoute === "AboutOrder") return "Discover our mission and history.";
-  if (action.targetRoute === "PublicPrayerCategories") return "Access spiritual resources.";
-  if (action.targetRoute === "PublicSilentPrayer") return "Join a live aggregate prayer count.";
-  if (action.targetRoute === "PublicEventsList") return "Calendar of gatherings.";
-  if (action.targetRoute === "Login") return "Member access.";
-  if (action.targetRoute === "JoinRequestForm") return "Begin your journey.";
-
-  return "Open this public area.";
-}
-
 function actionIcon(action: PublicScreenAction): string {
-  if (action.targetRoute === "AboutOrder") return "□";
-  if (action.targetRoute === "PublicPrayerCategories") return "◇";
-  if (action.targetRoute === "PublicSilentPrayer") return "○";
-  if (action.targetRoute === "PublicEventsList") return "▣";
-  if (action.targetRoute === "Login") return "↗";
-  if (action.targetRoute === "JoinRequestForm") return "+";
+  if (action.targetRoute === "AboutOrder") return "info";
+  if (action.targetRoute === "PublicPrayerCategories") return "menu_book";
+  if (action.targetRoute === "PublicSilentPrayer") return "self_improvement";
+  if (action.targetRoute === "PublicEventsList") return "event";
+  if (action.targetRoute === "Login") return "login";
+  if (action.targetRoute === "JoinRequestForm") return "add_circle";
 
-  return "•";
+  return "info";
 }
 
 const colors = designTokens.color;
@@ -84,9 +72,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexBasis: "47%",
     flexGrow: 1,
-    gap: designTokens.space[2],
-    minHeight: 126,
-    padding: designTokens.space[3]
+    alignItems: "center",
+    gap: designTokens.space[3],
+    justifyContent: "center",
+    minHeight: 112,
+    padding: designTokens.space[4]
   },
   wideRoot: {
     flexBasis: "100%"
@@ -105,46 +95,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 40
   },
-  iconText: {
-    color: colors.brand.goldDark,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.secondary
-  },
-  featuredIconText: {
-    color: colors.text.primary
-  },
   title: {
     color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.cardTitle,
+    fontSize: designTokens.typography.size.secondary,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.cardTitle
+    lineHeight: designTokens.typography.lineHeight.secondary,
+    textAlign: "center"
   },
   featuredTitle: {
     color: colors.text.primary
-  },
-  body: {
-    color: colors.text.muted,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
-    lineHeight: designTokens.typography.lineHeight.secondary
-  },
-  featuredBody: {
-    color: colors.brand.goldDeep
-  },
-  arrow: {
-    color: colors.text.subdued,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.cardTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.cardTitle,
-    position: "absolute",
-    right: designTokens.space[3],
-    top: designTokens.space[3]
-  },
-  featuredArrow: {
-    color: colors.brand.goldDeep
   }
 });

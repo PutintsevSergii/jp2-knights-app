@@ -61,3 +61,24 @@
   state, handles ready/empty/loading/error/offline/forbidden/idle-approval
   states, and exposes no other brother data, rosters, participant lists, or
   auto-degree behavior.
+
+## Next Main-Screen Redesign Plan
+
+The next Stitch design pass should make `BrotherToday` a daily command center
+instead of a generic dashboard. Prioritize:
+
+- personalized greeting plus current degree and primary choragiew/unit;
+- today's civil date and liturgical day/season/rank/color;
+- one dominant "today's focus" action chosen from formation, silent prayer,
+  upcoming event, or latest announcement;
+- roadmap progress and next step status;
+- prayer of the day or brother-visible recommended prayer;
+- active silent-prayer aggregate counter only;
+- next brother-visible event with current user's own RSVP state only;
+- latest one-way announcement preview;
+- quick actions for Profile, My Choragiew, Prayers, Events, and Roadmap;
+- bottom tabs: Today, Roadmap, Events, Prayers, Profile.
+
+The redesign must not show admin controls, member rosters, attendee lists,
+silent-prayer participant lists, chat, comments, social feeds, or automatic
+degree awarding.

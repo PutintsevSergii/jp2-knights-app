@@ -13,18 +13,21 @@ export function PublicBottomNav({ activeRoute, onNavigate }: PublicBottomNavProp
         {
           id: "home",
           label: "Home",
+          icon: "home",
           active: activeRoute === "PublicHome",
           onPress: activeRoute === "PublicHome" ? undefined : () => onNavigate?.("PublicHome")
         },
         {
           id: "learn",
           label: "About",
+          icon: "info",
           active: activeRoute === "AboutOrder",
           onPress: activeRoute === "AboutOrder" ? undefined : () => onNavigate?.("AboutOrder")
         },
         {
           id: "pray",
           label: "Prayers",
+          icon: "menu_book",
           active:
             activeRoute === "PublicPrayerCategories" ||
             activeRoute === "PublicPrayerDetail" ||
@@ -37,17 +40,10 @@ export function PublicBottomNav({ activeRoute, onNavigate }: PublicBottomNavProp
         {
           id: "events",
           label: "Events",
+          icon: "calendar_month",
           active: activeRoute === "PublicEventsList" || activeRoute === "PublicEventDetail",
           onPress:
             activeRoute === "PublicEventsList" ? undefined : () => onNavigate?.("PublicEventsList")
-        },
-        {
-          id: "join",
-          label: "Join",
-          active:
-            activeRoute === "JoinRequestForm" || activeRoute === "JoinRequestConfirmation",
-          onPress:
-            activeRoute === "JoinRequestForm" ? undefined : () => onNavigate?.("JoinRequestForm")
         }
       ]}
     />

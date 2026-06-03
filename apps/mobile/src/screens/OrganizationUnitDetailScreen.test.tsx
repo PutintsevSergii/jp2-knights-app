@@ -21,8 +21,8 @@ describe("OrganizationUnitDetailScreen", () => {
     expect(JSON.stringify(element)).not.toMatch(/roster|member list|brother list|participant/i);
 
     findPressableByLabel(element, "Back to choragiew")?.props.onPress?.();
-    findPressableByLabel(element, "Dashboard")?.props.onPress?.();
-    findPressableByLabel(element, "Account")?.props.onPress?.();
+    findPressableByLabel(element, "Home")?.props.onPress?.();
+    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "organization-units",
@@ -31,12 +31,12 @@ describe("OrganizationUnitDetailScreen", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "today",
-      label: "Dashboard",
+      label: "Home",
       targetRoute: "BrotherToday"
     });
     expect(onAction).toHaveBeenNthCalledWith(3, {
       id: "profile",
-      label: "Account",
+      label: "Profile",
       targetRoute: "BrotherProfile"
     });
   });

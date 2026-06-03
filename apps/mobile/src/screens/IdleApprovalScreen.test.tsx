@@ -26,11 +26,13 @@ describe("IdleApprovalScreen", () => {
     });
 
     expect(findText(element, "Account Approval Pending")).toBe(true);
-    expect(findTextContaining(element, "Status: pending")).toBe(true);
+    expect(findText(element, "Private candidate and brother areas stay locked until approval.")).toBe(
+      true
+    );
     expect(findText(element, "Demo mode")).toBe(true);
-    expect(JSON.stringify(element)).not.toMatch(/BROTHER|CANDIDATE|membership/i);
+    expect(JSON.stringify(element)).not.toMatch(/"BROTHER"|"CANDIDATE"|membership/i);
 
-    findElementByAccessibilityLabel(element, "Home")?.props.onPress?.();
+    findElementByAccessibilityLabel(element, "Return Home")?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("PublicHome");
   });
 });
@@ -94,28 +96,6 @@ function findText(node: TestNode, text: string): boolean {
   }
 
   return findText(node.props.children, text);
-}
-
-function findTextContaining(node: TestNode, text: string): boolean {
-  const resolved = resolveElement(node);
-
-  if (resolved !== node) {
-    return findTextContaining(resolved, text);
-  }
-
-  if (isTestNodeArray(node)) {
-    return node.some((child) => findTextContaining(child, text));
-  }
-
-  if (typeof node === "string") {
-    return node.includes(text);
-  }
-
-  if (!isTestElement(node)) {
-    return false;
-  }
-
-  return findTextContaining(node.props.children, text);
 }
 
 function isTestElement(node: TestNode): node is TestElement {

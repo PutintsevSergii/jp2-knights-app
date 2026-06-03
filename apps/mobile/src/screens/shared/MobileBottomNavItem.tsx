@@ -1,8 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
+import { MaterialSymbol } from "./MaterialSymbol.js";
 
 export interface MobileBottomNavItemProps {
   label: string;
+  icon?: string | undefined;
   active: boolean;
   disabled?: boolean | undefined;
   onPress?: (() => void) | undefined;
@@ -10,6 +12,7 @@ export interface MobileBottomNavItemProps {
 
 export function MobileBottomNavItem({
   label,
+  icon,
   active,
   disabled,
   onPress
@@ -24,7 +27,16 @@ export function MobileBottomNavItem({
       style={styles.root}
     >
       <View style={[styles.icon, active ? styles.iconActive : styles.iconIdle]}>
-        <View style={[styles.iconMark, active ? styles.iconMarkActive : styles.iconMarkIdle]} />
+        {icon ? (
+          <MaterialSymbol
+            name={icon}
+            fill={active}
+            size={20}
+            color={active ? colors.text.primary : colors.brand.brown}
+          />
+        ) : (
+          <View style={[styles.iconMark, active ? styles.iconMarkActive : styles.iconMarkIdle]} />
+        )}
       </View>
       <Text
         style={[

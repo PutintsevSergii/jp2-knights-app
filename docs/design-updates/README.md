@@ -113,6 +113,20 @@ This directory contains comprehensive **UX/UI design documentation** for the JP2
 7. Brother Events List
 8. Brother Announcements List
 9. Officer Dashboard
+
+### 7. **07-google-stitch-main-screen-redesign-prompt.md**
+**Purpose:** Active Google Stitch prompt for the next role-aware mobile main-screen redesign
+
+**Contents:**
+- Product idea and Stitch Ecclesia design-system guidance
+- Anonymous guest home frame with public-only orientation, today/liturgical-day
+  context, prayer, guest-attendable Order event, join, and sign-in actions
+- Candidate home frame focused on today/liturgical-day context, next formation
+  action, assignment, officer contact, candidate-visible events, and announcements
+- Brother home frame focused on today/liturgical-day context, daily formation,
+  prayer, silent-prayer aggregate, events, announcements, and quick actions
+- Idle approval and officer mobile web-handoff frames
+- Explicit V1 exclusions: no chat, maps, payments, analytics dashboards, rosters, participant lists, or native mobile admin workflows
 10. Create Event Form
 11. Sign In
 12. Candidate Request Form (Multi-step)
@@ -342,6 +356,7 @@ docs/
 │   ├── 01-users-and-roles.md
 │   ├── 02-screen-structure-ux-design.md
 │   ├── 03-google-slides-design-prompt.md
+│   ├── 07-google-stitch-main-screen-redesign-prompt.md
 │   └── assets/
 │       ├── mockups/ (generated designs)
 │       ├── color-palette.png

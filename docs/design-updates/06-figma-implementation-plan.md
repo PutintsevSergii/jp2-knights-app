@@ -1,7 +1,7 @@
 # Figma Design Implementation Plan
 
 Status: Approved V1 scope, in progress
-Last updated: May 9, 2026
+Last updated: June 3, 2026
 
 This document converts the design-update package and the inspected Figma file into a V1 implementation plan. It does not replace the canonical product, RBAC, visibility, or traceability docs.
 
@@ -41,11 +41,15 @@ shadow values.
 
 The existing code has strong API/RBAC foundations through Phase 9, and Phase
 10A has replaced the highest-priority generic member renderers with dedicated
-Gold/Grey React Native screens. The remaining launch UI work is concentrated in
-visual QA, remaining public/admin responsive parity, and Phase 10B roadmap
-contracts:
+Gold/Grey and Google Stitch React Native screens. The remaining launch UI work
+is concentrated in visual QA, remaining public/admin responsive parity, and
+backend DTO gaps for provider-backed daily context:
 
 - Public and selected dashboard screens have React Native screen components.
+- The latest Google Stitch role-aware home screens are applied for anonymous
+  guests, candidates, brothers, and Idle approval users. The exported Stitch
+  officer mobile handoff remains a documented V1 web handoff because current
+  launch routing intentionally has no native officer/admin mobile mode.
 - Candidate event list/detail, candidate announcement list, Brother Today, Brother Events, Brother Event Detail, and Brother Announcements now use dedicated Phase 10A React Native renderers.
 - The Expo root component (`apps/mobile/src/App.tsx`) has now been split for Phase 10A: it reads runtime/auth launch state and delegates to public, candidate, or brother route surfaces. Brother announcement/detail routes now render through dedicated Figma-aligned components instead of the generic private renderer.
 - Figma targets a Gold/Grey visual system, and public mobile now uses the Google
@@ -62,6 +66,40 @@ contracts:
   Figma frame and native visual QA are still pending. Roadmap remains Phase 10,
   Silent Prayer remains Phase 11, and final privacy/security/pilot hardening
   remains Phases 12-13.
+
+## Latest Stitch Redesign: Role-Aware Main Screen
+
+The latest Google Stitch pass for the first screen after launch is now applied
+in mobile code. It is role-aware rather than a single overloaded dashboard:
+
+- Anonymous guests need a public conversion and orientation screen: learn what
+  the Order is, see today's civil and liturgical day, pray immediately, see the
+  next public/family-open Order event they may attend, request to join, or sign
+  in. It must never imply access to private content.
+- Candidates need a formation-oriented home: next roadmap/dashboard step,
+  today's liturgical context, assignment, responsible officer contact,
+  candidate-visible events, and one-way announcements. This should answer "what
+  should I do next?" within the first viewport.
+- Brothers need a daily command center: current degree/unit, today's most useful
+  action, today's liturgical context, roadmap progress, prayer, active
+  silent-prayer aggregate, next event, latest announcement, and quick access to
+  prayers/events/profile.
+- Idle signed-in users need public-only approval guidance.
+- Officers/Super Admins without a member mobile role need an Admin Lite web
+  handoff, not a native mobile admin dashboard in V1.
+
+Use [07-google-stitch-main-screen-redesign-prompt.md](07-google-stitch-main-screen-redesign-prompt.md)
+as the active prompt for this design task. Designs generated from it are
+implementation inputs only after they are checked against V1 scope, RBAC,
+server-side visibility, API/DTO support, demo fixtures, tests, and the
+traceability/status docs.
+
+Functional API gap remaining after the UI pass: add API-side liturgical calendar
+fetching through a provider adapter and expose a normalized `today` module
+through `/public/home` and the authenticated dashboard models. Mobile must not
+call the external liturgical calendar source directly. Candidate providers
+identified for evaluation are Parish Companion Ordo and the open-source
+LiturgicalCalendarAPI.
 
 ## Implementation Principles
 
@@ -153,13 +191,13 @@ Legend:
 | Screen                        | Figma node           | Requirement               | Current implementation                                                                                                                                                                                                                                                                            | Exact next implementation                                                                                                                                                             |
 | ----------------------------- | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sign In                       | `1:2`                | FR-AUTH-001               | Public `Login` route uses the extracted Gold/Grey auth shell with a Google/Firebase provider action instead of email/password fields. Mobile now has a provider sign-in adapter seam, concrete Expo/Firebase Google provider implementation, shared-schema `/api/auth/session` exchange, and Candidate/Brother/Idle Approval routing from the returned current user. | Add pilot Firebase/Google client environment values and validate the flow on a native Expo target. |
-| Account Approval Pending      | Pending direct frame | FR-AUTH-001               | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance; public `IdleApproval` route now uses the same extracted Gold/Grey auth shell without private roles/scopes                                                                                                           | Keep submitted/expiry/rejected copy public-only and update if a dedicated approval frame is provided                                                                                  |
-| Public Home                   | Pending direct frame | FR-PUBLIC-001             | Implemented and mounted                                                                                                                                                                                                                                                                           | Create Figma-specific public home frame or map existing public screen to Gold/Grey tokens; keep no-auth public-only payload                                                           |
+| Account Approval Pending      | Google Stitch `Idle Approval Home` | FR-AUTH-001               | Idle state returned by `/api/auth/me`; mobile maps Idle failures to guidance; public `IdleApproval` now uses the latest Stitch status-panel/public-action layout without private roles/scopes.                                                                                                     | Keep submitted/expiry/rejected copy public-only and update once approval-expiry/rejection copy is contract-backed.                                                                    |
+| Public Home                   | Google Stitch `Anonymous Guest Home` | FR-PUBLIC-001             | Implemented and mounted with the latest Stitch role-aware anonymous guest home: top app bar, civil/liturgical-day strip, conversion hero, bento public actions, prayer/silent-prayer/event modules, membership-path panel, fixed Home/About/Prayers/Events bottom tabs, and Join shown only on anonymous guest Home. | Replace placeholder liturgical-day copy with backend provider data once the planned normalized `today` module exists.                                                                 |
 | About the Order               | Pending direct frame | FR-PUBLIC-002             | Implemented and mounted                                                                                                                                                                                                                                                                           | Apply shared Gold/Grey content typography and page header pattern                                                                                                                     |
 | Public Prayer Library         | Pending direct frame | FR-PRAYER-001             | Implemented list/detail                                                                                                                                                                                                                                                                           | Add Figma-specific card/list variants when design exists                                                                                                                              |
 | Public Events                 | Pending direct frame | FR-EVENT-001              | Implemented list/detail                                                                                                                                                                                                                                                                           | Align event card typography/status badges with Candidate Events frame where public-safe                                                                                               |
 | Candidate Request Form        | Pending direct frame | FR-CANDIDATE-REQ-001      | Implemented mobile form/confirmation                                                                                                                                                                                                                                                              | Match multi-step form layout from design prompt; keep consent-required DTO and no account/membership promise in confirmation                                                          |
-| Candidate Dashboard           | Pending direct frame | FR-CANDIDATE-001          | Implemented dedicated RN screen                                                                                                                                                                                                                                                                   | Replace generic card styling with Figma Gold/Grey header, welcome/assignment/officer/upcoming-events sections; keep no brother-only content                                           |
+| Candidate Dashboard           | Google Stitch `Candidate Home` | FR-CANDIDATE-001          | Implemented dedicated RN screen using the latest Stitch candidate home: greeting/status, liturgical context card, next formation step, candidate-visible event cards, assignment, responsible-officer card, announcements, quick actions, and bottom tabs over existing guarded contracts.            | Replace placeholder liturgical-day copy with backend provider data and add direct contact/profile routes only when V1 DTOs support them.                                             |
 | Candidate Events List         | `1:47`               | FR-CANDIDATE-002          | Dedicated RN `CandidateEventsScreen.tsx` renders the Gold/Grey top app bar, event card RSVP states, bottom nav, and list-level RSVP actions. `/api/candidate/events` list items now include only the signed-in candidate's own `currentUserParticipation` intent and expose no participant lists. | Add visual QA against a running Expo/native target and continue detail-screen parity after Brother Today                                                                              |
 | Candidate Event Detail        | Derived from `1:47`  | FR-EVENT-003              | Dedicated RN `CandidateEventDetailScreen.tsx` renders the event badge, own RSVP state, date/time/location sections, safe description, bottom nav, and own participation CTA over the existing guarded detail contract with no participant list.                                                     | Add visual QA against a running Expo/native target and continue announcement-screen parity                                                                                            |
 | Candidate Announcements List  | Pending direct frame | FR-CANDIDATE-003          | Dedicated RN `CandidateAnnouncementsScreen.tsx` renders one-way announcement cards with pinned state, published date, body copy, top app bar, and bottom nav over the existing guarded list contract. No chat, comments, read receipts, delivery state, or participant lists are exposed.            | Add visual QA against a running Expo/native target; keep separate detail contract deferred unless product requires it                                                                 |
@@ -167,7 +205,7 @@ Legend:
 | Contact Officer               | Pending direct frame | Candidate support surface | Not implemented                                                                                                                                                                                                                                                                                   | V1 implementation should be read-only responsible-officer contact fields plus email/phone deep-link actions if contact data exists; do not add chat or in-app messaging               |
 | Candidate Profile             | Pending direct frame | Implied profile surface   | Not implemented                                                                                                                                                                                                                                                                                   | Add V1 read/edit basics only after DTOs define allowed self-edit fields; critical membership/role data remains officer-managed                                                        |
 | Candidate Roadmap             | Pending direct frame | FR-ROADMAP-001            | Phase 10B read slice implemented: guarded `GET /candidate/roadmap`, typed mobile client, demo fixture, and mounted screen model show only the current candidate's assigned published roadmap.                                                                                                    | Add dedicated Gold/Grey renderer if a direct frame is approved; keep candidate roadmap read-only and assigned-only                                                                     |
-| Brother Today                 | `1:177`              | FR-BROTHER-001            | Dedicated RN `BrotherTodayScreen.tsx` renders the Gold/Grey profile summary card, quick-action grid, upcoming action cards, organization-unit cards, and brother bottom nav over the existing guarded `/api/brother/today` contract                                                               | Add visual QA against a running Expo/native target and continue detail/announcement screen parity                                                                                     |
+| Brother Today                 | Google Stitch `Brother Home` | FR-BROTHER-001            | Dedicated RN `BrotherTodayScreen.tsx` uses the latest Stitch brother home: greeting/badges, liturgical card, today's focus, roadmap/prayer panels, silent-prayer aggregate banner, community board, quick actions, and icon bottom tabs over the existing guarded `/api/brother/today` contract.      | Replace placeholder liturgical-day/roadmap-progress copy with backend provider/API data as those DTO gaps are resolved; no rosters or participant lists.                            |
 | Brother Profile               | Pending direct frame | FR-BROTHER-002            | Mounted through generic/private profile model                                                                                                                                                                                                                                                     | Build profile screen with read-only membership cards, degree, join date, contact basics, and edit only for allowed profile basics                                                     |
 | Formation Roadmap             | Pending direct frame | FR-ROADMAP-002/003        | Phase 10B read and submission slices are implemented: guarded `GET /brother/roadmap`, guarded `POST /brother/roadmap/steps/:stepId/submissions`, typed mobile clients, demo fixture, mounted screen model, and dedicated brother roadmap renderer show only the current brother's assigned published roadmap plus latest own submission state and allow reflection submission only for submit-required unsubmitted/rejected steps. | Add dedicated Gold/Grey renderer refinements if a direct frame is approved; never auto-award degree or expose other brothers' submissions                                             |
 | My Choragiew                  | Pending direct frame | FR-ORG-001                | Dedicated RN `MyOrganizationUnitsScreen.tsx` uses the Gold/Grey top bar, unit cards, bottom navigation, API/demo states, and detail actions over the existing guarded `/api/brother/my-organization-units` response. No brother roster or member list is exposed.                                  | Add visual QA against a running Expo/native target                                                                                                                                    |

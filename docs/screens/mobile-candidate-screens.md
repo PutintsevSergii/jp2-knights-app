@@ -35,3 +35,22 @@
   forbidden/idle-approval states, and renders one-way candidate-visible message
   bodies without brother-only content, comments, replies, read receipts, or push
   delivery state.
+
+## Next Main-Screen Redesign Plan
+
+The next Stitch design pass should make `CandidateDashboard` answer "what
+should I do next?" immediately. Prioritize:
+
+- personalized greeting and candidate status;
+- today's civil date and liturgical day/season/rank/color;
+- one dominant next formation action from the dashboard/roadmap model;
+- assigned choragiew/unit summary;
+- responsible officer contact with email/phone actions only when configured;
+- candidate-visible event preview with the current user's own RSVP state only;
+- one-way announcement preview;
+- quick actions for Roadmap, Events, Contact, and Announcements;
+- bottom tabs: Home, Roadmap, Events, Contact, Profile.
+
+The redesign must not expose brother-only events, brother profile data,
+candidate roadmap history belonging to anyone else, admin notes, rosters, chat,
+comments, read receipts, or push delivery analytics.

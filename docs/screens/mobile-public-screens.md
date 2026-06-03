@@ -41,6 +41,30 @@ demo mode. Confirmation copy stays deliberately limited: it confirms receipt,
 shows only the request reference id, and does not promise account creation or
 membership.
 
+## Next Main-Screen Redesign Plan
+
+The next Stitch design pass should make `PublicHome` more useful for anonymous
+guests in the first viewport. Prioritize:
+
+- immediate orientation: what JP2 Knights is and why the app exists;
+- today's civil date and liturgical day/season/rank/color, with a graceful
+  unavailable state;
+- primary conversion: `Request to Join`;
+- secondary recovery path: `Sign In`;
+- public prayer entry: prayer of the day plus `Prayer Library`;
+- public community entry: next public/family-open Order event that guests may
+  attend;
+- public silent prayer aggregate: count only, never participant identity;
+- joining path expectations: request, officer review, formation begins, with no
+  membership or account guarantee;
+- fixed public bottom tabs: Home, About, Prayers, Events.
+- join request entry points stay on anonymous guest Home only; signed-in public
+  states such as Idle approval do not show Join.
+
+The redesign must stay public-only. It must not show candidate/brother
+dashboards, rosters, private events, private prayers, participant lists, admin
+controls, or self-approval paths.
+
 ## Analytics
 
 Only basic product events are useful in V1, such as public home opened, join request submitted, and public prayer opened. Do not track prayer participation as personal spiritual analytics.

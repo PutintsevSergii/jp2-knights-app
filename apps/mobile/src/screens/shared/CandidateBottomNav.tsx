@@ -27,7 +27,8 @@ export function CandidateBottomNav({
       items={[
         {
           id: "dashboard",
-          label: "Dashboard",
+          label: "Home",
+          icon: "home",
           active: active === "dashboard",
           onPress:
             active === "dashboard"
@@ -35,13 +36,14 @@ export function CandidateBottomNav({
               : () =>
                   onAction?.({
                     id: "dashboard",
-                    label: "Dashboard",
+                    label: "Home",
                     targetRoute: "CandidateDashboard"
                   })
         },
         {
           id: "events",
           label: "Events",
+          icon: "calendar_month",
           active: active === "events",
           onPress:
             active === "events" && !eventsAction
@@ -58,6 +60,7 @@ export function CandidateBottomNav({
         {
           id: "prayer",
           label: "Prayer",
+          icon: "auto_stories",
           active: active === "prayer",
           disabled: true
         },
@@ -65,17 +68,20 @@ export function CandidateBottomNav({
           ? {
               id: "announcements",
               label: "News",
+              icon: "campaign",
               active: active === "announcements"
             }
           : {
               id: "choragiew",
-              label: "Choragiew",
+              label: "Formation",
+              icon: "menu_book",
               active: active === "choragiew",
               disabled: true
             },
         {
           id: "account",
-          label: "Account",
+          label: "Profile",
+          icon: "person",
           active: active === "account",
           disabled: true
         }

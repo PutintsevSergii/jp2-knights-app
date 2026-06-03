@@ -24,12 +24,12 @@ describe("CandidateAnnouncementsScreen", () => {
       /chat|comment|read receipt|delivery|participants|brother|membership|degree/i
     );
 
-    findPressableByLabel(element, "Dashboard")?.props.onPress?.();
+    findPressableByLabel(element, "Home")?.props.onPress?.();
     findPressableByLabel(element, "Events")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
       id: "dashboard",
-      label: "Dashboard",
+      label: "Home",
       targetRoute: "CandidateDashboard"
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {

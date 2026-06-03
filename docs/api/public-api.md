@@ -2,7 +2,7 @@
 
 | Method | Path                                    | Auth | Request                                                                                         | Response                              | Validation                  | Errors      | Visibility                             | Acceptance                           |
 | ------ | --------------------------------------- | ---- | ----------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------- | ----------- | -------------------------------------- | ------------------------------------ |
-| GET    | `/public/home`                          | No   | Query `language?`                                                                               | intro, prayerOfDay, nextEvents, CTAs  | language optional           | 500         | `PUBLIC`, `FAMILY_OPEN` published only | No private content                   |
+| GET    | `/public/home`                          | No   | Query `language?`, planned `date?`, `country?` for liturgical calendar context                  | intro, today/liturgicalDay, prayerOfDay, nextEvents, CTAs | language optional; planned date/country validation | 500         | `PUBLIC`, `FAMILY_OPEN` published only | No private content                   |
 | GET    | `/public/content-pages/:slug`           | No   | path slug, query `language?`                                                                    | approved page detail                  | visible slug only           | 404         | `PUBLIC` published only                | Official content fallback if missing |
 | GET    | `/public/prayers`                       | No   | `categoryId?`, `q?`, `language?`, pagination                                                    | prayer summary list                   | safe pagination             | 400         | `PUBLIC` published                     | Brother prayers hidden               |
 | GET    | `/public/prayers/:id`                   | No   | path id                                                                                         | prayer detail                         | visible id only             | 404         | `PUBLIC` published                     | Private id returns 404               |
@@ -21,3 +21,29 @@
 - The implemented public content-page read path returns only `PUBLISHED` + `PUBLIC` rows, excludes archived or future-published pages, and falls back to English when a requested language is unavailable.
 - The implemented public prayer read paths return only `PUBLISHED` + `PUBLIC` prayers, exclude archived or future-published prayers, and return 404 for hidden detail IDs.
 - The implemented public event read paths return only `published` + `PUBLIC`/`FAMILY_OPEN` events, exclude archived or future-published events, and return 404 for hidden detail IDs.
+
+## Planned Public Home Extension
+
+The next main-screen redesign requires `/public/home` to expose a normalized
+`today` module so guests and signed-in users can see what day it is and what the
+Church observes today.
+
+Planned response fields:
+
+- `today.civilDate`: ISO date and localized display label.
+- `today.liturgicalDay.name`: feast/memorial/solemnity/Sunday/day name when available.
+- `today.liturgicalDay.season`: Advent, Christmas, Lent, Easter, Ordinary Time, etc.
+- `today.liturgicalDay.rank`: solemnity, feast, memorial, optional memorial, Sunday, weekday.
+- `today.liturgicalDay.color`: liturgical color when available.
+- `today.liturgicalDay.source`: provider/source identifier.
+- `today.liturgicalDay.state`: `ready`, `unavailable`, or `fallback`.
+- `nextEvents[0]`: should remain the next published `PUBLIC` or `FAMILY_OPEN`
+  Order event safe for guests to attend, with no private location, attendee,
+  roster, candidate, or brother-only data.
+
+Implementation rule: mobile must not call third-party liturgical calendar
+providers directly. Add an API-side `LiturgicalCalendarProvider` adapter with
+timeout, retry/fallback, cache, and demo fixture behavior, then map provider
+data into the shared `/public/home` DTO. Candidate sources to evaluate include
+Parish Companion Ordo for a simple free REST service and LiturgicalCalendarAPI
+for a richer open-source/self-hostable Roman Catholic calendar path.
