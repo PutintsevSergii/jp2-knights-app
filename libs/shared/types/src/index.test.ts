@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   ADMIN_AUDIT_ACTIONS,
+  ADMIN_PRIVACY_WORKFLOWS,
+  type AdminPrivacyWorkflowTarget,
   CONTENT_STATUSES,
   CONTENT_STATUS_METADATA,
   EVENT_STATUS_METADATA,
@@ -19,7 +21,8 @@ import {
   ROADMAP_SUBMISSION_STATUS_METADATA,
   ROADMAP_TARGET_ROLES,
   RUNTIME_MODES,
-  VISIBILITIES
+  VISIBILITIES,
+  adminPrivacyWorkflowOperationPath
 } from "./index.js";
 
 describe("shared types", () => {
@@ -103,6 +106,41 @@ describe("shared types", () => {
       roadmapSubmission: "sensitive_review",
       deviceToken: "operational"
     });
+  });
+
+  it("keeps Super Admin privacy workflow metadata centralized", () => {
+    expect(Object.keys(ADMIN_PRIVACY_WORKFLOWS)).toEqual([
+      "candidateRequest",
+      "candidateProfile",
+      "roadmapSubmission"
+    ]);
+
+    for (const target of Object.keys(
+      ADMIN_PRIVACY_WORKFLOWS
+    ) as AdminPrivacyWorkflowTarget[]) {
+      const workflow = ADMIN_PRIVACY_WORKFLOWS[target];
+
+      expect(workflow.retentionBucket).toBe(PRIVACY_WORKFLOW_RETENTION_BUCKETS[target]);
+      expect(workflow.operations.export).toMatchObject({
+        method: "GET",
+        destructive: false,
+        requiredRole: "SUPER_ADMIN"
+      });
+      expect(workflow.operations.erase).toMatchObject({
+        method: "POST",
+        destructive: true,
+        requiredRole: "SUPER_ADMIN"
+      });
+      expect(ADMIN_AUDIT_ACTIONS).toContain(workflow.operations.export.auditAction);
+      expect(ADMIN_AUDIT_ACTIONS).toContain(workflow.operations.erase.auditAction);
+    }
+
+    expect(
+      adminPrivacyWorkflowOperationPath("candidateRequest", "request/unsafe", "erase")
+    ).toBe("admin/candidate-requests/request%2Funsafe/erase");
+    expect(
+      adminPrivacyWorkflowOperationPath("roadmapSubmission", "submission-1", "export")
+    ).toBe("admin/roadmap-submissions/submission-1/export");
   });
 
   it("keeps known admin audit actions explicit for Admin Lite filters", () => {

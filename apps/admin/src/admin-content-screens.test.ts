@@ -7,7 +7,7 @@ import type {
 } from "@jp2/shared-validation";
 import {
   adminContentTheme,
-  buildAdminAnnouncementEditorScreen,
+  buildAdminContentEditorScreen,
   buildAdminAnnouncementListScreen,
   buildAdminEventListScreen,
   buildAdminPrayerListScreen,
@@ -277,25 +277,40 @@ describe("admin content screen models", () => {
     ).toEqual(["edit", "publish", "archive"]);
   });
 
-  it("builds announcement create, edit, and readonly editor models", () => {
-    const createScreen = buildAdminAnnouncementEditorScreen({
+  it("builds content create, edit, and readonly editor models", () => {
+    const createScreen = buildAdminContentEditorScreen({
+      kind: "announcement",
       state: "ready",
       runtimeMode: "api",
       canWrite: true,
       mode: "create"
     });
-    const editScreen = buildAdminAnnouncementEditorScreen({
+    const editScreen = buildAdminContentEditorScreen({
+      kind: "announcement",
       state: "ready",
-      announcement: announcementResponse.announcements[0],
+      item: announcementResponse.announcements[0],
       runtimeMode: "api",
       canWrite: true,
       mode: "edit"
     });
-    const readonlyScreen = buildAdminAnnouncementEditorScreen({
+    const readonlyScreen = buildAdminContentEditorScreen({
+      kind: "announcement",
       state: "ready",
-      announcement: announcementResponse.announcements[0],
+      item: announcementResponse.announcements[0],
       runtimeMode: "api",
       canWrite: false,
+      mode: "edit"
+    });
+    const approvedPrayerScreen = buildAdminContentEditorScreen({
+      kind: "prayer",
+      state: "ready",
+      item: {
+        ...prayerResponse.prayers[0]!,
+        status: "APPROVED",
+        approvedAt: "2026-06-03T10:00:00.000Z"
+      },
+      runtimeMode: "api",
+      canWrite: true,
       mode: "edit"
     });
 
@@ -303,14 +318,14 @@ describe("admin content screen models", () => {
       route: "AdminAnnouncementEditor",
       mode: "create",
       title: "Create Announcement",
-      announcementId: null
+      contentId: null
     });
     expect(createScreen.actions.map((action) => action.id)).toEqual(["create", "refresh"]);
     expect(editScreen).toMatchObject({
       route: "AdminAnnouncementEditor",
       mode: "edit",
       title: "Announcement: Service Schedule Update",
-      announcementId: "55555555-5555-4555-8555-555555555555"
+      contentId: "55555555-5555-4555-8555-555555555555"
     });
     expect(editScreen.fields.find((field) => field.name === "body")).toMatchObject({
       value: "The June service rota has been updated.",
@@ -327,6 +342,18 @@ describe("admin content screen models", () => {
       actions: [expect.objectContaining({ id: "refresh" })]
     });
     expect(readonlyScreen.fields.every((field) => field.readOnly)).toBe(true);
+    expect(approvedPrayerScreen).toMatchObject({
+      route: "AdminPrayerEditor",
+      mode: "edit",
+      title: "Prayer: Morning Offering",
+      contentId: "33333333-3333-4333-8333-333333333333"
+    });
+    expect(approvedPrayerScreen.actions.map((action) => action.id)).toEqual([
+      "edit",
+      "refresh",
+      "publish",
+      "archive"
+    ]);
   });
 
   it("maps empty, forbidden, and demo states into stable screen copy", () => {
@@ -355,7 +382,8 @@ describe("admin content screen models", () => {
       actions: [expect.objectContaining({ id: "refresh" })]
     });
     expect(
-      buildAdminAnnouncementEditorScreen({
+      buildAdminContentEditorScreen({
+        kind: "announcement",
         state: "ready",
         runtimeMode: "api",
         canWrite: true,

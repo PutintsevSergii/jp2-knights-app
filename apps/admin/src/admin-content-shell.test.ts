@@ -20,6 +20,37 @@ const prayerPayload = {
   ]
 };
 
+const approvedPrayerPayload = {
+  prayers: [
+    {
+      ...prayerPayload.prayers[0],
+      status: "APPROVED",
+      approvedAt: "2026-06-03T10:00:00.000Z"
+    }
+  ]
+};
+
+const eventPayload = {
+  events: [
+    {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Open Evening",
+      description: "Public introduction evening.",
+      type: "open-evening",
+      startAt: "2026-06-10T18:00:00.000Z",
+      endAt: null,
+      locationLabel: "Riga",
+      visibility: "ORGANIZATION_UNIT",
+      targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "draft",
+      approvedAt: null,
+      publishedAt: null,
+      cancelledAt: null,
+      archivedAt: null
+    }
+  ]
+};
+
 const announcementPayload = {
   announcements: [
     {
@@ -251,7 +282,7 @@ describe("admin content shell routes", () => {
     });
     expect(detailRendered.document).toContain("Announcement: Service Schedule Update");
     expect(detailRendered.document).toContain(
-      'data-announcement-id="55555555-5555-4555-8555-555555555555"'
+      'data-content-id="55555555-5555-4555-8555-555555555555"'
     );
     expect(detailRendered.document).toContain(
       '<textarea class="admin-content__input admin-content__textarea" name="body" required>The June service rota has been updated.</textarea>'
@@ -262,6 +293,103 @@ describe("admin content shell routes", () => {
       method: "GET",
       headers: { authorization: "Bearer token_1" }
     });
+  });
+
+  it("renders prayer create and detail editor forms with approval before publish", async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(approvedPrayerPayload)
+      })
+    );
+
+    const createRendered = await renderAdminContentRoute({
+      path: "/admin/prayers/new",
+      runtimeMode: "api",
+      canWrite: true,
+      fetchImpl
+    });
+    const detailRendered = await renderAdminContentRoute({
+      path: "/admin/prayers/33333333-3333-4333-8333-333333333333",
+      runtimeMode: "api",
+      canWrite: true,
+      authToken: "token_1",
+      baseUrl: "https://api.example.test",
+      fetchImpl
+    });
+
+    expect(createRendered).toMatchObject({
+      path: "/admin/prayers/new",
+      route: "AdminPrayerEditor",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(createRendered.document).toContain("Create Prayer");
+    expect(detailRendered).toMatchObject({
+      path: "/admin/prayers/33333333-3333-4333-8333-333333333333",
+      route: "AdminPrayerEditor",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(detailRendered.document).toContain("Prayer: Morning Offering");
+    expect(detailRendered.document).toContain(
+      'data-content-id="33333333-3333-4333-8333-333333333333"'
+    );
+    expect(detailRendered.document).toContain('data-action="publish"');
+    expect(detailRendered.document).not.toContain('data-action="approve"');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/admin/prayers", {
+      method: "GET",
+      headers: { authorization: "Bearer token_1" }
+    });
+  });
+
+  it("renders event and silent-prayer detail editors without participant or attendee actions", async () => {
+    const eventFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(eventPayload)
+      })
+    );
+    const silentPrayerFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(silentPrayerPayload)
+      })
+    );
+
+    const eventRendered = await renderAdminContentRoute({
+      path: "/admin/events/44444444-4444-4444-8444-444444444444",
+      runtimeMode: "api",
+      canWrite: true,
+      fetchImpl: eventFetch
+    });
+    const silentPrayerRendered = await renderAdminContentRoute({
+      path: "/admin/silent-prayer-events/66666666-6666-4666-8666-666666666667",
+      runtimeMode: "api",
+      canWrite: true,
+      fetchImpl: silentPrayerFetch
+    });
+
+    expect(eventRendered).toMatchObject({
+      route: "AdminEventEditor",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(eventRendered.document).toContain("Event: Open Evening");
+    expect(eventRendered.document).toContain('data-action="approve"');
+    expect(eventRendered.document).not.toContain("Attendees");
+    expect(silentPrayerRendered).toMatchObject({
+      route: "AdminSilentPrayerEditor",
+      state: "ready",
+      statusCode: 200
+    });
+    expect(silentPrayerRendered.document).toContain("Silent Prayer Event: Evening Silent Prayer");
+    expect(silentPrayerRendered.document).toContain('data-action="approve"');
+    expect(silentPrayerRendered.document).not.toContain("Participants");
   });
 
   it("keeps announcement create forbidden for read-only admins and returns 404 for misses", async () => {

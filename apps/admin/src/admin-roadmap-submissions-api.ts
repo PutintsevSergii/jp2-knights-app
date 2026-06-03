@@ -9,6 +9,7 @@ import {
   type AdminRoadmapSubmissionListResponseDto,
   type ReviewRoadmapSubmissionRequestDto
 } from "@jp2/shared-validation";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import { requestAdminApi, type AdminContentRequestOptions } from "./admin-content-api.js";
 
 export async function fetchAdminRoadmapSubmissions(
@@ -32,7 +33,10 @@ export async function exportAdminRoadmapSubmission(
   id: string,
   options: AdminContentRequestOptions = {}
 ): Promise<AdminRoadmapSubmissionExportResponseDto> {
-  const response = await requestAdminApi(`admin/roadmap-submissions/${id}/export`, options);
+  const response = await requestAdminApi(
+    adminPrivacyWorkflowOperationPath("roadmapSubmission", id, "export"),
+    options
+  );
 
   return adminRoadmapSubmissionExportResponseSchema.parse(await response.json());
 }
@@ -41,9 +45,11 @@ export async function eraseAdminRoadmapSubmission(
   id: string,
   options: AdminContentRequestOptions = {}
 ): Promise<AdminRoadmapSubmissionErasureResponseDto> {
-  const response = await requestAdminApi(`admin/roadmap-submissions/${id}/erase`, options, {
-    method: "POST"
-  });
+  const response = await requestAdminApi(
+    adminPrivacyWorkflowOperationPath("roadmapSubmission", id, "erase"),
+    options,
+    { method: "POST" }
+  );
 
   return adminRoadmapSubmissionErasureResponseSchema.parse(await response.json());
 }

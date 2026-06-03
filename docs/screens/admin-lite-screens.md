@@ -84,10 +84,14 @@ Admin screens should be functional and compact: tables, filters, detail panels, 
   (`assigneeUserId`, `roadmapDefinitionId`, optional `organizationUnitId`) with
   create/back action metadata; assignment update/archive actions remain
   deferred.
-- Phase 12 mounts `/admin/silent-prayer-events` through the Next App Router and
-  shared Admin Lite content shell. The route uses the typed admin
-  silent-prayer API client, shared DTO validation, demo fixtures,
-  approval-before-publish action metadata, active navigation, and aggregate-only
-  privacy constraints. The detail/editor route remains pending; the list route
-  does not render participant lists, anonymous session ids, user ids, rosters,
-  chat, comments, or prayer history.
+- Phase 12 mounts `/admin/silent-prayer-events`,
+  `/admin/silent-prayer-events/new`, and `/admin/silent-prayer-events/:id`
+  through the Next App Router and shared Admin Lite content shell. The routes
+  use the typed admin silent-prayer API client, shared DTO validation, demo
+  fixtures, approval-before-publish action metadata, active navigation, and
+  aggregate-only privacy constraints. They do not render participant lists,
+  anonymous session ids, user ids, rosters, chat, comments, or prayer history.
+- Phase 12 also mounts `/admin/prayers/new`, `/admin/prayers/:id`,
+  `/admin/events/new`, and `/admin/events/:id` through the shared content editor
+  model, with API/demo loading, readonly state, scoped 404 misses, and
+  approval-before-publish action metadata.

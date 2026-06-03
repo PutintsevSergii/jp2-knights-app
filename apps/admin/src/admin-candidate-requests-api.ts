@@ -9,6 +9,7 @@ import {
   type AdminCandidateRequestListResponseDto,
   type UpdateAdminCandidateRequestDto
 } from "@jp2/shared-validation";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import {
   requestAdminApi,
   type AdminContentRequestOptions
@@ -35,7 +36,10 @@ export async function exportAdminCandidateRequest(
   id: string,
   options: AdminContentRequestOptions = {}
 ): Promise<AdminCandidateRequestExportResponseDto> {
-  const response = await requestAdminApi(`admin/candidate-requests/${id}/export`, options);
+  const response = await requestAdminApi(
+    adminPrivacyWorkflowOperationPath("candidateRequest", id, "export"),
+    options
+  );
 
   return adminCandidateRequestExportResponseSchema.parse(await response.json());
 }
@@ -44,9 +48,11 @@ export async function eraseAdminCandidateRequest(
   id: string,
   options: AdminContentRequestOptions = {}
 ): Promise<AdminCandidateRequestErasureResponseDto> {
-  const response = await requestAdminApi(`admin/candidate-requests/${id}/erase`, options, {
-    method: "POST"
-  });
+  const response = await requestAdminApi(
+    adminPrivacyWorkflowOperationPath("candidateRequest", id, "erase"),
+    options,
+    { method: "POST" }
+  );
 
   return adminCandidateRequestErasureResponseSchema.parse(await response.json());
 }

@@ -74,3 +74,105 @@ export const PRIVACY_WORKFLOW_RETENTION_BUCKETS = {
   roadmapSubmission: "sensitive_review",
   deviceToken: "operational"
 } as const satisfies Record<string, RetentionBucket>;
+
+export type AdminPrivacyWorkflowTarget =
+  | "candidateRequest"
+  | "candidateProfile"
+  | "roadmapSubmission";
+
+export type AdminPrivacyWorkflowOperation = "export" | "erase";
+
+export interface AdminPrivacyWorkflowOperationMetadata {
+  method: "GET" | "POST";
+  pathSuffix: AdminPrivacyWorkflowOperation;
+  auditAction: string;
+  destructive: boolean;
+  requiredRole: "SUPER_ADMIN";
+}
+
+export interface AdminPrivacyWorkflowMetadata {
+  label: string;
+  entityType: string;
+  retentionBucket: RetentionBucket;
+  basePath: string;
+  operations: Record<AdminPrivacyWorkflowOperation, AdminPrivacyWorkflowOperationMetadata>;
+}
+
+export const ADMIN_PRIVACY_WORKFLOWS = {
+  candidateRequest: {
+    label: "Candidate request",
+    entityType: "candidate_request",
+    retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.candidateRequest,
+    basePath: "admin/candidate-requests",
+    operations: {
+      export: {
+        method: "GET",
+        pathSuffix: "export",
+        auditAction: "admin.candidateRequest.export",
+        destructive: false,
+        requiredRole: "SUPER_ADMIN"
+      },
+      erase: {
+        method: "POST",
+        pathSuffix: "erase",
+        auditAction: "admin.candidateRequest.erase",
+        destructive: true,
+        requiredRole: "SUPER_ADMIN"
+      }
+    }
+  },
+  candidateProfile: {
+    label: "Candidate profile",
+    entityType: "candidate_profile",
+    retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.candidateProfile,
+    basePath: "admin/candidates",
+    operations: {
+      export: {
+        method: "GET",
+        pathSuffix: "export",
+        auditAction: "admin.candidateProfile.export",
+        destructive: false,
+        requiredRole: "SUPER_ADMIN"
+      },
+      erase: {
+        method: "POST",
+        pathSuffix: "erase",
+        auditAction: "admin.candidateProfile.erase",
+        destructive: true,
+        requiredRole: "SUPER_ADMIN"
+      }
+    }
+  },
+  roadmapSubmission: {
+    label: "Roadmap submission",
+    entityType: "roadmap_submission",
+    retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.roadmapSubmission,
+    basePath: "admin/roadmap-submissions",
+    operations: {
+      export: {
+        method: "GET",
+        pathSuffix: "export",
+        auditAction: "admin.roadmapSubmission.export",
+        destructive: false,
+        requiredRole: "SUPER_ADMIN"
+      },
+      erase: {
+        method: "POST",
+        pathSuffix: "erase",
+        auditAction: "admin.roadmapSubmission.erase",
+        destructive: true,
+        requiredRole: "SUPER_ADMIN"
+      }
+    }
+  }
+} as const satisfies Record<AdminPrivacyWorkflowTarget, AdminPrivacyWorkflowMetadata>;
+
+export function adminPrivacyWorkflowOperationPath(
+  target: AdminPrivacyWorkflowTarget,
+  id: string,
+  operation: AdminPrivacyWorkflowOperation
+): string {
+  const workflow = ADMIN_PRIVACY_WORKFLOWS[target];
+
+  return `${workflow.basePath}/${encodeURIComponent(id)}/${workflow.operations[operation].pathSuffix}`;
+}

@@ -24,8 +24,9 @@ export {
   type BuildAdminSilentPrayerListScreenOptions
 } from "./admin-silent-prayer-list-screen.js";
 export {
-  buildAdminAnnouncementEditorScreen,
-  type AdminAnnouncementEditorScreen,
-  type AdminAnnouncementFormField,
-  type BuildAdminAnnouncementEditorScreenOptions
-} from "./admin-announcement-editor-screen.js";
+  buildAdminContentEditorScreen,
+  type AdminContentEditorField,
+  type AdminContentEditorKind,
+  type AdminContentEditorScreen,
+  type BuildAdminContentEditorScreenOptions
+} from "./admin-content-editor-screen.js";

@@ -62,6 +62,7 @@ export class PrismaPublicContentRepository implements PublicContentRepository {
         language,
         visibility: "PUBLIC",
         status: "PUBLISHED",
+        approvedAt: { not: null },
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       }

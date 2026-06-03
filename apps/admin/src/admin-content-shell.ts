@@ -23,10 +23,11 @@ import {
   fallbackAdminSilentPrayerEvents
 } from "./admin-content-fixtures.js";
 import {
-  type AdminAnnouncementEditorScreen,
   type AdminContentListScreen,
-  buildAdminAnnouncementEditorScreen,
+  type AdminContentEditorKind,
+  type AdminContentEditorScreen,
   buildAdminAnnouncementListScreen,
+  buildAdminContentEditorScreen,
   buildAdminEventListScreen,
   buildAdminPrayerListScreen,
   buildAdminSilentPrayerListScreen
@@ -44,8 +45,14 @@ import {
 
 export type AdminContentShellRoute =
   | "/admin/prayers"
+  | "/admin/prayers/new"
+  | `/admin/prayers/${string}`
   | "/admin/events"
+  | "/admin/events/new"
+  | `/admin/events/${string}`
   | "/admin/silent-prayer-events"
+  | "/admin/silent-prayer-events/new"
+  | `/admin/silent-prayer-events/${string}`
   | "/admin/announcements"
   | "/admin/announcements/new"
   | `/admin/announcements/${string}`;
@@ -68,7 +75,7 @@ export interface RenderAdminContentRouteOptions {
 
 export interface RenderedAdminContentRoute {
   path: AdminContentShellRoute;
-  route: AdminContentListScreen["route"] | AdminAnnouncementEditorScreen["route"];
+  route: AdminContentListScreen["route"] | AdminContentEditorScreen["route"];
   state: AdminContentScreenState;
   html: string;
   statusCode: number;
@@ -150,16 +157,22 @@ export async function renderAdminContentRoute(
   const screen =
     options.path === "/admin/prayers"
       ? await resolvePrayerScreen(options)
-      : options.path === "/admin/events"
+      : isAdminPrayerEditorRoute(options.path)
+        ? await resolveContentEditorScreen(options, "prayer")
+        : options.path === "/admin/events"
         ? await resolveEventScreen(options)
-        : options.path === "/admin/silent-prayer-events"
-          ? await resolveSilentPrayerScreen(options)
-          : options.path === "/admin/announcements"
-            ? await resolveAnnouncementScreen(options)
-            : await resolveAnnouncementEditorScreen(options);
+        : isAdminEventEditorRoute(options.path)
+          ? await resolveContentEditorScreen(options, "event")
+          : options.path === "/admin/silent-prayer-events"
+            ? await resolveSilentPrayerScreen(options)
+            : isAdminSilentPrayerEditorRoute(options.path)
+              ? await resolveContentEditorScreen(options, "silentPrayer")
+              : options.path === "/admin/announcements"
+                ? await resolveAnnouncementScreen(options)
+                : await resolveContentEditorScreen(options, "announcement");
   const rendered =
-    screen.route === "AdminAnnouncementEditor"
-      ? renderAdminAnnouncementEditorScreen(screen)
+    isAdminContentEditorScreen(screen)
+      ? renderAdminContentEditorScreen(screen)
       : renderAdminContentListScreen(screen);
 
   return {
@@ -226,11 +239,13 @@ async function resolveContentListScreen<TResponse>(
   }
 }
 
-async function resolveAnnouncementEditorScreen(
-  options: RenderAdminContentRouteOptions
-): Promise<AdminAnnouncementEditorScreen> {
-  if (options.path === "/admin/announcements/new") {
-    return buildAdminAnnouncementEditorScreen({
+async function resolveContentEditorScreen(
+  options: RenderAdminContentRouteOptions,
+  kind: AdminContentEditorKind
+): Promise<AdminContentEditorScreen> {
+  if (isNewContentEditorPath(options.path)) {
+    return buildAdminContentEditorScreen({
+      kind,
       state: options.canWrite ? "ready" : "forbidden",
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite,
@@ -238,14 +253,13 @@ async function resolveAnnouncementEditorScreen(
     });
   }
 
-  const id = announcementIdFromPath(options.path);
+  const id = contentIdFromPath(options.path, kind);
 
   if (options.runtimeMode === "demo") {
-    return buildAdminAnnouncementEditorScreen({
+    return buildAdminContentEditorScreen({
+      kind,
       state: "ready",
-      announcement: fallbackAdminAnnouncements.announcements.find(
-        (announcement) => announcement.id === id
-      ),
+      item: findDemoContentItem(kind, id),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite,
       mode: "edit"
@@ -253,17 +267,17 @@ async function resolveAnnouncementEditorScreen(
   }
 
   try {
-    const response = await fetchAdminAnnouncements(options);
-
-    return buildAdminAnnouncementEditorScreen({
+    return buildAdminContentEditorScreen({
+      kind,
       state: "ready",
-      announcement: response.announcements.find((announcement) => announcement.id === id),
+      item: await findApiContentItem(kind, id, options),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite,
       mode: "edit"
     });
   } catch (error) {
-    return buildAdminAnnouncementEditorScreen({
+    return buildAdminContentEditorScreen({
+      kind,
       state: adminContentFailureState(error),
       runtimeMode: options.runtimeMode,
       canWrite: options.canWrite,
@@ -273,17 +287,17 @@ async function resolveAnnouncementEditorScreen(
 }
 
 function titleForRoute(
-  route: AdminContentListScreen["route"] | AdminAnnouncementEditorScreen["route"]
+  route: AdminContentListScreen["route"] | AdminContentEditorScreen["route"]
 ): string {
-  if (route === "AdminPrayerList") {
+  if (route === "AdminPrayerList" || route === "AdminPrayerEditor") {
     return "Admin Prayers";
   }
 
-  if (route === "AdminEventList") {
+  if (route === "AdminEventList" || route === "AdminEventEditor") {
     return "Admin Events";
   }
 
-  if (route === "AdminSilentPrayerList") {
+  if (route === "AdminSilentPrayerList" || route === "AdminSilentPrayerEditor") {
     return "Admin Silent Prayer Events";
   }
 
@@ -293,41 +307,114 @@ function titleForRoute(
 function isAdminContentRoute(path: string): boolean {
   return (
     path === "/admin/prayers" ||
+    isAdminPrayerEditorRoute(path) ||
     path === "/admin/events" ||
+    isAdminEventEditorRoute(path) ||
     path === "/admin/silent-prayer-events" ||
+    isAdminSilentPrayerEditorRoute(path) ||
     path === "/admin/announcements" ||
     isAdminAnnouncementEditorRoute(path)
   );
 }
 
 function titleForAdminContentRoute(path: string): string {
-  if (path === "/admin/prayers") {
+  if (path === "/admin/prayers" || isAdminPrayerEditorRoute(path)) {
     return "Admin Prayers";
   }
 
-  if (path === "/admin/events") {
+  if (path === "/admin/events" || isAdminEventEditorRoute(path)) {
     return "Admin Events";
   }
 
-  if (path === "/admin/silent-prayer-events") {
+  if (path === "/admin/silent-prayer-events" || isAdminSilentPrayerEditorRoute(path)) {
     return "Admin Silent Prayer Events";
   }
 
   return "Admin Announcements";
 }
 
+function isAdminPrayerEditorRoute(path: string): boolean {
+  return isAdminContentEditorRoute(path, "/admin/prayers/");
+}
+
+function isAdminEventEditorRoute(path: string): boolean {
+  return isAdminContentEditorRoute(path, "/admin/events/");
+}
+
+function isAdminSilentPrayerEditorRoute(path: string): boolean {
+  return isAdminContentEditorRoute(path, "/admin/silent-prayer-events/");
+}
+
 function isAdminAnnouncementEditorRoute(path: string): boolean {
-  return (
-    path === "/admin/announcements/new" ||
-    (path.startsWith("/admin/announcements/") && path.length > "/admin/announcements/".length)
-  );
+  return isAdminContentEditorRoute(path, "/admin/announcements/");
 }
 
-function announcementIdFromPath(path: AdminContentShellRoute): string {
-  return path.slice("/admin/announcements/".length);
+function isAdminContentEditorRoute(path: string, prefix: string): boolean {
+  return path === `${prefix}new` || (path.startsWith(prefix) && path.length > prefix.length);
 }
 
-function renderAdminAnnouncementEditorScreen(screen: AdminAnnouncementEditorScreen) {
+function isNewContentEditorPath(path: AdminContentShellRoute): boolean {
+  return path.endsWith("/new");
+}
+
+function contentIdFromPath(path: AdminContentShellRoute, kind: AdminContentEditorKind): string {
+  return path.slice(editorPathPrefixFor(kind).length);
+}
+
+function editorPathPrefixFor(kind: AdminContentEditorKind): string {
+  if (kind === "prayer") return "/admin/prayers/";
+  if (kind === "event") return "/admin/events/";
+  if (kind === "silentPrayer") return "/admin/silent-prayer-events/";
+  return "/admin/announcements/";
+}
+
+function findDemoContentItem(kind: AdminContentEditorKind, id: string) {
+  if (kind === "prayer") {
+    return fallbackAdminPrayers.prayers.find((prayer) => prayer.id === id);
+  }
+
+  if (kind === "event") {
+    return fallbackAdminEvents.events.find((event) => event.id === id);
+  }
+
+  if (kind === "silentPrayer") {
+    return fallbackAdminSilentPrayerEvents.silentPrayerEvents.find((event) => event.id === id);
+  }
+
+  return fallbackAdminAnnouncements.announcements.find((announcement) => announcement.id === id);
+}
+
+async function findApiContentItem(
+  kind: AdminContentEditorKind,
+  id: string,
+  options: RenderAdminContentRouteOptions
+) {
+  if (kind === "prayer") {
+    const response = await fetchAdminPrayers(options);
+    return response.prayers.find((prayer) => prayer.id === id);
+  }
+
+  if (kind === "event") {
+    const response = await fetchAdminEvents(options);
+    return response.events.find((event) => event.id === id);
+  }
+
+  if (kind === "silentPrayer") {
+    const response = await fetchAdminSilentPrayerEvents(options);
+    return response.silentPrayerEvents.find((event) => event.id === id);
+  }
+
+  const response = await fetchAdminAnnouncements(options);
+  return response.announcements.find((announcement) => announcement.id === id);
+}
+
+function isAdminContentEditorScreen(
+  screen: AdminContentListScreen | AdminContentEditorScreen
+): screen is AdminContentEditorScreen {
+  return screen.route.endsWith("Editor");
+}
+
+function renderAdminContentEditorScreen(screen: AdminContentEditorScreen) {
   return {
     route: screen.route,
     state: screen.state,
@@ -341,7 +428,7 @@ function renderAdminAnnouncementEditorScreen(screen: AdminAnnouncementEditorScre
   };
 }
 
-function renderEditorStyle(screen: AdminAnnouncementEditorScreen): string {
+function renderEditorStyle(screen: AdminContentEditorScreen): string {
   return [
     "<style>",
     ".admin-content{",
@@ -368,31 +455,31 @@ function renderEditorStyle(screen: AdminAnnouncementEditorScreen): string {
   ].join("");
 }
 
-function renderEditorHeader(screen: AdminAnnouncementEditorScreen): string {
+function renderEditorHeader(screen: AdminContentEditorScreen): string {
   return renderAdminHeader({
     title: screen.title,
     body: screen.body,
     actions: screen.actions,
     demoChromeVisible: screen.demoChromeVisible,
-    renderAction: renderEditorAction
+    renderAction: (action) => renderEditorAction(screen, action)
   });
 }
 
-function renderEditorForm(screen: AdminAnnouncementEditorScreen): string {
+function renderEditorForm(screen: AdminContentEditorScreen): string {
   if (screen.fields.length === 0) {
     return renderAdminEmptyState(screen.title, screen.body, "admin-content__form");
   }
 
   return [
-    `<form class="admin-content__form" data-announcement-id="${escapeAttribute(screen.announcementId ?? "")}" data-mode="${screen.mode}">`,
+    `<form class="admin-content__form" data-content-id="${escapeAttribute(screen.contentId ?? "")}" data-mode="${screen.mode}">`,
     screen.fields.map(renderEditorField).join(""),
     "</form>"
   ].join("");
 }
 
-function renderEditorField(field: AdminAnnouncementEditorScreen["fields"][number]): string {
+function renderEditorField(field: AdminContentEditorScreen["fields"][number]): string {
   const attrs = [
-    `class="admin-content__input${field.name === "body" ? " admin-content__textarea" : ""}"`,
+    `class="admin-content__input${field.multiline ? " admin-content__textarea" : ""}"`,
     `name="${escapeAttribute(field.name)}"`,
     field.required ? "required" : "",
     field.readOnly ? "readonly" : ""
@@ -401,7 +488,7 @@ function renderEditorField(field: AdminAnnouncementEditorScreen["fields"][number
     .join(" ");
 
   const control =
-    field.name === "body"
+    field.multiline
       ? `<textarea ${attrs}>${escapeHtml(field.value)}</textarea>`
       : `<input ${attrs} value="${escapeAttribute(field.value)}">`;
 
@@ -413,17 +500,21 @@ function renderEditorField(field: AdminAnnouncementEditorScreen["fields"][number
   ].join("");
 }
 
-function renderEditorAction(action: AdminAnnouncementEditorScreen["actions"][number]): string {
-  const modifier = action.id === "archive" ? " admin-content__button--danger" : "";
+function renderEditorAction(
+  screen: AdminContentEditorScreen,
+  action: AdminContentEditorScreen["actions"][number]
+): string {
+  const modifier =
+    action.id === "archive" || action.id === "cancel" ? " admin-content__button--danger" : "";
   const secondary = action.id === "refresh" ? " admin-content__button--secondary" : "";
   const href =
     action.id === "refresh"
-      ? "/admin/announcements"
+      ? screen.listPath
       : action.id === "create"
-        ? "/admin/announcements/new"
+        ? `${screen.listPath}/new`
         : action.targetId
-          ? `/admin/announcements/${action.targetId}`
-          : "/admin/announcements";
+          ? `${screen.listPath}/${action.targetId}`
+          : screen.listPath;
 
   return renderAdminActionLink(action, {
     href,
