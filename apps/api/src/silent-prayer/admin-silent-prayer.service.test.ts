@@ -169,7 +169,7 @@ describe("AdminSilentPrayerService", () => {
     });
     expect(auditLog.records).toHaveLength(1);
     expect(auditLog.records[0]).toMatchObject({
-      action: "admin.silent_prayer_event.update",
+      action: "admin.silent_prayer_event.archive",
       actorUserId: officer.id,
       entityId: scopedSilentPrayerEvent.id,
       entityType: "silent_prayer_event",
@@ -222,11 +222,13 @@ describe("AdminSilentPrayerService", () => {
   });
 
   it("publishes silent-prayer events after an approved status has been recorded", async () => {
+    const auditLog = auditLogRecorder();
     await expect(
       service(
         repository({
           beforeResult: { ...scopedSilentPrayerEvent, status: "APPROVED" }
-        })
+        }),
+        auditLog
       ).updateAdminSilentPrayerEvent(officer, scopedSilentPrayerEvent.id, {
         status: "PUBLISHED"
       })
@@ -237,6 +239,37 @@ describe("AdminSilentPrayerService", () => {
         approvedAt: "2026-05-04T00:00:00.000Z",
         publishedAt: "2026-05-04T00:00:00.000Z"
       }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.silent_prayer_event.publish",
+      actorUserId: officer.id,
+      entityType: "silent_prayer_event",
+      entityId: scopedSilentPrayerEvent.id
+    });
+  });
+
+  it("records explicit approval audit actions for silent-prayer events", async () => {
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository(), auditLog).updateAdminSilentPrayerEvent(
+        officer,
+        scopedSilentPrayerEvent.id,
+        {
+          status: "APPROVED"
+        }
+      )
+    ).resolves.toMatchObject({
+      silentPrayerEvent: {
+        status: "APPROVED",
+        approvedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.silent_prayer_event.approve",
+      actorUserId: officer.id,
+      entityType: "silent_prayer_event",
+      entityId: scopedSilentPrayerEvent.id
     });
   });
 });

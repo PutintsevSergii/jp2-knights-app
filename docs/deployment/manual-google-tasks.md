@@ -51,7 +51,6 @@ Set real values only after Terraform creates Secret Manager secret shells.
 Required values:
 
 - database connection URL;
-- Redis connection URL;
 - Firebase service-account JSON;
 - session/cookie secret values if configured;
 - push provider credentials if push is enabled for pilot.
@@ -75,4 +74,3 @@ Before pilot traffic is allowed:
 6. Run Guest, Idle, Candidate, Brother, Officer, and Super Admin smoke flows.
 7. Confirm rollback procedure.
 8. Approve launch in writing.
-

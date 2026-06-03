@@ -16,6 +16,7 @@ import type {
   AdminRoadmapDefinitionAssignmentTarget,
   AssignedRoadmap,
   CreateAdminRoadmapAssignmentInput,
+  ErasedRoadmapSubmission,
   RoadmapBrotherAccessProfile,
   RoadmapSubmissionSummary,
   RoadmapSubmissionTarget
@@ -432,6 +433,178 @@ describe("RoadmapService", () => {
     ]);
   });
 
+  it("exports roadmap submission personal data for Super Admins and audits only redacted metadata", async () => {
+    const repository = roadmapRepository({
+      adminSubmissionExport: {
+        ...adminRoadmapSubmission,
+        body: "Sensitive formation reflection.",
+        reviewComment: "Private review note.",
+        archivedAt: "2026-06-01T12:00:00.000Z"
+      }
+    });
+    const auditLog = auditLogRecorder();
+
+    const response = await service(repository, auditLog).exportAdminRoadmapSubmission(
+      superAdmin,
+      adminRoadmapSubmission.id
+    );
+
+    expect(response).toMatchObject({
+      roadmapSubmission: {
+        id: adminRoadmapSubmission.id,
+        body: "Sensitive formation reflection.",
+        reviewComment: "Private review note.",
+        archivedAt: "2026-06-01T12:00:00.000Z"
+      }
+    });
+    expect(typeof response.exportedAt).toBe("string");
+    expect(repository.adminSubmissionExportLookups).toEqual([adminRoadmapSubmission.id]);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.roadmapSubmission.export",
+      actorUserId: superAdmin.id,
+      entityType: "roadmap_submission",
+      entityId: adminRoadmapSubmission.id,
+      scopeOrganizationUnitId: organizationUnitId,
+      beforeSummary: null,
+      afterSummary: {
+        submissionId: adminRoadmapSubmission.id,
+        submitterUserId: brother.id,
+        status: "pending_review",
+        hasBody: true,
+        hasReviewComment: true,
+        exportedArchivedRecord: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Sensitive formation reflection");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Private review note");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain(brother.email);
+  });
+
+  it("blocks officers from exporting roadmap submissions before loading rows", async () => {
+    const repository = roadmapRepository({
+      adminSubmissionExport: {
+        ...adminRoadmapSubmission,
+        archivedAt: null
+      }
+    });
+
+    await expect(
+      service(repository).exportAdminRoadmapSubmission(officer, adminRoadmapSubmission.id)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.adminSubmissionExportLookups).toEqual([]);
+  });
+
+  it("returns not found when a Super Admin exports a missing roadmap submission", async () => {
+    await expect(
+      service(roadmapRepository({ adminSubmissionExport: null })).exportAdminRoadmapSubmission(
+        superAdmin,
+        adminRoadmapSubmission.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it("erases roadmap submission personal data for Super Admins and audits without erased values", async () => {
+    const repository = roadmapRepository({
+      adminSubmissionExport: {
+        ...adminRoadmapSubmission,
+        body: "Sensitive formation reflection.",
+        attachmentMetadata: [
+          {
+            originalFilename: "private-note.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 2048
+          }
+        ],
+        attachmentCount: 1,
+        reviewComment: "Private review note.",
+        archivedAt: null
+      },
+      erasedSubmission: {
+        id: adminRoadmapSubmission.id,
+        organizationUnitId,
+        status: "pending_review",
+        archivedAt: "2026-06-03T11:00:00.000Z"
+      }
+    });
+    const auditLog = auditLogRecorder();
+
+    const response = await service(repository, auditLog).eraseAdminRoadmapSubmission(
+      superAdmin,
+      adminRoadmapSubmission.id
+    );
+
+    expect(response).toEqual({
+      roadmapSubmissionId: adminRoadmapSubmission.id,
+      erasedAt: response.erasedAt,
+      archivedAt: "2026-06-03T11:00:00.000Z"
+    });
+    expect(typeof response.erasedAt).toBe("string");
+    expect(repository.adminSubmissionExportLookups).toEqual([adminRoadmapSubmission.id]);
+    expect(repository.adminSubmissionEraseInputs).toEqual([
+      {
+        id: adminRoadmapSubmission.id,
+        erasedAt: new Date(response.erasedAt)
+      }
+    ]);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.roadmapSubmission.erase",
+      actorUserId: superAdmin.id,
+      entityType: "roadmap_submission",
+      entityId: adminRoadmapSubmission.id,
+      scopeOrganizationUnitId: organizationUnitId,
+      beforeSummary: {
+        submissionId: adminRoadmapSubmission.id,
+        submitterUserId: brother.id,
+        hadBody: true,
+        hadAttachmentMetadata: true,
+        hadReviewComment: true
+      },
+      afterSummary: {
+        submissionId: adminRoadmapSubmission.id,
+        organizationUnitId,
+        status: "pending_review",
+        archived: true,
+        erasedPersonalData: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Sensitive formation reflection");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Private review note");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("private-note.pdf");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain(brother.email);
+  });
+
+  it("blocks officers from erasing roadmap submissions before loading rows", async () => {
+    const repository = roadmapRepository({
+      adminSubmissionExport: {
+        ...adminRoadmapSubmission,
+        archivedAt: null
+      },
+      erasedSubmission: {
+        id: adminRoadmapSubmission.id,
+        organizationUnitId,
+        status: "pending_review",
+        archivedAt: "2026-06-03T11:00:00.000Z"
+      }
+    });
+
+    await expect(
+      service(repository).eraseAdminRoadmapSubmission(officer, adminRoadmapSubmission.id)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.adminSubmissionExportLookups).toEqual([]);
+    expect(repository.adminSubmissionEraseInputs).toEqual([]);
+  });
+
+  it("returns not found when a Super Admin erases a missing roadmap submission", async () => {
+    await expect(
+      service(roadmapRepository({ adminSubmissionExport: null })).eraseAdminRoadmapSubmission(
+        superAdmin,
+        adminRoadmapSubmission.id
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it("reviews pending roadmap submissions with redacted audit summaries", async () => {
     const reviewedSubmission = {
       ...adminRoadmapSubmission,
@@ -505,6 +678,20 @@ describe("RoadmapService", () => {
       service(roadmapRepository({ adminSubmissions: [adminRoadmapSubmission] }))
         .listAdminRoadmapSubmissions(brother)
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("returns not found when a roadmap submission disappears during review update", async () => {
+    await expect(
+      service(
+        roadmapRepository({
+          adminSubmission: adminRoadmapSubmission,
+          reviewedSubmission: null
+        })
+      ).reviewAdminRoadmapSubmission(officer, adminRoadmapSubmission.id, {
+        status: "approved",
+        reviewComment: "Approved."
+      })
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it("lists and reads roadmap definitions for Super Admin only", async () => {
@@ -699,7 +886,12 @@ function roadmapRepository(options: {
   createdSubmission?: RoadmapSubmissionSummary | undefined;
   adminSubmissions?: typeof adminRoadmapSubmission[] | undefined;
   adminSubmission?: typeof adminRoadmapSubmission | null | undefined;
-  reviewedSubmission?: typeof adminRoadmapSubmission | undefined;
+  adminSubmissionExport?:
+    | (typeof adminRoadmapSubmission & { archivedAt: string | null })
+    | null
+    | undefined;
+  erasedSubmission?: ErasedRoadmapSubmission | null | undefined;
+  reviewedSubmission?: typeof adminRoadmapSubmission | null | undefined;
   adminDefinitions?: AdminRoadmapDefinitionDetail[] | undefined;
   adminDefinition?: AdminRoadmapDefinitionDetail | null | undefined;
   adminAssignments?: AdminRoadmapAssignmentDetail[] | undefined;
@@ -738,6 +930,11 @@ function roadmapRepository(options: {
     adminSubmissionLookups: Array<{
       id?: string;
       scopeOrganizationUnitIds: readonly string[] | null;
+    }> = [];
+    adminSubmissionExportLookups: string[] = [];
+    adminSubmissionEraseInputs: Array<{
+      id: string;
+      erasedAt: Date;
     }> = [];
     reviewInputs: Array<{
       id: string;
@@ -833,6 +1030,16 @@ function roadmapRepository(options: {
       return Promise.resolve(options.adminSubmission ?? null);
     }
 
+    findAdminRoadmapSubmissionForExport(id: string) {
+      this.adminSubmissionExportLookups.push(id);
+      return Promise.resolve(options.adminSubmissionExport ?? null);
+    }
+
+    eraseAdminRoadmapSubmission(id: string, erasedAt: Date) {
+      this.adminSubmissionEraseInputs.push({ id, erasedAt });
+      return Promise.resolve(options.erasedSubmission ?? null);
+    }
+
     reviewRoadmapSubmission(input: {
       id: string;
       scopeOrganizationUnitIds: readonly string[] | null;
@@ -848,7 +1055,11 @@ function roadmapRepository(options: {
         status: input.status,
         reviewComment: input.reviewComment
       });
-      return Promise.resolve(options.reviewedSubmission ?? adminRoadmapSubmission);
+      return Promise.resolve(
+        options.reviewedSubmission === undefined
+          ? adminRoadmapSubmission
+          : options.reviewedSubmission
+      );
     }
 
     listAdminRoadmapAssignments() {

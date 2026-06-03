@@ -50,8 +50,20 @@ describe("admin audit logs screen model", () => {
     });
 
     expect(screen.hasActiveFilters).toBe(true);
-    expect(screen.filters).toEqual([
-      { name: "action", label: "Action", value: "admin.prayer.create" },
+    expect(screen.filters[0]).toMatchObject({
+      name: "action",
+      label: "Action",
+      value: "admin.prayer.create"
+    });
+    expect(screen.filters[0]?.options).toEqual(
+      expect.arrayContaining([
+        { label: "Any action", value: "" },
+        { label: "Prayer approved", value: "admin.prayer.approve" },
+        { label: "Roadmap submission erased", value: "admin.roadmapSubmission.erase" },
+        { label: "Custom: admin.prayer.create", value: "admin.prayer.create" }
+      ])
+    );
+    expect(screen.filters.slice(1)).toEqual([
       { name: "entityType", label: "Entity type", value: "" },
       { name: "actorUserId", label: "Actor user ID", value: "" },
       { name: "entityId", label: "Entity ID", value: "" },
@@ -73,6 +85,35 @@ describe("admin audit logs screen model", () => {
         runtimeMode: "api"
       }).hasActiveFilters
     ).toBe(false);
+  });
+
+  it("keeps known audit action presets selected without adding duplicate custom options", () => {
+    const screen = buildAdminAuditLogListScreen({
+      state: "ready",
+      response: fallbackAdminAuditLogs,
+      runtimeMode: "api",
+      filters: {
+        action: "admin.silent_prayer_event.approve"
+      }
+    });
+
+    expect(screen.filters[0]).toMatchObject({
+      name: "action",
+      value: "admin.silent_prayer_event.approve"
+    });
+    expect(screen.filters[0]?.options).toEqual(
+      expect.arrayContaining([
+        { label: "Silent-prayer event approved", value: "admin.silent_prayer_event.approve" }
+      ])
+    );
+    expect(screen.filters[0]?.options).not.toEqual(
+      expect.arrayContaining([
+        {
+          label: "Custom: admin.silent_prayer_event.approve",
+          value: "admin.silent_prayer_event.approve"
+        }
+      ])
+    );
   });
 
   it("uses safe fallbacks for system actors and missing summaries", () => {

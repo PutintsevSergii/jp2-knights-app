@@ -47,5 +47,8 @@ Planned Firebase RTDB migration endpoints:
 - RTDB private count reads require API-issued per-user/event grants because
   Firebase rules must not replace Postgres-backed brother membership and
   organization-unit scope checks.
-- Admin create/update audit summaries include title, visibility, scope, status, timing, and lifecycle timestamps only. They do not copy intention text or participant/session identity into `audit_logs`.
+- Admin create/update/approve/publish/archive audit summaries include title,
+  visibility, scope, status, timing, explicit lifecycle action names, and
+  lifecycle timestamps only. They do not copy intention text or
+  participant/session identity into `audit_logs`.
 - Admin Lite mounts `/admin/silent-prayer-events` over the admin list contract with shared DTO validation, demo fixtures, approval-before-publish action metadata, and no participant-list/session-id/user-id/roster actions.

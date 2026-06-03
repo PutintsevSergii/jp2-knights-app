@@ -18,11 +18,13 @@ import type {
   AdminRoadmapDefinitionSummary,
   AdminRoadmapSubmissionDetail,
   AdminRoadmapSubmissionDetailLookup,
+  AdminRoadmapSubmissionExport,
   AdminRoadmapSubmissionLookup,
   AdminRoadmapSubmissionSummary,
   BrotherRoadmapSubmissionTargetLookup,
   CreateAdminRoadmapAssignmentInput,
   CreateRoadmapSubmissionInput,
+  ErasedRoadmapSubmission,
   PendingRoadmapSubmissionLookup,
   ReviewRoadmapSubmissionInput,
   RoadmapBrotherAccessProfile,
@@ -226,6 +228,44 @@ export class PrismaRoadmapRepository implements RoadmapRepository {
     });
 
     return record ? toAdminRoadmapSubmissionDetail(record) : null;
+  }
+
+  async findAdminRoadmapSubmissionForExport(
+    id: string
+  ): Promise<AdminRoadmapSubmissionExport | null> {
+    const record = await this.prisma.roadmapSubmission.findUnique({
+      where: { id },
+      include: adminRoadmapSubmissionInclude
+    });
+
+    return record ? toAdminRoadmapSubmissionExport(record) : null;
+  }
+
+  async eraseAdminRoadmapSubmission(
+    id: string,
+    erasedAt: Date
+  ): Promise<ErasedRoadmapSubmission | null> {
+    const existing = await this.prisma.roadmapSubmission.findUnique({
+      where: { id },
+      select: { id: true }
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    const record = await this.prisma.roadmapSubmission.update({
+      where: { id },
+      data: {
+        body: "Erased roadmap submission personal data.",
+        attachmentMeta: [],
+        reviewComment: null,
+        archivedAt: erasedAt
+      },
+      include: adminRoadmapSubmissionInclude
+    });
+
+    return toErasedRoadmapSubmission(record);
   }
 
   async reviewRoadmapSubmission({
@@ -777,6 +817,26 @@ function toAdminRoadmapSubmissionDetail(
     ...toAdminRoadmapSubmissionSummary(submission),
     body: submission.body,
     attachmentMetadata: toAttachmentMetadata(submission.attachmentMeta)
+  };
+}
+
+function toAdminRoadmapSubmissionExport(
+  submission: AdminRoadmapSubmissionRecord
+): AdminRoadmapSubmissionExport {
+  return {
+    ...toAdminRoadmapSubmissionDetail(submission),
+    archivedAt: submission.archivedAt?.toISOString() ?? null
+  };
+}
+
+function toErasedRoadmapSubmission(
+  submission: AdminRoadmapSubmissionRecord
+): ErasedRoadmapSubmission {
+  return {
+    id: submission.id,
+    organizationUnitId: submission.assignment.organizationUnitId,
+    status: submission.status,
+    archivedAt: submission.archivedAt?.toISOString() ?? null
   };
 }
 

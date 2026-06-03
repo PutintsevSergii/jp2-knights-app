@@ -2,18 +2,19 @@
 
 ## Purpose
 
-This plan documents the next cost-reduction development slice for silent-prayer
-realtime presence. The current implementation uses Redis TTL presence keys and a
-Socket.IO Redis adapter. That is correct for multi-instance scaling, but Google
-Memorystore creates an always-on pilot cost. The target pilot path is Firebase
-Realtime Database (RTDB) for aggregate-only live count updates while preserving
-the API as the authorization boundary.
+This plan documents the next live deployment slice for silent-prayer realtime
+presence. The current implementation uses Redis TTL presence keys and a
+Socket.IO Redis adapter, but owner direction on June 3, 2026 excludes
+Redis/Memorystore from live pilot and production infrastructure. The target live
+path is Firebase Realtime Database (RTDB) for aggregate-only live count updates
+while preserving the API as the authorization boundary.
 
 ## Decision
 
-Move silent-prayer realtime presence from the production-required Redis/Socket.IO
-path to a Firebase RTDB-backed provider before the Google Cloud pilot, unless the
-owner explicitly accepts Memorystore idle cost.
+Move silent-prayer realtime presence from the current Redis/Socket.IO
+implementation to a Firebase RTDB-backed provider before the Google Cloud pilot.
+Redis/Memorystore must not be provisioned for pilot or production unless a future
+owner-approved scope change reverses this decision.
 
 The migration must not change these V1 privacy and scope rules:
 
@@ -101,8 +102,10 @@ SILENT_PRAYER_REALTIME_PROVIDER=redis-socket | firebase-rtdb | in-memory
 Rules:
 
 - `in-memory` is allowed only outside production.
-- `redis-socket` keeps the current production Redis behavior.
-- `firebase-rtdb` is the pilot cost-reduction target.
+- `redis-socket` documents the current implemented Redis behavior, but must not
+  be used for live pilot or production after the June 3, 2026 no-Redis owner
+  decision.
+- `firebase-rtdb` is the live pilot and production target.
 - production startup must fail if the selected provider is missing required
   environment values.
 - no screen, controller, or service should read `process.env` directly; provider
@@ -217,7 +220,7 @@ SilentPrayerRealtimeClient
 
 Implementations:
 
-- current Socket.IO client for `redis-socket`;
+- current Socket.IO client for non-live `redis-socket` compatibility only;
 - Firebase RTDB listener for `firebase-rtdb`;
 - fake deterministic listener for tests/demo.
 
@@ -303,20 +306,15 @@ Use a feature-flagged rollout:
 
 1. deploy RTDB rules first;
 2. add `FIREBASE_DATABASE_URL` and Admin SDK secret access;
-3. deploy API with `SILENT_PRAYER_REALTIME_PROVIDER=redis-socket`;
-4. deploy mobile build that supports both Socket.IO and RTDB providers;
-5. switch staging/pilot API to `firebase-rtdb`;
-6. verify public and brother silent-prayer joins on a device;
-7. verify aggregate-only RTDB data in Firebase console;
-8. remove Memorystore requirement from pilot Terraform only after RTDB passes;
-9. keep Redis code path until pilot stability is proven or owner approves
-   deletion.
+3. deploy API with `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`;
+4. deploy mobile build that supports the RTDB provider;
+5. verify public and brother silent-prayer joins on a device;
+6. verify aggregate-only RTDB data in Firebase console;
+7. verify live Terraform has no Memorystore/Redis resources or secrets.
 
 Rollback:
 
-- switch `SILENT_PRAYER_REALTIME_PROVIDER` back to `redis-socket` if Redis is
-  still provisioned;
-- otherwise switch to single-instance `in-memory` only for non-production or an
+- switch to single-instance `in-memory` only for non-production or an
   owner-approved emergency pilot mitigation;
 - never loosen RTDB rules to restore functionality.
 

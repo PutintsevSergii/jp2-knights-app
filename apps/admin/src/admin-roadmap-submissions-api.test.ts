@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { AdminContentHttpError } from "./admin-content-api.js";
 import { fallbackAdminRoadmapSubmissions } from "./admin-content-fixtures.js";
 import {
+  eraseAdminRoadmapSubmission,
+  exportAdminRoadmapSubmission,
   fetchAdminRoadmapSubmission,
   fetchAdminRoadmapSubmissions,
   reviewAdminRoadmapSubmission
@@ -35,7 +37,7 @@ const listPayload = {
 };
 
 describe("admin roadmap submissions API client", () => {
-  it("fetches and validates list and detail responses", async () => {
+  it("fetches and validates list, detail, export, and erasure responses", async () => {
     const listFetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
@@ -48,6 +50,32 @@ describe("admin roadmap submissions API client", () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({ roadmapSubmission })
+      })
+    );
+    const exportFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            roadmapSubmission: {
+              ...roadmapSubmission,
+              archivedAt: null
+            },
+            exportedAt: "2026-06-03T10:00:00.000Z"
+          })
+      })
+    );
+    const eraseFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            roadmapSubmissionId: roadmapSubmission.id,
+            erasedAt: "2026-06-03T11:00:00.000Z",
+            archivedAt: "2026-06-03T11:00:00.000Z"
+          })
       })
     );
 
@@ -65,6 +93,30 @@ describe("admin roadmap submissions API client", () => {
         fetchImpl: detailFetch
       })
     ).resolves.toEqual({ roadmapSubmission });
+    await expect(
+      exportAdminRoadmapSubmission(roadmapSubmission.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: exportFetch
+      })
+    ).resolves.toMatchObject({
+      roadmapSubmission: {
+        id: roadmapSubmission.id,
+        archivedAt: null
+      },
+      exportedAt: "2026-06-03T10:00:00.000Z"
+    });
+    await expect(
+      eraseAdminRoadmapSubmission(roadmapSubmission.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: eraseFetch
+      })
+    ).resolves.toEqual({
+      roadmapSubmissionId: roadmapSubmission.id,
+      erasedAt: "2026-06-03T11:00:00.000Z",
+      archivedAt: "2026-06-03T11:00:00.000Z"
+    });
 
     expect(listFetch).toHaveBeenCalledWith("https://api.example.test/admin/roadmap-submissions", {
       method: "GET",
@@ -74,6 +126,20 @@ describe("admin roadmap submissions API client", () => {
       `https://api.example.test/admin/roadmap-submissions/${roadmapSubmission.id}`,
       {
         method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
+    expect(exportFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/roadmap-submissions/${roadmapSubmission.id}/export`,
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
+    expect(eraseFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/roadmap-submissions/${roadmapSubmission.id}/erase`,
+      {
+        method: "POST",
         headers: { authorization: "Bearer token_1" }
       }
     );

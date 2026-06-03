@@ -117,7 +117,7 @@ describe("AdminPrayerService", () => {
     });
     expect(auditLog.records[0]?.afterSummary).not.toHaveProperty("body");
     expect(auditLog.records[1]).toMatchObject({
-      action: "admin.prayer.update",
+      action: "admin.prayer.archive",
       actorUserId: superAdmin.id,
       entityId: publicPrayer.id,
       entityType: "prayer"
@@ -154,9 +154,11 @@ describe("AdminPrayerService", () => {
   });
 
   it("publishes prayers after an approved status has been recorded", async () => {
+    const auditLog = auditLogRecorder();
     await expect(
       service(
-        repository({ beforeResult: { ...publicPrayer, status: "APPROVED" } })
+        repository({ beforeResult: { ...publicPrayer, status: "APPROVED" } }),
+        auditLog
       ).updateAdminPrayer(superAdmin, publicPrayer.id, {
         status: "PUBLISHED"
       })
@@ -167,6 +169,32 @@ describe("AdminPrayerService", () => {
         approvedAt: "2026-05-04T00:00:00.000Z",
         publishedAt: "2026-05-04T00:00:00.000Z"
       }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.prayer.publish",
+      entityType: "prayer",
+      entityId: publicPrayer.id
+    });
+  });
+
+  it("records explicit approval audit actions for prayers", async () => {
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository(), auditLog).updateAdminPrayer(superAdmin, publicPrayer.id, {
+        status: "APPROVED"
+      })
+    ).resolves.toMatchObject({
+      prayer: {
+        status: "APPROVED",
+        approvedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.prayer.approve",
+      actorUserId: superAdmin.id,
+      entityType: "prayer",
+      entityId: publicPrayer.id
     });
   });
 

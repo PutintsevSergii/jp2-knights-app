@@ -18,9 +18,10 @@ deployment artifacts close to the end of V1:
 
 This timing avoids building infrastructure around API, secret, realtime
 provider, Firebase, or migration assumptions that may still change during
-hardening. Before provisioning Memorystore for pilot, implement and validate the
-Firebase Realtime Database silent-prayer migration plan so pilot can avoid Redis
-idle cost if aggregate-count realtime behavior passes security and device tests.
+hardening. Owner direction on June 3, 2026: live pilot infrastructure must not
+provision Redis/Memorystore. Implement and validate the Firebase Realtime
+Database silent-prayer migration plan before launch so aggregate-count realtime
+behavior uses RTDB with API-owned authorization.
 
 ## Target Architecture
 
@@ -30,7 +31,6 @@ flowchart LR
   admin["Cloud Run Admin"] --> api
   api --> sql["Cloud SQL PostgreSQL"]
   api --> rtdb["Firebase Realtime Database"]
-  api -. fallback .-> redis["Memorystore Redis"]
   mobile --> rtdb
   api --> firebase["Firebase Authentication"]
   api --> secrets["Secret Manager"]
@@ -49,7 +49,7 @@ flowchart LR
 | Repo implementation | Dockerfiles, Terraform modules, scripts, docs, smoke checks | Review and approval |
 | Google Cloud access | Exact commands, validation steps, error triage | Billing, project creation, IAM access, command execution when credentials are required |
 | Firebase | Config docs, app env wiring, API secret names | Firebase project, Google sign-in, OAuth client IDs, authorized domains |
-| Silent-prayer realtime | RTDB provider plan, rules, API/mobile adapter work, tests, rollback docs | Approve cost/security tradeoff and Firebase database creation |
+| Silent-prayer realtime | RTDB provider plan, rules, API/mobile adapter work, tests, rollback docs | Approve Firebase database creation |
 | DNS/domains | Terraform/DNS instructions and validation checks | Domain ownership, DNS provider updates |
 | Secrets | Secret names, templates, safe setter scripts | Real secret values |
 | Launch approval | Readiness checklist and rollback runbook | Legal/content/privacy approval and final launch decision |
@@ -64,9 +64,9 @@ Agent deliverables:
 - Produce final environment and secret list.
 - Confirm whether staging and pilot production are separate projects.
 - Confirm migration strategy and rollback assumptions.
-- Confirm the selected silent-prayer realtime provider. Default pilot target is
-  Firebase RTDB after the migration slice passes; Redis/Memorystore remains the
-  fallback provider if owner accepts the idle cost.
+- Confirm Firebase RTDB is configured as the only live silent-prayer realtime
+  provider. Redis/Memorystore is not part of pilot or production infrastructure
+  unless a future owner-approved scope change reverses this decision.
 
 Human tasks:
 
@@ -108,8 +108,8 @@ Agent deliverables:
 
 - Add Terraform root under `infra/terraform`.
 - Provision required APIs, service accounts, Artifact Registry, Secret Manager
-  secret shells, Cloud SQL, Memorystore, Cloud Run services, Cloud Run migration
-  job, and minimum IAM.
+  secret shells, Cloud SQL, Firebase RTDB, Cloud Run services, Cloud Run
+  migration job, and minimum IAM.
 - Add `terraform.tfvars.example`.
 
 Human tasks:

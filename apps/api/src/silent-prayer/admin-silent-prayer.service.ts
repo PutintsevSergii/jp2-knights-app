@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { contentMutationAuditAction } from "../content/content-audit-actions.js";
 import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminSilentPrayerRepository } from "./admin-silent-prayer.repository.js";
 import type {
@@ -102,7 +103,7 @@ export class AdminSilentPrayerService {
     }
 
     await this.auditLog.record({
-      action: "admin.silent_prayer_event.update",
+      action: contentMutationAuditAction("silent_prayer_event", data, beforeSilentPrayerEvent),
       actorUserId: principal.id,
       entityType: "silent_prayer_event",
       entityId: silentPrayerEvent.id,

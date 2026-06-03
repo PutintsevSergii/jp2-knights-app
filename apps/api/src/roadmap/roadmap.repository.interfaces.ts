@@ -12,11 +12,13 @@ import type {
   AdminRoadmapDefinitionSummary,
   AdminRoadmapSubmissionDetail,
   AdminRoadmapSubmissionDetailLookup,
+  AdminRoadmapSubmissionExport,
   AdminRoadmapSubmissionLookup,
   AdminRoadmapSubmissionSummary,
   BrotherRoadmapSubmissionTargetLookup,
   CreateAdminRoadmapAssignmentInput,
   CreateRoadmapSubmissionInput,
+  ErasedRoadmapSubmission,
   PendingRoadmapSubmissionLookup,
   ReviewRoadmapSubmissionInput,
   RoadmapBrotherAccessProfile,
@@ -54,6 +56,13 @@ export abstract class AdminRoadmapSubmissionRepository {
   abstract findAdminRoadmapSubmission(
     lookup: AdminRoadmapSubmissionDetailLookup
   ): Promise<AdminRoadmapSubmissionDetail | null>;
+  abstract findAdminRoadmapSubmissionForExport(
+    id: string
+  ): Promise<AdminRoadmapSubmissionExport | null>;
+  abstract eraseAdminRoadmapSubmission(
+    id: string,
+    erasedAt: Date
+  ): Promise<ErasedRoadmapSubmission | null>;
   abstract reviewRoadmapSubmission(
     input: ReviewRoadmapSubmissionInput
   ): Promise<AdminRoadmapSubmissionDetail | null>;

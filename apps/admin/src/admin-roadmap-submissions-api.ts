@@ -1,7 +1,11 @@
 import {
   adminRoadmapSubmissionDetailResponseSchema,
+  adminRoadmapSubmissionErasureResponseSchema,
+  adminRoadmapSubmissionExportResponseSchema,
   adminRoadmapSubmissionListResponseSchema,
   type AdminRoadmapSubmissionDetailResponseDto,
+  type AdminRoadmapSubmissionErasureResponseDto,
+  type AdminRoadmapSubmissionExportResponseDto,
   type AdminRoadmapSubmissionListResponseDto,
   type ReviewRoadmapSubmissionRequestDto
 } from "@jp2/shared-validation";
@@ -22,6 +26,26 @@ export async function fetchAdminRoadmapSubmission(
   const response = await requestAdminApi(`admin/roadmap-submissions/${id}`, options);
 
   return adminRoadmapSubmissionDetailResponseSchema.parse(await response.json());
+}
+
+export async function exportAdminRoadmapSubmission(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminRoadmapSubmissionExportResponseDto> {
+  const response = await requestAdminApi(`admin/roadmap-submissions/${id}/export`, options);
+
+  return adminRoadmapSubmissionExportResponseSchema.parse(await response.json());
+}
+
+export async function eraseAdminRoadmapSubmission(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminRoadmapSubmissionErasureResponseDto> {
+  const response = await requestAdminApi(`admin/roadmap-submissions/${id}/erase`, options, {
+    method: "POST"
+  });
+
+  return adminRoadmapSubmissionErasureResponseSchema.parse(await response.json());
 }
 
 export async function reviewAdminRoadmapSubmission(

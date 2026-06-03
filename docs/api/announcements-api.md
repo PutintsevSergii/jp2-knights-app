@@ -27,3 +27,18 @@
 - Responses include announcement text, visibility, target scope, pinned state,
   and published timestamp only. They do not expose read receipts, comments,
   participant lists, or push delivery details.
+
+## Implemented Admin Rules
+
+- `GET /admin/announcements`, `POST /admin/announcements`, and
+  `PATCH /admin/announcements/:id` require Admin Lite access, with officer
+  writes scoped to assigned organization units.
+- Announcement publish transitions require prior approval. Direct publish
+  creates or updates from unapproved records fail before audit or push side
+  effects.
+- Admin create/update/approve/publish/archive mutations append audit log entries
+  with actor, entity, scope, explicit lifecycle action names, and redacted
+  before/after summaries. Full announcement bodies are not copied into audit
+  summaries.
+- First publish resolves audience-safe push recipients server-side and dispatches
+  generic notification copy without exposing push delivery state in Admin Lite.

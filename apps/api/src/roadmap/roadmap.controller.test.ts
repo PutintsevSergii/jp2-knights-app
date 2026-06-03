@@ -8,6 +8,8 @@ import type {
   AdminRoadmapDefinitionDetailResponse,
   AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetailResponse,
+  AdminRoadmapSubmissionErasureResponse,
+  AdminRoadmapSubmissionExportResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
   RoadmapSubmissionResponse
@@ -83,6 +85,20 @@ const adminRoadmapSubmissionListResponse: AdminRoadmapSubmissionListResponse = {
       updatedAt: adminRoadmapSubmissionResponse.roadmapSubmission.updatedAt
     }
   ]
+};
+
+const adminRoadmapSubmissionExportResponse: AdminRoadmapSubmissionExportResponse = {
+  roadmapSubmission: {
+    ...adminRoadmapSubmissionResponse.roadmapSubmission,
+    archivedAt: null
+  },
+  exportedAt: "2026-06-03T10:00:00.000Z"
+};
+
+const adminRoadmapSubmissionErasureResponse: AdminRoadmapSubmissionErasureResponse = {
+  roadmapSubmissionId: adminRoadmapSubmissionResponse.roadmapSubmission.id,
+  erasedAt: "2026-06-03T11:00:00.000Z",
+  archivedAt: "2026-06-03T11:00:00.000Z"
 };
 
 const adminRoadmapDefinitionResponse: AdminRoadmapDefinitionDetailResponse = {
@@ -199,6 +215,12 @@ describe("RoadmapController", () => {
     const getAdminRoadmapSubmission = vi.fn(() =>
       Promise.resolve(adminRoadmapSubmissionResponse)
     );
+    const exportAdminRoadmapSubmission = vi.fn(() =>
+      Promise.resolve(adminRoadmapSubmissionExportResponse)
+    );
+    const eraseAdminRoadmapSubmission = vi.fn(() =>
+      Promise.resolve(adminRoadmapSubmissionErasureResponse)
+    );
     const reviewAdminRoadmapSubmission = vi.fn(() =>
       Promise.resolve(adminRoadmapSubmissionResponse)
     );
@@ -219,6 +241,8 @@ describe("RoadmapController", () => {
       submitBrotherRoadmapStep,
       listAdminRoadmapSubmissions,
       getAdminRoadmapSubmission,
+      exportAdminRoadmapSubmission,
+      eraseAdminRoadmapSubmission,
       reviewAdminRoadmapSubmission,
       listAdminRoadmapAssignments,
       getAdminRoadmapAssignment,
@@ -242,6 +266,12 @@ describe("RoadmapController", () => {
     await expect(
       controller.getAdminRoadmapSubmission({ principal }, submissionResponse.submission.id)
     ).resolves.toBe(adminRoadmapSubmissionResponse);
+    await expect(
+      controller.exportAdminRoadmapSubmission({ principal }, submissionResponse.submission.id)
+    ).resolves.toBe(adminRoadmapSubmissionExportResponse);
+    await expect(
+      controller.eraseAdminRoadmapSubmission({ principal }, submissionResponse.submission.id)
+    ).resolves.toBe(adminRoadmapSubmissionErasureResponse);
     await expect(
       controller.reviewAdminRoadmapSubmission({ principal }, submissionResponse.submission.id, {
         status: "approved",
@@ -285,6 +315,14 @@ describe("RoadmapController", () => {
       principal,
       submissionResponse.submission.id
     );
+    expect(exportAdminRoadmapSubmission).toHaveBeenCalledWith(
+      principal,
+      submissionResponse.submission.id
+    );
+    expect(eraseAdminRoadmapSubmission).toHaveBeenCalledWith(
+      principal,
+      submissionResponse.submission.id
+    );
     expect(reviewAdminRoadmapSubmission).toHaveBeenCalledWith(
       principal,
       submissionResponse.submission.id,
@@ -317,6 +355,8 @@ describe("RoadmapController", () => {
       submitBrotherRoadmapStep: vi.fn(),
       listAdminRoadmapSubmissions: vi.fn(),
       getAdminRoadmapSubmission: vi.fn(),
+      exportAdminRoadmapSubmission: vi.fn(),
+      eraseAdminRoadmapSubmission: vi.fn(),
       reviewAdminRoadmapSubmission: vi.fn(),
       listAdminRoadmapAssignments: vi.fn(),
       getAdminRoadmapAssignment: vi.fn(),
@@ -344,6 +384,12 @@ describe("RoadmapController", () => {
     expect(() => controller.getAdminRoadmapSubmission({}, submissionResponse.submission.id)).toThrow(
       "CurrentUserGuard did not attach a principal."
     );
+    expect(() =>
+      controller.exportAdminRoadmapSubmission({}, submissionResponse.submission.id)
+    ).toThrow("CurrentUserGuard did not attach a principal.");
+    expect(() =>
+      controller.eraseAdminRoadmapSubmission({}, submissionResponse.submission.id)
+    ).toThrow("CurrentUserGuard did not attach a principal.");
     expect(() =>
       controller.reviewAdminRoadmapSubmission({}, submissionResponse.submission.id, {
         status: "approved",

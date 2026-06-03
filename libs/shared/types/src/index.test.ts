@@ -9,6 +9,8 @@ import {
   ORGANIZATION_UNIT_STATUSES,
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
+  RETENTION_BUCKETS,
+  RETENTION_BUCKET_METADATA,
   ROADMAP_ASSIGNMENT_STATUSES,
   ROADMAP_ASSIGNMENT_STATUS_METADATA,
   ROADMAP_SUBMISSION_STATUSES,
@@ -73,5 +75,25 @@ describe("shared types", () => {
     ]);
     expect(ROADMAP_SUBMISSION_STATUS_METADATA.pending_review.terminal).toBe(false);
     expect(ROADMAP_SUBMISSION_STATUS_METADATA.approved.labelKey).toBe("roadmap.status.approved");
+  });
+
+  it("keeps retention buckets explicit without legal-duration defaults", () => {
+    expect(RETENTION_BUCKETS).toEqual([
+      "short_lived_presence",
+      "short_lived_technical",
+      "operational",
+      "community_record",
+      "sensitive_review",
+      "audit"
+    ]);
+    expect(Object.keys(RETENTION_BUCKET_METADATA)).toEqual([...RETENTION_BUCKETS]);
+    expect(RETENTION_BUCKET_METADATA.sensitive_review).toMatchObject({
+      requiredCapability: "archive_export_erasure",
+      durationPolicy: "deployment_configured_after_legal_review"
+    });
+    expect(RETENTION_BUCKET_METADATA.audit).toMatchObject({
+      requiredCapability: "append_only_redaction",
+      durationPolicy: "append_only_redacted"
+    });
   });
 });

@@ -180,7 +180,7 @@ describe("AdminEventService", () => {
     });
     expect(auditLog.records).toHaveLength(1);
     expect(auditLog.records[0]).toMatchObject({
-      action: "admin.event.update",
+      action: "admin.event.cancel",
       actorUserId: officer.id,
       entityId: scopedEvent.id,
       entityType: "event",
@@ -224,6 +224,7 @@ describe("AdminEventService", () => {
   });
 
   it("publishes events after approval metadata has been recorded", async () => {
+    const auditLog = auditLogRecorder();
     await expect(
       service(
         repository({
@@ -231,7 +232,8 @@ describe("AdminEventService", () => {
             ...scopedEvent,
             approvedAt: "2026-05-04T00:00:00.000Z"
           }
-        })
+        }),
+        auditLog
       ).updateAdminEvent(officer, scopedEvent.id, {
         status: "published"
       })
@@ -242,6 +244,32 @@ describe("AdminEventService", () => {
         approvedAt: "2026-05-04T00:00:00.000Z",
         publishedAt: "2026-05-04T00:00:00.000Z"
       }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.event.publish",
+      actorUserId: officer.id,
+      entityType: "event",
+      entityId: scopedEvent.id
+    });
+  });
+
+  it("records explicit approval audit actions for events", async () => {
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository(), auditLog).updateAdminEvent(officer, scopedEvent.id, {
+        approvedAt: "2026-06-03T12:00:00.000Z"
+      })
+    ).resolves.toMatchObject({
+      event: {
+        approvedAt: "2026-06-03T12:00:00.000Z"
+      }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.event.approve",
+      actorUserId: officer.id,
+      entityType: "event",
+      entityId: scopedEvent.id
     });
   });
 });

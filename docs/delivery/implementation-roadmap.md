@@ -30,10 +30,10 @@ deployment plan and environment/secrets matrix current while Phase 12
 privacy/security/content-approval hardening is in progress, then implement
 Dockerfiles, Terraform, Cloud Run services, Cloud SQL, the selected
 silent-prayer realtime provider, Secret Manager wiring, migration jobs, and
-deployment smoke checks as Phase 13 pilot-readiness work. The planned pilot
-default is Firebase RTDB for silent-prayer aggregate counts to avoid
-Memorystore idle cost; provision Memorystore Redis only if the Redis/Socket.IO
-fallback remains selected after the RTDB migration slice is tested. Starting
+deployment smoke checks as Phase 13 pilot-readiness work. Owner direction on
+June 3, 2026 makes Firebase RTDB the live silent-prayer aggregate-count
+provider; do not provision Redis/Memorystore for pilot or production unless a
+future owner-approved scope change reverses that decision. Starting
 infrastructure implementation earlier is allowed only for local container smoke
 checks or if the human owner explicitly asks for a staging deployment before
 Phase 12 stabilizes.

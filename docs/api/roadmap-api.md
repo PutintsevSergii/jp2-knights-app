@@ -70,16 +70,18 @@ Rejected submissions require `reviewComment`.
 
 ## Admin
 
-| Method | Path                             | Role                | Purpose                   |
-| ------ | -------------------------------- | ------------------- | ------------------------- |
-| GET    | `/admin/roadmap-assignments`     | Super Admin         | List roadmap assignments  |
-| POST   | `/admin/roadmap-assignments`     | Super Admin         | Create roadmap assignment |
-| GET    | `/admin/roadmap-assignments/:id` | Super Admin         | Inspect assignment status |
-| GET    | `/admin/roadmap-definitions`     | Super Admin         | List roadmap definitions  |
-| GET    | `/admin/roadmap-definitions/:id` | Super Admin         | Inspect stages/steps      |
-| GET    | `/admin/roadmap-submissions`     | Officer/Super Admin | Review queue              |
-| GET    | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Review detail             |
-| PATCH  | `/admin/roadmap-submissions/:id` | Officer/Super Admin | Approve/reject            |
+| Method | Path                                      | Role                | Purpose                   |
+| ------ | ----------------------------------------- | ------------------- | ------------------------- |
+| GET    | `/admin/roadmap-assignments`              | Super Admin         | List roadmap assignments  |
+| POST   | `/admin/roadmap-assignments`              | Super Admin         | Create roadmap assignment |
+| GET    | `/admin/roadmap-assignments/:id`          | Super Admin         | Inspect assignment status |
+| GET    | `/admin/roadmap-definitions`              | Super Admin         | List roadmap definitions  |
+| GET    | `/admin/roadmap-definitions/:id`          | Super Admin         | Inspect stages/steps      |
+| GET    | `/admin/roadmap-submissions`              | Officer/Super Admin | Review queue              |
+| GET    | `/admin/roadmap-submissions/:id`          | Officer/Super Admin | Review detail             |
+| GET    | `/admin/roadmap-submissions/:id/export`   | Super Admin         | Subject-access export     |
+| POST   | `/admin/roadmap-submissions/:id/erase`    | Super Admin         | Legal erasure             |
+| PATCH  | `/admin/roadmap-submissions/:id`          | Officer/Super Admin | Approve/reject            |
 
 ## Rules
 
@@ -104,6 +106,16 @@ Rejected submissions require `reviewComment`.
   review decisions for pending submissions. Rejections require a
   `reviewComment`; all decisions write audit summaries that redact the full
   submission body.
+- `GET /admin/roadmap-submissions/:id/export` is Super Admin-only and returns
+  the roadmap submission personal-data export, including archived submissions,
+  for legal/privacy subject-access handling. Officers are denied before rows
+  load. The export action is audited with redacted metadata only; the audit
+  summary does not copy the submitted body, review comment, or submitter email.
+- `POST /admin/roadmap-submissions/:id/erase` is Super Admin-only and performs
+  the roadmap submission legal-erasure path. It clears submitted body text,
+  attachment metadata, and review comments, archives the submission instead of
+  deleting it, returns only id/erasure/archive metadata, denies officers before
+  rows load, and writes audit summaries without copying erased values.
 - `GET /admin/roadmap-definitions` and
   `GET /admin/roadmap-definitions/:id` require Super Admin access and expose
   non-archived roadmap definitions with stage, step, and assignment counts for

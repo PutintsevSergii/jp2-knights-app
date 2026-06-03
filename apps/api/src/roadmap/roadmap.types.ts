@@ -9,6 +9,9 @@ import type {
   AdminRoadmapDefinitionSummaryDto,
   AdminRoadmapSubmissionDetailDto,
   AdminRoadmapSubmissionDetailResponseDto,
+  AdminRoadmapSubmissionErasureResponseDto,
+  AdminRoadmapSubmissionExportDto,
+  AdminRoadmapSubmissionExportResponseDto,
   AdminRoadmapSubmissionListResponseDto,
   AdminRoadmapSubmissionSummaryDto,
   AssignedRoadmapDto,
@@ -77,6 +80,13 @@ export interface ReviewRoadmapSubmissionInput extends AdminRoadmapSubmissionDeta
   reviewComment: string | null;
 }
 
+export interface ErasedRoadmapSubmission {
+  id: string;
+  organizationUnitId: string | null;
+  status: AdminRoadmapSubmissionDetail["status"];
+  archivedAt: string | null;
+}
+
 export interface AdminRoadmapDefinitionLookup {
   id: string;
 }
@@ -115,8 +125,11 @@ export type RoadmapSubmissionSummary = RoadmapSubmissionSummaryDto;
 export type RoadmapSubmissionResponse = RoadmapSubmissionResponseDto;
 export type AdminRoadmapSubmissionSummary = AdminRoadmapSubmissionSummaryDto;
 export type AdminRoadmapSubmissionDetail = AdminRoadmapSubmissionDetailDto;
+export type AdminRoadmapSubmissionExport = AdminRoadmapSubmissionExportDto;
 export type AdminRoadmapSubmissionListResponse = AdminRoadmapSubmissionListResponseDto;
 export type AdminRoadmapSubmissionDetailResponse = AdminRoadmapSubmissionDetailResponseDto;
+export type AdminRoadmapSubmissionExportResponse = AdminRoadmapSubmissionExportResponseDto;
+export type AdminRoadmapSubmissionErasureResponse = AdminRoadmapSubmissionErasureResponseDto;
 export type ReviewRoadmapSubmissionRequest = ReviewRoadmapSubmissionRequestDto;
 export type AdminRoadmapDefinitionSummary = AdminRoadmapDefinitionSummaryDto;
 export type AdminRoadmapDefinitionDetail = AdminRoadmapDefinitionDetailDto;

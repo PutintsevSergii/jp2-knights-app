@@ -24,6 +24,9 @@ import type {
   AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetail,
   AdminRoadmapSubmissionDetailResponse,
+  AdminRoadmapSubmissionErasureResponse,
+  AdminRoadmapSubmissionExport,
+  AdminRoadmapSubmissionExportResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
   CreateAdminRoadmapAssignmentRequest,
@@ -165,6 +168,81 @@ export class RoadmapService {
     }
 
     return { roadmapSubmission };
+  }
+
+  async exportAdminRoadmapSubmission(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminRoadmapSubmissionExportResponse> {
+    requireSuperAdmin(principal);
+
+    const roadmapSubmission =
+      await this.adminRoadmapSubmissionRepository.findAdminRoadmapSubmissionForExport(id);
+
+    if (!roadmapSubmission) {
+      throw new NotFoundException("Roadmap submission was not found.");
+    }
+
+    await this.auditLog.record({
+      action: "admin.roadmapSubmission.export",
+      actorUserId: principal.id,
+      entityType: "roadmap_submission",
+      entityId: roadmapSubmission.id,
+      scopeOrganizationUnitId: roadmapSubmission.organizationUnitId,
+      beforeSummary: null,
+      afterSummary: summarizeRoadmapSubmissionExportForAudit(roadmapSubmission)
+    });
+
+    return {
+      roadmapSubmission,
+      exportedAt: new Date().toISOString()
+    };
+  }
+
+  async eraseAdminRoadmapSubmission(
+    principal: CurrentUserPrincipal,
+    id: string
+  ): Promise<AdminRoadmapSubmissionErasureResponse> {
+    requireSuperAdmin(principal);
+
+    const beforeSubmission =
+      await this.adminRoadmapSubmissionRepository.findAdminRoadmapSubmissionForExport(id);
+
+    if (!beforeSubmission) {
+      throw new NotFoundException("Roadmap submission was not found.");
+    }
+
+    const erasedAt = new Date();
+    const erasedSubmission = await this.adminRoadmapSubmissionRepository.eraseAdminRoadmapSubmission(
+      id,
+      erasedAt
+    );
+
+    if (!erasedSubmission) {
+      throw new NotFoundException("Roadmap submission was not found.");
+    }
+
+    await this.auditLog.record({
+      action: "admin.roadmapSubmission.erase",
+      actorUserId: principal.id,
+      entityType: "roadmap_submission",
+      entityId: beforeSubmission.id,
+      scopeOrganizationUnitId: beforeSubmission.organizationUnitId,
+      beforeSummary: summarizeRoadmapSubmissionErasureBeforeAudit(beforeSubmission),
+      afterSummary: {
+        submissionId: erasedSubmission.id,
+        organizationUnitId: erasedSubmission.organizationUnitId,
+        status: erasedSubmission.status,
+        archived: Boolean(erasedSubmission.archivedAt),
+        erasedPersonalData: true
+      }
+    });
+
+    return {
+      roadmapSubmissionId: erasedSubmission.id,
+      erasedAt: erasedAt.toISOString(),
+      archivedAt: erasedSubmission.archivedAt ?? erasedAt.toISOString()
+    };
   }
 
   async reviewAdminRoadmapSubmission(
@@ -353,5 +431,32 @@ function summarizeRoadmapSubmissionForAudit(
     hasBody: Boolean(submission.body),
     hasReviewComment: Boolean(submission.reviewComment),
     reviewedAt: submission.reviewedAt
+  };
+}
+
+function summarizeRoadmapSubmissionExportForAudit(
+  submission: AdminRoadmapSubmissionExport
+): AuditSummary {
+  return {
+    ...summarizeRoadmapSubmissionForAudit(submission),
+    exportedArchivedRecord: Boolean(submission.archivedAt)
+  };
+}
+
+function summarizeRoadmapSubmissionErasureBeforeAudit(
+  submission: AdminRoadmapSubmissionExport
+): AuditSummary {
+  return {
+    submissionId: submission.id,
+    assignmentId: submission.assignmentId,
+    stepId: submission.stepId,
+    submitterUserId: submission.submitterUserId,
+    roadmapTargetRole: submission.roadmapTargetRole,
+    organizationUnitId: submission.organizationUnitId,
+    status: submission.status,
+    archived: Boolean(submission.archivedAt),
+    hadBody: Boolean(submission.body),
+    hadAttachmentMetadata: submission.attachmentMetadata.length > 0,
+    hadReviewComment: Boolean(submission.reviewComment)
   };
 }

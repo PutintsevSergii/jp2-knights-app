@@ -15,6 +15,8 @@ import {
   adminRoadmapDefinitionDetailResponseOpenApiSchema,
   adminRoadmapDefinitionListResponseOpenApiSchema,
   adminRoadmapSubmissionDetailResponseOpenApiSchema,
+  adminRoadmapSubmissionErasureResponseOpenApiSchema,
+  adminRoadmapSubmissionExportResponseOpenApiSchema,
   adminRoadmapSubmissionListResponseOpenApiSchema,
   assignedRoadmapResponseOpenApiSchema,
   createAdminRoadmapAssignmentRequestOpenApiSchema,
@@ -29,6 +31,8 @@ import type {
   AdminRoadmapDefinitionDetailResponse,
   AdminRoadmapDefinitionListResponse,
   AdminRoadmapSubmissionDetailResponse,
+  AdminRoadmapSubmissionErasureResponse,
+  AdminRoadmapSubmissionExportResponse,
   AdminRoadmapSubmissionListResponse,
   AssignedRoadmapResponse,
   CreateAdminRoadmapAssignmentRequest,
@@ -158,6 +162,52 @@ export class RoadmapController {
     @Req() request: RequestWithPrincipal
   ): Promise<AdminRoadmapSubmissionListResponse> {
     return this.roadmapService.listAdminRoadmapSubmissions(requirePrincipal(request));
+  }
+
+  @Get("admin/roadmap-submissions/:id/export")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin personal-data export for a roadmap submission.",
+    schema: adminRoadmapSubmissionExportResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The roadmap submission was not found.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  exportAdminRoadmapSubmission(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminRoadmapSubmissionExportResponse> {
+    return this.roadmapService.exportAdminRoadmapSubmission(requirePrincipal(request), id);
+  }
+
+  @Post("admin/roadmap-submissions/:id/erase")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Super Admin legal-erasure action for roadmap submission personal data.",
+    schema: adminRoadmapSubmissionErasureResponseOpenApiSchema
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Super Admin access is required.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The roadmap submission was not found.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  eraseAdminRoadmapSubmission(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
+  ): Promise<AdminRoadmapSubmissionErasureResponse> {
+    return this.roadmapService.eraseAdminRoadmapSubmission(requirePrincipal(request), id);
   }
 
   @Get("admin/roadmap-submissions/:id")

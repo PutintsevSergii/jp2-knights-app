@@ -204,11 +204,38 @@ function renderAuditFilterForm(screen: AdminAuditLogListScreen): string {
 }
 
 function renderAuditFilterField(field: AdminAuditLogFilterField): string {
+  if (field.options) {
+    return renderAuditFilterSelect(field);
+  }
+
   return renderAdminFormField({
     label: field.label,
     name: field.name,
     value: field.value
   });
+}
+
+function renderAuditFilterSelect(field: AdminAuditLogFilterField): string {
+  const options = field.options ?? [];
+
+  return [
+    '<label class="admin-content__field">',
+    `<span class="admin-content__label">${escapeHtml(field.label)}</span>`,
+    `<select class="admin-content__input" name="${escapeAttribute(field.name)}">`,
+    options
+      .map((option) =>
+        [
+          `<option value="${escapeAttribute(option.value)}"`,
+          option.value === field.value ? " selected" : "",
+          ">",
+          escapeHtml(option.label),
+          "</option>"
+        ].join("")
+      )
+      .join(""),
+    "</select>",
+    "</label>"
+  ].join("");
 }
 
 function renderAuditRows(rows: readonly AdminAuditLogRow[]): string {

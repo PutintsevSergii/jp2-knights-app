@@ -17,6 +17,7 @@ import {
   adminOrganizationUnitListResponseSchema,
   adminPrayerDetailResponseSchema,
   adminPrayerListResponseSchema,
+  adminRoadmapSubmissionErasureResponseSchema,
   adminSilentPrayerEventDetailResponseSchema,
   adminSilentPrayerEventListResponseSchema,
   authSessionResponseSchema,
@@ -62,7 +63,9 @@ import {
   publicPrayerDetailResponseSchema,
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
+  adminRoadmapSubmissionExportResponseSchema,
   assignedRoadmapResponseSchema,
+  retentionBucketSchema,
   reviewRoadmapSubmissionRequestSchema,
   roleSchema,
   registerDeviceTokenRequestSchema,
@@ -96,6 +99,11 @@ describe("shared validation", () => {
 
   it("validates role values from the shared contract", () => {
     expect(roleSchema.parse("OFFICER")).toBe("OFFICER");
+  });
+
+  it("validates privacy retention buckets from the shared lifecycle contract", () => {
+    expect(retentionBucketSchema.parse("sensitive_review")).toBe("sensitive_review");
+    expect(retentionBucketSchema.safeParse("analytics_export").success).toBe(false);
   });
 
   it("validates the current user response used by mobile mode resolution", () => {
@@ -1327,6 +1335,52 @@ describe("shared validation", () => {
     ).toEqual({
       status: "rejected",
       reviewComment: "Please add the meeting date."
+    });
+    expect(
+      adminRoadmapSubmissionExportResponseSchema.parse({
+        roadmapSubmission: {
+          id: "66666666-6666-4666-8666-666666666666",
+          assignmentId: "11111111-1111-4111-8111-111111111111",
+          stepId: "55555555-5555-4555-8555-555555555555",
+          submitterUserId: "22222222-2222-4222-8222-222222222222",
+          submitterName: "Brother User",
+          submitterEmail: "brother@example.test",
+          roadmapTitle: "Formation Roadmap",
+          roadmapTargetRole: "BROTHER",
+          stageTitle: "Discernment",
+          stepTitle: "Meet with officer",
+          organizationUnitId: "33333333-3333-4333-8333-333333333333",
+          organizationUnitName: "Pilot Organization Unit",
+          status: "pending_review",
+          bodyPreview: "A short formation reflection.",
+          attachmentCount: 1,
+          reviewComment: null,
+          reviewedAt: null,
+          createdAt: "2026-05-10T09:00:00.000Z",
+          updatedAt: "2026-05-10T09:00:00.000Z",
+          body: "A short formation reflection.",
+          attachmentMetadata: [
+            {
+              originalFilename: "reflection.pdf",
+              mimeType: "application/pdf",
+              sizeBytes: 1024
+            }
+          ],
+          archivedAt: null
+        },
+        exportedAt: "2026-06-03T10:00:00.000Z"
+      }).roadmapSubmission.archivedAt
+    ).toBeNull();
+    expect(
+      adminRoadmapSubmissionErasureResponseSchema.parse({
+        roadmapSubmissionId: "11111111-1111-4111-8111-111111111111",
+        erasedAt: "2026-06-03T11:00:00.000Z",
+        archivedAt: "2026-06-03T11:00:00.000Z"
+      })
+    ).toEqual({
+      roadmapSubmissionId: "11111111-1111-4111-8111-111111111111",
+      erasedAt: "2026-06-03T11:00:00.000Z",
+      archivedAt: "2026-06-03T11:00:00.000Z"
     });
   });
 

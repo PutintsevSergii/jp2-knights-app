@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { contentMutationAuditAction } from "../content/content-audit-actions.js";
 import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AnnouncementPushRecipientRepository } from "../notifications/announcement-push-recipient.repository.js";
 import { PushNotificationAdapter } from "../notifications/push-notification.adapter.js";
@@ -101,7 +102,7 @@ export class AdminAnnouncementService {
 
     await this.dispatchAnnouncementPushIfNeeded(principal, beforeAnnouncement, announcement);
     await this.auditLog.record({
-      action: "admin.announcement.update",
+      action: contentMutationAuditAction("announcement", data, beforeAnnouncement),
       actorUserId: principal.id,
       entityType: "announcement",
       entityId: announcement.id,

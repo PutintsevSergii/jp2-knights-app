@@ -68,4 +68,4 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 - Officer create/update writes must stay within assigned organization units.
 - Event publish transitions require prior approval metadata. Direct `published`
   creates or updates from unapproved records fail before audit side effects.
-- Admin create/update/publish/cancel/archive mutations append audit log entries with actor, entity, scope, and redacted before/after summaries. Full event descriptions are not copied into audit summaries.
+- Admin create/update/approve/publish/cancel/archive mutations append audit log entries with actor, entity, scope, explicit lifecycle action names, and redacted before/after summaries. Full event descriptions are not copied into audit summaries.

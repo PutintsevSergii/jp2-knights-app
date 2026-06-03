@@ -23,7 +23,6 @@ infra/terraform/
     cloud-run-job/
     cloud-sql-postgres/
     firebase-realtime-database/
-    memorystore-redis/
     secret-manager/
     service-accounts/
 ```
@@ -32,12 +31,11 @@ infra/terraform/
 
 | Resource group | Purpose |
 | --- | --- |
-| Project services | Enable Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, Cloud Build, Firebase/RTDB, and Redis/Memorystore APIs only when the selected realtime provider needs them |
+| Project services | Enable Cloud Run, Cloud SQL, Secret Manager, Artifact Registry, Cloud Build, and Firebase/RTDB APIs |
 | Service accounts | Separate identities for API, Admin, migration job, and CI/deploy |
 | Artifact Registry | Store API and Admin container images |
 | Cloud SQL PostgreSQL | Production database |
-| Firebase Realtime Database | Planned pilot silent-prayer aggregate-count provider to avoid Memorystore idle cost |
-| Memorystore Redis | Current silent-prayer presence and Socket.IO adapter support; provision for pilot only if `SILENT_PRAYER_REALTIME_PROVIDER=redis-socket` remains selected |
+| Firebase Realtime Database | Required live silent-prayer aggregate-count provider; Redis/Memorystore is excluded from pilot and production infrastructure by owner decision on June 3, 2026 |
 | Secret Manager | Secret shells and IAM access to deployed services |
 | Cloud Run API service | NestJS REST/Socket.IO API |
 | Cloud Run Admin service | Next.js Admin Lite |
@@ -106,8 +104,8 @@ Cloud SQL, the selected silent-prayer realtime provider, migration job, and
 domain mapping can follow in the second Terraform milestone if we want smaller,
 easier-to-review commits.
 
-Before implementing the Memorystore module for pilot, implement and verify the
-Firebase RTDB silent-prayer migration plan in
-[realtime-db-silent-prayer-migration-plan.md](realtime-db-silent-prayer-migration-plan.md).
-The pilot Terraform path should not create Memorystore Redis by default once the
-RTDB provider is passing tests and device smoke checks.
+Do not implement a Memorystore module for live pilot infrastructure. Implement
+and verify the Firebase RTDB silent-prayer migration plan in
+[realtime-db-silent-prayer-migration-plan.md](realtime-db-silent-prayer-migration-plan.md),
+then keep `silent_prayer_realtime_provider = "firebase-rtdb"` for pilot and
+production.

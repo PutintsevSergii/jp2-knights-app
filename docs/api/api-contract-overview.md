@@ -60,7 +60,10 @@ These profiles are the minimum field groups expected before endpoint-specific sc
 ## Route Canonicalization
 
 - Roadmap definition routes are `/admin/roadmap-definitions` and `/admin/roadmap-definitions/:id`.
-- Roadmap review routes are `/admin/roadmap-submissions` and `/admin/roadmap-submissions/:id`.
+- Roadmap review routes are `/admin/roadmap-submissions` and
+  `/admin/roadmap-submissions/:id`; Super Admin subject-access export is
+  `/admin/roadmap-submissions/:id/export`, and Super Admin legal erasure is
+  `/admin/roadmap-submissions/:id/erase`.
 - Audit log routes are `/admin/audit-logs`.
 - Candidate request routes manage public interest requests; `/admin/candidates` routes manage authenticated candidate profiles.
 - Candidate-to-brother conversion is separate from request-to-candidate conversion.

@@ -3,6 +3,7 @@ import { requireAdminLite, requireSuperAdmin } from "../admin/admin-access.polic
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { contentMutationAuditAction } from "../content/content-audit-actions.js";
 import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminPrayerRepository } from "./admin-prayer.repository.js";
 import type {
@@ -63,7 +64,7 @@ export class AdminPrayerService {
     assertPublishHasPriorApproval(data.status, beforePrayer, "Prayer");
     const prayer = await this.adminPrayerRepository.updatePrayer(id, data, principal.id);
     await this.auditLog.record({
-      action: "admin.prayer.update",
+      action: contentMutationAuditAction("prayer", data, beforePrayer),
       actorUserId: principal.id,
       entityType: "prayer",
       entityId: prayer.id,

@@ -28,7 +28,14 @@ describe("admin audit logs shell", () => {
       statusCode: 200
     });
     expect(rendered.document).toContain('method="get" action="/admin/audit-logs"');
-    expect(rendered.document).toContain('name="action" value=""');
+    expect(rendered.document).toContain('<select class="admin-content__input" name="action">');
+    expect(rendered.document).toContain('<option value="" selected>Any action</option>');
+    expect(rendered.document).toContain(
+      '<option value="admin.prayer.approve">Prayer approved</option>'
+    );
+    expect(rendered.document).toContain(
+      '<option value="admin.roadmapSubmission.erase">Roadmap submission erased</option>'
+    );
     expect(rendered.document).toContain('name="limit" value="50"');
     expect(rendered.document).toContain("admin.silentPrayerEvent.update");
     expect(rendered.document).toContain("req_demo_audit");
@@ -119,6 +126,9 @@ describe("admin audit logs shell", () => {
 
     expect(rendered.document).toContain('aria-label="Audit log pages"');
     expect(rendered.document).toContain("Showing 3-4 of 5");
+    expect(rendered.document).toContain(
+      '<option value="admin.silentPrayerEvent.update" selected>Custom: admin.silentPrayerEvent.update</option>'
+    );
     expect(rendered.document).toContain(
       'href="/admin/audit-logs?action=admin.silentPrayerEvent.update&amp;entityType=silent_prayer_event&amp;limit=2&amp;offset=0"'
     );

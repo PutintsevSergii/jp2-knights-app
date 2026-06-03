@@ -175,7 +175,7 @@ describe("AdminAnnouncementService", () => {
     });
     expect(auditLog.records).toHaveLength(1);
     expect(auditLog.records[0]).toMatchObject({
-      action: "admin.announcement.update",
+      action: "admin.announcement.archive",
       actorUserId: officer.id,
       entityId: scopedAnnouncement.id,
       entityType: "announcement",
@@ -274,6 +274,12 @@ describe("AdminAnnouncementService", () => {
     expect(auditLog.records).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          action: "admin.announcement.publish",
+          actorUserId: officer.id,
+          entityId: scopedAnnouncement.id,
+          entityType: "announcement"
+        }),
+        expect.objectContaining({
           action: "admin.announcement.push_dispatch",
           actorUserId: officer.id,
           entityId: scopedAnnouncement.id,
@@ -286,6 +292,27 @@ describe("AdminAnnouncementService", () => {
         })
       ])
     );
+  });
+
+  it("records explicit approval audit actions for announcements", async () => {
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(repository(), auditLog).updateAdminAnnouncement(officer, scopedAnnouncement.id, {
+        status: "APPROVED"
+      })
+    ).resolves.toMatchObject({
+      announcement: {
+        status: "APPROVED",
+        approvedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.announcement.approve",
+      actorUserId: officer.id,
+      entityType: "announcement",
+      entityId: scopedAnnouncement.id
+    });
   });
 
   it("does not redispatch push notifications for already-published announcements", async () => {

@@ -23,7 +23,7 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `API_PUBLIC_URL` | Admin, Mobile | `https://api.example.org` | Public API base URL |
 | `ADMIN_PUBLIC_URL` | Admin/API auth settings | `https://admin.example.org` | Admin origin |
 | `AUTH_PROVIDER_MODE` | API | `firebase` | `fake` is forbidden in production |
-| `SILENT_PRAYER_REALTIME_PROVIDER` | API, Mobile | `firebase-rtdb` | Planned pilot cost-reduction target; valid values should be `redis-socket`, `firebase-rtdb`, or non-production `in-memory` after the RTDB slice is implemented |
+| `SILENT_PRAYER_REALTIME_PROVIDER` | API, Mobile | `firebase-rtdb` | Required for live pilot/production. `redis-socket` is not allowed in live infrastructure unless a future owner-approved scope change reverses the June 3, 2026 no-Redis decision. `in-memory` remains non-production only. |
 | `FIREBASE_PROJECT_ID` | API, Mobile | `jp2-auth` | Firebase project id |
 | `FIREBASE_DATABASE_URL` | API, Mobile | `https://project-id-default-rtdb.region.firebasedatabase.app` | Required when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`; mobile uses it only for aggregate-count listeners |
 | `EXPO_PUBLIC_FIREBASE_API_KEY` | Mobile | Firebase value | Public client config, still environment-specific |
@@ -39,7 +39,6 @@ secret versions should be set through a secure manual or CI-controlled process.
 | Secret name | Used by | Required for pilot | Notes |
 | --- | --- | --- | --- |
 | `jp2-database-url` | API, migration job | Yes | PostgreSQL connection string for Cloud SQL |
-| `jp2-redis-url` | API | Required only for `redis-socket` provider | Memorystore Redis URL; current production startup fails without `REDIS_URL` until the RTDB provider slice is implemented |
 | `jp2-session-secret` | API | Yes | Cookie/session signing secret if configured by auth layer |
 | `jp2-csrf-secret` | API/Admin auth flow | Yes | Required if CSRF secret is introduced or configured |
 | `jp2-firebase-service-account-json` | API | Yes | Firebase Admin SDK credentials |
@@ -58,7 +57,6 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `FIREBASE_PROJECT_ID` | Terraform variable |
 | `FIREBASE_DATABASE_URL` | Terraform variable when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
 | `DATABASE_URL` | `jp2-database-url` secret |
-| `REDIS_URL` | `jp2-redis-url` secret only when `SILENT_PRAYER_REALTIME_PROVIDER=redis-socket` |
 | Firebase Admin credentials | `jp2-firebase-service-account-json` secret |
 
 ### Admin Service
@@ -81,10 +79,10 @@ secret versions should be set through a secure manual or CI-controlled process.
 - API refuses `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`.
 - Admin refuses `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`.
 - API starts with `AUTH_PROVIDER_MODE=firebase`.
-- API starts with a production-valid silent-prayer realtime provider:
-  `redis-socket` requires `REDIS_URL`; `firebase-rtdb` requires
-  `FIREBASE_DATABASE_URL` plus Firebase Admin credentials; `in-memory` must not
-  be allowed in production.
+- API starts with `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`;
+  `firebase-rtdb` requires `FIREBASE_DATABASE_URL` plus Firebase Admin
+  credentials; `redis-socket` and `in-memory` must not be allowed in live
+  pilot/production.
 - RTDB Security Rules are deny-by-default before
   `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` is used in pilot.
 - Firebase authorized domains include Admin and API domains where applicable.

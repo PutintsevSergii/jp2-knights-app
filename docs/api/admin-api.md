@@ -35,6 +35,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 | GET/POST       | `/admin/roadmap-assignments`               | Super Admin              | create payload                    | assignment list/detail    | 403,400,409 | Inspect or create from published definitions                   |
 | GET            | `/admin/roadmap-assignments/:id`           | Super Admin              | none                              | assignment detail         | 403,404     | Status metadata only, no submitted bodies                      |
 | GET            | `/admin/roadmap-submissions`               | Officer/Super Admin      | filters/page                      | scoped review queue        | 403,400     | Officer scope                                                  |
+| GET            | `/admin/roadmap-submissions/:id/export`    | Super Admin              | none                              | submission export          | 403,404     | Legal subject export; export action audited                    |
+| POST           | `/admin/roadmap-submissions/:id/erase`     | Super Admin              | none                              | erasure metadata           | 403,404     | Legal erasure; anonymizes and archives; action audited         |
 | GET/PATCH      | `/admin/roadmap-submissions/:id`           | Officer/Super Admin      | approve/reject/comment            | submission                 | 403,404,409 | Decision audited                                               |
 | GET/POST       | `/admin/silent-prayer-events`              | Officer/Super Admin      | session payload                   | list/detail                | 403,400     | Participant lists hidden; audit summaries redact intention     |
 | PATCH          | `/admin/silent-prayer-events/:id`          | Officer/Super Admin      | edit/lifecycle payload            | detail                     | 403,404     | Scope required; no participant/session identity                |
@@ -64,6 +66,9 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - The mounted Admin Lite audit-log screen renders the supported query fields as
   a GET filter form and retains active values across ready, empty, and error
   states.
+- The action filter renders presets for high-risk export, erasure, and content
+  lifecycle audit actions. Custom or legacy action query values remain selected
+  and are forwarded exactly to the backend `action` filter.
 - The same screen renders Previous/Next pagination links from response
   pagination metadata, uses the server total to decide whether a next page
   exists, and preserves active filter parameters in page links.
@@ -123,7 +128,10 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - Officer announcement writes must target one of their assigned organization units. Super Admin can create global or scoped announcements.
 - `ORGANIZATION_UNIT` visibility requires `targetOrganizationUnitId` in shared create/update DTO validation.
 - Publishing and archiving set lifecycle timestamps when status changes to `PUBLISHED` or `ARCHIVED`.
-- Announcement mutations record audit log summaries with title, visibility, target scope, pinned state, status, and lifecycle timestamps. Full announcement body text is redacted from audit summaries.
+- Announcement mutations record audit log summaries with title, visibility,
+  target scope, pinned state, status, lifecycle timestamps, and explicit
+  approve/publish/archive action names. Full announcement body text is redacted
+  from audit summaries.
 - First publication resolves candidate/brother push recipients server-side from
   announcement visibility, active profile/membership scope, active non-revoked
   device tokens, and announcement notification preferences. Dispatch uses
@@ -141,7 +149,11 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 
 - `GET /admin/silent-prayer-events` requires Admin Lite access. Super Admin sees all sessions; officers see public/family-open sessions plus sessions targeted to their assigned organization units.
 - `POST /admin/silent-prayer-events` and `PATCH /admin/silent-prayer-events/:id` require Admin Lite access, explicit visibility/status, valid timing, and scoped officer target organization units.
-- Silent-prayer create/update audit summaries include title, visibility, target organization unit, status, timing, and lifecycle timestamps only. They do not include intention text, participant lists, anonymous session ids, user ids, rosters, or prayer history.
+- Silent-prayer create/update/approve/publish/archive audit summaries include
+  title, visibility, target organization unit, status, timing, lifecycle
+  timestamps, and explicit lifecycle action names only. They do not include
+  intention text, participant lists, anonymous session ids, user ids, rosters,
+  or prayer history.
 - `GET /admin/roadmap-definitions` and
   `GET /admin/roadmap-definitions/:id` require Super Admin access and support
   read-only roadmap definition inspection through shared DTO validation and
@@ -159,6 +171,15 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   `/admin/roadmap-assignments/new` with fields for `assigneeUserId`,
   `roadmapDefinitionId`, and optional `organizationUnitId`; update/archive
   mutations remain deferred.
+- `GET /admin/roadmap-submissions/:id/export` is Super Admin-only and returns
+  roadmap submission personal data, including archived submissions, for
+  subject-access handling. The export action is audited without copying
+  submitted body text, review comments, or submitter email into audit logs.
+- `POST /admin/roadmap-submissions/:id/erase` is Super Admin-only and performs
+  legal erasure for roadmap submission personal data. It clears submitted body
+  text, attachment metadata, and review comments, archives instead of deleting,
+  returns only id/erasure/archive metadata, and audits redacted before/after
+  summaries.
 
 ## Canonical Admin Route Names
 

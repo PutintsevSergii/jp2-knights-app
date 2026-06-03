@@ -6,6 +6,7 @@ import {
 import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
+import { eventMutationAuditAction } from "../content/content-audit-actions.js";
 import { assertEventPublishHasPriorApproval } from "../content/content-approval.policy.js";
 import { AdminEventRepository } from "./admin-event.repository.js";
 import type {
@@ -92,7 +93,7 @@ export class AdminEventService {
     }
 
     await this.auditLog.record({
-      action: "admin.event.update",
+      action: eventMutationAuditAction(data, beforeEvent),
       actorUserId: principal.id,
       entityType: "event",
       entityId: event.id,

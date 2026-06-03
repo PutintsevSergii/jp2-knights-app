@@ -127,6 +127,12 @@ export const adminRoadmapSubmissionDetailSchema = adminRoadmapSubmissionSummaryS
   })
   .strict();
 
+export const adminRoadmapSubmissionExportSchema = adminRoadmapSubmissionDetailSchema
+  .extend({
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
 export const adminRoadmapSubmissionListResponseSchema = z
   .object({
     roadmapSubmissions: z.array(adminRoadmapSubmissionSummarySchema)
@@ -136,6 +142,21 @@ export const adminRoadmapSubmissionListResponseSchema = z
 export const adminRoadmapSubmissionDetailResponseSchema = z
   .object({
     roadmapSubmission: adminRoadmapSubmissionDetailSchema
+  })
+  .strict();
+
+export const adminRoadmapSubmissionExportResponseSchema = z
+  .object({
+    roadmapSubmission: adminRoadmapSubmissionExportSchema,
+    exportedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const adminRoadmapSubmissionErasureResponseSchema = z
+  .object({
+    roadmapSubmissionId: z.uuid(),
+    erasedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime()
   })
   .strict();
 
@@ -287,11 +308,18 @@ export type AdminRoadmapSubmissionSummaryDto = z.infer<
   typeof adminRoadmapSubmissionSummarySchema
 >;
 export type AdminRoadmapSubmissionDetailDto = z.infer<typeof adminRoadmapSubmissionDetailSchema>;
+export type AdminRoadmapSubmissionExportDto = z.infer<typeof adminRoadmapSubmissionExportSchema>;
 export type AdminRoadmapSubmissionListResponseDto = z.infer<
   typeof adminRoadmapSubmissionListResponseSchema
 >;
 export type AdminRoadmapSubmissionDetailResponseDto = z.infer<
   typeof adminRoadmapSubmissionDetailResponseSchema
+>;
+export type AdminRoadmapSubmissionExportResponseDto = z.infer<
+  typeof adminRoadmapSubmissionExportResponseSchema
+>;
+export type AdminRoadmapSubmissionErasureResponseDto = z.infer<
+  typeof adminRoadmapSubmissionErasureResponseSchema
 >;
 export type AdminRoadmapDefinitionStepDto = z.infer<typeof adminRoadmapDefinitionStepSchema>;
 export type AdminRoadmapDefinitionStageDto = z.infer<typeof adminRoadmapDefinitionStageSchema>;

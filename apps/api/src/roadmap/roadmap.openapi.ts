@@ -115,6 +115,15 @@ const adminRoadmapSubmissionDetailOpenApiSchema = {
   }
 };
 
+const adminRoadmapSubmissionExportOpenApiSchema = {
+  ...adminRoadmapSubmissionDetailOpenApiSchema,
+  required: [...adminRoadmapSubmissionDetailOpenApiSchema.required, "archivedAt"],
+  properties: {
+    ...adminRoadmapSubmissionDetailOpenApiSchema.properties,
+    archivedAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
 export const createRoadmapSubmissionRequestOpenApiSchema = {
   type: "object",
   required: ["stepId", "body"],
@@ -158,6 +167,27 @@ export const adminRoadmapSubmissionDetailResponseOpenApiSchema = {
   additionalProperties: false,
   properties: {
     roadmapSubmission: adminRoadmapSubmissionDetailOpenApiSchema
+  }
+};
+
+export const adminRoadmapSubmissionExportResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapSubmission", "exportedAt"],
+  additionalProperties: false,
+  properties: {
+    roadmapSubmission: adminRoadmapSubmissionExportOpenApiSchema,
+    exportedAt: { type: "string", format: "date-time" }
+  }
+};
+
+export const adminRoadmapSubmissionErasureResponseOpenApiSchema = {
+  type: "object",
+  required: ["roadmapSubmissionId", "erasedAt", "archivedAt"],
+  additionalProperties: false,
+  properties: {
+    roadmapSubmissionId: { type: "string", format: "uuid" },
+    erasedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", format: "date-time" }
   }
 };
 
