@@ -67,3 +67,10 @@ export const RETENTION_BUCKET_METADATA = {
     examples: ["Critical admin action logs"]
   }
 } as const satisfies Record<RetentionBucket, RetentionBucketMetadata>;
+
+export const PRIVACY_WORKFLOW_RETENTION_BUCKETS = {
+  candidateRequest: "sensitive_review",
+  candidateProfile: "sensitive_review",
+  roadmapSubmission: "sensitive_review",
+  deviceToken: "operational"
+} as const satisfies Record<string, RetentionBucket>;

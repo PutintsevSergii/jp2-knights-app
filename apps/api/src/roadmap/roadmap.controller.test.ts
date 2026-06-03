@@ -92,11 +92,13 @@ const adminRoadmapSubmissionExportResponse: AdminRoadmapSubmissionExportResponse
     ...adminRoadmapSubmissionResponse.roadmapSubmission,
     archivedAt: null
   },
+  retentionBucket: "sensitive_review",
   exportedAt: "2026-06-03T10:00:00.000Z"
 };
 
 const adminRoadmapSubmissionErasureResponse: AdminRoadmapSubmissionErasureResponse = {
   roadmapSubmissionId: adminRoadmapSubmissionResponse.roadmapSubmission.id,
+  retentionBucket: "sensitive_review",
   erasedAt: "2026-06-03T11:00:00.000Z",
   archivedAt: "2026-06-03T11:00:00.000Z"
 };

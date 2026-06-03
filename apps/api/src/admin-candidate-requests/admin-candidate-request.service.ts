@@ -1,5 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { hasRole } from "@jp2/shared-auth";
+import { PRIVACY_WORKFLOW_RETENTION_BUCKETS } from "@jp2/shared-types";
 import {
   adminScopeFor,
   requireAdminLite,
@@ -83,6 +84,7 @@ export class AdminCandidateRequestService {
 
     return {
       candidateRequest,
+      retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.candidateRequest,
       exportedAt: new Date().toISOString()
     };
   }
@@ -122,6 +124,7 @@ export class AdminCandidateRequestService {
 
     return {
       candidateRequestId: erasedCandidateRequest.id,
+      retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.candidateRequest,
       erasedAt: erasedAt.toISOString(),
       archivedAt: erasedCandidateRequest.archivedAt ?? erasedAt.toISOString()
     };

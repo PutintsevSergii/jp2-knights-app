@@ -81,18 +81,20 @@ export const adminCandidateRequestDetailResponseOpenApiSchema = {
 
 export const adminCandidateRequestExportResponseOpenApiSchema = {
   type: "object",
-  required: ["candidateRequest", "exportedAt"],
+  required: ["candidateRequest", "retentionBucket", "exportedAt"],
   properties: {
     candidateRequest: adminCandidateRequestDetailOpenApiSchema,
+    retentionBucket: { type: "string", enum: ["sensitive_review"] },
     exportedAt: { type: "string", format: "date-time" }
   }
 };
 
 export const adminCandidateRequestErasureResponseOpenApiSchema = {
   type: "object",
-  required: ["candidateRequestId", "erasedAt", "archivedAt"],
+  required: ["candidateRequestId", "retentionBucket", "erasedAt", "archivedAt"],
   properties: {
     candidateRequestId: { type: "string", format: "uuid" },
+    retentionBucket: { type: "string", enum: ["sensitive_review"] },
     erasedAt: { type: "string", format: "date-time" },
     archivedAt: { type: "string", format: "date-time" }
   }

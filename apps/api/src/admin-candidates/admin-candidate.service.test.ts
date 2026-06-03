@@ -95,6 +95,7 @@ describe("AdminCandidateService", () => {
     const response = await service.exportCandidateProfile(superAdmin, profile.id);
 
     expect(response.candidateProfile).toEqual(repository.exportRecord);
+    expect(response.retentionBucket).toBe("sensitive_review");
     expect(response.exportedAt).toEqual(expect.any(String));
     expect(repository.lastExportId).toBe(profile.id);
     expect(auditLog.records).toHaveLength(1);
@@ -146,6 +147,7 @@ describe("AdminCandidateService", () => {
     expect(response).toMatchObject({
       candidateProfileId: profile.id,
       userId: profile.userId,
+      retentionBucket: "sensitive_review",
       archivedAt: "2026-06-01T17:05:00.000Z"
     });
     expect(response.erasedAt).toEqual(expect.any(String));

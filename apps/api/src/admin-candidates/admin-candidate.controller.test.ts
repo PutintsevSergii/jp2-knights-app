@@ -46,6 +46,7 @@ describe("AdminCandidateController", () => {
         expect(id).toBe(candidateProfile.id);
         return Promise.resolve({
           candidateProfile,
+          retentionBucket: "sensitive_review",
           exportedAt: "2026-06-01T17:00:00.000Z"
         });
       },
@@ -55,6 +56,7 @@ describe("AdminCandidateController", () => {
         return Promise.resolve({
           candidateProfileId: candidateProfile.id,
           userId: candidateProfile.userId,
+          retentionBucket: "sensitive_review",
           erasedAt: "2026-06-01T17:05:00.000Z",
           archivedAt: "2026-06-01T17:05:00.000Z"
         });
@@ -83,12 +85,14 @@ describe("AdminCandidateController", () => {
       controller.exportCandidateProfile({ principal }, candidateProfile.id)
     ).resolves.toEqual({
       candidateProfile,
+      retentionBucket: "sensitive_review",
       exportedAt: "2026-06-01T17:00:00.000Z"
     });
     await expect(controller.eraseCandidateProfile({ principal }, candidateProfile.id)).resolves.toEqual(
       {
         candidateProfileId: candidateProfile.id,
         userId: candidateProfile.userId,
+        retentionBucket: "sensitive_review",
         erasedAt: "2026-06-01T17:05:00.000Z",
         archivedAt: "2026-06-01T17:05:00.000Z"
       }

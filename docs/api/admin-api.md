@@ -66,9 +66,12 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - The mounted Admin Lite audit-log screen renders the supported query fields as
   a GET filter form and retains active values across ready, empty, and error
   states.
-- The action filter renders presets for high-risk export, erasure, and content
-  lifecycle audit actions. Custom or legacy action query values remain selected
-  and are forwarded exactly to the backend `action` filter.
+- The action filter renders presets from shared `ADMIN_AUDIT_ACTIONS`, covering
+  high-risk export/erasure actions, identity access decisions, roadmap
+  approval/rejection, content create/lifecycle changes, announcement
+  push-dispatch audits, and silent-prayer lifecycle actions. Custom or legacy
+  action query values remain selected and are forwarded exactly to the backend
+  `action` filter.
 - The same screen renders Previous/Next pagination links from response
   pagination metadata, uses the server total to decide whether a next page
   exists, and preserves active filter parameters in page links.
@@ -103,8 +106,12 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - `PATCH /admin/candidate-requests/:id` updates status, assigned organization unit, or officer note. Direct `converted_to_candidate` status is not accepted here; conversion uses `POST /admin/candidate-requests/:id/convert`.
 - Candidate request status transitions are server-enforced: `new -> contacted/rejected`, `contacted -> invited/rejected`, and `invited -> rejected`. Rejected and converted requests are terminal. Rejection requires an officer note.
 - `POST /admin/candidate-requests/:id/convert` is allowed only from `invited`; it creates or reuses the local invited user, grants the `CANDIDATE` role, creates an active `candidate_profiles` row, and marks the request `converted_to_candidate`. It does not create a brother membership.
-- `GET /admin/candidate-requests/:id/export` is Super Admin-only and returns the candidate request personal-data export, including archived requests, for legal/privacy subject-access handling. The export action is audited with redacted metadata only; the audit summary does not copy the candidate email, message, phone, or officer note.
-- `POST /admin/candidate-requests/:id/erase` is Super Admin-only and performs the candidate request legal-erasure path. It anonymizes name, email, country, and city; clears phone, message, preferred language, officer note, and idempotency key; archives the request instead of deleting it; returns only id/erasure/archive metadata; and writes audit summaries without copying erased values.
+- `GET /admin/candidate-requests/:id/export` is Super Admin-only and returns the candidate request personal-data export, including archived requests, for legal/privacy subject-access handling. The response includes `retentionBucket: "sensitive_review"`. The export action is audited with redacted metadata only; the audit summary does not copy the candidate email, message, phone, or officer note.
+- `POST /admin/candidate-requests/:id/erase` is Super Admin-only and performs the candidate request legal-erasure path. It anonymizes name, email, country, and city; clears phone, message, preferred language, officer note, and idempotency key; archives the request instead of deleting it; returns id/erasure/archive metadata plus `retentionBucket: "sensitive_review"`; and writes audit summaries without copying erased values.
+- Admin Lite has typed API client helpers for candidate request export and
+  erasure response validation. The mounted candidate request screens do not add
+  officer-facing erasure controls; the backend remains the Super Admin
+  enforcement boundary.
 - Officer assignment changes must stay within assigned organization units and cannot clear assignment. Super Admin may assign or clear assignment.
 - Candidate request updates record audit log before/after summaries with the full message and email redacted.
 - Candidate request conversion records an audit log with redacted request before-summary and candidate profile after-summary.
@@ -114,8 +121,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 - `GET /admin/candidates` and `GET /admin/candidates/:id` require Admin Lite access.
 - Super Admin sees all non-archived candidate profiles. Officers see only candidate profiles assigned to one of their officer organization units.
 - `PATCH /admin/candidates/:id` updates candidate profile status (`active`, `paused`, or `archived`), assigned organization unit, or responsible officer. It does not currently mutate linked user contact fields such as email/display name; those remain identity data handled by dedicated privacy or future account-management flows.
-- `GET /admin/candidates/:id/export` is Super Admin-only and returns the candidate profile personal-data export, including archived profiles, for legal/privacy subject-access handling. The export action is audited with redacted metadata only; the audit summary does not copy the candidate email or display name.
-- `POST /admin/candidates/:id/erase` is Super Admin-only and performs the candidate profile legal-erasure path for candidate-only users. It rejects converted profiles and users with active brother/officer/Super Admin access, anonymizes the linked user identity, revokes candidate-only roles/provider links/device tokens, archives the profile instead of deleting it, returns only id/user/erasure/archive metadata, and writes audit summaries without copying erased email, display name, phone, provider, or token values.
+- `GET /admin/candidates/:id/export` is Super Admin-only and returns the candidate profile personal-data export, including archived profiles, for legal/privacy subject-access handling. The response includes `retentionBucket: "sensitive_review"`. The export action is audited with redacted metadata only; the audit summary does not copy the candidate email or display name.
+- `POST /admin/candidates/:id/erase` is Super Admin-only and performs the candidate profile legal-erasure path for candidate-only users. It rejects converted profiles and users with active brother/officer/Super Admin access, anonymizes the linked user identity, revokes candidate-only roles/provider links/device tokens, archives the profile instead of deleting it, returns id/user/erasure/archive metadata plus `retentionBucket: "sensitive_review"`, and writes audit summaries without copying erased email, display name, phone, provider, or token values.
 - Officer assignment changes must stay within assigned organization units. Officers can only assign themselves as responsible officer. Super Admin may update assignment and responsible officer globally.
 - Candidate profile updates record audit log before/after summaries with email redacted.
 - Candidate-to-brother conversion remains a separate audited operation on `/admin/candidates/:id/convert-to-brother`.
@@ -173,12 +180,15 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   mutations remain deferred.
 - `GET /admin/roadmap-submissions/:id/export` is Super Admin-only and returns
   roadmap submission personal data, including archived submissions, for
-  subject-access handling. The export action is audited without copying
-  submitted body text, review comments, or submitter email into audit logs.
+  subject-access handling. The response includes
+  `retentionBucket: "sensitive_review"`. The export action is audited without
+  copying submitted body text, review comments, or submitter email into audit
+  logs.
 - `POST /admin/roadmap-submissions/:id/erase` is Super Admin-only and performs
   legal erasure for roadmap submission personal data. It clears submitted body
   text, attachment metadata, and review comments, archives instead of deleting,
-  returns only id/erasure/archive metadata, and audits redacted before/after
+  returns id/erasure/archive metadata plus
+  `retentionBucket: "sensitive_review"`, and audits redacted before/after
   summaries.
 
 ## Canonical Admin Route Names

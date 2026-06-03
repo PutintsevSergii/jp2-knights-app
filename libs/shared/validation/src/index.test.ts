@@ -11,6 +11,7 @@ import {
   adminDashboardResponseSchema,
   adminCandidateRequestDetailResponseSchema,
   adminCandidateRequestErasureResponseSchema,
+  adminCandidateRequestExportResponseSchema,
   adminCandidateRequestListResponseSchema,
   adminEventDetailResponseSchema,
   adminEventListResponseSchema,
@@ -796,13 +797,25 @@ describe("shared validation", () => {
       candidateRequest
     });
     expect(
+      adminCandidateRequestExportResponseSchema.parse({
+        candidateRequest,
+        retentionBucket: "sensitive_review",
+        exportedAt: "2026-05-29T07:55:00.000Z"
+      })
+    ).toMatchObject({
+      retentionBucket: "sensitive_review",
+      exportedAt: "2026-05-29T07:55:00.000Z"
+    });
+    expect(
       adminCandidateRequestErasureResponseSchema.parse({
         candidateRequestId: candidateRequest.id,
+        retentionBucket: "sensitive_review",
         erasedAt: "2026-05-29T08:00:00.000Z",
         archivedAt: "2026-05-29T08:00:00.000Z"
       })
     ).toEqual({
       candidateRequestId: candidateRequest.id,
+      retentionBucket: "sensitive_review",
       erasedAt: "2026-05-29T08:00:00.000Z",
       archivedAt: "2026-05-29T08:00:00.000Z"
     });
@@ -887,6 +900,7 @@ describe("shared validation", () => {
           updatedAt: candidateRequest.updatedAt,
           archivedAt: "2026-05-30T08:00:00.000Z"
         },
+        retentionBucket: "sensitive_review",
         exportedAt: "2026-06-01T17:00:00.000Z"
       })
     ).toMatchObject({
@@ -894,18 +908,21 @@ describe("shared validation", () => {
         displayName: "Anna Nowak",
         status: "archived"
       },
+      retentionBucket: "sensitive_review",
       exportedAt: "2026-06-01T17:00:00.000Z"
     });
     expect(
       adminCandidateProfileErasureResponseSchema.parse({
         candidateProfileId: "77777777-7777-4777-8777-777777777777",
         userId: "88888888-8888-4888-8888-888888888888",
+        retentionBucket: "sensitive_review",
         erasedAt: "2026-06-01T17:05:00.000Z",
         archivedAt: "2026-06-01T17:05:00.000Z"
       })
     ).toMatchObject({
       candidateProfileId: "77777777-7777-4777-8777-777777777777",
-      userId: "88888888-8888-4888-8888-888888888888"
+      userId: "88888888-8888-4888-8888-888888888888",
+      retentionBucket: "sensitive_review"
     });
   });
 
@@ -1368,17 +1385,20 @@ describe("shared validation", () => {
           ],
           archivedAt: null
         },
+        retentionBucket: "sensitive_review",
         exportedAt: "2026-06-03T10:00:00.000Z"
       }).roadmapSubmission.archivedAt
     ).toBeNull();
     expect(
       adminRoadmapSubmissionErasureResponseSchema.parse({
         roadmapSubmissionId: "11111111-1111-4111-8111-111111111111",
+        retentionBucket: "sensitive_review",
         erasedAt: "2026-06-03T11:00:00.000Z",
         archivedAt: "2026-06-03T11:00:00.000Z"
       })
     ).toEqual({
       roadmapSubmissionId: "11111111-1111-4111-8111-111111111111",
+      retentionBucket: "sensitive_review",
       erasedAt: "2026-06-03T11:00:00.000Z",
       archivedAt: "2026-06-03T11:00:00.000Z"
     });

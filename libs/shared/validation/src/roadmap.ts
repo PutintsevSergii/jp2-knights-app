@@ -3,7 +3,8 @@ import {
   contentStatusSchema,
   roadmapAssignmentStatusSchema,
   roadmapSubmissionStatusSchema,
-  roadmapTargetRoleSchema
+  roadmapTargetRoleSchema,
+  sensitiveReviewRetentionBucketSchema
 } from "./common.js";
 
 const roadmapTextSchema = z.string().trim().min(1).max(200);
@@ -148,6 +149,7 @@ export const adminRoadmapSubmissionDetailResponseSchema = z
 export const adminRoadmapSubmissionExportResponseSchema = z
   .object({
     roadmapSubmission: adminRoadmapSubmissionExportSchema,
+    retentionBucket: sensitiveReviewRetentionBucketSchema,
     exportedAt: z.iso.datetime()
   })
   .strict();
@@ -155,6 +157,7 @@ export const adminRoadmapSubmissionExportResponseSchema = z
 export const adminRoadmapSubmissionErasureResponseSchema = z
   .object({
     roadmapSubmissionId: z.uuid(),
+    retentionBucket: sensitiveReviewRetentionBucketSchema,
     erasedAt: z.iso.datetime(),
     archivedAt: z.iso.datetime()
   })

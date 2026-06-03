@@ -58,8 +58,23 @@ describe("admin audit logs screen model", () => {
     expect(screen.filters[0]?.options).toEqual(
       expect.arrayContaining([
         { label: "Any action", value: "" },
+        { label: "Prayer created", value: "admin.prayer.create" },
         { label: "Prayer approved", value: "admin.prayer.approve" },
         { label: "Roadmap submission erased", value: "admin.roadmapSubmission.erase" },
+        { label: "Roadmap submission rejected", value: "admin.roadmapSubmission.rejected" },
+        { label: "Identity access rejected", value: "admin.identityAccess.reject" },
+        {
+          label: "Announcement push dispatched",
+          value: "admin.announcement.push_dispatch"
+        },
+        {
+          label: "Silent-prayer event created",
+          value: "admin.silent_prayer_event.create"
+        }
+      ])
+    );
+    expect(screen.filters[0]?.options).not.toEqual(
+      expect.arrayContaining([
         { label: "Custom: admin.prayer.create", value: "admin.prayer.create" }
       ])
     );
@@ -112,6 +127,27 @@ describe("admin audit logs screen model", () => {
           label: "Custom: admin.silent_prayer_event.approve",
           value: "admin.silent_prayer_event.approve"
         }
+      ])
+    );
+  });
+
+  it("preserves unknown audit action query values as custom options", () => {
+    const screen = buildAdminAuditLogListScreen({
+      state: "ready",
+      response: fallbackAdminAuditLogs,
+      runtimeMode: "api",
+      filters: {
+        action: "custom.audit.action"
+      }
+    });
+
+    expect(screen.filters[0]).toMatchObject({
+      name: "action",
+      value: "custom.audit.action"
+    });
+    expect(screen.filters[0]?.options).toEqual(
+      expect.arrayContaining([
+        { label: "Custom: custom.audit.action", value: "custom.audit.action" }
       ])
     );
   });

@@ -455,7 +455,8 @@ describe("RoadmapService", () => {
         body: "Sensitive formation reflection.",
         reviewComment: "Private review note.",
         archivedAt: "2026-06-01T12:00:00.000Z"
-      }
+      },
+      retentionBucket: "sensitive_review"
     });
     expect(typeof response.exportedAt).toBe("string");
     expect(repository.adminSubmissionExportLookups).toEqual([adminRoadmapSubmission.id]);
@@ -536,6 +537,7 @@ describe("RoadmapService", () => {
 
     expect(response).toEqual({
       roadmapSubmissionId: adminRoadmapSubmission.id,
+      retentionBucket: "sensitive_review",
       erasedAt: response.erasedAt,
       archivedAt: "2026-06-03T11:00:00.000Z"
     });

@@ -1,7 +1,11 @@
 import {
   adminCandidateRequestDetailResponseSchema,
+  adminCandidateRequestErasureResponseSchema,
+  adminCandidateRequestExportResponseSchema,
   adminCandidateRequestListResponseSchema,
   type AdminCandidateRequestDetailResponseDto,
+  type AdminCandidateRequestErasureResponseDto,
+  type AdminCandidateRequestExportResponseDto,
   type AdminCandidateRequestListResponseDto,
   type UpdateAdminCandidateRequestDto
 } from "@jp2/shared-validation";
@@ -25,6 +29,26 @@ export async function fetchAdminCandidateRequest(
   const response = await requestAdminApi(`admin/candidate-requests/${id}`, options);
 
   return adminCandidateRequestDetailResponseSchema.parse(await response.json());
+}
+
+export async function exportAdminCandidateRequest(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminCandidateRequestExportResponseDto> {
+  const response = await requestAdminApi(`admin/candidate-requests/${id}/export`, options);
+
+  return adminCandidateRequestExportResponseSchema.parse(await response.json());
+}
+
+export async function eraseAdminCandidateRequest(
+  id: string,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminCandidateRequestErasureResponseDto> {
+  const response = await requestAdminApi(`admin/candidate-requests/${id}/erase`, options, {
+    method: "POST"
+  });
+
+  return adminCandidateRequestErasureResponseSchema.parse(await response.json());
 }
 
 export async function updateAdminCandidateRequest(

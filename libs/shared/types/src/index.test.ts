@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ADMIN_AUDIT_ACTIONS,
   CONTENT_STATUSES,
   CONTENT_STATUS_METADATA,
   EVENT_STATUS_METADATA,
@@ -9,6 +10,7 @@ import {
   ORGANIZATION_UNIT_STATUSES,
   ORGANIZATION_UNIT_TYPES,
   PARTICIPATION_STATUSES,
+  PRIVACY_WORKFLOW_RETENTION_BUCKETS,
   RETENTION_BUCKETS,
   RETENTION_BUCKET_METADATA,
   ROADMAP_ASSIGNMENT_STATUSES,
@@ -95,5 +97,55 @@ describe("shared types", () => {
       requiredCapability: "append_only_redaction",
       durationPolicy: "append_only_redacted"
     });
+    expect(PRIVACY_WORKFLOW_RETENTION_BUCKETS).toMatchObject({
+      candidateRequest: "sensitive_review",
+      candidateProfile: "sensitive_review",
+      roadmapSubmission: "sensitive_review",
+      deviceToken: "operational"
+    });
+  });
+
+  it("keeps known admin audit actions explicit for Admin Lite filters", () => {
+    expect(ADMIN_AUDIT_ACTIONS).toEqual([
+      "admin.candidateRequest.export",
+      "admin.candidateRequest.erase",
+      "admin.candidateRequest.update",
+      "admin.candidateRequest.convert",
+      "admin.candidateProfile.export",
+      "admin.candidateProfile.erase",
+      "admin.candidateProfile.update",
+      "admin.roadmapSubmission.export",
+      "admin.roadmapSubmission.erase",
+      "admin.roadmapSubmission.approved",
+      "admin.roadmapSubmission.rejected",
+      "admin.roadmapAssignment.create",
+      "admin.identityAccess.confirm",
+      "admin.identityAccess.reject",
+      "admin.organizationUnit.create",
+      "admin.organizationUnit.update",
+      "admin.prayer.create",
+      "admin.prayer.approve",
+      "admin.prayer.publish",
+      "admin.prayer.archive",
+      "admin.prayer.update",
+      "admin.event.create",
+      "admin.event.approve",
+      "admin.event.publish",
+      "admin.event.cancel",
+      "admin.event.archive",
+      "admin.event.update",
+      "admin.announcement.create",
+      "admin.announcement.approve",
+      "admin.announcement.publish",
+      "admin.announcement.push_dispatch",
+      "admin.announcement.archive",
+      "admin.announcement.update",
+      "admin.silent_prayer_event.create",
+      "admin.silent_prayer_event.approve",
+      "admin.silent_prayer_event.publish",
+      "admin.silent_prayer_event.archive",
+      "admin.silent_prayer_event.update"
+    ]);
+    expect(new Set(ADMIN_AUDIT_ACTIONS).size).toBe(ADMIN_AUDIT_ACTIONS.length);
   });
 });

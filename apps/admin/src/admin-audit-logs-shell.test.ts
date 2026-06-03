@@ -36,6 +36,12 @@ describe("admin audit logs shell", () => {
     expect(rendered.document).toContain(
       '<option value="admin.roadmapSubmission.erase">Roadmap submission erased</option>'
     );
+    expect(rendered.document).toContain(
+      '<option value="admin.identityAccess.reject">Identity access rejected</option>'
+    );
+    expect(rendered.document).toContain(
+      '<option value="admin.announcement.push_dispatch">Announcement push dispatched</option>'
+    );
     expect(rendered.document).toContain('name="limit" value="50"');
     expect(rendered.document).toContain("admin.silentPrayerEvent.update");
     expect(rendered.document).toContain("req_demo_audit");

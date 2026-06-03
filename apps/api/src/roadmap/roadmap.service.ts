@@ -6,6 +6,7 @@ import {
   NotFoundException
 } from "@nestjs/common";
 import { canAccessBrotherMode, canAccessCandidateMode } from "@jp2/shared-auth";
+import { PRIVACY_WORKFLOW_RETENTION_BUCKETS } from "@jp2/shared-types";
 import { adminScopeFor, requireAdminLite, requireSuperAdmin } from "../admin/admin-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
@@ -195,6 +196,7 @@ export class RoadmapService {
 
     return {
       roadmapSubmission,
+      retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.roadmapSubmission,
       exportedAt: new Date().toISOString()
     };
   }
@@ -240,6 +242,7 @@ export class RoadmapService {
 
     return {
       roadmapSubmissionId: erasedSubmission.id,
+      retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.roadmapSubmission,
       erasedAt: erasedAt.toISOString(),
       archivedAt: erasedSubmission.archivedAt ?? erasedAt.toISOString()
     };

@@ -34,6 +34,7 @@ export const candidateProfileStatusSchema = z.enum(CANDIDATE_PROFILE_STATUSES);
 export const eventStatusSchema = z.enum(EVENT_STATUSES);
 export const participationStatusSchema = z.enum(PARTICIPATION_STATUSES);
 export const retentionBucketSchema = z.enum(RETENTION_BUCKETS);
+export const sensitiveReviewRetentionBucketSchema = z.literal("sensitive_review");
 export const deviceTokenPlatformSchema = z.enum(DEVICE_TOKEN_PLATFORMS);
 export const notificationCategorySchema = z.enum(NOTIFICATION_CATEGORIES);
 export const roadmapAssignmentStatusSchema = z.enum(ROADMAP_ASSIGNMENT_STATUSES);

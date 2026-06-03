@@ -102,6 +102,7 @@ describe("AdminCandidateRequestService", () => {
     const response = await service.exportCandidateRequest(superAdmin, request.id);
 
     expect(response.candidateRequest).toEqual(repository.exportRecord);
+    expect(response.retentionBucket).toBe("sensitive_review");
     expect(response.exportedAt).toEqual(expect.any(String));
     expect(repository.lastExportId).toBe(request.id);
     expect(auditLog.records).toHaveLength(1);
@@ -175,6 +176,7 @@ describe("AdminCandidateRequestService", () => {
 
     expect(response).toEqual({
       candidateRequestId: request.id,
+      retentionBucket: "sensitive_review",
       erasedAt: response.erasedAt,
       archivedAt: response.archivedAt
     });

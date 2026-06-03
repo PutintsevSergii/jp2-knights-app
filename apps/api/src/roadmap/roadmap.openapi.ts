@@ -172,20 +172,22 @@ export const adminRoadmapSubmissionDetailResponseOpenApiSchema = {
 
 export const adminRoadmapSubmissionExportResponseOpenApiSchema = {
   type: "object",
-  required: ["roadmapSubmission", "exportedAt"],
+  required: ["roadmapSubmission", "retentionBucket", "exportedAt"],
   additionalProperties: false,
   properties: {
     roadmapSubmission: adminRoadmapSubmissionExportOpenApiSchema,
+    retentionBucket: { type: "string", enum: ["sensitive_review"] },
     exportedAt: { type: "string", format: "date-time" }
   }
 };
 
 export const adminRoadmapSubmissionErasureResponseOpenApiSchema = {
   type: "object",
-  required: ["roadmapSubmissionId", "erasedAt", "archivedAt"],
+  required: ["roadmapSubmissionId", "retentionBucket", "erasedAt", "archivedAt"],
   additionalProperties: false,
   properties: {
     roadmapSubmissionId: { type: "string", format: "uuid" },
+    retentionBucket: { type: "string", enum: ["sensitive_review"] },
     erasedAt: { type: "string", format: "date-time" },
     archivedAt: { type: "string", format: "date-time" }
   }

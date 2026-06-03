@@ -2156,6 +2156,7 @@
                   "type": "object",
                   "required": [
                     "candidateRequest",
+                    "retentionBucket",
                     "exportedAt"
                   ],
                   "properties": {
@@ -2297,6 +2298,12 @@
                         }
                       ]
                     },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
+                    },
                     "exportedAt": {
                       "type": "string",
                       "format": "date-time"
@@ -2427,6 +2434,7 @@
                   "type": "object",
                   "required": [
                     "candidateRequestId",
+                    "retentionBucket",
                     "erasedAt",
                     "archivedAt"
                   ],
@@ -2434,6 +2442,12 @@
                     "candidateRequestId": {
                       "type": "string",
                       "format": "uuid"
+                    },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
                     },
                     "erasedAt": {
                       "type": "string",
@@ -3074,6 +3088,7 @@
                   "type": "object",
                   "required": [
                     "candidateProfile",
+                    "retentionBucket",
                     "exportedAt"
                   ],
                   "properties": {
@@ -3170,6 +3185,12 @@
                           "format": "date-time"
                         }
                       }
+                    },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
                     },
                     "exportedAt": {
                       "type": "string",
@@ -3302,6 +3323,7 @@
                   "required": [
                     "candidateProfileId",
                     "userId",
+                    "retentionBucket",
                     "erasedAt",
                     "archivedAt"
                   ],
@@ -3313,6 +3335,12 @@
                     "userId": {
                       "type": "string",
                       "format": "uuid"
+                    },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
                     },
                     "erasedAt": {
                       "type": "string",
@@ -14144,6 +14172,7 @@
                   "type": "object",
                   "required": [
                     "roadmapSubmission",
+                    "retentionBucket",
                     "exportedAt"
                   ],
                   "additionalProperties": false,
@@ -14314,6 +14343,12 @@
                         }
                       }
                     },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
+                    },
                     "exportedAt": {
                       "type": "string",
                       "format": "date-time"
@@ -14443,6 +14478,7 @@
                   "type": "object",
                   "required": [
                     "roadmapSubmissionId",
+                    "retentionBucket",
                     "erasedAt",
                     "archivedAt"
                   ],
@@ -14451,6 +14487,12 @@
                     "roadmapSubmissionId": {
                       "type": "string",
                       "format": "uuid"
+                    },
+                    "retentionBucket": {
+                      "type": "string",
+                      "enum": [
+                        "sensitive_review"
+                      ]
                     },
                     "erasedAt": {
                       "type": "string",

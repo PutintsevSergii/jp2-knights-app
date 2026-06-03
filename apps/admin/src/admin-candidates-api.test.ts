@@ -38,6 +38,7 @@ describe("admin candidate API client", () => {
               status: "archived",
               archivedAt: "2026-05-30T08:00:00.000Z"
             },
+            retentionBucket: "sensitive_review",
             exportedAt: "2026-06-01T17:00:00.000Z"
           })
       })
@@ -50,6 +51,7 @@ describe("admin candidate API client", () => {
           Promise.resolve({
             candidateProfileId: candidateProfile.id,
             userId: candidateProfile.userId,
+            retentionBucket: "sensitive_review",
             erasedAt: "2026-06-01T17:05:00.000Z",
             archivedAt: "2026-06-01T17:05:00.000Z"
           })
@@ -78,6 +80,7 @@ describe("admin candidate API client", () => {
       })
     ).resolves.toMatchObject({
       candidateProfile: { id: candidateProfile.id, status: "archived" },
+      retentionBucket: "sensitive_review",
       exportedAt: "2026-06-01T17:00:00.000Z"
     });
     expect(exportFetch).toHaveBeenCalledWith(
@@ -96,6 +99,7 @@ describe("admin candidate API client", () => {
     ).resolves.toEqual({
       candidateProfileId: candidateProfile.id,
       userId: candidateProfile.userId,
+      retentionBucket: "sensitive_review",
       erasedAt: "2026-06-01T17:05:00.000Z",
       archivedAt: "2026-06-01T17:05:00.000Z"
     });

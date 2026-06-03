@@ -1,4 +1,8 @@
-import type { RuntimeMode } from "@jp2/shared-types";
+import {
+  ADMIN_AUDIT_ACTIONS,
+  type AdminAuditAction,
+  type RuntimeMode
+} from "@jp2/shared-types";
 import type { AdminAuditLogListResponseDto, AdminAuditLogSummaryDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 
@@ -64,39 +68,53 @@ export interface BuildAdminAuditLogListScreenOptions {
   filters?: Partial<Record<AdminAuditLogFilterName, string>>;
 }
 
+const auditLogActionLabels = {
+  "admin.candidateRequest.export": "Candidate request exported",
+  "admin.candidateRequest.erase": "Candidate request erased",
+  "admin.candidateRequest.update": "Candidate request updated",
+  "admin.candidateRequest.convert": "Candidate request converted",
+  "admin.candidateProfile.export": "Candidate profile exported",
+  "admin.candidateProfile.erase": "Candidate profile erased",
+  "admin.candidateProfile.update": "Candidate profile updated",
+  "admin.roadmapSubmission.export": "Roadmap submission exported",
+  "admin.roadmapSubmission.erase": "Roadmap submission erased",
+  "admin.roadmapSubmission.approved": "Roadmap submission approved",
+  "admin.roadmapSubmission.rejected": "Roadmap submission rejected",
+  "admin.roadmapAssignment.create": "Roadmap assignment created",
+  "admin.identityAccess.confirm": "Identity access confirmed",
+  "admin.identityAccess.reject": "Identity access rejected",
+  "admin.organizationUnit.create": "Organization unit created",
+  "admin.organizationUnit.update": "Organization unit updated",
+  "admin.prayer.create": "Prayer created",
+  "admin.prayer.approve": "Prayer approved",
+  "admin.prayer.publish": "Prayer published",
+  "admin.prayer.archive": "Prayer archived",
+  "admin.prayer.update": "Prayer updated",
+  "admin.event.create": "Event created",
+  "admin.event.approve": "Event approved",
+  "admin.event.publish": "Event published",
+  "admin.event.cancel": "Event canceled",
+  "admin.event.archive": "Event archived",
+  "admin.event.update": "Event updated",
+  "admin.announcement.create": "Announcement created",
+  "admin.announcement.approve": "Announcement approved",
+  "admin.announcement.publish": "Announcement published",
+  "admin.announcement.push_dispatch": "Announcement push dispatched",
+  "admin.announcement.archive": "Announcement archived",
+  "admin.announcement.update": "Announcement updated",
+  "admin.silent_prayer_event.create": "Silent-prayer event created",
+  "admin.silent_prayer_event.approve": "Silent-prayer event approved",
+  "admin.silent_prayer_event.publish": "Silent-prayer event published",
+  "admin.silent_prayer_event.archive": "Silent-prayer event archived",
+  "admin.silent_prayer_event.update": "Silent-prayer event updated"
+} as const satisfies Record<AdminAuditAction, string>;
+
 const auditLogActionFilterOptions = [
   { label: "Any action", value: "" },
-  { label: "Candidate request exported", value: "admin.candidateRequest.export" },
-  { label: "Candidate request erased", value: "admin.candidateRequest.erase" },
-  { label: "Candidate request updated", value: "admin.candidateRequest.update" },
-  { label: "Candidate request converted", value: "admin.candidateRequest.convert" },
-  { label: "Candidate profile exported", value: "admin.candidateProfile.export" },
-  { label: "Candidate profile erased", value: "admin.candidateProfile.erase" },
-  { label: "Candidate profile updated", value: "admin.candidateProfile.update" },
-  { label: "Roadmap submission exported", value: "admin.roadmapSubmission.export" },
-  { label: "Roadmap submission erased", value: "admin.roadmapSubmission.erase" },
-  { label: "Roadmap submission approved", value: "admin.roadmapSubmission.approved" },
-  { label: "Roadmap assignment created", value: "admin.roadmapAssignment.create" },
-  { label: "Prayer approved", value: "admin.prayer.approve" },
-  { label: "Prayer published", value: "admin.prayer.publish" },
-  { label: "Prayer archived", value: "admin.prayer.archive" },
-  { label: "Prayer updated", value: "admin.prayer.update" },
-  { label: "Event approved", value: "admin.event.approve" },
-  { label: "Event published", value: "admin.event.publish" },
-  { label: "Event canceled", value: "admin.event.cancel" },
-  { label: "Event archived", value: "admin.event.archive" },
-  { label: "Event updated", value: "admin.event.update" },
-  { label: "Announcement approved", value: "admin.announcement.approve" },
-  { label: "Announcement published", value: "admin.announcement.publish" },
-  { label: "Announcement archived", value: "admin.announcement.archive" },
-  { label: "Announcement updated", value: "admin.announcement.update" },
-  { label: "Silent-prayer event approved", value: "admin.silent_prayer_event.approve" },
-  { label: "Silent-prayer event published", value: "admin.silent_prayer_event.publish" },
-  { label: "Silent-prayer event archived", value: "admin.silent_prayer_event.archive" },
-  { label: "Silent-prayer event updated", value: "admin.silent_prayer_event.update" },
-  { label: "Identity access confirmed", value: "admin.identityAccess.confirm" },
-  { label: "Organization unit created", value: "admin.organizationUnit.create" },
-  { label: "Organization unit updated", value: "admin.organizationUnit.update" }
+  ...ADMIN_AUDIT_ACTIONS.map((value) => ({
+    label: auditLogActionLabels[value],
+    value
+  }))
 ] as const satisfies readonly AdminAuditLogFilterOption[];
 
 export function buildAdminAuditLogListScreen(

@@ -2,7 +2,8 @@ import { z } from "zod";
 import {
   candidateProfileStatusSchema,
   candidateRequestStatusSchema,
-  roleSchema
+  roleSchema,
+  sensitiveReviewRetentionBucketSchema
 } from "./common.js";
 
 export const adminCandidateRequestSummarySchema = z.object({
@@ -40,11 +41,13 @@ export const adminCandidateRequestDetailResponseSchema = z.object({
 
 export const adminCandidateRequestExportResponseSchema = z.object({
   candidateRequest: adminCandidateRequestDetailSchema,
+  retentionBucket: sensitiveReviewRetentionBucketSchema,
   exportedAt: z.iso.datetime()
 });
 
 export const adminCandidateRequestErasureResponseSchema = z.object({
   candidateRequestId: z.uuid(),
+  retentionBucket: sensitiveReviewRetentionBucketSchema,
   erasedAt: z.iso.datetime(),
   archivedAt: z.iso.datetime()
 });
@@ -74,12 +77,14 @@ export const adminCandidateProfileDetailResponseSchema = z.object({
 
 export const adminCandidateProfileExportResponseSchema = z.object({
   candidateProfile: adminCandidateProfileDetailSchema,
+  retentionBucket: sensitiveReviewRetentionBucketSchema,
   exportedAt: z.iso.datetime()
 });
 
 export const adminCandidateProfileErasureResponseSchema = z.object({
   candidateProfileId: z.uuid(),
   userId: z.uuid(),
+  retentionBucket: sensitiveReviewRetentionBucketSchema,
   erasedAt: z.iso.datetime(),
   archivedAt: z.iso.datetime()
 });

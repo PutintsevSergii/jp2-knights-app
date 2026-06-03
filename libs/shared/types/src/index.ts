@@ -90,3 +90,4 @@ export interface HealthStatus {
 
 export * from "./status-metadata.js";
 export * from "./privacy-lifecycle.js";
+export * from "./admin-audit-actions.js";

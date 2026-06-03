@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { AdminContentHttpError } from "./admin-content-api.js";
 import {
+  eraseAdminCandidateRequest,
+  exportAdminCandidateRequest,
   fetchAdminCandidateRequest,
   fetchAdminCandidateRequests,
   updateAdminCandidateRequest
@@ -71,6 +73,76 @@ describe("admin candidate request API client", () => {
       `https://api.example.test/admin/candidate-requests/${candidateRequest.id}`,
       {
         method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
+  });
+
+  it("fetches Super Admin candidate request export and erasure responses", async () => {
+    const exportFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            candidateRequest,
+            retentionBucket: "sensitive_review",
+            exportedAt: "2026-06-03T12:00:00.000Z"
+          })
+      })
+    );
+    const eraseFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            candidateRequestId: candidateRequest.id,
+            retentionBucket: "sensitive_review",
+            erasedAt: "2026-06-03T12:05:00.000Z",
+            archivedAt: "2026-06-03T12:05:00.000Z"
+          })
+      })
+    );
+
+    await expect(
+      exportAdminCandidateRequest(candidateRequest.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: exportFetch
+      })
+    ).resolves.toMatchObject({
+      retentionBucket: "sensitive_review",
+      exportedAt: "2026-06-03T12:00:00.000Z",
+      candidateRequest: {
+        id: candidateRequest.id,
+        email: candidateRequest.email
+      }
+    });
+    await expect(
+      eraseAdminCandidateRequest(candidateRequest.id, {
+        baseUrl: "https://api.example.test",
+        authToken: "token_1",
+        fetchImpl: eraseFetch
+      })
+    ).resolves.toEqual({
+      candidateRequestId: candidateRequest.id,
+      retentionBucket: "sensitive_review",
+      erasedAt: "2026-06-03T12:05:00.000Z",
+      archivedAt: "2026-06-03T12:05:00.000Z"
+    });
+
+    expect(exportFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/candidate-requests/${candidateRequest.id}/export`,
+      {
+        method: "GET",
+        headers: { authorization: "Bearer token_1" }
+      }
+    );
+    expect(eraseFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/candidate-requests/${candidateRequest.id}/erase`,
+      {
+        method: "POST",
         headers: { authorization: "Bearer token_1" }
       }
     );
