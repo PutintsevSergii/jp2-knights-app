@@ -29,28 +29,29 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 ## Implemented Public Read Rules
 
 - `GET /public/events` supports `from`, `type`, `limit`, and `offset`.
-- Public event list reads default to upcoming events and return only currently published `PUBLIC` or `FAMILY_OPEN` events.
-- Private, archived, draft, cancelled, future-published, and brother/candidate/scoped events are hidden from guests.
+- Public event list reads default to upcoming events and return only currently approved and published `PUBLIC` or `FAMILY_OPEN` events.
+- Private, archived, draft, unapproved, cancelled, future-published, and brother/candidate/scoped events are hidden from guests.
 - `GET /public/events/:id` returns 404 for any event that is missing or not publicly visible.
 
 ## Implemented Authenticated Participation Rules
 
 - `GET /candidate/events` supports `from`, `type`, `limit`, and `offset`
   filters, requires an active candidate profile, and returns currently
-  published, non-cancelled, non-archived candidate-visible events only. List
+  approved, published, non-cancelled, non-archived candidate-visible events only. List
   items include only the current user's own `currentUserParticipation` intent
   for RSVP badges/actions, never participant lists.
-- `GET /candidate/events/:id` returns candidate-visible event detail with
+- `GET /candidate/events/:id` returns approved candidate-visible event detail with
   description and only the current user's own active participation intent. It
   never returns participant lists or other user ids.
-- `GET /brother/events/:id` returns brother-visible event detail with
+- `GET /brother/events` and `/brother/events/:id` return approved brother-visible
+  event records only. Detail includes
   description and only the current user's own active participation intent. It
   never returns participant lists or other user ids.
 - `POST /candidate/events/:id/participation` and
   `POST /brother/events/:id/participation` require an active candidate profile or
   active brother membership before any write.
-- Participation creation is allowed only for currently published, non-cancelled,
-  non-archived, open events visible to that user: candidate events may be
+- Participation creation is allowed only for currently approved, published,
+  non-cancelled, non-archived, open events visible to that user: candidate events may be
   `PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or assigned `ORGANIZATION_UNIT`;
   brother events may be `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or own
   `ORGANIZATION_UNIT`.
@@ -68,4 +69,6 @@ Fields: `id`, `title`, `description`, `type`, `startAt`, `endAt`, `locationLabel
 - Officer create/update writes must stay within assigned organization units.
 - Event publish transitions require prior approval metadata. Direct `published`
   creates or updates from unapproved records fail before audit side effects.
+- Event updates that would leave a `published` record without `approvedAt`
+  metadata fail before persistence and audit side effects.
 - Admin create/update/approve/publish/cancel/archive mutations append audit log entries with actor, entity, scope, explicit lifecycle action names, and redacted before/after summaries. Full event descriptions are not copied into audit summaries.

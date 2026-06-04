@@ -28,6 +28,7 @@ describe("assignedRoadmapWhere", () => {
       roadmapDefinition: {
         targetRole: "BROTHER",
         status: "PUBLISHED",
+        approvedAt: { not: null },
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       },
@@ -61,6 +62,7 @@ describe("brotherRoadmapSubmissionTargetWhere", () => {
       roadmapDefinition: {
         targetRole: "BROTHER",
         status: "PUBLISHED",
+        approvedAt: { not: null },
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
         stages: {
@@ -71,6 +73,7 @@ describe("brotherRoadmapSubmissionTargetWhere", () => {
                 id: "22222222-2222-4222-8222-222222222222",
                 requiresSubmission: true,
                 status: "PUBLISHED",
+                approvedAt: { not: null },
                 archivedAt: null,
                 OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
               }

@@ -140,8 +140,9 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   approve/publish/archive action names. Full announcement body text is redacted
   from audit summaries.
 - First publication resolves candidate/brother push recipients server-side from
-  announcement visibility, active profile/membership scope, active non-revoked
-  device tokens, and announcement notification preferences. Dispatch uses
+  announcement approval metadata, visibility, active profile/membership scope,
+  active non-revoked device tokens, and announcement notification preferences.
+  Published-but-unapproved rows do not resolve push recipients. Dispatch uses
   generic copy and deep links by announcement id, then records operational
   attempted/accepted/failed counts without exposing delivery state in Admin
   Lite.
@@ -156,6 +157,8 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
 
 - `GET /admin/silent-prayer-events` requires Admin Lite access. Super Admin sees all sessions; officers see public/family-open sessions plus sessions targeted to their assigned organization units.
 - `POST /admin/silent-prayer-events` and `PATCH /admin/silent-prayer-events/:id` require Admin Lite access, explicit visibility/status, valid timing, and scoped officer target organization units.
+- Silent-prayer updates that would leave a `PUBLISHED` record without
+  `approvedAt` metadata fail before persistence and audit side effects.
 - Silent-prayer create/update/approve/publish/archive audit summaries include
   title, visibility, target organization unit, status, timing, lifecycle
   timestamps, and explicit lifecycle action names only. They do not include

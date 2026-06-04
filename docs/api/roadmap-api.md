@@ -60,9 +60,10 @@ Submission create payloads use `createRoadmapSubmissionRequestSchema`:
 ```
 
 The route `stepId` must match the body `stepId`. Submissions can only be created
-for the authenticated brother's own active assigned published brother roadmap,
-within their active organization-unit membership scope, and only for published
-steps marked `requiresSubmission`. Duplicate pending submissions return `409`.
+for the authenticated brother's own active assigned approved and published
+brother roadmap, within their active organization-unit membership scope, and
+only for approved published steps marked `requiresSubmission`. Duplicate
+pending submissions return `409`.
 Approved or rejected historical submissions remain preserved.
 
 Officer review payloads use `reviewRoadmapSubmissionRequestSchema`.
@@ -87,11 +88,11 @@ Rejected submissions require `reviewComment`.
 
 - Candidate and brother roadmaps may be separate definitions.
 - `GET /candidate/roadmap` requires an active candidate profile and returns only
-  the current user's assigned published candidate roadmap. Scoped assignments are
-  limited to the candidate's assigned organization unit.
+  the current user's assigned approved and published candidate roadmap. Scoped
+  assignments are limited to the candidate's assigned organization unit.
 - `GET /brother/roadmap` requires active brother membership and returns only the
-  current user's assigned published brother roadmap. Scoped assignments are
-  limited to the brother's active organization-unit memberships.
+  current user's assigned approved and published brother roadmap. Scoped
+  assignments are limited to the brother's active organization-unit memberships.
 - `POST /brother/roadmap/steps/:stepId/submissions` requires active brother
   membership, validates the shared create-submission DTO, stores bounded
   attachment metadata only, returns the created pending submission, and never
@@ -129,8 +130,8 @@ Rejected submissions require `reviewComment`.
   route, not the assignment inspection surface.
 - `POST /admin/roadmap-assignments` requires Super Admin access and accepts
   `assigneeUserId`, `roadmapDefinitionId`, and optional `organizationUnitId`.
-  The API creates assignments only from published definitions for eligible
-  candidate or brother users in the matching scope, rejects duplicate
+  The API creates assignments only from approved published definitions for
+  eligible candidate or brother users in the matching scope, rejects duplicate
   active/completed assignments, and audits create decisions with assignee email
   and submission bodies redacted. Assignment update/archive mutations remain
   deferred until the owner confirms the assignment workflow.

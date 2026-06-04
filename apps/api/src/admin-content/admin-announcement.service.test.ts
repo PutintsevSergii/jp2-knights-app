@@ -296,6 +296,48 @@ describe("AdminAnnouncementService", () => {
     );
   });
 
+  it("does not dispatch push notifications when a published announcement lacks approval metadata", async () => {
+    const auditLog = auditLogRecorder();
+    const pushRecipients = pushRecipientRepository(["token_1"]);
+    const pushAdapter = pushNotificationAdapter();
+    const adminAnnouncementService = service(
+      repository({
+        beforeResult: { ...scopedAnnouncement, status: "APPROVED" },
+        updateResult: {
+          ...scopedAnnouncement,
+          status: "PUBLISHED",
+          approvedAt: null,
+          publishedAt: "2026-05-04T00:00:00.000Z"
+        }
+      }),
+      auditLog,
+      pushRecipients,
+      pushAdapter
+    );
+
+    await expect(
+      adminAnnouncementService.updateAdminAnnouncement(officer, scopedAnnouncement.id, {
+        status: "PUBLISHED"
+      })
+    ).resolves.toMatchObject({
+      announcement: {
+        status: "PUBLISHED",
+        approvedAt: null,
+        publishedAt: "2026-05-04T00:00:00.000Z"
+      }
+    });
+
+    expect(pushRecipients.requests).toEqual([]);
+    expect(pushAdapter.messages).toEqual([]);
+    expect(auditLog.records).toEqual([
+      expect.objectContaining({
+        action: "admin.announcement.publish",
+        actorUserId: officer.id,
+        entityId: scopedAnnouncement.id
+      })
+    ]);
+  });
+
   it("records explicit approval audit actions for announcements", async () => {
     const auditLog = auditLogRecorder();
 

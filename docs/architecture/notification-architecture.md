@@ -23,6 +23,8 @@ Push notifications are for authenticated candidates and brothers only. Public gu
 - Resolve audience server-side from visibility, role, and chorągiew.
 - Respect user preferences.
 - Never send private content details to a user who would not be able to fetch the target record.
+- Never dispatch content notifications unless the target record has the required
+  approval metadata as well as published status.
 - Log dispatch attempts at an operational level, not as spiritual participation tracking.
 - Notification payloads should contain a record id/deep link and generic title/body where privacy risk exists. The app fetches details after authorization.
 - Duplicate token registration transfers ownership safely or revokes the old owner according to the auth/device-token contract.
@@ -39,11 +41,12 @@ Push notifications are for authenticated candidates and brothers only. Public gu
 - `PUT /auth/notification-preferences` is self-scoped to candidates and
   brothers. Missing preference rows resolve to the documented defaults.
 - Announcement first publication resolves recipients server-side from
-  visibility, active candidate/brother profile or membership scope, active
-  non-revoked device tokens, and announcement preferences. It dispatches a
-  generic payload through the configured push adapter and records operational
-  attempted/accepted/failed counts without storing spiritual participation or
-  delivery-read state.
+  approval metadata, visibility, active candidate/brother profile or membership
+  scope, active non-revoked device tokens, and announcement preferences. It
+  dispatches a generic payload through the configured push adapter and records
+  operational attempted/accepted/failed counts without storing spiritual
+  participation or delivery-read state. Published-but-unapproved announcement
+  rows do not resolve push recipients.
 - The default local/test push adapter is no-op. It reports attempted token
   counts without sending to Expo or another provider because V1 stores token
   hashes or provider-safe references rather than raw provider tokens.

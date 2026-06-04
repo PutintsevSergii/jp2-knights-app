@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { assertAudienceVisibility } from "@jp2/shared-auth";
 import {
+  approvedContentWhere,
   memberScopedVisibilityWhere,
   publishedAtNowOrUnset
 } from "../content/content-visibility.where.js";
@@ -227,6 +228,7 @@ export function candidateEventWhere(
 
   return {
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
@@ -253,6 +255,7 @@ export function candidateEventDetailWhere(
   return {
     id,
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     OR: publishedAtNowOrUnset(now),
@@ -275,6 +278,7 @@ export function candidateAnnouncementWhere(
 
   return {
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.AnnouncementWhereInput>(),
     archivedAt: null,
     publishedAt: { lte: now },
     AND: [

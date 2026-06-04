@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import { approvedContentWhere } from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   PublicContentPage,
@@ -62,7 +63,7 @@ export class PrismaPublicContentRepository implements PublicContentRepository {
         language,
         visibility: "PUBLIC",
         status: "PUBLISHED",
-        approvedAt: { not: null },
+        ...approvedContentWhere<Prisma.ContentPageWhereInput>(),
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       }
@@ -107,6 +108,7 @@ export class PrismaPublicContentRepository implements PublicContentRepository {
         id,
         visibility: "PUBLIC",
         status: "PUBLISHED",
+        ...approvedContentWhere<Prisma.PrayerWhereInput>(),
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       },
@@ -136,6 +138,7 @@ export class PrismaPublicContentRepository implements PublicContentRepository {
         id,
         visibility: { in: ["PUBLIC", "FAMILY_OPEN"] },
         status: "published",
+        ...approvedContentWhere<Prisma.EventWhereInput>(),
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       }
@@ -210,6 +213,7 @@ function publishedPublicPrayerWhere(query: PublicPrayerListQuery, now: Date): Pr
     language: query.language ?? "en",
     visibility: "PUBLIC",
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.PrayerWhereInput>(),
     archivedAt: null,
     AND: and
   };
@@ -234,6 +238,7 @@ function publishedPublicEventWhere(query: PublicEventListQuery, now: Date): Pris
   return {
     visibility: { in: ["PUBLIC", "FAMILY_OPEN"] },
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
     ...(query.type ? { type: query.type } : {}),

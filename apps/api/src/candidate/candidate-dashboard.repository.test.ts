@@ -17,6 +17,7 @@ describe("candidateDashboardEventWhere", () => {
       )
     ).toEqual({
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       cancelledAt: null,
       startAt: { gte: new Date("2026-05-05T00:00:00.000Z") },
@@ -65,6 +66,7 @@ describe("candidateEventWhere", () => {
       )
     ).toEqual({
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       cancelledAt: null,
       startAt: { gte: new Date("2026-06-01T00:00:00.000Z") },
@@ -98,6 +100,7 @@ describe("candidateEventDetailWhere", () => {
     ).toEqual({
       id: "44444444-4444-4444-8444-444444444444",
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       cancelledAt: null,
       OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
@@ -124,6 +127,7 @@ describe("candidateAnnouncementWhere", () => {
       candidateAnnouncementWhere("11111111-1111-4111-8111-111111111111", now)
     ).toEqual({
       status: "PUBLISHED",
+      approvedAt: { not: null },
       archivedAt: null,
       publishedAt: { lte: now },
       AND: [
@@ -140,6 +144,7 @@ describe("candidateAnnouncementWhere", () => {
     });
     expect(candidateAnnouncementWhere(null, now)).toEqual({
       status: "PUBLISHED",
+      approvedAt: { not: null },
       archivedAt: null,
       publishedAt: { lte: now },
       AND: [

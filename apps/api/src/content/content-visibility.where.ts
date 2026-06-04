@@ -35,6 +35,10 @@ export function publishedAtNowOrUnset(now: Date) {
   return [{ publishedAt: null }, { publishedAt: { lte: now } }];
 }
 
+export function approvedContentWhere<TWhere>(): TWhere {
+  return { approvedAt: { not: null } } as TWhere;
+}
+
 export function adminManageableContentWhere<TWhere>(scope: AdminContentScope): TWhere {
   if (scope.kind === "global") {
     return {} as TWhere;

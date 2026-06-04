@@ -193,6 +193,7 @@ function shouldDispatchAnnouncementPush(
 ): boolean {
   if (
     announcement.status !== "PUBLISHED" ||
+    !announcement.approvedAt ||
     !announcement.publishedAt ||
     announcement.archivedAt
   ) {

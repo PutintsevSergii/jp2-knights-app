@@ -148,6 +148,7 @@ describe("PrismaPublicContentRepository", () => {
         language: "en",
         visibility: "PUBLIC",
         status: "PUBLISHED",
+        approvedAt: { not: null },
         archivedAt: null,
         categoryId: prayerCategoryRecord.id,
         AND: [
@@ -190,6 +191,7 @@ describe("PrismaPublicContentRepository", () => {
         id: prayerRecord.id,
         visibility: "PUBLIC",
         status: "PUBLISHED",
+        approvedAt: { not: null },
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       },
@@ -231,6 +233,7 @@ describe("PrismaPublicContentRepository", () => {
       where: {
         visibility: { in: ["PUBLIC", "FAMILY_OPEN"] },
         status: "published",
+        approvedAt: { not: null },
         archivedAt: null,
         startAt: { gte: now },
         type: "open-evening",
@@ -264,6 +267,7 @@ describe("PrismaPublicContentRepository", () => {
         id: eventRecord.id,
         visibility: { in: ["PUBLIC", "FAMILY_OPEN"] },
         status: "published",
+        approvedAt: { not: null },
         archivedAt: null,
         OR: [{ publishedAt: null }, { publishedAt: { lte: now } }]
       }

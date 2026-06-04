@@ -274,6 +274,26 @@ describe("AdminEventService", () => {
       entityId: scopedEvent.id
     });
   });
+
+  it("rejects clearing approval metadata while an event remains published", async () => {
+    const auditLog = auditLogRecorder();
+    const publishedEvent: AdminEventSummary = {
+      ...scopedEvent,
+      status: "published",
+      approvedAt: "2026-05-04T00:00:00.000Z",
+      publishedAt: "2026-05-04T00:00:00.000Z"
+    };
+    const guardedRepository = repository({ beforeResult: publishedEvent });
+    guardedRepository.updateEvent = () =>
+      Promise.reject(new Error("repository update should not run"));
+
+    await expect(
+      service(guardedRepository, auditLog).updateAdminEvent(officer, scopedEvent.id, {
+        approvedAt: null
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toEqual([]);
+  });
 });
 
 function service(

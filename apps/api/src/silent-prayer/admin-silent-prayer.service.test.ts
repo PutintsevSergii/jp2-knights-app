@@ -274,6 +274,30 @@ describe("AdminSilentPrayerService", () => {
       entityId: scopedSilentPrayerEvent.id
     });
   });
+
+  it("rejects clearing approval metadata while a silent-prayer event remains published", async () => {
+    const auditLog = auditLogRecorder();
+    const publishedSilentPrayerEvent: AdminSilentPrayerEventSummary = {
+      ...scopedSilentPrayerEvent,
+      status: "PUBLISHED",
+      approvedAt: "2026-05-04T00:00:00.000Z",
+      publishedAt: "2026-05-04T00:00:00.000Z"
+    };
+    const guardedRepository = repository({ beforeResult: publishedSilentPrayerEvent });
+    guardedRepository.updateEvent = () =>
+      Promise.reject(new Error("repository update should not run"));
+
+    await expect(
+      service(guardedRepository, auditLog).updateAdminSilentPrayerEvent(
+        officer,
+        scopedSilentPrayerEvent.id,
+        {
+          approvedAt: null
+        }
+      )
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toEqual([]);
+  });
 });
 
 function service(

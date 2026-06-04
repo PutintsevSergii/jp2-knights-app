@@ -37,7 +37,10 @@ Planned Firebase RTDB migration endpoints:
 - Public anonymous participants are counted by anonymous session key.
 - Authenticated participants are counted once per user.
 - No participant list is exposed in V1.
-- REST join/list endpoints validate status, publish time, active window, cancellation/archive state, and server-side visibility before touching presence.
+- REST join/list endpoints validate approval metadata, status, publish time,
+  active window, cancellation/archive state, and server-side visibility before
+  touching presence. Published-but-unapproved sessions are treated as hidden for
+  public and brother reads.
 - REST responses return `activeCount`, `expiresAt`, and a socket room name only. They do not return anonymous session ids, user ids, rosters, participant lists, or prayer history.
 - Socket.IO gateway and Redis adapter wiring are enabled in Phase 11; production requires `REDIS_URL`, while local/test environments may use the deterministic in-memory store.
 - Mobile public and brother silent-prayer screens join through REST first, then connect to the `/silent-prayer` Socket.IO namespace to replay the matching socket join, send heartbeat events, receive aggregate presence updates, and emit leave when the user exits the route.
@@ -51,4 +54,6 @@ Planned Firebase RTDB migration endpoints:
   visibility, scope, status, timing, explicit lifecycle action names, and
   lifecycle timestamps only. They do not copy intention text or
   participant/session identity into `audit_logs`.
+- Admin updates that would leave a `PUBLISHED` silent-prayer event without
+  `approvedAt` metadata fail before persistence and audit side effects.
 - Admin Lite mounts `/admin/silent-prayer-events` over the admin list contract with shared DTO validation, demo fixtures, approval-before-publish action metadata, and no participant-list/session-id/user-id/roster actions.

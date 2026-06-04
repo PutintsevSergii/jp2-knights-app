@@ -7,6 +7,7 @@ export interface AnnouncementPushRecipientTarget {
   visibility: Visibility;
   targetOrganizationUnitId: string | null;
   status: ContentStatus;
+  approvedAt: string | null;
   publishedAt: string | null;
   archivedAt: string | null;
 }
@@ -54,6 +55,7 @@ export function announcementPushRecipientUserWhere(
 ): Prisma.UserWhereInput | null {
   if (
     announcement.status !== "PUBLISHED" ||
+    !announcement.approvedAt ||
     announcement.archivedAt ||
     !announcement.publishedAt
   ) {

@@ -1,5 +1,8 @@
 import type { Prisma } from "@prisma/client";
-import { publishedAtNowOrUnset } from "../content/content-visibility.where.js";
+import {
+  approvedContentWhere,
+  publishedAtNowOrUnset
+} from "../content/content-visibility.where.js";
 
 export function assignedRoadmapWhere(
   userId: string,
@@ -18,6 +21,7 @@ export function assignedRoadmapWhere(
     roadmapDefinition: {
       targetRole,
       status: "PUBLISHED",
+      ...approvedContentWhere<Prisma.RoadmapDefinitionWhereInput>(),
       archivedAt: null,
       OR: publishedAtNowOrUnset(now)
     },
@@ -44,6 +48,7 @@ export function brotherRoadmapSubmissionTargetWhere(
     roadmapDefinition: {
       targetRole: "BROTHER",
       status: "PUBLISHED",
+      ...approvedContentWhere<Prisma.RoadmapDefinitionWhereInput>(),
       archivedAt: null,
       OR: publishedAtNowOrUnset(now),
       stages: {
@@ -54,6 +59,7 @@ export function brotherRoadmapSubmissionTargetWhere(
               id: stepId,
               requiresSubmission: true,
               status: "PUBLISHED",
+              ...approvedContentWhere<Prisma.RoadmapStepWhereInput>(),
               archivedAt: null,
               OR: publishedAtNowOrUnset(now)
             }

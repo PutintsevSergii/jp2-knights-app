@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  approvedContentWhere,
   adminManageableContentWhere,
   adminScopedContentUpdateWhere,
   memberScopedVisibilityWhere,
@@ -37,6 +38,10 @@ describe("content visibility where helpers", () => {
       { publishedAt: null },
       { publishedAt: { lte: now } }
     ]);
+  });
+
+  it("builds approval metadata filters for user-facing published content", () => {
+    expect(approvedContentWhere()).toEqual({ approvedAt: { not: null } });
   });
 
   it("builds admin list filters by global or scoped content scope", () => {

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
+import { approvedContentWhere } from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type {
   BrotherSilentPrayerEventSummary,
@@ -127,6 +128,7 @@ function publicSilentPrayerWhere(now: Date): Prisma.SilentPrayerEventWhereInput 
   return {
     visibility: { in: ["PUBLIC", "FAMILY_OPEN"] },
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.SilentPrayerEventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     startsAt: { lte: now },
@@ -148,6 +150,7 @@ function brotherSilentPrayerWhere(
 ): Prisma.SilentPrayerEventWhereInput {
   return {
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.SilentPrayerEventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     startsAt: { lte: now },

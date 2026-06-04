@@ -16,6 +16,7 @@ describe("event participation visibility where clauses", () => {
     expect(candidateParticipationEventWhere(eventId, organizationUnitId, now)).toEqual({
       id: eventId,
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       cancelledAt: null,
       startAt: { gte: now },
@@ -39,6 +40,7 @@ describe("event participation visibility where clauses", () => {
       expect.objectContaining({
         id: eventId,
         status: "published",
+        approvedAt: { not: null },
         archivedAt: null,
         cancelledAt: null,
         startAt: { gte: now },

@@ -62,6 +62,7 @@ describe("brotherUpcomingEventWhere", () => {
 
     expect(brotherUpcomingEventWhere([organizationUnitRecord.id], now)).toEqual({
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       startAt: { gte: now },
       OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
@@ -81,6 +82,7 @@ describe("brotherUpcomingEventWhere", () => {
     });
     expect(brotherUpcomingEventWhere([], now)).toEqual({
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       startAt: { gte: now },
       OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
@@ -110,6 +112,7 @@ describe("brotherEventWhere", () => {
       )
     ).toEqual({
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       startAt: { gte: new Date("2026-06-01T00:00:00.000Z") },
       type: "formation",
@@ -144,6 +147,7 @@ describe("brotherEventDetailWhere", () => {
     ).toEqual({
       id: "44444444-4444-4444-8444-444444444444",
       status: "published",
+      approvedAt: { not: null },
       archivedAt: null,
       cancelledAt: null,
       OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
@@ -183,6 +187,7 @@ describe("brotherPrayerWhere", () => {
     ).toEqual({
       language: "en",
       status: "PUBLISHED",
+      approvedAt: { not: null },
       archivedAt: null,
       categoryId: prayerCategoryRecord.id,
       AND: [
@@ -217,6 +222,7 @@ describe("brotherAnnouncementWhere", () => {
 
     expect(brotherAnnouncementWhere([organizationUnitRecord.id], now)).toEqual({
       status: "PUBLISHED",
+      approvedAt: { not: null },
       archivedAt: null,
       publishedAt: { lte: now },
       AND: [
@@ -235,6 +241,7 @@ describe("brotherAnnouncementWhere", () => {
     });
     expect(brotherAnnouncementWhere([], now)).toEqual({
       status: "PUBLISHED",
+      approvedAt: { not: null },
       archivedAt: null,
       publishedAt: { lte: now },
       AND: [

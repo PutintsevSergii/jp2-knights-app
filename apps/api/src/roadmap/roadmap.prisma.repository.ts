@@ -1,7 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import type { RoadmapAttachmentMetadataDto } from "@jp2/shared-validation";
-import { publishedAtNowOrUnset } from "../content/content-visibility.where.js";
+import {
+  approvedContentWhere,
+  publishedAtNowOrUnset
+} from "../content/content-visibility.where.js";
 import { PrismaService } from "../database/prisma.service.js";
 import type { RoadmapRepository } from "./roadmap.repository.interfaces.js";
 import type {
@@ -111,6 +114,7 @@ export class PrismaRoadmapRepository implements RoadmapRepository {
                 steps: {
                   where: {
                     status: "PUBLISHED",
+                    ...approvedContentWhere<Prisma.RoadmapStepWhereInput>(),
                     archivedAt: null,
                     OR: publishedAtNowOrUnset(now)
                   },
@@ -366,6 +370,7 @@ export class PrismaRoadmapRepository implements RoadmapRepository {
           in: ["CANDIDATE", "BROTHER"]
         },
         status: "PUBLISHED",
+        ...approvedContentWhere<Prisma.RoadmapDefinitionWhereInput>(),
         archivedAt: null,
         OR: publishedAtNowOrUnset(new Date())
       },

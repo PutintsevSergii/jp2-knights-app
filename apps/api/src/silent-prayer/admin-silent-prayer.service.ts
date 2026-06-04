@@ -7,7 +7,10 @@ import { adminContentScopeFor } from "../admin/admin-content-access.policy.js";
 import { AuditLogService, type AuditSummary } from "../audit/audit-log.service.js";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { contentMutationAuditAction } from "../content/content-audit-actions.js";
-import { assertPublishHasPriorApproval } from "../content/content-approval.policy.js";
+import {
+  assertPublishHasPriorApproval,
+  assertPublishedContentRetainsApproval
+} from "../content/content-approval.policy.js";
 import { AdminSilentPrayerRepository } from "./admin-silent-prayer.repository.js";
 import type {
   AdminSilentPrayerEventDetailResponse,
@@ -86,6 +89,12 @@ export class AdminSilentPrayerService {
       await this.adminSilentPrayerRepository.findEventForAudit(id, scope);
     assertPublishHasPriorApproval(
       data.status,
+      beforeSilentPrayerEvent,
+      "Silent-prayer event"
+    );
+    assertPublishedContentRetainsApproval(
+      data.status,
+      data.approvedAt,
       beforeSilentPrayerEvent,
       "Silent-prayer event"
     );

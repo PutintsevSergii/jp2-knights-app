@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import {
+  approvedContentWhere,
   memberScopedVisibilityWhere,
   publishedAtNowOrUnset
 } from "../content/content-visibility.where.js";
@@ -218,6 +219,7 @@ function publishedOpenEventWhere(
   return {
     id: eventId,
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     startAt: { gte: now },

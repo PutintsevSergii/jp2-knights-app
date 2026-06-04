@@ -9,6 +9,7 @@ const publishedPublicAnnouncement = {
   visibility: "PUBLIC" as const,
   targetOrganizationUnitId: null,
   status: "PUBLISHED" as const,
+  approvedAt: "2026-05-07T09:00:00.000Z",
   publishedAt: "2026-05-07T10:00:00.000Z",
   archivedAt: null
 };
@@ -133,7 +134,13 @@ describe("announcementPushRecipientUserWhere", () => {
     });
   });
 
-  it("does not target unpublished, archived, unscoped organization-unit, officer, or admin announcements", () => {
+  it("does not target unapproved, unpublished, archived, unscoped organization-unit, officer, or admin announcements", () => {
+    expect(
+      announcementPushRecipientUserWhere({
+        ...publishedPublicAnnouncement,
+        approvedAt: null
+      })
+    ).toBeNull();
     expect(
       announcementPushRecipientUserWhere({
         ...publishedPublicAnnouncement,

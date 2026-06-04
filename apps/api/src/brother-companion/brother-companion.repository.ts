@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
 import { assertAudienceVisibility } from "@jp2/shared-auth";
 import {
+  approvedContentWhere,
   memberScopedVisibilityWhere,
   publishedAtNowOrUnset
 } from "../content/content-visibility.where.js";
@@ -311,6 +312,7 @@ export function brotherEventWhere(
 
   return {
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     startAt: { gte: query.from ? new Date(query.from) : now },
     ...(query.type ? { type: query.type } : {}),
@@ -336,6 +338,7 @@ export function brotherEventDetailWhere(
   return {
     id,
     status: "published",
+    ...approvedContentWhere<Prisma.EventWhereInput>(),
     archivedAt: null,
     cancelledAt: null,
     OR: publishedAtNowOrUnset(now),
@@ -358,6 +361,7 @@ export function brotherAnnouncementWhere(
 
   return {
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.AnnouncementWhereInput>(),
     archivedAt: null,
     publishedAt: { lte: now },
     AND: [
@@ -408,6 +412,7 @@ export function brotherPrayerWhere(
   const where: Prisma.PrayerWhereInput = {
     language: query.language ?? "en",
     status: "PUBLISHED",
+    ...approvedContentWhere<Prisma.PrayerWhereInput>(),
     archivedAt: null,
     AND: and
   };

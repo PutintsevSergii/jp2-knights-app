@@ -17,12 +17,12 @@
 ## Implemented Phase 9 Announcement Reads
 
 - `GET /candidate/announcements` requires an active candidate profile and returns
-  paginated published announcements visible to candidates: `PUBLIC`,
+  paginated approved published announcements visible to candidates: `PUBLIC`,
   `FAMILY_OPEN`, `CANDIDATE`, or the candidate's assigned `ORGANIZATION_UNIT`.
 - `GET /brother/announcements` requires an active brother profile and returns
-  paginated published announcements visible to brothers: `PUBLIC`,
+  paginated approved published announcements visible to brothers: `PUBLIC`,
   `FAMILY_OPEN`, `BROTHER`, or the brother's own active organization units.
-- Both read endpoints hide archived, unpublished, future-published,
+- Both read endpoints hide archived, unapproved, unpublished, future-published,
   role-private, and unrelated organization-unit announcements server-side.
 - Responses include announcement text, visibility, target scope, pinned state,
   and published timestamp only. They do not expose read receipts, comments,
@@ -40,5 +40,7 @@
   with actor, entity, scope, explicit lifecycle action names, and redacted
   before/after summaries. Full announcement bodies are not copied into audit
   summaries.
-- First publish resolves audience-safe push recipients server-side and dispatches
-  generic notification copy without exposing push delivery state in Admin Lite.
+- First publish resolves audience-safe push recipients server-side only after
+  approval metadata exists, then dispatches generic notification copy without
+  exposing push delivery state in Admin Lite. Published rows without approval
+  metadata do not resolve push recipients.
