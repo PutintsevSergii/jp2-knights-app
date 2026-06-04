@@ -3088,6 +3088,15 @@
                   "type": "object",
                   "required": [
                     "candidateProfile",
+                    "providerAccounts",
+                    "deviceTokens",
+                    "userRoles",
+                    "identityAccessReviews",
+                    "memberships",
+                    "officerAssignments",
+                    "roadmapAssignments",
+                    "eventParticipations",
+                    "notificationPreferences",
                     "retentionBucket",
                     "exportedAt"
                   ],
@@ -3183,6 +3192,599 @@
                           "type": "string",
                           "nullable": true,
                           "format": "date-time"
+                        }
+                      }
+                    },
+                    "providerAccounts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "provider",
+                          "providerSubject",
+                          "email",
+                          "emailVerified",
+                          "phone",
+                          "displayName",
+                          "photoUrl",
+                          "lastSignInAt",
+                          "createdAt",
+                          "updatedAt",
+                          "revokedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "provider": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "providerSubject": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "email": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "email",
+                            "maxLength": 320
+                          },
+                          "emailVerified": {
+                            "type": "boolean",
+                            "nullable": true
+                          },
+                          "phone": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 40
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "photoUrl": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uri",
+                            "maxLength": 2048
+                          },
+                          "lastSignInAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "revokedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "deviceTokens": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "platform",
+                          "lastSeenAt",
+                          "createdAt",
+                          "updatedAt",
+                          "revokedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "platform": {
+                            "type": "string",
+                            "enum": [
+                              "ios",
+                              "android",
+                              "web"
+                            ]
+                          },
+                          "lastSeenAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "revokedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "userRoles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "role",
+                          "createdBy",
+                          "createdAt",
+                          "revokedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ]
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "revokedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "identityAccessReviews": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "providerAccountId",
+                          "status",
+                          "scopeOrganizationUnitId",
+                          "requestedRole",
+                          "assignedRole",
+                          "expiresAt",
+                          "decidedBy",
+                          "decidedAt",
+                          "decisionNote",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "providerAccountId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "rejected",
+                              "expired"
+                            ]
+                          },
+                          "scopeOrganizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "requestedRole": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ]
+                          },
+                          "assignedRole": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER",
+                              "OFFICER",
+                              "SUPER_ADMIN"
+                            ]
+                          },
+                          "expiresAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "decidedBy": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "decidedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "decisionNote": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 2000
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "memberships": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "organizationUnitId",
+                          "status",
+                          "currentDegree",
+                          "joinedAt",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "organizationUnitId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "archived",
+                              "inactive"
+                            ]
+                          },
+                          "currentDegree": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "joinedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "officerAssignments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "organizationUnitId",
+                          "title",
+                          "startsAt",
+                          "endsAt",
+                          "createdBy",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "organizationUnitId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "nullable": true,
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "startsAt": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "endsAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "roadmapAssignments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "roadmapDefinitionId",
+                          "roadmapTargetRole",
+                          "roadmapStatus",
+                          "organizationUnitId",
+                          "status",
+                          "assignedByUserId",
+                          "assignedAt",
+                          "completedAt",
+                          "submissionCount",
+                          "pendingSubmissionCount",
+                          "createdAt",
+                          "updatedAt",
+                          "archivedAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "roadmapDefinitionId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "roadmapTargetRole": {
+                            "type": "string",
+                            "enum": [
+                              "CANDIDATE",
+                              "BROTHER"
+                            ]
+                          },
+                          "roadmapStatus": {
+                            "type": "string",
+                            "enum": [
+                              "DRAFT",
+                              "REVIEW",
+                              "APPROVED",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                            ]
+                          },
+                          "organizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "completed",
+                              "archived"
+                            ]
+                          },
+                          "assignedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "assignedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "completedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "submissionCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "pendingSubmissionCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "archivedAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "eventParticipations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "eventId",
+                          "eventTitle",
+                          "eventType",
+                          "eventVisibility",
+                          "eventStatus",
+                          "eventTargetOrganizationUnitId",
+                          "eventStartAt",
+                          "eventEndAt",
+                          "intentStatus",
+                          "createdAt",
+                          "updatedAt",
+                          "cancelledAt"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "eventId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "eventTitle": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "eventType": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "eventVisibility": {
+                            "type": "string",
+                            "enum": [
+                              "PUBLIC",
+                              "FAMILY_OPEN",
+                              "CANDIDATE",
+                              "BROTHER",
+                              "ORGANIZATION_UNIT",
+                              "OFFICER",
+                              "ADMIN"
+                            ]
+                          },
+                          "eventStatus": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "published",
+                              "cancelled",
+                              "archived"
+                            ]
+                          },
+                          "eventTargetOrganizationUnitId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "eventStartAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "eventEndAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          },
+                          "intentStatus": {
+                            "type": "string",
+                            "enum": [
+                              "planning_to_attend",
+                              "cancelled"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "cancelledAt": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "notificationPreferences": {
+                      "type": "object",
+                      "required": [
+                        "events",
+                        "announcements",
+                        "roadmapUpdates",
+                        "prayerReminders"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "events": {
+                          "type": "boolean"
+                        },
+                        "announcements": {
+                          "type": "boolean"
+                        },
+                        "roadmapUpdates": {
+                          "type": "boolean"
+                        },
+                        "prayerReminders": {
+                          "type": "boolean"
                         }
                       }
                     },

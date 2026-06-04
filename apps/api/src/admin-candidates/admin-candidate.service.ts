@@ -67,6 +67,28 @@ export class AdminCandidateService {
       throw new NotFoundException("Candidate profile was not found.");
     }
 
+    const notificationPreferences =
+      await this.candidateRepository.findNotificationPreferencesForUser(candidateProfile.userId);
+    const [
+      providerAccounts,
+      deviceTokens,
+      userRoles,
+      identityAccessReviews,
+      memberships,
+      officerAssignments,
+      roadmapAssignments,
+      eventParticipations
+    ] = await Promise.all([
+      this.candidateRepository.listProviderAccountsForUser(candidateProfile.userId),
+      this.candidateRepository.listDeviceTokensForUser(candidateProfile.userId),
+      this.candidateRepository.listUserRolesForUser(candidateProfile.userId),
+      this.candidateRepository.listIdentityAccessReviewsForUser(candidateProfile.userId),
+      this.candidateRepository.listMembershipsForUser(candidateProfile.userId),
+      this.candidateRepository.listOfficerAssignmentsForUser(candidateProfile.userId),
+      this.candidateRepository.listRoadmapAssignmentsForUser(candidateProfile.userId),
+      this.candidateRepository.listEventParticipationsForUser(candidateProfile.userId)
+    ]);
+
     await this.auditLog.record({
       action: "admin.candidateProfile.export",
       actorUserId: principal.id,
@@ -79,6 +101,15 @@ export class AdminCandidateService {
 
     return {
       candidateProfile,
+      providerAccounts,
+      deviceTokens,
+      userRoles,
+      identityAccessReviews,
+      memberships,
+      officerAssignments,
+      roadmapAssignments,
+      eventParticipations,
+      notificationPreferences,
       retentionBucket: PRIVACY_WORKFLOW_RETENTION_BUCKETS.candidateProfile,
       exportedAt: new Date().toISOString()
     };

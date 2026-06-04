@@ -1,6 +1,7 @@
 import {
   CONTENT_STATUSES,
   EVENT_STATUSES,
+  PARTICIPATION_STATUSES,
   ROADMAP_ASSIGNMENT_STATUSES,
   ROADMAP_SUBMISSION_STATUSES,
   ROADMAP_TARGET_ROLES,
@@ -20,6 +21,11 @@ export const eventStatusOpenApiSchema = {
 export const visibilityOpenApiSchema = {
   type: "string",
   enum: [...VISIBILITIES]
+};
+
+export const participationStatusOpenApiSchema = {
+  type: "string",
+  enum: [...PARTICIPATION_STATUSES]
 };
 
 export const roadmapAssignmentStatusOpenApiSchema = {

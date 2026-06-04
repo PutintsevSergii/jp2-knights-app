@@ -46,6 +46,20 @@ describe("AdminCandidateController", () => {
         expect(id).toBe(candidateProfile.id);
         return Promise.resolve({
           candidateProfile,
+          providerAccounts: [],
+          deviceTokens: [],
+          userRoles: [],
+          identityAccessReviews: [],
+          memberships: [],
+          officerAssignments: [],
+          roadmapAssignments: [],
+          eventParticipations: [],
+          notificationPreferences: {
+            events: true,
+            announcements: true,
+            roadmapUpdates: true,
+            prayerReminders: false
+          },
           retentionBucket: "sensitive_review",
           exportedAt: "2026-06-01T17:00:00.000Z"
         });
@@ -85,6 +99,20 @@ describe("AdminCandidateController", () => {
       controller.exportCandidateProfile({ principal }, candidateProfile.id)
     ).resolves.toEqual({
       candidateProfile,
+      providerAccounts: [],
+      deviceTokens: [],
+      userRoles: [],
+      identityAccessReviews: [],
+      memberships: [],
+      officerAssignments: [],
+      roadmapAssignments: [],
+      eventParticipations: [],
+      notificationPreferences: {
+        events: true,
+        announcements: true,
+        roadmapUpdates: true,
+        prayerReminders: false
+      },
       retentionBucket: "sensitive_review",
       exportedAt: "2026-06-01T17:00:00.000Z"
     });

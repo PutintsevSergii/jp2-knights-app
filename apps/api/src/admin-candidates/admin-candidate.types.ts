@@ -1,15 +1,36 @@
 import type {
   AdminCandidateProfileDetailDto,
   AdminCandidateProfileDetailResponseDto,
+  AdminCandidateProfileDeviceTokenExportDto,
   AdminCandidateProfileErasureResponseDto,
+  AdminCandidateProfileEventParticipationExportDto,
   AdminCandidateProfileExportResponseDto,
+  AdminCandidateProfileIdentityAccessReviewExportDto,
   AdminCandidateProfileListResponseDto,
+  AdminCandidateProfileMembershipExportDto,
+  AdminCandidateProfileOfficerAssignmentExportDto,
+  AdminCandidateProfileProviderAccountExportDto,
+  AdminCandidateProfileRoadmapAssignmentExportDto,
   AdminCandidateProfileSummaryDto,
+  AdminCandidateProfileUserRoleExportDto,
   UpdateAdminCandidateProfileDto
 } from "@jp2/shared-validation";
 
 export type AdminCandidateProfileSummary = AdminCandidateProfileSummaryDto;
 export type AdminCandidateProfileDetail = AdminCandidateProfileDetailDto;
+export type AdminCandidateProfileProviderAccountExport =
+  AdminCandidateProfileProviderAccountExportDto;
+export type AdminCandidateProfileDeviceTokenExport = AdminCandidateProfileDeviceTokenExportDto;
+export type AdminCandidateProfileUserRoleExport = AdminCandidateProfileUserRoleExportDto;
+export type AdminCandidateProfileIdentityAccessReviewExport =
+  AdminCandidateProfileIdentityAccessReviewExportDto;
+export type AdminCandidateProfileMembershipExport = AdminCandidateProfileMembershipExportDto;
+export type AdminCandidateProfileOfficerAssignmentExport =
+  AdminCandidateProfileOfficerAssignmentExportDto;
+export type AdminCandidateProfileRoadmapAssignmentExport =
+  AdminCandidateProfileRoadmapAssignmentExportDto;
+export type AdminCandidateProfileEventParticipationExport =
+  AdminCandidateProfileEventParticipationExportDto;
 export type AdminCandidateProfileListResponse = AdminCandidateProfileListResponseDto;
 export type AdminCandidateProfileDetailResponse = AdminCandidateProfileDetailResponseDto;
 export type AdminCandidateProfileExportResponse = AdminCandidateProfileExportResponseDto;

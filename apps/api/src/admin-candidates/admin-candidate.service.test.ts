@@ -95,9 +95,32 @@ describe("AdminCandidateService", () => {
     const response = await service.exportCandidateProfile(superAdmin, profile.id);
 
     expect(response.candidateProfile).toEqual(repository.exportRecord);
+    expect(response.providerAccounts).toEqual(repository.providerAccounts);
+    expect(response.deviceTokens).toEqual(repository.deviceTokens);
+    expect(response.userRoles).toEqual(repository.userRoles);
+    expect(response.identityAccessReviews).toEqual(repository.identityAccessReviews);
+    expect(response.memberships).toEqual(repository.memberships);
+    expect(response.officerAssignments).toEqual(repository.officerAssignments);
+    expect(response.roadmapAssignments).toEqual(repository.roadmapAssignments);
+    expect(response.eventParticipations).toEqual(repository.eventParticipations);
+    expect(response.notificationPreferences).toEqual({
+      events: false,
+      announcements: true,
+      roadmapUpdates: true,
+      prayerReminders: false
+    });
     expect(response.retentionBucket).toBe("sensitive_review");
     expect(response.exportedAt).toEqual(expect.any(String));
     expect(repository.lastExportId).toBe(profile.id);
+    expect(repository.lastProviderAccountUserId).toBe(profile.userId);
+    expect(repository.lastDeviceTokenUserId).toBe(profile.userId);
+    expect(repository.lastUserRoleUserId).toBe(profile.userId);
+    expect(repository.lastIdentityAccessReviewUserId).toBe(profile.userId);
+    expect(repository.lastMembershipUserId).toBe(profile.userId);
+    expect(repository.lastOfficerAssignmentUserId).toBe(profile.userId);
+    expect(repository.lastRoadmapAssignmentUserId).toBe(profile.userId);
+    expect(repository.lastEventParticipationUserId).toBe(profile.userId);
+    expect(repository.lastNotificationPreferenceUserId).toBe(profile.userId);
     expect(auditLog.records).toHaveLength(1);
     expect(auditLog.records[0]).toMatchObject({
       action: "admin.candidateProfile.export",
@@ -274,12 +297,130 @@ describe("AdminCandidateService", () => {
 class FakeRepository implements AdminCandidateRepository {
   visible = true;
   exportRecord: AdminCandidateProfileDetail | null = profile;
+  providerAccounts = [
+    {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      provider: "firebase",
+      providerSubject: "firebase-subject-1",
+      email: "anna@example.test",
+      emailVerified: true,
+      phone: "+37120000000",
+      displayName: "Anna Provider",
+      photoUrl: "https://example.test/photo.png",
+      lastSignInAt: "2026-05-25T07:00:00.000Z",
+      createdAt: "2026-05-01T07:00:00.000Z",
+      updatedAt: "2026-05-25T07:00:00.000Z",
+      revokedAt: null
+    }
+  ];
+  deviceTokens = [
+    {
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      platform: "ios" as const,
+      lastSeenAt: "2026-05-26T07:00:00.000Z",
+      createdAt: "2026-05-02T07:00:00.000Z",
+      updatedAt: "2026-05-26T07:00:00.000Z",
+      revokedAt: null
+    }
+  ];
+  userRoles = [
+    {
+      id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      role: "CANDIDATE" as const,
+      createdBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      createdAt: "2026-05-03T07:00:00.000Z",
+      revokedAt: null
+    }
+  ];
+  identityAccessReviews = [
+    {
+      id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      providerAccountId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      status: "confirmed" as const,
+      scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      requestedRole: "CANDIDATE" as const,
+      assignedRole: "CANDIDATE" as const,
+      expiresAt: "2026-06-02T07:00:00.000Z",
+      decidedBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      decidedAt: "2026-05-04T07:00:00.000Z",
+      decisionNote: "Approved for candidate onboarding.",
+      createdAt: "2026-05-03T07:00:00.000Z",
+      updatedAt: "2026-05-04T07:00:00.000Z"
+    }
+  ];
+  memberships = [
+    {
+      id: "99999999-9999-4999-8999-999999999999",
+      organizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "active" as const,
+      currentDegree: "First Degree",
+      joinedAt: "2026-05-05",
+      createdAt: "2026-05-05T07:00:00.000Z",
+      updatedAt: "2026-05-06T07:00:00.000Z",
+      archivedAt: null
+    }
+  ];
+  officerAssignments = [
+    {
+      id: "12121212-1212-4121-8121-121212121212",
+      organizationUnitId: "11111111-1111-4111-8111-111111111111",
+      title: "Secretary",
+      startsAt: "2026-05-01",
+      endsAt: null,
+      createdBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      createdAt: "2026-04-30T07:00:00.000Z"
+    }
+  ];
+  roadmapAssignments = [
+    {
+      id: "56565656-5656-4565-8565-565656565656",
+      roadmapDefinitionId: "78787878-7878-4787-8787-787878787878",
+      roadmapTargetRole: "CANDIDATE" as const,
+      roadmapStatus: "PUBLISHED" as const,
+      organizationUnitId: "11111111-1111-4111-8111-111111111111",
+      status: "active" as const,
+      assignedByUserId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      assignedAt: "2026-05-07T07:00:00.000Z",
+      completedAt: null,
+      submissionCount: 2,
+      pendingSubmissionCount: 1,
+      createdAt: "2026-05-07T07:00:00.000Z",
+      updatedAt: "2026-05-08T07:00:00.000Z",
+      archivedAt: null
+    }
+  ];
+  eventParticipations = [
+    {
+      id: "67676767-6767-4676-8676-676767676767",
+      eventId: "89898989-8989-4898-8989-898989898989",
+      eventTitle: "Candidate Formation Evening",
+      eventType: "formation",
+      eventVisibility: "CANDIDATE" as const,
+      eventStatus: "published" as const,
+      eventTargetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+      eventStartAt: "2026-05-20T17:00:00.000Z",
+      eventEndAt: "2026-05-20T19:00:00.000Z",
+      intentStatus: "planning_to_attend" as const,
+      createdAt: "2026-05-09T07:00:00.000Z",
+      updatedAt: "2026-05-10T07:00:00.000Z",
+      cancelledAt: null
+    }
+  ];
   erasedRecord: AdminCandidateProfileDetail | null = { ...profile, status: "archived" };
   hasActiveNonCandidateAccess = false;
   lastScope: readonly string[] | null | undefined;
   lastExportId: string | undefined;
   lastErasureId: string | undefined;
+  lastProviderAccountUserId: string | undefined;
+  lastDeviceTokenUserId: string | undefined;
+  lastUserRoleUserId: string | undefined;
+  lastIdentityAccessReviewUserId: string | undefined;
+  lastMembershipUserId: string | undefined;
+  lastOfficerAssignmentUserId: string | undefined;
+  lastRoadmapAssignmentUserId: string | undefined;
+  lastEventParticipationUserId: string | undefined;
   lastNonCandidateAccessUserId: string | undefined;
+  lastNotificationPreferenceUserId: string | undefined;
 
   listCandidateProfiles(scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
@@ -294,6 +435,56 @@ class FakeRepository implements AdminCandidateRepository {
   findCandidateProfileForExport(id: string) {
     this.lastExportId = id;
     return Promise.resolve(this.exportRecord);
+  }
+
+  listProviderAccountsForUser(userId: string) {
+    this.lastProviderAccountUserId = userId;
+    return Promise.resolve(this.providerAccounts);
+  }
+
+  listDeviceTokensForUser(userId: string) {
+    this.lastDeviceTokenUserId = userId;
+    return Promise.resolve(this.deviceTokens);
+  }
+
+  listUserRolesForUser(userId: string) {
+    this.lastUserRoleUserId = userId;
+    return Promise.resolve(this.userRoles);
+  }
+
+  listIdentityAccessReviewsForUser(userId: string) {
+    this.lastIdentityAccessReviewUserId = userId;
+    return Promise.resolve(this.identityAccessReviews);
+  }
+
+  listMembershipsForUser(userId: string) {
+    this.lastMembershipUserId = userId;
+    return Promise.resolve(this.memberships);
+  }
+
+  listOfficerAssignmentsForUser(userId: string) {
+    this.lastOfficerAssignmentUserId = userId;
+    return Promise.resolve(this.officerAssignments);
+  }
+
+  listRoadmapAssignmentsForUser(userId: string) {
+    this.lastRoadmapAssignmentUserId = userId;
+    return Promise.resolve(this.roadmapAssignments);
+  }
+
+  listEventParticipationsForUser(userId: string) {
+    this.lastEventParticipationUserId = userId;
+    return Promise.resolve(this.eventParticipations);
+  }
+
+  findNotificationPreferencesForUser(userId: string) {
+    this.lastNotificationPreferenceUserId = userId;
+    return Promise.resolve({
+      events: false,
+      announcements: true,
+      roadmapUpdates: true,
+      prayerReminders: false
+    });
   }
 
   candidateProfileUserHasActiveNonCandidateAccess(userId: string) {

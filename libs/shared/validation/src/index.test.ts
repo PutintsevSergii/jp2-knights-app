@@ -900,6 +900,121 @@ describe("shared validation", () => {
           updatedAt: candidateRequest.updatedAt,
           archivedAt: "2026-05-30T08:00:00.000Z"
         },
+        providerAccounts: [
+          {
+            id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            provider: "firebase",
+            providerSubject: "firebase-subject-1",
+            email: candidateRequest.email,
+            emailVerified: true,
+            phone: "+37120000000",
+            displayName: "Anna Provider",
+            photoUrl: "https://example.test/photo.png",
+            lastSignInAt: "2026-05-25T07:00:00.000Z",
+            createdAt: "2026-05-01T07:00:00.000Z",
+            updatedAt: "2026-05-25T07:00:00.000Z",
+            revokedAt: null
+          }
+        ],
+        deviceTokens: [
+          {
+            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            platform: "ios",
+            lastSeenAt: "2026-05-26T07:00:00.000Z",
+            createdAt: "2026-05-02T07:00:00.000Z",
+            updatedAt: "2026-05-26T07:00:00.000Z",
+            revokedAt: null
+          }
+        ],
+        userRoles: [
+          {
+            id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+            role: "CANDIDATE",
+            createdBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            createdAt: "2026-05-03T07:00:00.000Z",
+            revokedAt: null
+          }
+        ],
+        identityAccessReviews: [
+          {
+            id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            providerAccountId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            status: "confirmed",
+            scopeOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+            requestedRole: "CANDIDATE",
+            assignedRole: "CANDIDATE",
+            expiresAt: "2026-06-02T07:00:00.000Z",
+            decidedBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            decidedAt: "2026-05-04T07:00:00.000Z",
+            decisionNote: "Approved for candidate onboarding.",
+            createdAt: "2026-05-03T07:00:00.000Z",
+            updatedAt: "2026-05-04T07:00:00.000Z"
+          }
+        ],
+        memberships: [
+          {
+            id: "99999999-9999-4999-8999-999999999999",
+            organizationUnitId: "11111111-1111-4111-8111-111111111111",
+            status: "active",
+            currentDegree: "First Degree",
+            joinedAt: "2026-05-05",
+            createdAt: "2026-05-05T07:00:00.000Z",
+            updatedAt: "2026-05-06T07:00:00.000Z",
+            archivedAt: null
+          }
+        ],
+        officerAssignments: [
+          {
+            id: "12121212-1212-4121-8121-121212121212",
+            organizationUnitId: "11111111-1111-4111-8111-111111111111",
+            title: "Secretary",
+            startsAt: "2026-05-01",
+            endsAt: null,
+            createdBy: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            createdAt: "2026-04-30T07:00:00.000Z"
+          }
+        ],
+        roadmapAssignments: [
+          {
+            id: "56565656-5656-4565-8565-565656565656",
+            roadmapDefinitionId: "78787878-7878-4787-8787-787878787878",
+            roadmapTargetRole: "CANDIDATE",
+            roadmapStatus: "PUBLISHED",
+            organizationUnitId: "11111111-1111-4111-8111-111111111111",
+            status: "active",
+            assignedByUserId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            assignedAt: "2026-05-07T07:00:00.000Z",
+            completedAt: null,
+            submissionCount: 2,
+            pendingSubmissionCount: 1,
+            createdAt: "2026-05-07T07:00:00.000Z",
+            updatedAt: "2026-05-08T07:00:00.000Z",
+            archivedAt: null
+          }
+        ],
+        eventParticipations: [
+          {
+            id: "67676767-6767-4676-8676-676767676767",
+            eventId: "89898989-8989-4898-8989-898989898989",
+            eventTitle: "Candidate Formation Evening",
+            eventType: "formation",
+            eventVisibility: "CANDIDATE",
+            eventStatus: "published",
+            eventTargetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
+            eventStartAt: "2026-05-20T17:00:00.000Z",
+            eventEndAt: "2026-05-20T19:00:00.000Z",
+            intentStatus: "planning_to_attend",
+            createdAt: "2026-05-09T07:00:00.000Z",
+            updatedAt: "2026-05-10T07:00:00.000Z",
+            cancelledAt: null
+          }
+        ],
+        notificationPreferences: {
+          events: false,
+          announcements: true,
+          roadmapUpdates: true,
+          prayerReminders: false
+        },
         retentionBucket: "sensitive_review",
         exportedAt: "2026-06-01T17:00:00.000Z"
       })
@@ -908,9 +1023,76 @@ describe("shared validation", () => {
         displayName: "Anna Nowak",
         status: "archived"
       },
+      providerAccounts: [{ provider: "firebase" }],
+      deviceTokens: [{ platform: "ios" }],
+      userRoles: [{ role: "CANDIDATE" }],
+      identityAccessReviews: [{ status: "confirmed" }],
+      memberships: [{ status: "active" }],
+      officerAssignments: [{ title: "Secretary" }],
+      roadmapAssignments: [{ roadmapTargetRole: "CANDIDATE", submissionCount: 2 }],
+      eventParticipations: [{ eventType: "formation", intentStatus: "planning_to_attend" }],
+      notificationPreferences: {
+        events: false,
+        announcements: true,
+        roadmapUpdates: true,
+        prayerReminders: false
+      },
       retentionBucket: "sensitive_review",
       exportedAt: "2026-06-01T17:00:00.000Z"
     });
+    expect(
+      adminCandidateProfileExportResponseSchema.safeParse({
+        candidateProfile: {
+          id: "77777777-7777-4777-8777-777777777777",
+          userId: "88888888-8888-4888-8888-888888888888",
+          candidateRequestId: candidateRequest.id,
+          displayName: "Anna Nowak",
+          email: candidateRequest.email,
+          preferredLanguage: "en",
+          assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+          responsibleOfficerId: null,
+          responsibleOfficerName: null,
+          status: "archived",
+          createdAt: candidateRequest.createdAt,
+          updatedAt: candidateRequest.updatedAt,
+          archivedAt: "2026-05-30T08:00:00.000Z"
+        },
+        providerAccounts: [],
+        deviceTokens: [],
+        userRoles: [],
+        identityAccessReviews: [],
+        memberships: [],
+        officerAssignments: [],
+        roadmapAssignments: [],
+        eventParticipations: [
+          {
+            id: "67676767-6767-4676-8676-676767676767",
+            eventId: "89898989-8989-4898-8989-898989898989",
+            eventTitle: "Candidate Formation Evening",
+            eventType: "formation",
+            eventVisibility: "CANDIDATE",
+            eventStatus: "published",
+            eventTargetOrganizationUnitId: null,
+            eventStartAt: "2026-05-20T17:00:00.000Z",
+            eventEndAt: null,
+            intentStatus: "planning_to_attend",
+            createdAt: "2026-05-09T07:00:00.000Z",
+            updatedAt: "2026-05-10T07:00:00.000Z",
+            cancelledAt: null,
+            participants: [{ userId: "99999999-9999-4999-8999-999999999999" }]
+          }
+        ],
+        notificationPreferences: {
+          events: false,
+          announcements: true,
+          roadmapUpdates: true,
+          prayerReminders: false
+        },
+        retentionBucket: "sensitive_review",
+        exportedAt: "2026-06-01T17:00:00.000Z"
+      }).success
+    ).toBe(false);
     expect(
       adminCandidateProfileErasureResponseSchema.parse({
         candidateProfileId: "77777777-7777-4777-8777-777777777777",

@@ -2,9 +2,24 @@ import { z } from "zod";
 import {
   candidateProfileStatusSchema,
   candidateRequestStatusSchema,
+  contentStatusSchema,
+  eventStatusSchema,
+  membershipStatusSchema,
+  participationStatusSchema,
+  roadmapAssignmentStatusSchema,
+  roadmapTargetRoleSchema,
   roleSchema,
-  sensitiveReviewRetentionBucketSchema
+  sensitiveReviewRetentionBucketSchema,
+  visibilitySchema
 } from "./common.js";
+import { notificationPreferenceSettingsSchema } from "./auth-notifications.js";
+
+export const identityAccessReviewStatusSchema = z.enum([
+  "pending",
+  "confirmed",
+  "rejected",
+  "expired"
+]);
 
 export const adminCandidateRequestSummarySchema = z.object({
   id: z.uuid(),
@@ -75,8 +90,134 @@ export const adminCandidateProfileDetailResponseSchema = z.object({
   candidateProfile: adminCandidateProfileDetailSchema
 });
 
+export const adminCandidateProfileProviderAccountExportSchema = z
+  .object({
+    id: z.uuid(),
+    provider: z.string().trim().min(1).max(80),
+    providerSubject: z.string().trim().min(1).max(200),
+    email: z.string().trim().email().max(320).nullable(),
+    emailVerified: z.boolean().nullable(),
+    phone: z.string().trim().min(1).max(40).nullable(),
+    displayName: z.string().trim().min(1).max(200).nullable(),
+    photoUrl: z.string().trim().url().max(2048).nullable(),
+    lastSignInAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    revokedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminCandidateProfileDeviceTokenExportSchema = z
+  .object({
+    id: z.uuid(),
+    platform: z.enum(["ios", "android", "web"]),
+    lastSeenAt: z.iso.datetime(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    revokedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminCandidateProfileUserRoleExportSchema = z
+  .object({
+    id: z.uuid(),
+    role: roleSchema,
+    createdBy: z.uuid().nullable(),
+    createdAt: z.iso.datetime(),
+    revokedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminCandidateProfileIdentityAccessReviewExportSchema = z
+  .object({
+    id: z.uuid(),
+    providerAccountId: z.uuid(),
+    status: identityAccessReviewStatusSchema,
+    scopeOrganizationUnitId: z.uuid().nullable(),
+    requestedRole: roleSchema.nullable(),
+    assignedRole: roleSchema.nullable(),
+    expiresAt: z.iso.datetime(),
+    decidedBy: z.uuid().nullable(),
+    decidedAt: z.iso.datetime().nullable(),
+    decisionNote: z.string().trim().min(1).max(2000).nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+  })
+  .strict();
+
+export const adminCandidateProfileMembershipExportSchema = z
+  .object({
+    id: z.uuid(),
+    organizationUnitId: z.uuid(),
+    status: membershipStatusSchema,
+    currentDegree: z.string().trim().min(1).max(120).nullable(),
+    joinedAt: z.iso.date().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminCandidateProfileOfficerAssignmentExportSchema = z
+  .object({
+    id: z.uuid(),
+    organizationUnitId: z.uuid(),
+    title: z.string().trim().min(1).max(200).nullable(),
+    startsAt: z.iso.date(),
+    endsAt: z.iso.date().nullable(),
+    createdBy: z.uuid().nullable(),
+    createdAt: z.iso.datetime()
+  })
+  .strict();
+
+export const adminCandidateProfileRoadmapAssignmentExportSchema = z
+  .object({
+    id: z.uuid(),
+    roadmapDefinitionId: z.uuid(),
+    roadmapTargetRole: roadmapTargetRoleSchema,
+    roadmapStatus: contentStatusSchema,
+    organizationUnitId: z.uuid().nullable(),
+    status: roadmapAssignmentStatusSchema,
+    assignedByUserId: z.uuid().nullable(),
+    assignedAt: z.iso.datetime(),
+    completedAt: z.iso.datetime().nullable(),
+    submissionCount: z.number().int().min(0),
+    pendingSubmissionCount: z.number().int().min(0),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const adminCandidateProfileEventParticipationExportSchema = z
+  .object({
+    id: z.uuid(),
+    eventId: z.uuid(),
+    eventTitle: z.string().trim().min(1).max(200),
+    eventType: z.string().trim().min(1).max(120),
+    eventVisibility: visibilitySchema,
+    eventStatus: eventStatusSchema,
+    eventTargetOrganizationUnitId: z.uuid().nullable(),
+    eventStartAt: z.iso.datetime(),
+    eventEndAt: z.iso.datetime().nullable(),
+    intentStatus: participationStatusSchema,
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    cancelledAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
 export const adminCandidateProfileExportResponseSchema = z.object({
   candidateProfile: adminCandidateProfileDetailSchema,
+  providerAccounts: z.array(adminCandidateProfileProviderAccountExportSchema),
+  deviceTokens: z.array(adminCandidateProfileDeviceTokenExportSchema),
+  userRoles: z.array(adminCandidateProfileUserRoleExportSchema),
+  identityAccessReviews: z.array(adminCandidateProfileIdentityAccessReviewExportSchema),
+  memberships: z.array(adminCandidateProfileMembershipExportSchema),
+  officerAssignments: z.array(adminCandidateProfileOfficerAssignmentExportSchema),
+  roadmapAssignments: z.array(adminCandidateProfileRoadmapAssignmentExportSchema),
+  eventParticipations: z.array(adminCandidateProfileEventParticipationExportSchema),
+  notificationPreferences: notificationPreferenceSettingsSchema,
   retentionBucket: sensitiveReviewRetentionBucketSchema,
   exportedAt: z.iso.datetime()
 });
@@ -198,13 +339,6 @@ export const adminAuditLogListResponseSchema = z.object({
   })
 });
 
-export const identityAccessReviewStatusSchema = z.enum([
-  "pending",
-  "confirmed",
-  "rejected",
-  "expired"
-]);
-
 export const adminIdentityAccessReviewSummarySchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
@@ -265,6 +399,30 @@ export type AdminCandidateProfileSummaryDto = z.infer<typeof adminCandidateProfi
 export type AdminCandidateProfileDetailDto = z.infer<typeof adminCandidateProfileDetailSchema>;
 export type AdminCandidateProfileDetailResponseDto = z.infer<
   typeof adminCandidateProfileDetailResponseSchema
+>;
+export type AdminCandidateProfileProviderAccountExportDto = z.infer<
+  typeof adminCandidateProfileProviderAccountExportSchema
+>;
+export type AdminCandidateProfileDeviceTokenExportDto = z.infer<
+  typeof adminCandidateProfileDeviceTokenExportSchema
+>;
+export type AdminCandidateProfileUserRoleExportDto = z.infer<
+  typeof adminCandidateProfileUserRoleExportSchema
+>;
+export type AdminCandidateProfileIdentityAccessReviewExportDto = z.infer<
+  typeof adminCandidateProfileIdentityAccessReviewExportSchema
+>;
+export type AdminCandidateProfileMembershipExportDto = z.infer<
+  typeof adminCandidateProfileMembershipExportSchema
+>;
+export type AdminCandidateProfileOfficerAssignmentExportDto = z.infer<
+  typeof adminCandidateProfileOfficerAssignmentExportSchema
+>;
+export type AdminCandidateProfileRoadmapAssignmentExportDto = z.infer<
+  typeof adminCandidateProfileRoadmapAssignmentExportSchema
+>;
+export type AdminCandidateProfileEventParticipationExportDto = z.infer<
+  typeof adminCandidateProfileEventParticipationExportSchema
 >;
 export type AdminCandidateProfileExportResponseDto = z.infer<
   typeof adminCandidateProfileExportResponseSchema
