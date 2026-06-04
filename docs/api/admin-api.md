@@ -61,6 +61,12 @@ Admin endpoints require `OFFICER` or `SUPER_ADMIN`. Officer endpoints are scoped
   scope, request id, timestamp, and pagination metadata with the exact filtered
   total. Raw IP addresses, actor email, nested JSON, and unredacted source
   payloads are not returned.
+- Audit summary mapping also strips sensitive primitive summary keys such as
+  email, phone, message, officer note, body/body preview, review comment,
+  provider subject, token/hash/last-four values, attachment metadata,
+  file/storage metadata, URLs, personal/name fields, descriptions, and
+  intentions while preserving safe lifecycle metadata such as status flags and
+  counts.
 - Mounted Admin Lite audit-log web and Next routes preserve only the supported
   audit-log query keys before forwarding requests to the API client.
 - The mounted Admin Lite audit-log screen renders the supported query fields as

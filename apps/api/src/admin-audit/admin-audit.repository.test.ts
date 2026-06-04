@@ -38,13 +38,35 @@ describe("PrismaAdminAuditRepository", () => {
               scopeOrganizationUnitId: "33333333-3333-4333-8333-333333333333",
               beforeSummary: {
                 status: "new",
+                email: "anna@example.test",
+                phone: "+37120000000",
+                firstName: "Anna",
+                lastName: "Nowak",
+                message: "Please contact me privately.",
+                officerNote: "Followed up by email.",
+                tokenHash: "hash_secret",
                 nested: {
                   private: "ignored"
                 }
               },
               afterSummary: {
                 status: "contacted",
-                changed: true
+                changed: true,
+                hasBody: true,
+                hadReviewComment: true,
+                attachmentCount: 2,
+                reviewComment: "Sensitive formation review.",
+                providerSubject: "firebase-subject",
+                description: "Private event address.",
+                responsibleOfficerName: "Demo Officer",
+                submitterName: "Demo Brother",
+                assigneeName: "Demo Candidate",
+                assignedOrganizationUnitName: "Riga Choragiew",
+                originalFilename: "private-reflection.pdf",
+                mimeType: "application/pdf",
+                storageKey: "roadmap/private-reflection.pdf",
+                downloadUrl: "https://storage.example.test/private-reflection.pdf",
+                photoUrl: "https://identity.example.test/private-photo.jpg"
               },
               requestId: "req_123",
               ipAddress: "127.0.0.1",
@@ -77,7 +99,10 @@ describe("PrismaAdminAuditRepository", () => {
           },
           afterSummary: {
             status: "contacted",
-            changed: true
+            changed: true,
+            hasBody: true,
+            hadReviewComment: true,
+            attachmentCount: 2
           },
           requestId: "req_123",
           createdAt: "2026-05-27T08:00:00.000Z"

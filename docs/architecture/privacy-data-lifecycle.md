@@ -24,7 +24,8 @@ This document defines minimum lifecycle behavior for V1. Legal wording, exact re
   revocation requires a separate product/security decision.
 - Silent prayer anonymous participation uses random session identifiers or hashes, not names or contact data.
 - Authenticated silent prayer participation may temporarily reference `user_id` only for duplicate prevention, reconnect behavior, and aggregate counter correctness. It is not a spiritual history record.
-- Audit summaries redact prayer text, candidate private messages, token values, storage keys, and unnecessary PII.
+- Audit summaries redact prayer text, candidate private messages, token values,
+  file/storage metadata, URLs, and unnecessary PII.
 
 ## Retention Policy
 
@@ -56,6 +57,11 @@ only; exact durations remain deployment/legal configured and are not hardcoded.
 - Silent prayer export must not produce participant lists. If retained technical rows still reference a user, export only the minimum legally required technical record and never frame it as prayer activity history.
 - Hard-deleted binary files must also remove provider objects, thumbnails, and derived metadata.
 - Erasure operations are themselves audited without copying erased sensitive values into the audit summary.
+- Audit-log read models apply a final sensitive-key filter to before/after
+  summaries so accidental primitive fields such as email, phone, message,
+  note/comment, provider subject, token/hash, body, attachment metadata,
+  filenames, MIME types, storage keys, URLs, personal/name fields,
+  description, or intention values are not returned from review APIs.
 
 ## Backups and Restore
 

@@ -83,12 +83,67 @@ function toAuditSummary(value: Prisma.JsonValue | null): AdminAuditLogSummary["b
   }
 
   return Object.fromEntries(
-    Object.entries(value).filter((entry): entry is [string, string | number | boolean | null] =>
-      isAuditSummaryValue(entry[1])
+    Object.entries(value).filter(
+      (entry): entry is [string, string | number | boolean | null] =>
+        isAuditSummaryValue(entry[1]) && !isSensitiveAuditSummaryKey(entry[0])
     )
   );
 }
 
 function isAuditSummaryValue(value: unknown): value is string | number | boolean | null {
   return value === null || ["string", "number", "boolean"].includes(typeof value);
+}
+
+function isSensitiveAuditSummaryKey(key: string): boolean {
+  const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  if (
+    [
+      "body",
+      "bodytext",
+      "bodypreview",
+      "downloadurl",
+      "description",
+      "displayname",
+      "email",
+      "filename",
+      "fileurl",
+      "ipaddress",
+      "intention",
+      "message",
+      "messagepreview",
+      "mimetype",
+      "note",
+      "officernote",
+      "objectkey",
+      "originalfilename",
+      "phone",
+      "photourl",
+      "provider",
+      "providersubject",
+      "rawip",
+      "reviewcomment",
+      "storagebucket",
+      "storagekey",
+      "storagepath",
+      "subjectemail",
+      "submitteremail",
+      "assigneeemail",
+      "attachmentmeta",
+      "attachmentmetadata",
+      "attachmenturl"
+    ].includes(normalized)
+  ) {
+    return true;
+  }
+
+  return (
+    normalized.endsWith("email") ||
+    normalized.endsWith("name") ||
+    normalized.endsWith("phone") ||
+    normalized.endsWith("url") ||
+    normalized.includes("token") ||
+    normalized.includes("hash") ||
+    normalized.includes("lastfour")
+  );
 }
