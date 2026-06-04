@@ -26,6 +26,7 @@ import { GET as getAdminRoot } from "./app/admin/route.js";
 import { GET as getAdminDashboard } from "./app/admin/dashboard/route.js";
 import { GET as getIdentityAccessReviews } from "./app/admin/identity-access-reviews/route.js";
 import { GET as getPrayers } from "./app/admin/prayers/route.js";
+import { GET as getPrivacyWorkflows } from "./app/admin/privacy-workflows/route.js";
 
 describe("Next admin dashboard route scaffold", () => {
   afterEach(() => {
@@ -191,6 +192,24 @@ describe("Next admin dashboard route scaffold", () => {
         headers: { authorization: "Bearer token_2" }
       }
     );
+  });
+
+  it("mounts privacy workflow metadata through the Next scaffold without backend calls", async () => {
+    const fetchImpl = vi.fn();
+    vi.stubEnv("APP_RUNTIME_MODE", "api");
+    vi.stubEnv("ADMIN_CAN_MANAGE_PRIVACY", "true");
+    vi.stubGlobal("fetch", fetchImpl);
+
+    const response = await getPrivacyWorkflows(
+      new Request("https://admin.example.test/admin/privacy-workflows")
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(body).toContain("Privacy Workflows");
+    expect(body).toContain("Sensitive review");
+    expect(body).toContain('href="/admin/privacy-workflows" aria-current="page"');
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("mounts all remaining list routes through the Next scaffold in demo mode", async () => {

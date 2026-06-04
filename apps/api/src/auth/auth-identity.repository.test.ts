@@ -146,7 +146,7 @@ describe("PrismaAuthIdentityRepository", () => {
       pendingReview: {
         id: "review-1",
         status: "pending",
-        expiresAt: new Date("2026-06-04T08:00:00.000Z"),
+        expiresAt: new Date("2099-06-04T08:00:00.000Z"),
         scopeOrganizationUnitId: "organizationUnit-a"
       }
     });
@@ -268,7 +268,7 @@ function fakePrisma(options: FakePrismaOptions) {
       create: reviewCreate.mockResolvedValue({
         id: "review-created-1",
         status: "pending",
-        expiresAt: new Date("2026-06-04T08:00:00.000Z"),
+        expiresAt: new Date("2099-06-04T08:00:00.000Z"),
         scopeOrganizationUnitId: options.userByEmail ? "organizationUnit-a" : null
       }),
       update: vi.fn()

@@ -23,6 +23,10 @@ import {
   type AdminOrganizationUnitShellRouteMetadata
 } from "./admin-organization-units-shell.js";
 import {
+  adminPrivacyWorkflowShellRoutes,
+  type AdminPrivacyWorkflowShellRouteMetadata
+} from "./admin-privacy-workflows-screen.js";
+import {
   adminRoadmapAssignmentShellRoutes,
   type AdminRoadmapAssignmentShellRouteMetadata
 } from "./admin-roadmap-assignments-shell.js";
@@ -42,6 +46,7 @@ export type AdminShellRoute =
   | AdminCandidateRequestShellRouteMetadata["path"]
   | AdminCandidateShellRouteMetadata["path"]
   | AdminOrganizationUnitShellRouteMetadata["path"]
+  | AdminPrivacyWorkflowShellRouteMetadata["path"]
   | AdminRoadmapAssignmentShellRouteMetadata["path"]
   | AdminRoadmapDefinitionShellRouteMetadata["path"]
   | AdminRoadmapSubmissionShellRouteMetadata["path"]
@@ -57,6 +62,7 @@ export interface AdminShellRouteMetadata {
     | AdminCandidateRequestShellRouteMetadata["screenRoute"]
     | AdminCandidateShellRouteMetadata["screenRoute"]
     | AdminOrganizationUnitShellRouteMetadata["screenRoute"]
+    | AdminPrivacyWorkflowShellRouteMetadata["screenRoute"]
     | AdminRoadmapAssignmentShellRouteMetadata["screenRoute"]
     | AdminRoadmapDefinitionShellRouteMetadata["screenRoute"]
     | AdminRoadmapSubmissionShellRouteMetadata["screenRoute"]
@@ -74,6 +80,7 @@ export const adminShellRoutes: readonly AdminShellRouteMetadata[] = [
   ...adminCandidateRequestShellRoutes,
   ...adminCandidateShellRoutes,
   ...adminOrganizationUnitShellRoutes,
+  ...adminPrivacyWorkflowShellRoutes,
   ...adminRoadmapAssignmentShellRoutes,
   ...adminRoadmapDefinitionShellRoutes,
   ...adminRoadmapSubmissionShellRoutes,

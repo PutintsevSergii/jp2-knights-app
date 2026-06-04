@@ -4649,6 +4649,8 @@
                           "targetOrganizationUnitId",
                           "pinned",
                           "status",
+                          "approvedByUserId",
+                          "publishedByUserId",
                           "approvedAt",
                           "publishedAt",
                           "archivedAt"
@@ -4698,6 +4700,16 @@
                               "PUBLISHED",
                               "ARCHIVED"
                             ]
+                          },
+                          "approvedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "publishedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
                           },
                           "approvedAt": {
                             "type": "string",
@@ -4857,6 +4869,8 @@
                         "targetOrganizationUnitId",
                         "pinned",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "archivedAt"
@@ -4906,6 +4920,16 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -5127,6 +5151,8 @@
                         "targetOrganizationUnitId",
                         "pinned",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "archivedAt"
@@ -5176,6 +5202,16 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -5374,6 +5410,8 @@
                           "visibility",
                           "targetOrganizationUnitId",
                           "status",
+                          "approvedByUserId",
+                          "publishedByUserId",
                           "approvedAt",
                           "publishedAt",
                           "cancelledAt",
@@ -5441,6 +5479,16 @@
                               "cancelled",
                               "archived"
                             ]
+                          },
+                          "approvedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "publishedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
                           },
                           "approvedAt": {
                             "type": "string",
@@ -5626,6 +5674,8 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "cancelledAt",
@@ -5693,6 +5743,16 @@
                             "cancelled",
                             "archived"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -5949,6 +6009,8 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "cancelledAt",
@@ -6016,6 +6078,16 @@
                             "cancelled",
                             "archived"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -6217,6 +6289,8 @@
                           "visibility",
                           "targetOrganizationUnitId",
                           "status",
+                          "approvedByUserId",
+                          "publishedByUserId",
                           "approvedAt",
                           "publishedAt",
                           "archivedAt"
@@ -6273,6 +6347,16 @@
                               "PUBLISHED",
                               "ARCHIVED"
                             ]
+                          },
+                          "approvedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "publishedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
                           },
                           "approvedAt": {
                             "type": "string",
@@ -6441,6 +6525,8 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "archivedAt"
@@ -6497,6 +6583,16 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -6721,6 +6817,8 @@
                         "visibility",
                         "targetOrganizationUnitId",
                         "status",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "archivedAt"
@@ -6777,6 +6875,16 @@
                             "PUBLISHED",
                             "ARCHIVED"
                           ]
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -18064,6 +18172,8 @@
                           "status",
                           "startsAt",
                           "endsAt",
+                          "approvedByUserId",
+                          "publishedByUserId",
                           "approvedAt",
                           "publishedAt",
                           "cancelledAt",
@@ -18121,6 +18231,16 @@
                             "type": "string",
                             "nullable": true,
                             "format": "date-time"
+                          },
+                          "approvedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
+                          },
+                          "publishedByUserId": {
+                            "type": "string",
+                            "nullable": true,
+                            "format": "uuid"
                           },
                           "approvedAt": {
                             "type": "string",
@@ -18293,6 +18413,8 @@
                         "status",
                         "startsAt",
                         "endsAt",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "cancelledAt",
@@ -18350,6 +18472,16 @@
                           "type": "string",
                           "nullable": true,
                           "format": "date-time"
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",
@@ -18594,6 +18726,8 @@
                         "status",
                         "startsAt",
                         "endsAt",
+                        "approvedByUserId",
+                        "publishedByUserId",
                         "approvedAt",
                         "publishedAt",
                         "cancelledAt",
@@ -18651,6 +18785,16 @@
                           "type": "string",
                           "nullable": true,
                           "format": "date-time"
+                        },
+                        "approvedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
+                        },
+                        "publishedByUserId": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "uuid"
                         },
                         "approvedAt": {
                           "type": "string",

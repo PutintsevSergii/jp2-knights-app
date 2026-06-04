@@ -1,4 +1,5 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import type { AdminCandidateProfileDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
@@ -25,6 +26,7 @@ export function buildAdminCandidateDetailScreen(options: {
   candidateProfile?: AdminCandidateProfileDetailDto | undefined;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
 }): AdminCandidateDetailScreen {
   if (options.state !== "ready") {
     return stateOnlyCandidateDetail(options.state, options.runtimeMode);
@@ -43,7 +45,11 @@ export function buildAdminCandidateDetailScreen(options: {
       : "Review the scoped candidate profile. Write access is required to update fields.",
     candidateProfileId: options.candidateProfile.id,
     fields: buildCandidateFields(options.candidateProfile, options.canWrite),
-    actions: buildDetailActions(options.candidateProfile, options.canWrite),
+    actions: buildDetailActions(
+      options.candidateProfile,
+      options.canWrite,
+      options.canManagePrivacy ?? false
+    ),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: adminContentTheme
   };
@@ -51,9 +57,31 @@ export function buildAdminCandidateDetailScreen(options: {
 
 function buildDetailActions(
   profile: AdminCandidateProfileDetailDto,
-  canWrite: boolean
+  canWrite: boolean,
+  canManagePrivacy: boolean
 ): AdminCandidateAction[] {
   const actions: AdminCandidateAction[] = [adminCandidateBackAction()];
+
+  if (canManagePrivacy) {
+    actions.unshift(
+      {
+        id: "export",
+        label: "Export Personal Data",
+        targetRoute: "AdminCandidateDetail",
+        targetId: profile.id,
+        requestMethod: "GET",
+        requestPath: adminPrivacyWorkflowOperationPath("candidateProfile", profile.id, "export")
+      },
+      {
+        id: "erase",
+        label: "Erase Candidate Profile",
+        targetRoute: "AdminCandidateDetail",
+        targetId: profile.id,
+        requestMethod: "POST",
+        requestPath: adminPrivacyWorkflowOperationPath("candidateProfile", profile.id, "erase")
+      }
+    );
+  }
 
   if (canWrite && profile.status !== "converted_to_brother") {
     actions.unshift({

@@ -59,6 +59,7 @@ describe("admin roadmap submissions shell", () => {
       baseUrl: "https://api.example.test",
       authToken: "token_1",
       canWrite: true,
+      canManagePrivacy: true,
       fetchImpl
     });
 
@@ -75,6 +76,14 @@ describe("admin roadmap submissions shell", () => {
       statusCode: 200
     });
     expect(detail.document).toContain("Review Comment");
+    expect(detail.document).toContain('data-action="export"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/roadmap-submissions/${roadmapSubmission.id}/export"`
+    );
+    expect(detail.document).toContain('data-action="erase"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/roadmap-submissions/${roadmapSubmission.id}/erase"`
+    );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
       "https://api.example.test/admin/roadmap-submissions",

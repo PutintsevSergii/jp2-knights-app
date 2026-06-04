@@ -25,6 +25,8 @@ const prayerResponse: AdminPrayerListResponseDto = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       archivedAt: null
@@ -45,6 +47,8 @@ const eventResponse: AdminEventListResponseDto = {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       status: "published",
+      approvedByUserId: "99999999-9999-4999-8999-999999999999",
+      publishedByUserId: "99999999-9999-4999-8999-999999999999",
       approvedAt: "2026-05-03T23:55:00.000Z",
       publishedAt: "2026-05-04T00:00:00.000Z",
       cancelledAt: null,
@@ -63,6 +67,8 @@ const announcementResponse: AdminAnnouncementListResponseDto = {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "DRAFT",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       archivedAt: null
@@ -81,6 +87,8 @@ const silentPrayerResponse: AdminSilentPrayerEventListResponseDto = {
       status: "DRAFT",
       startsAt: "2026-06-12T18:00:00.000Z",
       endsAt: "2026-06-12T18:30:00.000Z",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
@@ -307,6 +315,7 @@ describe("admin content screen models", () => {
       item: {
         ...prayerResponse.prayers[0]!,
         status: "APPROVED",
+        approvedByUserId: "99999999-9999-4999-8999-999999999999",
         approvedAt: "2026-06-03T10:00:00.000Z"
       },
       runtimeMode: "api",
@@ -348,6 +357,20 @@ describe("admin content screen models", () => {
       title: "Prayer: Morning Offering",
       contentId: "33333333-3333-4333-8333-333333333333"
     });
+    expect(approvedPrayerScreen.fields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "approvedByUserId",
+          value: "99999999-9999-4999-8999-999999999999",
+          readOnly: true
+        }),
+        expect.objectContaining({
+          name: "publishedByUserId",
+          value: "",
+          readOnly: true
+        })
+      ])
+    );
     expect(approvedPrayerScreen.actions.map((action) => action.id)).toEqual([
       "edit",
       "refresh",

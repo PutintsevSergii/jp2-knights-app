@@ -13,6 +13,8 @@ const announcementRecord = {
   targetOrganizationUnitId: null,
   pinned: false,
   status: "DRAFT",
+  approvedBy: null,
+  publishedBy: null,
   approvedAt: null,
   publishedAt: null,
   archivedAt: null
@@ -26,6 +28,8 @@ type AnnouncementRecord = {
   targetOrganizationUnitId: string | null;
   pinned: boolean;
   status: string;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
@@ -39,6 +43,8 @@ const scopedAnnouncementRecord = {
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   pinned: true,
   status: "PUBLISHED",
+  approvedBy: actorUserId,
+  publishedBy: actorUserId,
   approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
@@ -60,6 +66,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: null,
         pinned: false,
         status: "DRAFT",
+        approvedByUserId: null,
+        publishedByUserId: null,
         approvedAt: null,
         publishedAt: null,
         archivedAt: null
@@ -87,6 +95,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
         targetOrganizationUnitId: scopedAnnouncementRecord.targetOrganizationUnitId,
         pinned: true,
         status: "PUBLISHED",
+        approvedByUserId: actorUserId,
+        publishedByUserId: actorUserId,
         approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         archivedAt: null
@@ -126,6 +136,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
       targetOrganizationUnitId: null,
       pinned: false,
       status: "DRAFT",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       archivedAt: null
@@ -214,6 +226,8 @@ describe("PrismaAdminAnnouncementRepository", () => {
       targetOrganizationUnitId: scopedAnnouncementRecord.targetOrganizationUnitId,
       pinned: true,
       status: "PUBLISHED",
+      approvedByUserId: actorUserId,
+      publishedByUserId: actorUserId,
       approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       archivedAt: null

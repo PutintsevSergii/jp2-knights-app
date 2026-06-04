@@ -53,6 +53,7 @@ describe("admin candidate request shell", () => {
       baseUrl: "https://api.example.test",
       authToken: "token_1",
       canWrite: true,
+      canManagePrivacy: true,
       fetchImpl
     });
 
@@ -74,6 +75,16 @@ describe("admin candidate request shell", () => {
       statusCode: 200
     });
     expect(detail.document).toContain("Save Follow-up");
+    expect(detail.document).toContain('data-action="export"');
+    expect(detail.document).toContain('data-request-method="GET"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/candidate-requests/${candidateRequest.id}/export"`
+    );
+    expect(detail.document).toContain('data-action="erase"');
+    expect(detail.document).toContain('data-request-method="POST"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/candidate-requests/${candidateRequest.id}/erase"`
+    );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
       "https://api.example.test/admin/candidate-requests",

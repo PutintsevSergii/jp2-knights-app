@@ -32,7 +32,8 @@ import {
   renderAdminDocument,
   renderAdminEmptyState,
   renderAdminFormField,
-  renderAdminHeader
+  renderAdminHeader,
+  renderAdminActionButton
 } from "./admin-render-primitives.js";
 import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 import { routeOptions } from "./admin-web-route-types.js";
@@ -51,6 +52,7 @@ export interface RenderAdminRoadmapSubmissionRouteOptions {
   path: AdminRoadmapSubmissionShellRoute;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
   authToken?: string;
   authCookie?: string;
   baseUrl?: string;
@@ -154,7 +156,8 @@ async function resolveRoadmapSubmissionDetailScreen(
       state: "ready",
       roadmapSubmission: fallbackAdminRoadmapSubmissions.find((submission) => submission.id === id),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 
@@ -163,13 +166,15 @@ async function resolveRoadmapSubmissionDetailScreen(
       state: "ready",
       roadmapSubmission: (await fetchAdminRoadmapSubmission(id, options)).roadmapSubmission,
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   } catch (error) {
     return buildAdminRoadmapSubmissionDetailScreen({
       state: adminContentFailureState(error),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 }
@@ -284,8 +289,14 @@ function renderField(field: AdminRoadmapSubmissionField): string {
 }
 
 function renderAction(action: AdminRoadmapSubmissionAction): string {
+  if (action.id === "erase") {
+    return renderAdminActionButton(action, { danger: true });
+  }
+
   const href =
-    action.targetId && action.id !== "refresh"
+    action.requestPath
+      ? `/api/${action.requestPath}`
+      : action.targetId && action.id !== "refresh"
       ? `/admin/roadmap-submissions/${action.targetId}`
       : "/admin/roadmap-submissions";
 

@@ -14,6 +14,8 @@ const silentPrayerEventRecord = {
   status: "DRAFT",
   startsAt: new Date("2026-05-10T18:00:00.000Z"),
   endsAt: null,
+  approvedBy: null,
+  publishedBy: null,
   approvedAt: null,
   publishedAt: null,
   cancelledAt: null,
@@ -29,6 +31,8 @@ type SilentPrayerEventRecord = {
   status: string;
   startsAt: Date;
   endsAt: Date | null;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
@@ -42,6 +46,8 @@ const scopedSilentPrayerEventRecord = {
   visibility: "ORGANIZATION_UNIT",
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   status: "PUBLISHED",
+  approvedBy: actorUserId,
+  publishedBy: actorUserId,
   approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
@@ -64,6 +70,8 @@ describe("PrismaAdminSilentPrayerRepository", () => {
         status: "DRAFT",
         startsAt: "2026-05-10T18:00:00.000Z",
         endsAt: null,
+        approvedByUserId: null,
+        publishedByUserId: null,
         approvedAt: null,
         publishedAt: null,
         cancelledAt: null,
@@ -93,6 +101,8 @@ describe("PrismaAdminSilentPrayerRepository", () => {
         status: "PUBLISHED",
         startsAt: "2026-05-10T18:00:00.000Z",
         endsAt: null,
+        approvedByUserId: actorUserId,
+        publishedByUserId: actorUserId,
         approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         cancelledAt: null,
@@ -137,6 +147,8 @@ describe("PrismaAdminSilentPrayerRepository", () => {
       status: "DRAFT",
       startsAt: "2026-05-10T18:00:00.000Z",
       endsAt: null,
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
@@ -213,6 +225,8 @@ describe("PrismaAdminSilentPrayerRepository", () => {
       status: "PUBLISHED",
       startsAt: "2026-05-10T18:00:00.000Z",
       endsAt: null,
+      approvedByUserId: actorUserId,
+      publishedByUserId: actorUserId,
       approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       cancelledAt: null,

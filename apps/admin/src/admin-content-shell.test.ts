@@ -13,6 +13,8 @@ const prayerPayload = {
       visibility: "PUBLIC",
       targetOrganizationUnitId: null,
       status: "DRAFT",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       archivedAt: null
@@ -25,6 +27,7 @@ const approvedPrayerPayload = {
     {
       ...prayerPayload.prayers[0],
       status: "APPROVED",
+      approvedByUserId: "99999999-9999-4999-8999-999999999999",
       approvedAt: "2026-06-03T10:00:00.000Z"
     }
   ]
@@ -43,6 +46,8 @@ const eventPayload = {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       status: "draft",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
@@ -61,6 +66,8 @@ const announcementPayload = {
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
       pinned: true,
       status: "DRAFT",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       archivedAt: null
@@ -79,6 +86,8 @@ const silentPrayerPayload = {
       status: "DRAFT",
       startsAt: "2026-06-12T18:00:00.000Z",
       endsAt: "2026-06-12T18:30:00.000Z",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
@@ -335,6 +344,9 @@ describe("admin content shell routes", () => {
     expect(detailRendered.document).toContain("Prayer: Morning Offering");
     expect(detailRendered.document).toContain(
       'data-content-id="33333333-3333-4333-8333-333333333333"'
+    );
+    expect(detailRendered.document).toContain(
+      'name="approvedByUserId" readonly value="99999999-9999-4999-8999-999999999999"'
     );
     expect(detailRendered.document).toContain('data-action="publish"');
     expect(detailRendered.document).not.toContain('data-action="approve"');

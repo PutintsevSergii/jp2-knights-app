@@ -196,7 +196,8 @@ function prayerFields(
       false,
       readOnly
     ),
-    field("status", "Status", prayer?.status ?? "DRAFT", true, readOnly)
+    field("status", "Status", prayer?.status ?? "DRAFT", true, readOnly),
+    ...approvalLifecycleFields(prayer)
   ];
 }
 
@@ -221,7 +222,8 @@ function eventFields(
       false,
       readOnly
     ),
-    field("status", "Status", event?.status ?? "draft", true, readOnly)
+    field("status", "Status", event?.status ?? "draft", true, readOnly),
+    ...approvalLifecycleFields(event)
   ];
 }
 
@@ -243,7 +245,8 @@ function announcementFields(
       readOnly
     ),
     field("pinned", "Pinned", announcement?.pinned ? "true" : "false", false, readOnly),
-    field("status", "Status", announcement?.status ?? "DRAFT", true, readOnly)
+    field("status", "Status", announcement?.status ?? "DRAFT", true, readOnly),
+    ...approvalLifecycleFields(announcement)
   ];
 }
 
@@ -266,7 +269,23 @@ function silentPrayerFields(
     ),
     field("status", "Status", silentPrayer?.status ?? "DRAFT", true, readOnly),
     field("startsAt", "Starts", silentPrayer?.startsAt ?? "", true, readOnly),
-    field("endsAt", "Ends", silentPrayer?.endsAt ?? "", false, readOnly)
+    field("endsAt", "Ends", silentPrayer?.endsAt ?? "", false, readOnly),
+    ...approvalLifecycleFields(silentPrayer)
+  ];
+}
+
+function approvalLifecycleFields(
+  item: AdminEditableContent | undefined
+): AdminContentEditorField[] {
+  if (!item) {
+    return [];
+  }
+
+  return [
+    field("approvedAt", "Approved At", item.approvedAt ?? "", false, true),
+    field("approvedByUserId", "Approved By User ID", item.approvedByUserId ?? "", false, true),
+    field("publishedAt", "Published At", item.publishedAt ?? "", false, true),
+    field("publishedByUserId", "Published By User ID", item.publishedByUserId ?? "", false, true)
   ];
 }
 

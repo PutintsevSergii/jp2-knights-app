@@ -5,6 +5,7 @@ import { adminContentRouteDefinition } from "./admin-content-shell.js";
 import { adminDashboardRouteDefinition } from "./admin-dashboard-screen.js";
 import { adminIdentityAccessRouteDefinition } from "./admin-identity-access-shell.js";
 import { adminOrganizationUnitRouteDefinition } from "./admin-organization-units-shell.js";
+import { adminPrivacyWorkflowRouteDefinition } from "./admin-privacy-workflows-screen.js";
 import { adminRoadmapAssignmentRouteDefinition } from "./admin-roadmap-assignments-shell.js";
 import { adminRoadmapDefinitionRouteDefinition } from "./admin-roadmap-definitions-shell.js";
 import { adminRoadmapSubmissionRouteDefinition } from "./admin-roadmap-submissions-shell.js";
@@ -27,6 +28,7 @@ const adminWebRouteDefinitions: readonly AdminWebRouteDefinition[] = [
   adminCandidateRequestRouteDefinition,
   adminCandidateRouteDefinition,
   adminOrganizationUnitRouteDefinition,
+  adminPrivacyWorkflowRouteDefinition,
   adminRoadmapAssignmentRouteDefinition,
   adminRoadmapDefinitionRouteDefinition,
   adminRoadmapSubmissionRouteDefinition,

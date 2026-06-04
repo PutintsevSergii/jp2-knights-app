@@ -151,6 +151,8 @@ interface AdminAnnouncementRecord {
   targetOrganizationUnitId: string | null;
   pinned: boolean;
   status: string;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
@@ -165,6 +167,8 @@ function toAdminAnnouncementSummary(record: AdminAnnouncementRecord): AdminAnnou
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     pinned: record.pinned,
     status: toAdminAnnouncementStatus(record.status),
+    approvedByUserId: record.approvedBy,
+    publishedByUserId: record.publishedBy,
     approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null

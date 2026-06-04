@@ -26,6 +26,7 @@ describe("admin shell", () => {
       "/admin/candidate-requests",
       "/admin/candidates",
       "/admin/organization-units",
+      "/admin/privacy-workflows",
       "/admin/roadmap-assignments",
       "/admin/roadmap-definitions",
       "/admin/roadmap-submissions",

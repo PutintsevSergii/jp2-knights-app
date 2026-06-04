@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import { fallbackAdminCandidateProfiles } from "./admin-content-fixtures.js";
 import {
   buildAdminCandidateDetailScreen,
@@ -43,6 +44,49 @@ describe("admin candidate screens", () => {
       false
     );
     expect(screen.actions.map((action) => action.id)).toEqual(["save", "refresh"]);
+  });
+
+  it("adds Super Admin privacy actions only when explicitly allowed", () => {
+    const officerScreen = buildAdminCandidateDetailScreen({
+      state: "ready",
+      candidateProfile,
+      runtimeMode: "api",
+      canWrite: true
+    });
+
+    expect(officerScreen.actions.map((action) => action.id)).not.toContain("erase");
+    expect(officerScreen.actions.map((action) => action.id)).not.toContain("export");
+
+    const superAdminScreen = buildAdminCandidateDetailScreen({
+      state: "ready",
+      candidateProfile,
+      runtimeMode: "api",
+      canWrite: true,
+      canManagePrivacy: true
+    });
+
+    expect(superAdminScreen.actions.map((action) => action.id)).toEqual([
+      "save",
+      "export",
+      "erase",
+      "refresh"
+    ]);
+    expect(superAdminScreen.actions.find((action) => action.id === "export")).toMatchObject({
+      requestMethod: "GET",
+      requestPath: adminPrivacyWorkflowOperationPath(
+        "candidateProfile",
+        candidateProfile.id,
+        "export"
+      )
+    });
+    expect(superAdminScreen.actions.find((action) => action.id === "erase")).toMatchObject({
+      requestMethod: "POST",
+      requestPath: adminPrivacyWorkflowOperationPath(
+        "candidateProfile",
+        candidateProfile.id,
+        "erase"
+      )
+    });
   });
 
   it("maps forbidden and empty states without leaking actions", () => {

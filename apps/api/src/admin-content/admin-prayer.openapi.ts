@@ -14,6 +14,8 @@ export const adminPrayerSummaryOpenApiSchema = {
     "visibility",
     "targetOrganizationUnitId",
     "status",
+    "approvedByUserId",
+    "publishedByUserId",
     "approvedAt",
     "publishedAt",
     "archivedAt"
@@ -28,6 +30,8 @@ export const adminPrayerSummaryOpenApiSchema = {
     visibility: visibilityOpenApiSchema,
     targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
     status: contentStatusOpenApiSchema,
+    approvedByUserId: { type: "string", nullable: true, format: "uuid" },
+    publishedByUserId: { type: "string", nullable: true, format: "uuid" },
     approvedAt: { type: "string", nullable: true, format: "date-time" },
     publishedAt: { type: "string", nullable: true, format: "date-time" },
     archivedAt: { type: "string", nullable: true, format: "date-time" }

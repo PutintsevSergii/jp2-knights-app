@@ -11,6 +11,7 @@ describe("admin web route registry", () => {
     expect(findAdminWebRoute("/admin/dashboard")).toBeDefined();
     expect(findAdminWebRoute("/admin/audit-logs")).toBeDefined();
     expect(findAdminWebRoute("/admin/candidate-requests/request-1")).toBeDefined();
+    expect(findAdminWebRoute("/admin/privacy-workflows")).toBeDefined();
     expect(findAdminWebRoute("/admin/roadmap-assignments/assignment-1")).toBeDefined();
     expect(findAdminWebRoute("/admin/silent-prayer-events")).toBeDefined();
     expect(findAdminWebRoute("/admin/announcements/new")).toBeDefined();

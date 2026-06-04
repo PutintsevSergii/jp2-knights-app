@@ -6,6 +6,7 @@ export interface AdminWebRouteContext {
   query: Readonly<Record<string, string>>;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy: boolean;
   authToken?: string;
   authCookie?: string;
   baseUrl?: string;
@@ -27,6 +28,7 @@ export function routeOptions(context: AdminWebRouteContext) {
   return {
     runtimeMode: context.runtimeMode,
     canWrite: context.canWrite,
+    canManagePrivacy: context.canManagePrivacy,
     ...(context.authToken ? { authToken: context.authToken } : {}),
     ...(context.authCookie ? { authCookie: context.authCookie } : {}),
     ...(context.baseUrl ? { baseUrl: context.baseUrl } : {}),

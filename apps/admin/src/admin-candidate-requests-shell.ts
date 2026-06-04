@@ -29,7 +29,8 @@ import {
   renderAdminDocument,
   renderAdminEmptyState,
   renderAdminFormField,
-  renderAdminHeader
+  renderAdminHeader,
+  renderAdminActionButton
 } from "./admin-render-primitives.js";
 import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 import { routeOptions } from "./admin-web-route-types.js";
@@ -48,6 +49,7 @@ export interface RenderAdminCandidateRequestRouteOptions {
   path: AdminCandidateRequestShellRoute;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
   authToken?: string;
   authCookie?: string;
   baseUrl?: string;
@@ -169,7 +171,8 @@ async function resolveCandidateRequestDetailScreen(
       state: "ready",
       candidateRequest: fallbackAdminCandidateRequestDetails.find((request) => request.id === id),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 
@@ -178,13 +181,15 @@ async function resolveCandidateRequestDetailScreen(
       state: "ready",
       candidateRequest: (await fetchAdminCandidateRequest(id, options)).candidateRequest,
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   } catch (error) {
     return buildAdminCandidateRequestDetailScreen({
       state: adminContentFailureState(error),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 }
@@ -337,11 +342,17 @@ function renderDetailForm(screen: AdminCandidateRequestDetailScreen): string {
 }
 
 function renderAction(action: AdminCandidateRequestAction): string {
+  if (action.id === "erase") {
+    return renderAdminActionButton(action, { danger: true });
+  }
+
   const modifier = action.id === "reject" ? " admin-content__button--danger" : "";
   const secondary =
     action.id === "refresh" || action.id === "view" ? " admin-content__button--secondary" : "";
   const href =
-    action.id === "refresh"
+    action.requestPath
+      ? `/api/${action.requestPath}`
+      : action.id === "refresh"
       ? "/admin/candidate-requests"
       : action.targetId
         ? `/admin/candidate-requests/${action.targetId}`

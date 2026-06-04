@@ -111,6 +111,8 @@ export const adminSilentPrayerEventSummarySchema = z
     status: contentStatusSchema,
     startsAt: z.iso.datetime(),
     endsAt: z.iso.datetime().nullable(),
+    approvedByUserId: z.uuid().nullable(),
+    publishedByUserId: z.uuid().nullable(),
     approvedAt: z.iso.datetime().nullable(),
     publishedAt: z.iso.datetime().nullable(),
     cancelledAt: z.iso.datetime().nullable(),

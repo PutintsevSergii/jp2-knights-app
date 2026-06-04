@@ -95,6 +95,10 @@ function isActiveRoute(routePath: string, currentPath: string): boolean {
     return currentPath === routePath || currentPath.startsWith("/admin/organization-units/");
   }
 
+  if (routePath === "/admin/privacy-workflows") {
+    return currentPath === routePath;
+  }
+
   if (routePath === "/admin/roadmap-submissions") {
     return currentPath === routePath || currentPath.startsWith("/admin/roadmap-submissions/");
   }

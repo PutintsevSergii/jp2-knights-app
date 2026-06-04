@@ -18,6 +18,8 @@ export const adminPrayerSummarySchema = z.object({
   visibility: visibilitySchema,
   targetOrganizationUnitId: z.uuid().nullable(),
   status: contentStatusSchema,
+  approvedByUserId: z.uuid().nullable(),
+  publishedByUserId: z.uuid().nullable(),
   approvedAt: z.iso.datetime().nullable(),
   publishedAt: z.iso.datetime().nullable(),
   archivedAt: z.iso.datetime().nullable()
@@ -42,6 +44,8 @@ export const adminEventSummarySchema = z.object({
   visibility: visibilitySchema,
   targetOrganizationUnitId: z.uuid().nullable(),
   status: eventStatusSchema,
+  approvedByUserId: z.uuid().nullable(),
+  publishedByUserId: z.uuid().nullable(),
   approvedAt: z.iso.datetime().nullable(),
   publishedAt: z.iso.datetime().nullable(),
   cancelledAt: z.iso.datetime().nullable(),
@@ -64,6 +68,8 @@ export const adminAnnouncementSummarySchema = z.object({
   targetOrganizationUnitId: z.uuid().nullable(),
   pinned: z.boolean(),
   status: contentStatusSchema,
+  approvedByUserId: z.uuid().nullable(),
+  publishedByUserId: z.uuid().nullable(),
   approvedAt: z.iso.datetime().nullable(),
   publishedAt: z.iso.datetime().nullable(),
   archivedAt: z.iso.datetime().nullable()

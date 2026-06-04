@@ -16,6 +16,8 @@ const eventRecord = {
   visibility: "FAMILY_OPEN",
   targetOrganizationUnitId: null,
   status: "draft",
+  approvedBy: null,
+  publishedBy: null,
   approvedAt: null,
   publishedAt: null,
   cancelledAt: null,
@@ -33,6 +35,8 @@ type EventRecord = {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
@@ -46,6 +50,8 @@ const scopedEventRecord = {
   visibility: "ORGANIZATION_UNIT",
   targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111",
   status: "published",
+  approvedBy: actorUserId,
+  publishedBy: actorUserId,
   approvedAt: new Date("2026-05-04T07:00:00.000Z"),
   publishedAt: new Date("2026-05-04T08:00:00.000Z")
 };
@@ -70,6 +76,8 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "FAMILY_OPEN",
         targetOrganizationUnitId: null,
         status: "draft",
+        approvedByUserId: null,
+        publishedByUserId: null,
         approvedAt: null,
         publishedAt: null,
         cancelledAt: null,
@@ -101,6 +109,8 @@ describe("PrismaAdminEventRepository", () => {
         visibility: "ORGANIZATION_UNIT",
         targetOrganizationUnitId: scopedEventRecord.targetOrganizationUnitId,
         status: "published",
+        approvedByUserId: actorUserId,
+        publishedByUserId: actorUserId,
         approvedAt: "2026-05-04T07:00:00.000Z",
         publishedAt: "2026-05-04T08:00:00.000Z",
         cancelledAt: null,
@@ -145,6 +155,8 @@ describe("PrismaAdminEventRepository", () => {
       visibility: "FAMILY_OPEN",
       targetOrganizationUnitId: null,
       status: "draft",
+      approvedByUserId: null,
+      publishedByUserId: null,
       approvedAt: null,
       publishedAt: null,
       cancelledAt: null,
@@ -246,6 +258,8 @@ describe("PrismaAdminEventRepository", () => {
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: scopedEventRecord.targetOrganizationUnitId,
       status: "published",
+      approvedByUserId: actorUserId,
+      publishedByUserId: actorUserId,
       approvedAt: "2026-05-04T07:00:00.000Z",
       publishedAt: "2026-05-04T08:00:00.000Z",
       cancelledAt: null,

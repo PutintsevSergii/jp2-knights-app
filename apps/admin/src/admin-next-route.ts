@@ -12,7 +12,8 @@ export async function renderAdminNextRoute(request: Request, path: string): Prom
         nodeEnv: process.env.NODE_ENV
       }),
       ...(process.env.API_BASE_URL ? { baseUrl: process.env.API_BASE_URL } : {}),
-      canWrite: process.env.ADMIN_CAN_WRITE === "true"
+      canWrite: process.env.ADMIN_CAN_WRITE === "true",
+      canManagePrivacy: process.env.ADMIN_CAN_MANAGE_PRIVACY === "true"
     }
   );
 

@@ -1,13 +1,23 @@
 import type { AdminCandidateProfileDetailDto } from "@jp2/shared-validation";
 
 export type AdminCandidateRoute = "AdminCandidateList" | "AdminCandidateDetail";
-export type AdminCandidateActionId = "refresh" | "view" | "save" | "pause" | "activate" | "archive";
+export type AdminCandidateActionId =
+  | "refresh"
+  | "view"
+  | "save"
+  | "pause"
+  | "activate"
+  | "archive"
+  | "export"
+  | "erase";
 
 export interface AdminCandidateAction {
   id: AdminCandidateActionId;
   label: string;
   targetRoute: AdminCandidateRoute;
   targetId?: string | undefined;
+  requestMethod?: "GET" | "POST" | undefined;
+  requestPath?: string | undefined;
 }
 
 export interface AdminCandidateRow {

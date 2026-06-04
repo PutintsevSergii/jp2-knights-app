@@ -20,6 +20,7 @@ export interface AdminWebShellOptions {
   nodeEnv?: string;
   baseUrl?: string;
   canWrite?: boolean;
+  canManagePrivacy?: boolean;
   fetchImpl?: AdminContentFetch;
 }
 
@@ -50,6 +51,7 @@ export async function renderAdminWebRequest(
     query: queryFromSearchParams(url.searchParams),
     runtimeMode,
     canWrite: options.canWrite ?? false,
+    canManagePrivacy: options.canManagePrivacy ?? false,
     ...(authToken ? { authToken } : {}),
     ...(authCookie ? { authCookie } : {}),
     ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
@@ -114,7 +116,9 @@ function webShellOptionsFromEnvironment(options: AdminWebShellOptions): AdminWeb
       parseRuntimeMode(process.env.APP_RUNTIME_MODE, { nodeEnv: process.env.NODE_ENV }),
     ...(process.env.NODE_ENV ? { nodeEnv: process.env.NODE_ENV } : {}),
     ...(baseUrl ? { baseUrl } : {}),
-    canWrite: options.canWrite ?? process.env.ADMIN_CAN_WRITE === "true"
+    canWrite: options.canWrite ?? process.env.ADMIN_CAN_WRITE === "true",
+    canManagePrivacy:
+      options.canManagePrivacy ?? process.env.ADMIN_CAN_MANAGE_PRIVACY === "true"
   };
 }
 

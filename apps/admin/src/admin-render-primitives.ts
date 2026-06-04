@@ -10,6 +10,8 @@ export interface AdminRenderableAction {
   label: string;
   targetRoute: string;
   targetId?: string | undefined;
+  requestMethod?: "GET" | "POST" | "PATCH" | undefined;
+  requestPath?: string | undefined;
 }
 
 export interface RenderAdminHeaderOptions<TAction extends AdminRenderableAction> {
@@ -123,6 +125,8 @@ export function renderAdminActionLink(
     ` data-action="${escapeAttribute(action.id)}"`,
     ` data-target-route="${escapeAttribute(action.targetRoute)}"`,
     action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
+    action.requestMethod ? ` data-request-method="${escapeAttribute(action.requestMethod)}"` : "",
+    action.requestPath ? ` data-request-path="${escapeAttribute(action.requestPath)}"` : "",
     ">",
     escapeHtml(action.label),
     "</a>"
@@ -141,6 +145,8 @@ export function renderAdminActionButton(
     ` data-action="${escapeAttribute(action.id)}"`,
     ` data-target-route="${escapeAttribute(action.targetRoute)}"`,
     action.targetId ? ` data-target-id="${escapeAttribute(action.targetId)}"` : "",
+    action.requestMethod ? ` data-request-method="${escapeAttribute(action.requestMethod)}"` : "",
+    action.requestPath ? ` data-request-path="${escapeAttribute(action.requestPath)}"` : "",
     ">",
     escapeHtml(action.label),
     "</button>"

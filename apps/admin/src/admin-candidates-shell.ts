@@ -24,7 +24,8 @@ import {
   renderAdminDocument,
   renderAdminEmptyState,
   renderAdminFormField,
-  renderAdminHeader
+  renderAdminHeader,
+  renderAdminActionButton
 } from "./admin-render-primitives.js";
 import type { AdminWebRouteDefinition } from "./admin-web-route-types.js";
 import { routeOptions } from "./admin-web-route-types.js";
@@ -41,6 +42,7 @@ export interface RenderAdminCandidateRouteOptions {
   path: AdminCandidateShellRoute;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
   authToken?: string;
   authCookie?: string;
   baseUrl?: string;
@@ -141,7 +143,8 @@ async function resolveCandidateDetailScreen(
       state: "ready",
       candidateProfile: fallbackAdminCandidateProfiles.find((profile) => profile.id === id),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 
@@ -150,13 +153,15 @@ async function resolveCandidateDetailScreen(
       state: "ready",
       candidateProfile: (await fetchAdminCandidateProfile(id, options)).candidateProfile,
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   } catch (error) {
     return buildAdminCandidateDetailScreen({
       state: adminContentFailureState(error),
       runtimeMode: options.runtimeMode,
-      canWrite: options.canWrite
+      canWrite: options.canWrite,
+      canManagePrivacy: options.canManagePrivacy
     });
   }
 }
@@ -295,11 +300,17 @@ function renderField(field: AdminCandidateDetailScreen["fields"][number]): strin
 }
 
 function renderAction(action: AdminCandidateAction): string {
+  if (action.id === "erase") {
+    return renderAdminActionButton(action, { danger: true });
+  }
+
   const modifier = action.id === "archive" ? " admin-content__button--danger" : "";
   const secondary =
     action.id === "refresh" || action.id === "view" ? " admin-content__button--secondary" : "";
   const href =
-    action.id === "refresh"
+    action.requestPath
+      ? `/api/${action.requestPath}`
+      : action.id === "refresh"
       ? "/admin/candidates"
       : action.targetId
         ? `/admin/candidates/${action.targetId}`

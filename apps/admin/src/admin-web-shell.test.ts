@@ -680,6 +680,39 @@ describe("admin web shell", () => {
     });
   });
 
+  it("mounts Super Admin privacy workflow metadata without backend fetches", async () => {
+    const fetchImpl = vi.fn();
+
+    const forbiddenResponse = await renderAdminWebRequest(
+      { path: "/admin/privacy-workflows" },
+      {
+        runtimeMode: "api",
+        canWrite: true,
+        canManagePrivacy: false,
+        fetchImpl
+      }
+    );
+    const superAdminResponse = await renderAdminWebRequest(
+      { path: "/admin/privacy-workflows" },
+      {
+        runtimeMode: "api",
+        canWrite: false,
+        canManagePrivacy: true,
+        fetchImpl
+      }
+    );
+
+    expect(forbiddenResponse.statusCode).toBe(403);
+    expect(forbiddenResponse.body).toContain("Super Admin privacy workflow access is required.");
+    expect(superAdminResponse.statusCode).toBe(200);
+    expect(superAdminResponse.body).toContain("Privacy Workflows");
+    expect(superAdminResponse.body).toContain("Candidate request");
+    expect(superAdminResponse.body).toContain("admin.candidateRequest.erase");
+    expect(superAdminResponse.body).toContain('href="/admin/privacy-workflows" aria-current="page"');
+    expect(superAdminResponse.body).not.toContain("data-request-path");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("renders demo routes without backend calls and returns mounted 404 for unknown admin routes", async () => {
     const fetchImpl = vi.fn();
 

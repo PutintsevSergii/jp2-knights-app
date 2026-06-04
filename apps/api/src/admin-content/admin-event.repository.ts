@@ -167,6 +167,8 @@ interface AdminEventRecord {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
@@ -185,6 +187,8 @@ function toAdminEventSummary(record: AdminEventRecord): AdminEventSummary {
     visibility: toAdminEventVisibility(record.visibility),
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     status: toAdminEventStatus(record.status),
+    approvedByUserId: record.approvedBy,
+    publishedByUserId: record.publishedBy,
     approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null,

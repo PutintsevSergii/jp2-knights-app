@@ -1,4 +1,5 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import type { AdminCandidateRequestDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
@@ -26,6 +27,7 @@ export interface BuildAdminCandidateRequestDetailScreenOptions {
   candidateRequest?: AdminCandidateRequestDetailDto | undefined;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
 }
 
 export function buildAdminCandidateRequestDetailScreen(
@@ -48,7 +50,11 @@ export function buildAdminCandidateRequestDetailScreen(
       : "Review the scoped candidate request. Write access is required to update follow-up fields.",
     candidateRequestId: options.candidateRequest.id,
     fields: buildCandidateRequestFields(options.candidateRequest, options.canWrite),
-    actions: buildDetailActions(options.candidateRequest, options.canWrite),
+    actions: buildDetailActions(
+      options.candidateRequest,
+      options.canWrite,
+      options.canManagePrivacy ?? false
+    ),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: adminContentTheme
   };
@@ -56,9 +62,31 @@ export function buildAdminCandidateRequestDetailScreen(
 
 function buildDetailActions(
   request: AdminCandidateRequestDetailDto,
-  canWrite: boolean
+  canWrite: boolean,
+  canManagePrivacy: boolean
 ): AdminCandidateRequestAction[] {
   const actions: AdminCandidateRequestAction[] = [adminCandidateRequestBackAction()];
+
+  if (canManagePrivacy) {
+    actions.unshift(
+      {
+        id: "export",
+        label: "Export Personal Data",
+        targetRoute: "AdminCandidateRequestDetail",
+        targetId: request.id,
+        requestMethod: "GET",
+        requestPath: adminPrivacyWorkflowOperationPath("candidateRequest", request.id, "export")
+      },
+      {
+        id: "erase",
+        label: "Erase Personal Data",
+        targetRoute: "AdminCandidateRequestDetail",
+        targetId: request.id,
+        requestMethod: "POST",
+        requestPath: adminPrivacyWorkflowOperationPath("candidateRequest", request.id, "erase")
+      }
+    );
+  }
 
   if (
     canWrite &&

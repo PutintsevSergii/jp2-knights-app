@@ -7,13 +7,21 @@ export type AdminRoadmapSubmissionRoute =
   | "AdminRoadmapSubmissionList"
   | "AdminRoadmapSubmissionDetail";
 
-export type AdminRoadmapSubmissionActionId = "refresh" | "view" | "approve" | "reject";
+export type AdminRoadmapSubmissionActionId =
+  | "refresh"
+  | "view"
+  | "approve"
+  | "reject"
+  | "export"
+  | "erase";
 
 export interface AdminRoadmapSubmissionAction {
   id: AdminRoadmapSubmissionActionId;
   label: string;
   targetRoute: AdminRoadmapSubmissionRoute;
   targetId?: string | undefined;
+  requestMethod?: "GET" | "POST" | undefined;
+  requestPath?: string | undefined;
 }
 
 export interface AdminRoadmapSubmissionRow {

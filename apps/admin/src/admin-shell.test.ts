@@ -35,6 +35,11 @@ describe("admin shell routes", () => {
         screenRoute: "AdminOrganizationUnitList"
       },
       {
+        path: "/admin/privacy-workflows",
+        label: "Privacy Workflows",
+        screenRoute: "AdminPrivacyWorkflowList"
+      },
+      {
         path: "/admin/roadmap-assignments",
         label: "Roadmap Assignments",
         screenRoute: "AdminRoadmapAssignmentList"

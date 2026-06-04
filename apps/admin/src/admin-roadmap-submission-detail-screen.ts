@@ -1,4 +1,5 @@
 import type { RuntimeMode } from "@jp2/shared-types";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import type { AdminRoadmapSubmissionDetailDto } from "@jp2/shared-validation";
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import { adminContentTheme, type AdminContentTheme } from "./admin-content-screens.js";
@@ -28,6 +29,7 @@ export interface BuildAdminRoadmapSubmissionDetailScreenOptions {
   roadmapSubmission?: AdminRoadmapSubmissionDetailDto | undefined;
   runtimeMode: RuntimeMode;
   canWrite: boolean;
+  canManagePrivacy?: boolean | undefined;
 }
 
 export function buildAdminRoadmapSubmissionDetailScreen(
@@ -54,7 +56,11 @@ export function buildAdminRoadmapSubmissionDetailScreen(
       : adminCopy("admin.roadmapSubmissions.detail.readOnly.body"),
     roadmapSubmissionId: options.roadmapSubmission.id,
     fields: buildRoadmapSubmissionFields(options.roadmapSubmission, canReview),
-    actions: buildDetailActions(options.roadmapSubmission, canReview),
+    actions: buildDetailActions(
+      options.roadmapSubmission,
+      canReview,
+      options.canManagePrivacy ?? false
+    ),
     demoChromeVisible: options.runtimeMode === "demo",
     theme: adminContentTheme
   };
@@ -62,9 +68,31 @@ export function buildAdminRoadmapSubmissionDetailScreen(
 
 function buildDetailActions(
   submission: AdminRoadmapSubmissionDetailDto,
-  canReview: boolean
+  canReview: boolean,
+  canManagePrivacy: boolean
 ): AdminRoadmapSubmissionAction[] {
   const actions: AdminRoadmapSubmissionAction[] = [adminRoadmapSubmissionBackAction()];
+
+  if (canManagePrivacy) {
+    actions.unshift(
+      {
+        id: "export",
+        label: adminCopy("admin.roadmapSubmissions.export"),
+        targetRoute: "AdminRoadmapSubmissionDetail",
+        targetId: submission.id,
+        requestMethod: "GET",
+        requestPath: adminPrivacyWorkflowOperationPath("roadmapSubmission", submission.id, "export")
+      },
+      {
+        id: "erase",
+        label: adminCopy("admin.roadmapSubmissions.erase"),
+        targetRoute: "AdminRoadmapSubmissionDetail",
+        targetId: submission.id,
+        requestMethod: "POST",
+        requestPath: adminPrivacyWorkflowOperationPath("roadmapSubmission", submission.id, "erase")
+      }
+    );
+  }
 
   if (canReview) {
     actions.unshift(

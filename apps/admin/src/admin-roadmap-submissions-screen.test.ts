@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
 import { fallbackAdminRoadmapSubmissions } from "./admin-content-fixtures.js";
 import {
   buildAdminRoadmapSubmissionDetailScreen,
@@ -71,6 +72,50 @@ describe("admin roadmap submission screens", () => {
     expect(screen.fields.find((field) => field.name === "reviewStatus")?.readOnly).toBe(false);
     expect(screen.fields.find((field) => field.name === "reviewCommentInput")?.readOnly).toBe(false);
     expect(screen.actions.map((action) => action.id)).toEqual(["approve", "reject", "refresh"]);
+  });
+
+  it("adds Super Admin privacy actions only when explicitly allowed", () => {
+    const officerScreen = buildAdminRoadmapSubmissionDetailScreen({
+      state: "ready",
+      roadmapSubmission,
+      runtimeMode: "api",
+      canWrite: true
+    });
+
+    expect(officerScreen.actions.map((action) => action.id)).not.toContain("erase");
+    expect(officerScreen.actions.map((action) => action.id)).not.toContain("export");
+
+    const superAdminScreen = buildAdminRoadmapSubmissionDetailScreen({
+      state: "ready",
+      roadmapSubmission,
+      runtimeMode: "api",
+      canWrite: true,
+      canManagePrivacy: true
+    });
+
+    expect(superAdminScreen.actions.map((action) => action.id)).toEqual([
+      "approve",
+      "reject",
+      "export",
+      "erase",
+      "refresh"
+    ]);
+    expect(superAdminScreen.actions.find((action) => action.id === "export")).toMatchObject({
+      requestMethod: "GET",
+      requestPath: adminPrivacyWorkflowOperationPath(
+        "roadmapSubmission",
+        roadmapSubmission.id,
+        "export"
+      )
+    });
+    expect(superAdminScreen.actions.find((action) => action.id === "erase")).toMatchObject({
+      requestMethod: "POST",
+      requestPath: adminPrivacyWorkflowOperationPath(
+        "roadmapSubmission",
+        roadmapSubmission.id,
+        "erase"
+      )
+    });
   });
 
   it("maps forbidden and empty states without leaking review actions", () => {

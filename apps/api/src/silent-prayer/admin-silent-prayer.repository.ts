@@ -160,6 +160,8 @@ interface AdminSilentPrayerEventRecord {
   status: string;
   startsAt: Date;
   endsAt: Date | null;
+  approvedBy: string | null;
+  publishedBy: string | null;
   approvedAt: Date | null;
   publishedAt: Date | null;
   cancelledAt: Date | null;
@@ -178,6 +180,8 @@ function toAdminSilentPrayerEventSummary(
     status: toAdminSilentPrayerStatus(record.status),
     startsAt: record.startsAt.toISOString(),
     endsAt: record.endsAt ? record.endsAt.toISOString() : null,
+    approvedByUserId: record.approvedBy,
+    publishedByUserId: record.publishedBy,
     approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null,

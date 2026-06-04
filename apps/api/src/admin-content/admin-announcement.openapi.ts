@@ -13,6 +13,8 @@ export const adminAnnouncementSummaryOpenApiSchema = {
     "targetOrganizationUnitId",
     "pinned",
     "status",
+    "approvedByUserId",
+    "publishedByUserId",
     "approvedAt",
     "publishedAt",
     "archivedAt"
@@ -26,6 +28,8 @@ export const adminAnnouncementSummaryOpenApiSchema = {
     targetOrganizationUnitId: { type: "string", nullable: true, format: "uuid" },
     pinned: { type: "boolean" },
     status: contentStatusOpenApiSchema,
+    approvedByUserId: { type: "string", nullable: true, format: "uuid" },
+    publishedByUserId: { type: "string", nullable: true, format: "uuid" },
     approvedAt: { type: "string", nullable: true, format: "date-time" },
     publishedAt: { type: "string", nullable: true, format: "date-time" },
     archivedAt: { type: "string", nullable: true, format: "date-time" }

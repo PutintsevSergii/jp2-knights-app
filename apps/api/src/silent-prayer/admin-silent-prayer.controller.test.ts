@@ -17,6 +17,8 @@ const silentPrayerEvent: AdminSilentPrayerEventSummary = {
   status: "DRAFT",
   startsAt: "2026-05-10T18:00:00.000Z",
   endsAt: null,
+  approvedByUserId: null,
+  publishedByUserId: null,
   approvedAt: null,
   publishedAt: null,
   cancelledAt: null,

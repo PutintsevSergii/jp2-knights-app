@@ -10,13 +10,17 @@ export type AdminCandidateRequestActionId =
   | "contact"
   | "invite"
   | "reject"
-  | "save";
+  | "save"
+  | "export"
+  | "erase";
 
 export interface AdminCandidateRequestAction {
   id: AdminCandidateRequestActionId;
   label: string;
   targetRoute: AdminCandidateRequestRoute;
   targetId?: string | undefined;
+  requestMethod?: "GET" | "POST" | undefined;
+  requestPath?: string | undefined;
 }
 
 export interface AdminCandidateRequestRow {

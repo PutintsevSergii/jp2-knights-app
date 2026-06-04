@@ -123,6 +123,8 @@ interface AdminPrayerRecord {
   visibility: string;
   targetOrganizationUnitId: string | null;
   status: string;
+  approvedBy: string | null;
+  publishedBy: string | null;
   publishedAt: Date | null;
   archivedAt: Date | null;
   approvedAt: Date | null;
@@ -138,6 +140,8 @@ function toAdminPrayerSummary(record: AdminPrayerRecord): AdminPrayerSummary {
     visibility: toAdminPrayerVisibility(record.visibility),
     targetOrganizationUnitId: record.targetOrganizationUnitId,
     status: toAdminPrayerStatus(record.status),
+    approvedByUserId: record.approvedBy,
+    publishedByUserId: record.publishedBy,
     approvedAt: record.approvedAt ? record.approvedAt.toISOString() : null,
     publishedAt: record.publishedAt ? record.publishedAt.toISOString() : null,
     archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null

@@ -34,6 +34,7 @@ describe("admin candidate shell", () => {
       baseUrl: "https://api.example.test",
       authToken: "token_1",
       canWrite: true,
+      canManagePrivacy: true,
       fetchImpl
     });
 
@@ -45,6 +46,14 @@ describe("admin candidate shell", () => {
       statusCode: 200
     });
     expect(detail.document).toContain("Save Candidate");
+    expect(detail.document).toContain('data-action="export"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/candidates/${candidateProfile.id}/export"`
+    );
+    expect(detail.document).toContain('data-action="erase"');
+    expect(detail.document).toContain(
+      `data-request-path="admin/candidates/${candidateProfile.id}/erase"`
+    );
   });
 
   it("renders demo routes without backend calls and maps failures", async () => {
