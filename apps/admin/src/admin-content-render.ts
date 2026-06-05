@@ -51,6 +51,7 @@ function renderStyle(screen: AdminContentListScreen): string {
     `;border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;overflow:hidden;}`,
     `.admin-content__table th,.admin-content__table td{border-bottom:1px solid ${screen.theme.border};padding:12px;text-align:left;vertical-align:top;}`,
     `.admin-content__meta{color:${screen.theme.mutedText};font-size:13px;}`,
+    `.admin-content__warning{color:${screen.theme.warning};font-size:13px;font-weight:600;margin-top:6px;}`,
     `.admin-content__badge{display:inline-block;border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:2px 6px;font-size:12px;}`,
     `.admin-content__button{background:${screen.theme.primaryAction};color:${screen.theme.primaryActionText};border:0;border-radius:${screen.theme.radius}px;padding:8px 10px;font-weight:600;}`,
     `.admin-content__button--secondary{background:${screen.theme.surface};color:${screen.theme.text};border:1px solid ${screen.theme.border};}`,
@@ -98,6 +99,9 @@ function renderRow(row: AdminContentRow): string {
     `<strong>${escapeHtml(row.title)}</strong>`,
     `<div class="admin-content__meta">${escapeHtml(row.primaryMeta)}</div>`,
     `<div class="admin-content__meta">${escapeHtml(row.secondaryMeta)}</div>`,
+    row.approvalWarning
+      ? `<div class="admin-content__warning">${escapeHtml(row.approvalWarning)}</div>`
+      : "",
     "</td>",
     `<td><span class="admin-content__badge">${escapeHtml(row.status)}</span></td>`,
     `<td>${escapeHtml(row.visibility)}</td>`,

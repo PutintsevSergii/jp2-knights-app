@@ -94,7 +94,8 @@ describe("admin content renderer", () => {
         {
           ...readyPrayerScreen.rows[0]!,
           title: "Morning <Offering>",
-          secondaryMeta: 'Scoped to "Riga"'
+          secondaryMeta: 'Scoped to "Riga"',
+          approvalWarning: "Published <without> approval metadata"
         }
       ],
       demoChromeVisible: true
@@ -105,6 +106,8 @@ describe("admin content renderer", () => {
     expect(rendered.html).toContain("Manage &amp; review");
     expect(rendered.html).toContain("Morning &lt;Offering&gt;");
     expect(rendered.html).toContain("Scoped to &quot;Riga&quot;");
+    expect(rendered.html).toContain("Published &lt;without&gt; approval metadata");
+    expect(rendered.html).toContain('class="admin-content__warning"');
     expect(rendered.html).not.toContain("<script>");
   });
 });

@@ -7,6 +7,7 @@ import type {
 } from "@jp2/shared-validation";
 import {
   adminContentTheme,
+  approvalWarningForAdminContent,
   buildAdminContentEditorScreen,
   buildAdminAnnouncementListScreen,
   buildAdminEventListScreen,
@@ -98,6 +99,29 @@ const silentPrayerResponse: AdminSilentPrayerEventListResponseDto = {
 };
 
 describe("admin content screen models", () => {
+  it("flags only published content rows that lack approval metadata", () => {
+    expect(
+      approvalWarningForAdminContent({
+        status: "PUBLISHED",
+        approvedAt: null
+      })
+    ).toBe(
+      "Published without approval metadata. Archive or correct approval evidence before normal lifecycle actions."
+    );
+    expect(
+      approvalWarningForAdminContent({
+        status: "published",
+        approvedAt: "2026-05-04T00:00:00.000Z"
+      })
+    ).toBeUndefined();
+    expect(
+      approvalWarningForAdminContent({
+        status: "APPROVED",
+        approvedAt: null
+      })
+    ).toBeUndefined();
+  });
+
   it("builds a writable prayer list workflow from admin DTOs", () => {
     const screen = buildAdminPrayerListScreen({
       state: "ready",
@@ -283,6 +307,69 @@ describe("admin content screen models", () => {
         canWrite: true
       }).rows[0]?.actions.map((action) => action.id)
     ).toEqual(["edit", "publish", "archive"]);
+  });
+
+  it("does not show normal cancel or publish actions for legacy published rows without approval evidence", () => {
+    const unapprovedPublishedEventResponse: AdminEventListResponseDto = {
+      events: [
+        {
+          ...eventResponse.events[0]!,
+          approvedAt: null,
+          approvedByUserId: null,
+          publishedByUserId: "99999999-9999-4999-8999-999999999999",
+          status: "published"
+        }
+      ]
+    };
+    const unapprovedPublishedSilentPrayerResponse: AdminSilentPrayerEventListResponseDto = {
+      silentPrayerEvents: [
+        {
+          ...silentPrayerResponse.silentPrayerEvents[0]!,
+          approvedAt: null,
+          approvedByUserId: null,
+          publishedByUserId: "99999999-9999-4999-8999-999999999999",
+          status: "PUBLISHED",
+          publishedAt: "2026-06-12T17:55:00.000Z"
+        }
+      ]
+    };
+
+    expect(
+      buildAdminEventListScreen({
+        state: "ready",
+        response: unapprovedPublishedEventResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.actions.map((action) => action.id)
+    ).toEqual(["edit", "archive"]);
+    expect(
+      buildAdminEventListScreen({
+        state: "ready",
+        response: unapprovedPublishedEventResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.approvalWarning
+    ).toBe(
+      "Published without approval metadata. Archive or correct approval evidence before normal lifecycle actions."
+    );
+    expect(
+      buildAdminSilentPrayerListScreen({
+        state: "ready",
+        response: unapprovedPublishedSilentPrayerResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.actions.map((action) => action.id)
+    ).toEqual(["edit", "archive"]);
+    expect(
+      buildAdminSilentPrayerListScreen({
+        state: "ready",
+        response: unapprovedPublishedSilentPrayerResponse,
+        runtimeMode: "api",
+        canWrite: true
+      }).rows[0]?.approvalWarning
+    ).toBe(
+      "Published without approval metadata. Archive or correct approval evidence before normal lifecycle actions."
+    );
   });
 
   it("builds content create, edit, and readonly editor models", () => {

@@ -179,6 +179,27 @@ describe("AdminPrayerService", () => {
     });
   });
 
+  it("blocks edits that would leave legacy published prayers without approval metadata", async () => {
+    const auditLog = auditLogRecorder();
+
+    await expect(
+      service(
+        repository({
+          beforeResult: {
+            ...publicPrayer,
+            status: "PUBLISHED",
+            approvedAt: null,
+            publishedAt: "2026-05-04T00:00:00.000Z"
+          }
+        }),
+        auditLog
+      ).updateAdminPrayer(superAdmin, publicPrayer.id, {
+        title: "Retitled"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditLog.records).toHaveLength(0);
+  });
+
   it("records explicit approval audit actions for prayers", async () => {
     const auditLog = auditLogRecorder();
 

@@ -3,6 +3,7 @@ import type { AdminEventListResponseDto, AdminEventSummaryDto } from "@jp2/share
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import {
   adminContentTheme,
+  approvalWarningForAdminContent,
   buildAdminContentListActions,
   buildAdminContentRowActions,
   formatAdminDateTime,
@@ -47,6 +48,10 @@ function eventRow(event: AdminEventSummaryDto, canWrite: boolean): AdminContentR
     title: event.title,
     primaryMeta: `${event.type} / ${formatAdminDateTime(event.startAt)}`,
     secondaryMeta: event.locationLabel ?? "Location not set",
+    approvalWarning: approvalWarningForAdminContent({
+      status: event.status,
+      approvedAt: event.approvedAt
+    }),
     status: event.status,
     visibility: event.visibility,
     targetOrganizationUnitId: event.targetOrganizationUnitId,

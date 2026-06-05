@@ -1,5 +1,6 @@
 export {
   adminContentTheme,
+  approvalWarningForAdminContent,
   type AdminContentAction,
   type AdminContentActionId,
   type AdminContentListScreen,

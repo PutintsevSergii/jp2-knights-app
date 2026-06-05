@@ -362,7 +362,14 @@ describe("AdminAnnouncementService", () => {
   it("does not redispatch push notifications for already-published announcements", async () => {
     const pushRecipients = pushRecipientRepository(["token_1"]);
     const adminAnnouncementService = service(
-      repository({ beforeResult: { ...scopedAnnouncement, status: "PUBLISHED" } }),
+      repository({
+        beforeResult: {
+          ...scopedAnnouncement,
+          status: "PUBLISHED",
+          approvedAt: "2026-05-04T00:00:00.000Z",
+          publishedAt: "2026-05-04T00:00:00.000Z"
+        }
+      }),
       auditLogRecorder(),
       pushRecipients,
       pushNotificationAdapter()
@@ -379,6 +386,31 @@ describe("AdminAnnouncementService", () => {
       }
     });
     expect(pushRecipients.requests).toEqual([]);
+  });
+
+  it("blocks edits that would leave legacy published announcements without approval metadata", async () => {
+    const auditLog = auditLogRecorder();
+    const pushRecipients = pushRecipientRepository(["token_1"]);
+
+    await expect(
+      service(
+        repository({
+          beforeResult: {
+            ...scopedAnnouncement,
+            status: "PUBLISHED",
+            approvedAt: null,
+            publishedAt: "2026-05-04T00:00:00.000Z"
+          }
+        }),
+        auditLog,
+        pushRecipients,
+        pushNotificationAdapter()
+      ).updateAdminAnnouncement(officer, scopedAnnouncement.id, {
+        title: "Retitled"
+      })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(pushRecipients.requests).toEqual([]);
+    expect(auditLog.records).toHaveLength(0);
   });
 });
 

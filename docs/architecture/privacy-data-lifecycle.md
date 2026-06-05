@@ -63,6 +63,12 @@ only; exact durations remain deployment/legal configured and are not hardcoded.
   filenames, MIME types, storage keys, URLs, personal/name fields,
   description, or intention values are not returned from review APIs.
 
+The implemented V1 Phase 12 legal/privacy operation set is limited to candidate
+request export/erasure, candidate profile export/erasure, roadmap submission
+export/erasure, and self-service device-token revocation. Additional subject
+areas require owner/legal approval and matching scope, API, audit, retention,
+and traceability updates before implementation.
+
 ## Backups and Restore
 
 - PostgreSQL backups are required before pilot production.

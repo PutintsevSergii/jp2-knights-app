@@ -3,6 +3,7 @@ import type { AdminPrayerListResponseDto, AdminPrayerSummaryDto } from "@jp2/sha
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import {
   adminContentTheme,
+  approvalWarningForAdminContent,
   buildAdminContentListActions,
   buildAdminContentRowActions,
   formatAdminVisibility,
@@ -49,6 +50,10 @@ function prayerRow(prayer: AdminPrayerSummaryDto, canWrite: boolean): AdminConte
     secondaryMeta: prayer.targetOrganizationUnitId
       ? `Scoped to ${prayer.targetOrganizationUnitId}`
       : "Global content",
+    approvalWarning: approvalWarningForAdminContent({
+      status: prayer.status,
+      approvedAt: prayer.approvedAt
+    }),
     status: prayer.status,
     visibility: prayer.visibility,
     targetOrganizationUnitId: prayer.targetOrganizationUnitId,

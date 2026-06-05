@@ -6,6 +6,7 @@ import type {
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import {
   adminContentTheme,
+  approvalWarningForAdminContent,
   buildAdminContentListActions,
   buildAdminContentRowActions,
   formatAdminDateTime,
@@ -68,6 +69,10 @@ function silentPrayerRow(
     secondaryMeta: event.endsAt
       ? `Ends ${formatAdminDateTime(event.endsAt)}`
       : "Open-ended session",
+    approvalWarning: approvalWarningForAdminContent({
+      status: event.status,
+      approvedAt: event.approvedAt
+    }),
     status: event.status,
     visibility: event.visibility,
     targetOrganizationUnitId: event.targetOrganizationUnitId,

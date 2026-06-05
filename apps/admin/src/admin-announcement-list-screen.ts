@@ -6,6 +6,7 @@ import type {
 import type { AdminContentScreenState } from "./admin-content-api.js";
 import {
   adminContentTheme,
+  approvalWarningForAdminContent,
   buildAdminContentListActions,
   buildAdminContentRowActions,
   formatAdminVisibility,
@@ -59,6 +60,10 @@ function announcementRow(
     secondaryMeta: announcement.targetOrganizationUnitId
       ? `Scoped to ${announcement.targetOrganizationUnitId}`
       : "Global announcement",
+    approvalWarning: approvalWarningForAdminContent({
+      status: announcement.status,
+      approvedAt: announcement.approvedAt
+    }),
     status: announcement.status,
     visibility: announcement.visibility,
     targetOrganizationUnitId: announcement.targetOrganizationUnitId,

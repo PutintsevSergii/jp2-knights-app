@@ -28,15 +28,20 @@ Each risk includes:
 - Explicit "Required Human Approval Areas" in [docs/README.md](../README.md)
 - Pastoral approval for prayers and spiritual content documented as requirement
 - Seed data placeholder ensures unvetted content is not live in pilot
+- V1 content approval process documented in
+  [docs/architecture/content-publishing-model.md](../architecture/content-publishing-model.md)
+- Backend publish guards reject unapproved prayer, event, announcement, and
+  silent-prayer publication before persistence, audit, or push side effects
+- User-facing content reads and announcement push dispatch require approval
+  metadata, so legacy published-without-approval rows stay hidden from users
 
 **Planned Mitigation**:
-- Establish a content approval workflow with clear roles (who approves prayers? who approves formation language?).
 - Create a content checklist before pilot (e.g., "all public prayers approved by chaplain").
-- Implement a content status enum (DRAFT → REVIEW → APPROVED → PUBLISHED) with guards preventing published content without approval.
-- Document the approval process in Phase 12 (Content Approval).
+- Phase 13 pilot checklist confirms real content approval owners and reviews
+  production seed/content rows before launch.
 
 **Owner**: Order Spiritual Advisor, Product Owner  
-**Status**: Open (approval workflow not yet formalized)
+**Status**: Mitigated for V1 Phase 12 (pilot content sign-off remains a Phase 13 launch-readiness task)
 
 ---
 
@@ -53,17 +58,20 @@ Each risk includes:
 - Officer scope enforced by backend guards, not trust
 - [Testing Strategy](testing-strategy.md) requires permission and visibility matrix tests
 - Quality gate: 80% test coverage with focus on sensitive libraries
+- Phase 12 privacy/export/erasure/audit hardening covers candidate requests,
+  candidate profiles, roadmap submissions, device-token revocation, audit-log
+  redaction, approved-only content reads, announcement push dispatch, and
+  content lifecycle approval guards
 
 **Planned Mitigation**:
 - Phase 2: Complete permission matrix tests (all 5 roles × guest/candidate/brother/private content)
 - Phase 4: Visibility enforcement tests for every new endpoint (public API returns no brother content)
 - Phase 5: Login and mode switching tests (candidate cannot access brother data after login)
-- Phase 12: Privacy controls and audit tests
 - Before pilot: Security review of all permission/visibility checks
 - Ongoing: Code review checklist includes "is this data properly filtered?" for all queries
 
 **Owner**: Lead Engineer, Security Reviewer  
-**Status**: Open (full test coverage in progress)
+**Status**: Mitigated for V1 Phase 12 (final security review remains a Phase 13 launch-readiness task)
 
 ---
 

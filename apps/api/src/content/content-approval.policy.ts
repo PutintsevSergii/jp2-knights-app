@@ -18,7 +18,6 @@ export function assertPublishHasPriorApproval(
   if (
     previous &&
     (previous.status === "APPROVED" ||
-      previous.status === "PUBLISHED" ||
       Boolean(previous.approvedAt))
   ) {
     return;
@@ -65,10 +64,7 @@ export function assertEventPublishHasPriorApproval(
     return;
   }
 
-  if (
-    previous &&
-    (previous.status === "published" || Boolean(previous.approvedAt))
-  ) {
+  if (previous && Boolean(previous.approvedAt)) {
     return;
   }
 

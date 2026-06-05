@@ -35,6 +35,7 @@ export interface AdminContentRow {
   title: string;
   primaryMeta: string;
   secondaryMeta: string;
+  approvalWarning?: string | undefined;
   status: string;
   visibility: string;
   targetOrganizationUnitId: string | null;
@@ -150,10 +151,10 @@ export function buildAdminContentStatusActions(options: {
   const isPublished = status === "published";
   const isArchived = status === "archived";
   const isCancelled = status === "cancelled";
-  const isApproved = Boolean(options.approvedAt) || status === "approved" || status === "published";
+  const hasApprovalEvidence = Boolean(options.approvedAt) || status === "approved";
   const canAdvance = !isPublished && !isArchived && !isCancelled;
 
-  if (canAdvance && !isApproved) {
+  if (canAdvance && !hasApprovalEvidence) {
     actions.push({
       id: "approve",
       label: "Approve",
@@ -162,7 +163,7 @@ export function buildAdminContentStatusActions(options: {
     });
   }
 
-  if (canAdvance && isApproved) {
+  if (canAdvance && hasApprovalEvidence) {
     actions.push({
       id: "publish",
       label: "Publish",
@@ -174,7 +175,8 @@ export function buildAdminContentStatusActions(options: {
   if (
     (options.targetRoute === "AdminEventEditor" ||
       options.targetRoute === "AdminSilentPrayerEditor") &&
-    isPublished
+    isPublished &&
+    hasApprovalEvidence
   ) {
     actions.push({
       id: "cancel",
@@ -194,6 +196,17 @@ export function buildAdminContentStatusActions(options: {
   }
 
   return actions;
+}
+
+export function approvalWarningForAdminContent(options: {
+  status: string;
+  approvedAt?: string | null | undefined;
+}): string | undefined {
+  if (options.status.toLowerCase() !== "published" || options.approvedAt) {
+    return undefined;
+  }
+
+  return "Published without approval metadata. Archive or correct approval evidence before normal lifecycle actions.";
 }
 
 export function stateOnlyAdminContentList(
