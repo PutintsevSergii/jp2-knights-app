@@ -33,6 +33,7 @@ The first Terraform commit should add:
 - Secret Manager secret shells;
 - placeholder Cloud Run service definitions that reference prebuilt images.
 
-Cloud SQL, Memorystore Redis, migration jobs, and custom domains can be added
-in follow-up commits if a smaller rollout is safer.
-
+Cloud SQL, Firebase RTDB wiring, migration jobs, and custom domains can be added
+in follow-up commits if a smaller rollout is safer. Do not add Memorystore Redis
+for live pilot or production infrastructure unless a future owner-approved scope
+change reverses the June 3, 2026 no-Redis decision.

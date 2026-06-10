@@ -14,12 +14,12 @@ V1 must be operable by a small team without direct database edits or tribal know
 
 | Runbook | Must cover |
 | --- | --- |
-| Local recovery | Restart API/admin/mobile dev server, DB, Redis |
+| Local recovery | Restart API/admin/mobile dev server, DB, and local Redis compatibility service when using the non-live Socket.IO provider |
 | Failed login/session | Check user status, roles, revoked sessions |
 | Wrong visibility | Verify content status, visibility, target chorągiew, user role/scope |
 | Candidate request issue | Locate request by safe identifiers, review consent version, assign/archive |
 | Notification issue | Check preferences, token revocation, provider delivery result |
-| Silent prayer issue | Check event status, Redis presence TTL, socket room count |
+| Silent prayer issue | For pilot/live, check event status, RTDB aggregate count paths, private read grants, API heartbeat/leave logs, and denied client presence/grant access; for local Socket.IO compatibility, check Redis presence TTL and socket room count |
 | Backup restore | Restore database backup into non-production and verify smoke checks |
 | Legal erasure/export | Export/anonymize personal data without copying sensitive values into audit summaries |
 

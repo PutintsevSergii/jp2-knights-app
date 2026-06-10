@@ -14,7 +14,10 @@ deployment artifacts close to the end of V1:
    approval, Firebase, and runtime requirements.
 2. Add local API/Admin Dockerfiles and container smoke checks if they help prove
    production runtime assumptions.
-3. Start Terraform and Google Cloud rollout as Phase 13 pilot-readiness work.
+3. Keep Cloud Run/Cloud SQL assumptions lean: no live Redis/Memorystore,
+   shallow `/api/health` readiness, Prisma pool limits, production boot retry,
+   and migrations through a standalone Cloud Run Job.
+4. Start Terraform and Google Cloud rollout as Phase 13 pilot-readiness work.
 
 This timing avoids building infrastructure around API, secret, realtime
 provider, Firebase, or migration assumptions that may still change during
@@ -91,6 +94,9 @@ Agent deliverables:
 - Add repo-level `.dockerignore`.
 - Add local container build/run scripts.
 - Add container smoke checks for `/api/health` and mounted Admin Lite routes.
+- Preserve the existing shallow `/api/health` readiness contract; database and
+  provider checks belong in deployment smoke checks or one-off jobs, not the
+  Cloud Run readiness endpoint.
 
 Human tasks:
 
@@ -111,6 +117,12 @@ Agent deliverables:
   secret shells, Cloud SQL, Firebase RTDB, Cloud Run services, Cloud Run
   migration job, and minimum IAM.
 - Add `terraform.tfvars.example`.
+- Set API Prisma runtime variables for low-cost Cloud SQL use:
+  `PRISMA_CONNECT_ON_BOOT=true`, low `PRISMA_CONNECTION_LIMIT`, bounded
+  `PRISMA_POOL_TIMEOUT_SECONDS`, and startup retry values.
+- Run Prisma migrations from the Cloud Run migration job before new service
+  revisions take traffic; do not run migrations inside API/Admin request
+  containers.
 
 Human tasks:
 
@@ -152,6 +164,8 @@ Agent deliverables:
 - Cloud Run service revision deployment commands or CI pipeline.
 - Cloud Run migration job execution command.
 - Smoke test commands for API, Admin, auth, public content, and silent prayer.
+- Cloud SQL connection/pool smoke checks using the deployed API revision logs and
+  migration job result, while keeping `/api/health` shallow.
 
 Human tasks:
 

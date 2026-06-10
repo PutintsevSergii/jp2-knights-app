@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: June 10, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
+**Last Updated**: June 10, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, native-device RTDB validation preflight command and pilot checklist, Cloud Run/Cloud SQL Prisma pool/retry/shutdown hardening with shallow health readiness and Cloud Run Job migration docs, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
 
 ---
 
@@ -714,17 +714,15 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   and brother surfaces. This keeps DTO/schema ownership, API/demo loading,
   auth-token gating, error-state mapping, and cancellation behavior reusable
   before the Phase 10B roadmap screens expand the private mobile route groups.
-- Possible post-current-scope operational improvement is documented for a
-  low-cost Google Cloud Run + Cloud SQL deployment profile. After the June 3,
-  2026 no-Redis owner decision, the live optimization path must avoid
-  Redis/Memorystore and focus first on Cloud Run sizing, Prisma connection-pool
-  hardening with explicit `connection_limit`/`pool_timeout`, startup retry and
-  shutdown hooks, migration deployment through a standalone Cloud Run Job, and
-  preserving the existing shallow `/api/health` route as the Cloud Run readiness
-  probe. This is a
-  possible improvement queued after the existing Phase 10A/10B items and does
-  not authorize V2 features, read replicas, analytics, hierarchy rollups, or
-  client-side permission filtering.
+- Phase 13 now includes the first low-cost Google Cloud Run + Cloud SQL
+  deployment hardening slice. After the June 3, 2026 no-Redis owner decision,
+  the live optimization path avoids Redis/Memorystore, appends explicit Prisma
+  `connection_limit` and `pool_timeout` values when `DATABASE_URL` does not
+  already define them, connects on boot with bounded retry by default in
+  production, disconnects cleanly on shutdown, documents standalone Cloud Run
+  Job migrations, and preserves the existing shallow `/api/health` route as the
+  Cloud Run readiness probe. This does not authorize V2 features, read replicas,
+  analytics, hierarchy rollups, or client-side permission filtering.
 - Phase 10A role-aware main-screen redesign now includes the latest Google
   Stitch screen export applied to mobile: anonymous guest home, candidate home,
   brother home, and Idle approval home use Stitch-aligned top bars, bottom-tab
@@ -833,13 +831,19 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   denied client writes to public counts, private counts, presence rows, and read
   grants. The normal Vitest path skips these emulator assertions when
   `FIREBASE_DATABASE_EMULATOR_HOST` is absent.
-- Next planned live-realtime slice: native-device validation for public/brother
-  RTDB aggregate counts before live Terraform. Owner direction on June 3, 2026
-  excludes Redis/Memorystore from live pilot and production infrastructure unless
-  a future owner-approved scope change reverses that decision. This plan is a
-  cost optimization and does not authorize chat, participant lists, analytics,
-  maps, payments, hierarchy-derived permissions, or client-side permission
-  filtering.
+- Phase 13 native-device validation preparation now includes
+  `pnpm validate:mobile-rtdb-native -- --platform ios|android`, a preflight that
+  fails before a native Expo run when the mobile runtime/provider/API/Firebase
+  RTDB/Google OAuth/app-scheme environment is incomplete for pilot RTDB
+  validation. The pilot validation plan now records the manual guest and brother
+  native-device scenarios, privacy-denial checks, and listener cleanup checks.
+- Next planned live-realtime slice: run native-device validation for
+  public/brother RTDB aggregate counts before live Terraform. Owner direction on
+  June 3, 2026 excludes Redis/Memorystore from live pilot and production
+  infrastructure unless a future owner-approved scope change reverses that
+  decision. This plan is a cost optimization and does not authorize chat,
+  participant lists, analytics, maps, payments, hierarchy-derived permissions,
+  or client-side permission filtering.
 - Phase 12 privacy/audit hardening has started with a guarded read-only
   `GET /api/admin/audit-logs` API and mounted Admin Lite `/admin/audit-logs`
   route. The audit-log read surface is Super Admin-only, validates a shared
@@ -1056,11 +1060,13 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
 - Phase 13 pilot readiness planning has started with deployment documentation
   for Google Cloud: launch sequence, owner/agent role split, environment and
   secret matrix, manual Google/Firebase tasks, and Terraform implementation
-  plan. The first RTDB-prep API slice is also implemented with public/brother
-  silent-prayer REST heartbeat/leave contracts that keep authorization in the
-  API before any live Terraform work. No production Dockerfiles, Terraform
-  resources, Cloud Run deployment scripts, RTDB adapter/rules, mobile RTDB
-  listener, or native-device RTDB validation have been implemented yet.
+  plan. The RTDB-prep slices now include public/brother silent-prayer REST
+  heartbeat/leave contracts, mobile RTDB listener support, API Firebase Admin
+  RTDB presence/publisher support, deny-by-default RTDB rules, Firebase emulator
+  rules tests, native validation preflight/checklist coverage, and Cloud
+  Run/Cloud SQL Prisma pool/retry/shutdown hardening before any live Terraform
+  work. Production Dockerfiles, Terraform resources, Cloud Run deployment
+  scripts, and the physical native-device RTDB validation run remain pending.
 - Full Phase 13 pilot readiness is not implemented yet unless explicitly listed
   above.
 

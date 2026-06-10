@@ -334,6 +334,24 @@ The command starts the Firebase Realtime Database Emulator and requires Java. On
 this macOS workspace it uses the Android Studio bundled JBR when `JAVA_HOME` is
 not set.
 
+Run the native mobile RTDB preflight before a physical-device or native
+simulator validation pass:
+
+```bash
+pnpm validate:mobile-rtdb-native -- --platform ios
+pnpm validate:mobile-rtdb-native -- --platform android
+```
+
+The preflight checks that mobile is in `api` runtime mode, the mobile realtime
+provider is `firebase-rtdb`, Firebase client RTDB values are present, the API
+base URL is HTTPS and device-reachable rather than localhost, and native
+Google/Firebase sign-in has the platform OAuth client id plus app scheme needed
+for the brother validation path. It does not print secret or credential values.
+
+Native-device validation still requires a real configured target. Passing the
+preflight alone does not prove RTDB behavior; it only prevents known-bad
+configuration from starting the device run.
+
 ### Step 8: Deployment Rollout
 
 Use a feature-flagged rollout:
@@ -342,9 +360,12 @@ Use a feature-flagged rollout:
 2. add `FIREBASE_DATABASE_URL` and Admin SDK secret access;
 3. deploy API with `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`;
 4. deploy mobile build that supports the RTDB provider;
-5. verify public and brother silent-prayer joins on a device;
-6. verify aggregate-only RTDB data in Firebase console;
-7. verify live Terraform has no Memorystore/Redis resources or secrets.
+5. run `pnpm validate:mobile-rtdb-native -- --platform ios` or
+   `pnpm validate:mobile-rtdb-native -- --platform android` with the same Expo
+   environment that will be used on the native target;
+6. verify public and brother silent-prayer joins on a device;
+7. verify aggregate-only RTDB data in Firebase console;
+8. verify live Terraform has no Memorystore/Redis resources or secrets.
 
 Rollback:
 

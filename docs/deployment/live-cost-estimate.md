@@ -46,6 +46,9 @@ update in the same change.
 
 - Keep Cloud Run minimum instances at `0` unless launch monitoring proves cold
   starts are unacceptable.
+- Keep Prisma/Cloud SQL pools small for the lean pilot
+  (`PRISMA_CONNECTION_LIMIT=5` for API, `1` or `2` for migration jobs) and
+  resize from Cloud SQL connection/CPU/latency metrics.
 - Keep silent-prayer RTDB data aggregate-only and listener paths narrow.
 - Start with the smallest acceptable Cloud SQL instance and resize from metrics.
 - Set billing alerts before pilot at low thresholds such as `$25`, `$50`, and

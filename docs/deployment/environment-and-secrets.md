@@ -23,6 +23,11 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `API_PUBLIC_URL` | Admin, Mobile | `https://api.example.org` | Public API base URL |
 | `ADMIN_PUBLIC_URL` | Admin/API auth settings | `https://admin.example.org` | Admin origin |
 | `AUTH_PROVIDER_MODE` | API | `firebase` | `fake` is forbidden in production |
+| `PRISMA_CONNECT_ON_BOOT` | API | `true` | Optional override; defaults to `true` in production and `false` outside production so local health smoke checks stay shallow |
+| `PRISMA_CONNECTION_LIMIT` | API, migration job | `5` | Low-cost Cloud Run/Cloud SQL pool limit appended to `DATABASE_URL` when the URL does not already set `connection_limit` |
+| `PRISMA_POOL_TIMEOUT_SECONDS` | API, migration job | `10` | Prisma `pool_timeout` appended to `DATABASE_URL` when the URL does not already set it |
+| `PRISMA_STARTUP_RETRY_ATTEMPTS` | API | `5` | Production API boot DB connection retry attempts before Cloud Run marks the revision failed |
+| `PRISMA_STARTUP_RETRY_DELAY_MS` | API | `1000` | Delay between boot DB connection retries |
 | `SILENT_PRAYER_REALTIME_PROVIDER` | API | `firebase-rtdb` | Required for live pilot/production. `redis-socket` is not allowed in live infrastructure unless a future owner-approved scope change reverses the June 3, 2026 no-Redis decision. `in-memory` remains non-production only. |
 | `EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER` | Mobile | `firebase-rtdb` | Selects the mobile aggregate-count listener provider. Defaults to current Socket.IO compatibility when unset. |
 | `FIREBASE_PROJECT_ID` | API | `jp2-auth` | Firebase project id |
@@ -32,6 +37,8 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Mobile | Firebase value | Usually same as Firebase project id |
 | `EXPO_PUBLIC_FIREBASE_APP_ID` | Mobile | Firebase value | Firebase app id |
 | `EXPO_PUBLIC_FIREBASE_DATABASE_URL` | Mobile | `https://project-id-default-rtdb.region.firebasedatabase.app` | Required when `EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`; mobile uses it only for aggregate-count listeners |
+| `EXPO_PUBLIC_API_BASE_URL` | Mobile | `https://api.example.org/api` | Required for native RTDB validation; use a device-reachable HTTPS URL, not localhost |
+| `EXPO_PUBLIC_APP_SCHEME` | Mobile | `jp2` | Required for native Google/Firebase auth redirects |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Mobile | OAuth client id | Required for Google sign-in |
 | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Mobile | OAuth client id | Required for native iOS validation |
 | `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | Mobile | OAuth client id | Required for native Android validation |
@@ -59,6 +66,11 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `AUTH_PROVIDER_MODE=firebase` | Terraform variable |
 | `FIREBASE_PROJECT_ID` | Terraform variable |
 | `FIREBASE_DATABASE_URL` | Terraform variable when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
+| `PRISMA_CONNECT_ON_BOOT=true` | Terraform variable |
+| `PRISMA_CONNECTION_LIMIT=5` | Terraform variable |
+| `PRISMA_POOL_TIMEOUT_SECONDS=10` | Terraform variable |
+| `PRISMA_STARTUP_RETRY_ATTEMPTS=5` | Terraform variable |
+| `PRISMA_STARTUP_RETRY_DELAY_MS=1000` | Terraform variable |
 | `SILENT_PRAYER_PRESENCE_HASH_SECRET` | `jp2-silent-prayer-presence-hash-secret` secret when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
 | `DATABASE_URL` | `jp2-database-url` secret |
 | Firebase Admin credentials | `jp2-firebase-service-account-json` secret |
@@ -77,12 +89,21 @@ secret versions should be set through a secure manual or CI-controlled process.
 | --- | --- |
 | `NODE_ENV=production` | Terraform variable |
 | `DATABASE_URL` | `jp2-database-url` secret |
+| `PRISMA_CONNECTION_LIMIT=1` or `2` | Terraform variable for one-off migration execution |
+| `PRISMA_POOL_TIMEOUT_SECONDS=10` | Terraform variable |
 
 ## Validation Checklist
 
 - API refuses `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`.
 - Admin refuses `APP_RUNTIME_MODE=demo` when `NODE_ENV=production`.
 - API starts with `AUTH_PROVIDER_MODE=firebase`.
+- API production startup uses `PRISMA_CONNECT_ON_BOOT=true` or the production
+  default, retries the initial Prisma connection, and uses low Cloud SQL pool
+  settings through `connection_limit` and `pool_timeout`.
+- `/api/health` stays a shallow process/runtime readiness endpoint; it must not
+  query Cloud SQL, Firebase, RTDB, or any external provider.
+- Production Prisma migrations run from the Cloud Run migration job, not during
+  API or Admin request-serving startup.
 - API starts with `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`;
   `firebase-rtdb` requires `FIREBASE_DATABASE_URL`,
   `SILENT_PRAYER_PRESENCE_HASH_SECRET`, and Firebase Admin credentials;
@@ -93,4 +114,7 @@ secret versions should be set through a secure manual or CI-controlled process.
   [`infra/firebase/database.rules.json`](../../infra/firebase/database.rules.json).
 - Firebase authorized domains include Admin and API domains where applicable.
 - Mobile native sign-in has matching iOS/Android OAuth clients.
+- `pnpm validate:mobile-rtdb-native -- --platform ios` or
+  `pnpm validate:mobile-rtdb-native -- --platform android` passes before the
+  native RTDB silent-prayer validation run.
 - Secrets are stored only in Secret Manager or the secure CI secret store.

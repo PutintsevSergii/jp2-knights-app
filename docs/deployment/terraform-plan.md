@@ -58,6 +58,10 @@ admin_public_url = "https://admin.example.org"
 firebase_project_id = "firebase-project-id"
 firebase_database_url = "https://firebase-project-id-default-rtdb.region.firebasedatabase.app"
 silent_prayer_realtime_provider = "firebase-rtdb"
+prisma_connection_limit = 5
+prisma_pool_timeout_seconds = 10
+prisma_startup_retry_attempts = 5
+prisma_startup_retry_delay_ms = 1000
 ```
 
 ## State And Secrets Rules
@@ -80,6 +84,21 @@ silent_prayer_realtime_provider = "firebase-rtdb"
 7. Deploy new Cloud Run revisions if image tags changed after apply.
 8. Run smoke checks.
 
+## Cloud Run And Cloud SQL Runtime Rules
+
+- API Cloud Run services set `PRISMA_CONNECT_ON_BOOT=true` so bad database
+  credentials fail the revision before it receives traffic.
+- Prisma uses low default pool settings for the lean pilot:
+  `PRISMA_CONNECTION_LIMIT=5` and `PRISMA_POOL_TIMEOUT_SECONDS=10`, unless the
+  Cloud SQL URL already carries explicit `connection_limit` or `pool_timeout`
+  values.
+- The migration job should use an even smaller pool, usually
+  `PRISMA_CONNECTION_LIMIT=1` or `2`, because it is a one-off deploy step.
+- `/api/health` remains a shallow process/readiness probe and does not query
+  Cloud SQL, RTDB, Firebase Auth, Secret Manager, or push providers.
+- Production migrations run only in the Cloud Run migration job before service
+  traffic moves to the new revision.
+
 ## Rollback Model
 
 Default rollback should be application-artifact rollback:
@@ -100,9 +119,8 @@ The first implementation milestone should create:
 - Secret Manager secret shells;
 - placeholder Cloud Run services that reference already-built images.
 
-Cloud SQL, the selected silent-prayer realtime provider, migration job, and
-domain mapping can follow in the second Terraform milestone if we want smaller,
-easier-to-review commits.
+Cloud SQL, Firebase RTDB wiring, migration job, and domain mapping can follow in
+the second Terraform milestone if we want smaller, easier-to-review commits.
 
 Do not implement a Memorystore module for live pilot infrastructure. Implement
 and verify the Firebase RTDB silent-prayer migration plan in

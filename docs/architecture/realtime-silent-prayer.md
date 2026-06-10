@@ -85,6 +85,10 @@ Remaining validation slice:
   aggregate reads through unexpired API-issued Firebase UID grants, denial for
   expired/ungranted private reads, and denied client writes to count, presence,
   and grant paths.
+- `pnpm validate:mobile-rtdb-native -- --platform ios|android` now preflights
+  native Expo RTDB configuration before a device run by checking API mode,
+  `firebase-rtdb` mobile provider selection, Firebase client RTDB values, a
+  device-reachable HTTPS API URL, and native Google/Firebase OAuth values.
 - Verify aggregate public/brother count behavior on a native device with pilot
   Firebase configuration.
 
