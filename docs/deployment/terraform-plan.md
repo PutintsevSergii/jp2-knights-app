@@ -56,7 +56,10 @@ admin_image      = "REGION-docker.pkg.dev/PROJECT/jp2/admin:TAG"
 api_public_url   = "https://api.example.org"
 admin_public_url = "https://admin.example.org"
 firebase_project_id = "firebase-project-id"
-firebase_database_url = "https://firebase-project-id-default-rtdb.region.firebasedatabase.app"
+firebase_database_region = "europe-west4"
+firebase_database_instance_id = "firebase-project-id-default-rtdb"
+firebase_database_type = "DEFAULT_DATABASE"
+firebase_database_deletion_policy = "ABANDON"
 silent_prayer_realtime_provider = "firebase-rtdb"
 prisma_connection_limit = 5
 prisma_pool_timeout_seconds = 10
@@ -110,7 +113,7 @@ Default rollback should be application-artifact rollback:
 
 ## First Terraform Milestone
 
-The first implementation milestone should create:
+The first implementation milestone now creates:
 
 - provider and variable files;
 - API enablement;
@@ -119,8 +122,18 @@ The first implementation milestone should create:
 - Secret Manager secret shells;
 - placeholder Cloud Run services that reference already-built images.
 
-Cloud SQL, Firebase RTDB wiring, migration job, and domain mapping can follow in
-the second Terraform milestone if we want smaller, easier-to-review commits.
+The second Terraform milestone now adds Cloud SQL PostgreSQL, Cloud SQL client
+IAM, the Cloud Run Prisma migration job, reduced migration pool settings, and
+Cloud SQL/migration outputs. Terraform intentionally does not manage SQL users,
+database passwords, or Secret Manager secret versions.
+
+The third Terraform milestone now adds Firebase RTDB provisioning/import wiring:
+`google-beta` provider support, Firebase project enablement/import target,
+Realtime Database instance management, API `FIREBASE_DATABASE_URL` wiring from
+the Terraform-managed database URL, RTDB URL/name outputs, and documented
+Firebase CLI rules deployment. The next Terraform/deployment milestone should
+add deploy scripts, backup/restore procedure, launch smoke checklist, and domain
+mapping if the owner has confirmed the project/domain choices.
 
 Do not implement a Memorystore module for live pilot infrastructure. Implement
 and verify the Firebase RTDB silent-prayer migration plan in

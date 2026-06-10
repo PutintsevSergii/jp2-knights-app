@@ -25,9 +25,11 @@ secret values.
    - web app for Admin/sign-in config;
    - iOS app if native iOS pilot is planned;
    - Android app if native Android pilot is planned.
-5. Record non-secret Firebase public config values for the mobile build.
-6. Create or obtain Firebase Admin SDK service-account credentials.
-7. Add authorized domains:
+5. Confirm the Firebase RTDB region and instance id, or provide the existing
+   database import target before Terraform apply.
+6. Record non-secret Firebase public config values for the mobile build.
+7. Create or obtain Firebase Admin SDK service-account credentials.
+8. Add authorized domains:
    - generated Cloud Run Admin URL during staging;
    - generated Cloud Run API URL if needed for redirects;
    - final `admin.<domain>`;

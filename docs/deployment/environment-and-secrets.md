@@ -65,7 +65,7 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `APP_RUNTIME_MODE=api` | Terraform variable |
 | `AUTH_PROVIDER_MODE=firebase` | Terraform variable |
 | `FIREBASE_PROJECT_ID` | Terraform variable |
-| `FIREBASE_DATABASE_URL` | Terraform variable when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
+| `FIREBASE_DATABASE_URL` | Terraform-managed Firebase RTDB database URL when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
 | `PRISMA_CONNECT_ON_BOOT=true` | Terraform variable |
 | `PRISMA_CONNECTION_LIMIT=5` | Terraform variable |
 | `PRISMA_POOL_TIMEOUT_SECONDS=10` | Terraform variable |

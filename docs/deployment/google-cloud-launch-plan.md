@@ -87,13 +87,21 @@ Exit criteria:
 
 ### Phase 1: Containerization
 
+Current repo baseline:
+
+- API Dockerfile: `infra/docker/api.Dockerfile`
+- Admin Dockerfile: `infra/docker/admin.Dockerfile`
+- root Docker ignore rules: `.dockerignore`
+- local profile-gated compose smoke: `infra/docker/docker-compose.yml`
+- smoke commands and local notes: `infra/docker/README.md`
+
 Agent deliverables:
 
-- Add API Dockerfile.
-- Add Admin Dockerfile.
-- Add repo-level `.dockerignore`.
-- Add local container build/run scripts.
-- Add container smoke checks for `/api/health` and mounted Admin Lite routes.
+- Maintain the API Dockerfile.
+- Maintain the Admin Dockerfile.
+- Maintain repo-level `.dockerignore`.
+- Maintain local container build/run documentation.
+- Validate container smoke checks for `/api/health` and mounted Admin Lite routes.
 - Preserve the existing shallow `/api/health` readiness contract; database and
   provider checks belong in deployment smoke checks or one-off jobs, not the
   Cloud Run readiness endpoint.
@@ -110,13 +118,29 @@ Exit criteria:
 
 ### Phase 2: Terraform Foundation
 
+Current repo baseline:
+
+- Terraform root: `infra/terraform`
+- implemented first milestone: API enablement, service accounts, Artifact
+  Registry, Secret Manager secret shells, placeholder API/Admin Cloud Run
+  services, outputs, and `terraform.tfvars.example`
+- implemented second milestone: Cloud SQL PostgreSQL instance/database, Cloud
+  SQL client IAM, Cloud Run Prisma migration job, reduced migration pool
+  settings, and Cloud SQL/migration outputs
+- implemented third milestone: Firebase project/RTDB Terraform resources,
+  owner-created Firebase import commands, generated RTDB URL output, API
+  `FIREBASE_DATABASE_URL` wiring from Terraform, and explicit Firebase CLI rules
+  deployment guidance
+- intentionally pending: deploy scripts, custom domains, backup/restore, launch
+  smoke checklist, and live apply
+
 Agent deliverables:
 
-- Add Terraform root under `infra/terraform`.
+- Maintain Terraform root under `infra/terraform`.
 - Provision required APIs, service accounts, Artifact Registry, Secret Manager
   secret shells, Cloud SQL, Firebase RTDB, Cloud Run services, Cloud Run
-  migration job, and minimum IAM.
-- Add `terraform.tfvars.example`.
+  migration job, and minimum IAM across milestone slices.
+- Maintain `terraform.tfvars.example`.
 - Set API Prisma runtime variables for low-cost Cloud SQL use:
   `PRISMA_CONNECT_ON_BOOT=true`, low `PRISMA_CONNECTION_LIMIT`, bounded
   `PRISMA_POOL_TIMEOUT_SECONDS`, and startup retry values.

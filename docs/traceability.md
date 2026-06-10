@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: June 10, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, native-device RTDB validation preflight command and pilot checklist, Cloud Run/Cloud SQL Prisma pool/retry/shutdown hardening with shallow health readiness and Cloud Run Job migration docs, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
+**Last Updated**: June 11, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, native-device RTDB validation preflight command and pilot checklist, Cloud Run/Cloud SQL Prisma pool/retry/shutdown hardening with shallow health readiness and Cloud Run Job migration docs, Phase 13 API/Admin production Dockerfiles and local container smoke scaffolding, Terraform foundation for Google API enablement, service accounts, Artifact Registry, Secret Manager shells, placeholder Cloud Run services, Cloud SQL PostgreSQL, Cloud Run Prisma migration job, Firebase RTDB provisioning/import wiring, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
 
 ---
 
@@ -837,8 +837,37 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   RTDB/Google OAuth/app-scheme environment is incomplete for pilot RTDB
   validation. The pilot validation plan now records the manual guest and brother
   native-device scenarios, privacy-denial checks, and listener cleanup checks.
+- Phase 13 containerization now includes root `.dockerignore` rules, production
+  API and Admin Lite Dockerfiles under `infra/docker`, profile-gated local
+  compose app services, and documented build/smoke commands for `/api/health`
+  and `/admin/dashboard`. The containers build from the existing Nx outputs,
+  run as the non-root `node` user, expose Cloud Run port `8080`, avoid baked
+  secret values, and keep Redis only as a local Socket.IO compatibility service
+  while pilot/production silent-prayer realtime remains Firebase RTDB.
+- Phase 13 Terraform foundation now includes provider/version files, variables,
+  outputs, Google API enablement, API/Admin/migration/deploy service accounts,
+  an Artifact Registry Docker repository, Secret Manager secret shells without
+  secret versions, placeholder API/Admin Cloud Run services over prebuilt image
+  variables, optional public invoker bindings disabled by default, and
+  `terraform.tfvars.example`. Static tests guard the Terraform contract,
+  including no Redis/Memorystore resources and no Terraform-managed secret
+  versions.
+- Phase 13 second Terraform milestone now adds the Cloud SQL PostgreSQL
+  instance and application database, automated-backup/deletion-protection
+  variables, Cloud SQL client IAM for API and migration identities, a Cloud Run
+  Prisma migration job over the prebuilt API image, reduced migration Prisma
+  pool settings, and outputs for the Cloud SQL connection name and migration
+  job. Terraform still does not manage SQL users, database passwords, or Secret
+  Manager secret versions; the `jp2-database-url` value remains owner/CI-set.
+- Phase 13 third Terraform milestone now adds Firebase RTDB
+  provisioning/import wiring through the `google-beta` Firebase project and
+  Realtime Database instance resources, removes the duplicate manual
+  `firebase_database_url` Terraform input from the API service by wiring
+  `FIREBASE_DATABASE_URL` from the Terraform-managed database URL, outputs the
+  RTDB URL/name, documents import commands for owner-created Firebase resources,
+  and keeps RTDB Security Rules deployment as an explicit Firebase CLI step.
 - Next planned live-realtime slice: run native-device validation for
-  public/brother RTDB aggregate counts before live Terraform. Owner direction on
+  public/brother RTDB aggregate counts before live Terraform apply. Owner direction on
   June 3, 2026 excludes Redis/Memorystore from live pilot and production
   infrastructure unless a future owner-approved scope change reverses that
   decision. This plan is a cost optimization and does not authorize chat,
@@ -1063,10 +1092,13 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   plan. The RTDB-prep slices now include public/brother silent-prayer REST
   heartbeat/leave contracts, mobile RTDB listener support, API Firebase Admin
   RTDB presence/publisher support, deny-by-default RTDB rules, Firebase emulator
-  rules tests, native validation preflight/checklist coverage, and Cloud
-  Run/Cloud SQL Prisma pool/retry/shutdown hardening before any live Terraform
-  work. Production Dockerfiles, Terraform resources, Cloud Run deployment
-  scripts, and the physical native-device RTDB validation run remain pending.
+  rules tests, native validation preflight/checklist coverage, Cloud Run/Cloud
+  SQL Prisma pool/retry/shutdown hardening, API/Admin production Dockerfiles
+  with local container smoke scaffolding, Terraform foundation, Cloud SQL
+  PostgreSQL, the Cloud Run Prisma migration job, and Firebase RTDB
+  provisioning/import wiring. Deployment scripts, backup/restore procedure,
+  launch smoke checklist, live Terraform apply, and the physical native-device
+  RTDB validation run remain pending.
 - Full Phase 13 pilot readiness is not implemented yet unless explicitly listed
   above.
 

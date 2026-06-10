@@ -30,6 +30,44 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    profiles: ["app"]
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: jp2-knights-api
+    environment:
+      NODE_ENV: production
+      APP_RUNTIME_MODE: api
+      API_PORT: "8080"
+      AUTH_PROVIDER_MODE: fake
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/jp2_app
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  admin:
+    profiles: ["app"]
+    build:
+      context: ../..
+      dockerfile: infra/docker/admin.Dockerfile
+    container_name: jp2-knights-admin
+    environment:
+      NODE_ENV: production
+      APP_RUNTIME_MODE: api
+      PORT: "8080"
+      HOSTNAME: 0.0.0.0
+      API_BASE_URL: http://api:8080/api/
+    ports:
+      - "8081:8080"
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
   redis_data:

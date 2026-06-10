@@ -1,0 +1,47 @@
+project_id  = "jp2-pilot"
+region      = "europe-west4"
+environment = "pilot"
+
+repository_id     = "jp2"
+api_service_name  = "jp2-api"
+admin_service_name = "jp2-admin"
+migration_job_name = "jp2-migrate"
+
+api_image   = "europe-west4-docker.pkg.dev/jp2-pilot/jp2/api:replace-with-built-tag"
+admin_image = "europe-west4-docker.pkg.dev/jp2-pilot/jp2/admin:replace-with-built-tag"
+
+api_public_url   = "https://api.example.org"
+admin_public_url = "https://admin.example.org"
+
+firebase_project_id   = "jp2-pilot"
+firebase_database_region          = "europe-west4"
+firebase_database_instance_id     = "jp2-pilot-default-rtdb"
+firebase_database_type            = "DEFAULT_DATABASE"
+firebase_database_deletion_policy = "ABANDON"
+
+silent_prayer_realtime_provider = "firebase-rtdb"
+
+prisma_connection_limit          = 5
+prisma_pool_timeout_seconds      = 10
+prisma_startup_retry_attempts    = 5
+prisma_startup_retry_delay_ms    = 1000
+migration_prisma_connection_limit = 2
+migration_job_timeout_seconds     = 900
+
+api_min_instances   = 0
+api_max_instances   = 3
+admin_min_instances = 0
+admin_max_instances = 2
+
+cloud_sql_instance_name       = "jp2-postgres"
+cloud_sql_database_name       = "jp2_app"
+cloud_sql_database_version    = "POSTGRES_16"
+cloud_sql_tier                = "db-f1-micro"
+cloud_sql_availability_type   = "ZONAL"
+cloud_sql_disk_size_gb        = 10
+cloud_sql_backup_enabled      = true
+cloud_sql_deletion_protection = true
+
+# Keep false until the generated Cloud Run URLs/domains are ready for a reviewed
+# staging or pilot smoke run.
+enable_public_invoker = false
