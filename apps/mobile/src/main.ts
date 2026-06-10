@@ -18,30 +18,49 @@ export {
 } from "./public-content-list-api.js";
 export {
   brotherSilentPrayerLoadFailureState,
+  buildBrotherSilentPrayerHeartbeatUrl,
   buildBrotherSilentPrayerJoinUrl,
+  buildBrotherSilentPrayerLeaveUrl,
   buildBrotherSilentPrayerSessionsUrl,
+  buildPublicSilentPrayerHeartbeatUrl,
   buildPublicSilentPrayerJoinUrl,
+  buildPublicSilentPrayerLeaveUrl,
   buildPublicSilentPrayerSessionsUrl,
   fetchBrotherSilentPrayerSessions,
   fetchPublicSilentPrayerSessions,
+  heartbeatBrotherSilentPrayerSession,
+  heartbeatPublicSilentPrayerSession,
   joinBrotherSilentPrayerSession,
   joinPublicSilentPrayerSession,
+  leaveBrotherSilentPrayerSession,
+  leavePublicSilentPrayerSession,
   publicSilentPrayerLoadFailureState,
   silentPrayerAnonymousSessionId
 } from "./silent-prayer-api.js";
 export {
   SILENT_PRAYER_SOCKET_EVENTS,
   SILENT_PRAYER_SOCKET_NAMESPACE,
-  buildSilentPrayerSocketUrl,
-  startBrotherSilentPrayerRealtime,
-  startPublicSilentPrayerRealtime
+  buildSilentPrayerSocketUrl
 } from "./silent-prayer-socket.js";
 export type {
-  SilentPrayerRealtimeSession,
   SilentPrayerSocketError,
   SilentPrayerSocketFactory,
   SilentPrayerSocketTransport
 } from "./silent-prayer-socket.js";
+export {
+  buildSilentPrayerRtdbCountPath,
+  readSilentPrayerRealtimeConfig,
+  startBrotherSilentPrayerRealtime,
+  startPublicSilentPrayerRealtime
+} from "./silent-prayer-realtime.js";
+export type {
+  SilentPrayerFirebaseRealtimeConfig,
+  SilentPrayerRealtimeConfig,
+  SilentPrayerRealtimeCountClient,
+  SilentPrayerRealtimeError,
+  SilentPrayerRealtimeProvider,
+  SilentPrayerRealtimeSession
+} from "./silent-prayer-realtime.js";
 export {
   buildPublicContentPageUrl,
   fetchPublicContentPage,

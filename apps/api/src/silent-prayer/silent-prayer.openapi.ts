@@ -20,6 +20,16 @@ const silentPrayerPresenceOpenApiSchema = {
   }
 };
 
+const silentPrayerAggregatePresenceOpenApiSchema = {
+  type: "object",
+  required: ["activeCount", "expiresAt"],
+  additionalProperties: false,
+  properties: {
+    activeCount: { type: "integer", minimum: 0 },
+    expiresAt: { type: "string", format: "date-time" }
+  }
+};
+
 const publicSilentPrayerEventSummaryOpenApiSchema = {
   type: "object",
   required: ["id", "title", "intention", "startsAt", "endsAt", "visibility", "activeCount"],
@@ -69,6 +79,24 @@ export const publicSilentPrayerJoinRequestOpenApiSchema = {
   }
 };
 
+export const publicSilentPrayerPresenceRequestOpenApiSchema = {
+  type: "object",
+  required: ["anonymousSessionId"],
+  additionalProperties: false,
+  properties: {
+    anonymousSessionId: { type: "string", minLength: 1, maxLength: 120 },
+    eventId: { type: "string", format: "uuid" }
+  }
+};
+
+export const silentPrayerEventPresenceRequestOpenApiSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    eventId: { type: "string", format: "uuid" }
+  }
+};
+
 export const publicSilentPrayerListResponseOpenApiSchema = {
   type: "object",
   required: ["sessions", "pagination"],
@@ -112,5 +140,14 @@ export const brotherSilentPrayerJoinResponseOpenApiSchema = {
   properties: {
     session: brotherSilentPrayerEventSummaryOpenApiSchema,
     presence: silentPrayerPresenceOpenApiSchema
+  }
+};
+
+export const silentPrayerPresenceActionResponseOpenApiSchema = {
+  type: "object",
+  required: ["presence"],
+  additionalProperties: false,
+  properties: {
+    presence: silentPrayerAggregatePresenceOpenApiSchema
   }
 };

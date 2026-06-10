@@ -64,6 +64,7 @@ import {
   publicPrayerDetailResponseSchema,
   publicPrayerListQuerySchema,
   publicPrayerListResponseSchema,
+  publicSilentPrayerPresenceRequestSchema,
   adminRoadmapSubmissionExportResponseSchema,
   assignedRoadmapResponseSchema,
   retentionBucketSchema,
@@ -71,6 +72,8 @@ import {
   roleSchema,
   registerDeviceTokenRequestSchema,
   revokeDeviceTokenRequestSchema,
+  silentPrayerEventPresenceRequestSchema,
+  silentPrayerPresenceActionResponseSchema,
   updateAdminAnnouncementRequestSchema,
   updateAdminEventRequestSchema,
   updateAdminCandidateProfileSchema,
@@ -671,6 +674,52 @@ describe("shared validation", () => {
         silentPrayerEvent
       })
     ).toEqual({ silentPrayerEvent });
+  });
+
+  it("validates silent-prayer REST heartbeat and leave contracts", () => {
+    const eventId = "44444444-4444-4444-8444-444444444444";
+
+    expect(
+      publicSilentPrayerPresenceRequestSchema.parse({
+        anonymousSessionId: " guest-session-1 ",
+        eventId
+      })
+    ).toEqual({
+      anonymousSessionId: "guest-session-1",
+      eventId
+    });
+    expect(() =>
+      publicSilentPrayerPresenceRequestSchema.parse({
+        anonymousSessionId: "guest-session-1",
+        eventId,
+        participantKey: "not-public"
+      })
+    ).toThrow();
+    expect(silentPrayerEventPresenceRequestSchema.parse({ eventId })).toEqual({ eventId });
+    expect(silentPrayerEventPresenceRequestSchema.parse({})).toEqual({});
+    expect(
+      silentPrayerPresenceActionResponseSchema.parse({
+        presence: {
+          activeCount: 3,
+          expiresAt: "2026-05-10T18:00:45.000Z"
+        }
+      })
+    ).toEqual({
+      presence: {
+        activeCount: 3,
+        expiresAt: "2026-05-10T18:00:45.000Z"
+      }
+    });
+    expect(() =>
+      silentPrayerPresenceActionResponseSchema.parse({
+        presence: {
+          eventId,
+          activeCount: 3,
+          expiresAt: "2026-05-10T18:00:45.000Z",
+          socketRoom: `silent-prayer:${eventId}`
+        }
+      })
+    ).toThrow();
   });
 
   it("validates admin announcement write and response DTOs", () => {

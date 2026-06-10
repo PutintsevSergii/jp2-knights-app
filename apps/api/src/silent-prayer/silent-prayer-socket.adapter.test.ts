@@ -40,10 +40,12 @@ describe("SilentPrayerRedisSocketIoAdapter", () => {
 describe("configureSilentPrayerSocketIoAdapter", () => {
   const originalNodeEnv = process.env.NODE_ENV;
   const originalRedisUrl = process.env.REDIS_URL;
+  const originalRealtimeProvider = process.env.SILENT_PRAYER_REALTIME_PROVIDER;
 
   afterEach(() => {
     setOptionalEnv("NODE_ENV", originalNodeEnv);
     setOptionalEnv("REDIS_URL", originalRedisUrl);
+    setOptionalEnv("SILENT_PRAYER_REALTIME_PROVIDER", originalRealtimeProvider);
   });
 
   it("keeps local/test socket wiring in process when Redis is not configured", async () => {
@@ -56,10 +58,21 @@ describe("configureSilentPrayerSocketIoAdapter", () => {
   it("fails fast in production when Redis socket wiring is missing", async () => {
     setOptionalEnv("REDIS_URL", undefined);
     setOptionalEnv("NODE_ENV", "production");
+    setOptionalEnv("SILENT_PRAYER_REALTIME_PROVIDER", "redis-socket");
 
     await expect(configureSilentPrayerSocketIoAdapter(fakeApp())).rejects.toThrow(
       "REDIS_URL is required for production silent-prayer sockets."
     );
+  });
+
+  it("skips Socket.IO Redis wiring in production when RTDB realtime is selected", async () => {
+    const app = fakeApp();
+    setOptionalEnv("REDIS_URL", undefined);
+    setOptionalEnv("NODE_ENV", "production");
+    setOptionalEnv("SILENT_PRAYER_REALTIME_PROVIDER", "firebase-rtdb");
+
+    await expect(configureSilentPrayerSocketIoAdapter(app)).resolves.toBeNull();
+    expect(app.useWebSocketAdapter).not.toHaveBeenCalled();
   });
 
   it("configures the Socket.IO Redis adapter when Redis is configured", async () => {

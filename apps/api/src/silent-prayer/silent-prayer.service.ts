@@ -1,27 +1,40 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException, Optional } from "@nestjs/common";
 import { canAccessBrotherMode } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
-import { SilentPrayerPresenceService } from "./silent-prayer-presence.service.js";
+import {
+  SILENT_PRAYER_PRESENCE_TTL_MS,
+  SilentPrayerPresenceService
+} from "./silent-prayer-presence.service.js";
 import type {
   SilentPrayerParticipant,
   SilentPrayerPresenceResult
 } from "./silent-prayer-presence.types.js";
+import {
+  NoopSilentPrayerRealtimePublisher,
+  SilentPrayerRealtimePublisher
+} from "./silent-prayer-realtime.publisher.js";
 import { SilentPrayerRepository } from "./silent-prayer.repository.js";
 import type {
   BrotherSilentPrayerJoinResponse,
   BrotherSilentPrayerListResponse,
   PublicSilentPrayerJoinResponse,
   PublicSilentPrayerListResponse,
+  SilentPrayerPresenceActionResponse,
   SilentPrayerListQuery
 } from "./silent-prayer.types.js";
 
 @Injectable()
 export class SilentPrayerService {
+  private readonly realtimePublisher: SilentPrayerRealtimePublisher;
+
   constructor(
     private readonly repository: SilentPrayerRepository,
-    private readonly presence: SilentPrayerPresenceService
-  ) {}
+    private readonly presence: SilentPrayerPresenceService,
+    @Optional() realtimePublisher?: SilentPrayerRealtimePublisher
+  ) {
+    this.realtimePublisher = realtimePublisher ?? new NoopSilentPrayerRealtimePublisher();
+  }
 
   async listPublicSessions(
     query: SilentPrayerListQuery,
@@ -60,6 +73,7 @@ export class SilentPrayerService {
       { type: "anonymous", sessionId: anonymousSessionId },
       now
     );
+    await this.realtimePublisher.publishPublicCount(id, presence.activeCount, now);
 
     return {
       session: {
@@ -84,9 +98,45 @@ export class SilentPrayerService {
       throw new NotFoundException("Public silent-prayer session was not found.");
     }
 
-    return withSocketRoom(
-      await this.presence.heartbeat(id, { type: "anonymous", sessionId: anonymousSessionId }, now)
+    const presence = await this.presence.heartbeat(
+      id,
+      { type: "anonymous", sessionId: anonymousSessionId },
+      now
     );
+    await this.realtimePublisher.publishPublicCount(id, presence.activeCount, now);
+
+    return withSocketRoom(presence);
+  }
+
+  async heartbeatPublicSession(
+    id: string,
+    anonymousSessionId: string,
+    now = new Date()
+  ): Promise<SilentPrayerPresenceActionResponse> {
+    return toPresenceActionResponse(
+      await this.refreshPublicSessionPresence(id, anonymousSessionId, now)
+    );
+  }
+
+  async leavePublicSession(
+    id: string,
+    anonymousSessionId: string,
+    now = new Date()
+  ): Promise<SilentPrayerPresenceActionResponse> {
+    const session = await this.repository.findPublicJoinableSession(id, now);
+
+    if (!session) {
+      throw new NotFoundException("Public silent-prayer session was not found.");
+    }
+
+    const presence = await this.presence.leave(
+      id,
+      { type: "anonymous", sessionId: anonymousSessionId },
+      now
+    );
+    await this.realtimePublisher.publishPublicCount(id, presence.activeCount, now);
+
+    return toPresenceActionResponse(presence);
   }
 
   async listBrotherSessions(
@@ -129,6 +179,7 @@ export class SilentPrayerService {
       { type: "authenticated", userId: principal.id },
       now
     );
+    await this.publishBrotherPresence(principal.id, id, presence, now, true);
 
     return {
       session: {
@@ -154,9 +205,44 @@ export class SilentPrayerService {
       throw new NotFoundException("Brother silent-prayer session was not found in the current scope.");
     }
 
-    return withSocketRoom(
-      await this.presence.heartbeat(id, { type: "authenticated", userId: principal.id }, now)
+    const presence = await this.presence.heartbeat(
+      id,
+      { type: "authenticated", userId: principal.id },
+      now
     );
+    await this.publishBrotherPresence(principal.id, id, presence, now, true);
+
+    return withSocketRoom(presence);
+  }
+
+  async heartbeatBrotherSession(
+    principal: CurrentUserPrincipal,
+    id: string,
+    now = new Date()
+  ): Promise<SilentPrayerPresenceActionResponse> {
+    return toPresenceActionResponse(await this.refreshBrotherSessionPresence(principal, id, now));
+  }
+
+  async leaveBrotherSession(
+    principal: CurrentUserPrincipal,
+    id: string,
+    now = new Date()
+  ): Promise<SilentPrayerPresenceActionResponse> {
+    const organizationUnitIds = await this.loadBrotherOrganizationUnitIds(principal);
+    const session = await this.repository.findBrotherJoinableSession(id, organizationUnitIds, now);
+
+    if (!session) {
+      throw new NotFoundException("Brother silent-prayer session was not found in the current scope.");
+    }
+
+    const presence = await this.presence.leave(
+      id,
+      { type: "authenticated", userId: principal.id },
+      now
+    );
+    await this.publishBrotherPresence(principal.id, id, presence, now, false);
+
+    return toPresenceActionResponse(presence);
   }
 
   async leaveSessionPresence(
@@ -185,6 +271,33 @@ export class SilentPrayerService {
 
     return organizationUnitIds;
   }
+
+  private async publishBrotherPresence(
+    userId: string,
+    eventId: string,
+    presence: SilentPrayerPresenceResult,
+    now: Date,
+    grantRead: boolean
+  ): Promise<void> {
+    await this.realtimePublisher.publishPrivateCount(eventId, presence.activeCount, now);
+
+    const firebaseUid = await this.repository.findFirebaseProviderSubject(userId);
+
+    if (!firebaseUid) {
+      return;
+    }
+
+    if (grantRead) {
+      await this.realtimePublisher.grantPrivateRead(
+        firebaseUid,
+        eventId,
+        SILENT_PRAYER_PRESENCE_TTL_MS,
+        now
+      );
+    } else {
+      await this.realtimePublisher.revokePrivateRead(firebaseUid, eventId);
+    }
+  }
 }
 
 export function silentPrayerSocketRoom(eventId: string): string {
@@ -199,5 +312,16 @@ function withSocketRoom(presence: SilentPrayerPresenceResult): SilentPrayerSocke
   return {
     ...presence,
     socketRoom: silentPrayerSocketRoom(presence.eventId)
+  };
+}
+
+function toPresenceActionResponse(
+  presence: Pick<SilentPrayerPresenceResult, "activeCount" | "expiresAt">
+): SilentPrayerPresenceActionResponse {
+  return {
+    presence: {
+      activeCount: presence.activeCount,
+      expiresAt: presence.expiresAt
+    }
   };
 }

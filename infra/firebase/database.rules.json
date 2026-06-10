@@ -1,0 +1,36 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "silentPrayerPublicCounts": {
+      "$eventId": {
+        ".read": true,
+        ".write": false,
+        ".validate": "newData.hasChildren(['activeCount', 'updatedAt']) && newData.child('activeCount').isNumber() && newData.child('activeCount').val() >= 0 && newData.child('updatedAt').isString()"
+      }
+    },
+    "silentPrayerPrivateCounts": {
+      "$eventId": {
+        ".read": "auth != null && root.child('silentPrayerReadGrants').child(auth.uid).child($eventId).child('expiresAt').isNumber() && root.child('silentPrayerReadGrants').child(auth.uid).child($eventId).child('expiresAt').val() > now",
+        ".write": false,
+        ".validate": "newData.hasChildren(['activeCount', 'updatedAt']) && newData.child('activeCount').isNumber() && newData.child('activeCount').val() >= 0 && newData.child('updatedAt').isString()"
+      }
+    },
+    "silentPrayerPresence": {
+      "$eventId": {
+        "$participantKey": {
+          ".read": false,
+          ".write": false
+        }
+      }
+    },
+    "silentPrayerReadGrants": {
+      "$uid": {
+        "$eventId": {
+          ".read": false,
+          ".write": false
+        }
+      }
+    }
+  }
+}

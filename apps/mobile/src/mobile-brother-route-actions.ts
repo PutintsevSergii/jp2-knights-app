@@ -30,8 +30,8 @@ import {
 import {
   startBrotherSilentPrayerRealtime,
   type SilentPrayerRealtimeSession,
-  type SilentPrayerSocketError
-} from "./silent-prayer-socket.js";
+  type SilentPrayerRealtimeError
+} from "./silent-prayer-realtime.js";
 import {
   buildDemoRoadmapSubmission,
   applyBrotherSilentPrayerJoin,
@@ -280,7 +280,7 @@ export function useBrotherRouteActions(options: UseBrotherRouteActionsOptions) {
     options.brotherSilentPrayerRealtime.current = null;
   }
 
-  function handleBrotherSilentPrayerSocketError(error: SilentPrayerSocketError) {
+  function handleBrotherSilentPrayerSocketError(error: SilentPrayerRealtimeError) {
     if (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN") {
       options.brotherSilentPrayer.setState("forbidden");
       return;

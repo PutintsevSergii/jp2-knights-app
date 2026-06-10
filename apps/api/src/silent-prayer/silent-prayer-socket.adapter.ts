@@ -3,6 +3,7 @@ import { IoAdapter } from "@nestjs/platform-socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import type { Server, ServerOptions } from "socket.io";
+import { isFirebaseRtdbSilentPrayerRealtime } from "./silent-prayer-realtime.config.js";
 
 export interface RedisSocketAdapterClient {
   readonly isOpen: boolean;
@@ -75,6 +76,10 @@ export async function configureSilentPrayerSocketIoAdapter(
   createAdapterForRedis: SilentPrayerSocketIoAdapterFactory = (nestApp, redisUrl) =>
     new SilentPrayerRedisSocketIoAdapter(nestApp, redisUrl)
 ): Promise<SilentPrayerRedisSocketIoAdapter | null> {
+  if (isFirebaseRtdbSilentPrayerRealtime()) {
+    return null;
+  }
+
   const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {

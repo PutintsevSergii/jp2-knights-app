@@ -4,6 +4,7 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
 import { SilentPrayerPresenceService } from "./silent-prayer-presence.service.js";
 import { InMemorySilentPrayerPresenceStore } from "./silent-prayer-presence.store.js";
+import type { SilentPrayerRealtimePublisher } from "./silent-prayer-realtime.publisher.js";
 import type { SilentPrayerRepository } from "./silent-prayer.repository.js";
 import { SilentPrayerService } from "./silent-prayer.service.js";
 import type {
@@ -99,6 +100,46 @@ describe("SilentPrayerService", () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it("refreshes and leaves public sessions through aggregate-only REST responses", async () => {
+    const publisher = new FakeSilentPrayerRealtimePublisher();
+    const service = serviceWith({ publisher });
+
+    await service.joinPublicSession(publicSessionId, "guest-1", now);
+    await service.joinPublicSession(publicSessionId, "guest-2", now);
+
+    await expect(
+      service.heartbeatPublicSession(publicSessionId, "guest-1", now)
+    ).resolves.toEqual({
+      presence: {
+        activeCount: 2,
+        expiresAt: "2026-05-25T12:00:45.000Z"
+      }
+    });
+    await expect(service.leavePublicSession(publicSessionId, "guest-1", now)).resolves.toEqual({
+      presence: {
+        activeCount: 1,
+        expiresAt: "2026-05-25T12:00:45.000Z"
+      }
+    });
+    expect(publisher.publicCounts).toEqual([
+      [publicSessionId, 1, "2026-05-25T12:00:00.000Z"],
+      [publicSessionId, 2, "2026-05-25T12:00:00.000Z"],
+      [publicSessionId, 2, "2026-05-25T12:00:00.000Z"],
+      [publicSessionId, 1, "2026-05-25T12:00:00.000Z"]
+    ]);
+  });
+
+  it("returns 404 for public heartbeat and leave when the session is no longer visible", async () => {
+    const service = serviceWith({ publicJoinable: null });
+
+    await expect(
+      service.heartbeatPublicSession(publicSessionId, "guest-1", now)
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.leavePublicSession(publicSessionId, "guest-1", now)
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it("lists brother sessions with scoped membership and aggregate counts only", async () => {
     const repository = repositoryWith();
     const service = serviceWith({ repository });
@@ -119,7 +160,10 @@ describe("SilentPrayerService", () => {
         offset: 0
       }
     });
-    expect(repository.brotherSessionScopeChecks).toEqual([[organizationUnitId]]);
+    expect(repository.brotherSessionScopeChecks).toEqual([
+      [organizationUnitId],
+      [organizationUnitId]
+    ]);
   });
 
   it("counts brother duplicate joins once per authenticated user", async () => {
@@ -147,6 +191,49 @@ describe("SilentPrayerService", () => {
       });
   });
 
+  it("refreshes and leaves brother sessions through scoped aggregate-only REST responses", async () => {
+    const repository = repositoryWith();
+    const publisher = new FakeSilentPrayerRealtimePublisher();
+    const service = serviceWith({ repository, publisher });
+
+    await service.joinBrotherSession(brotherPrincipal, brotherSessionId, now);
+
+    await expect(service.heartbeatBrotherSession(brotherPrincipal, brotherSessionId, now)).resolves
+      .toEqual({
+        presence: {
+          activeCount: 1,
+          expiresAt: "2026-05-25T12:00:45.000Z"
+        }
+      });
+    await expect(service.leaveBrotherSession(brotherPrincipal, brotherSessionId, now)).resolves
+      .toEqual({
+        presence: {
+          activeCount: 0,
+          expiresAt: "2026-05-25T12:00:45.000Z"
+        }
+      });
+    expect(repository.brotherSessionScopeChecks).toEqual([
+      [organizationUnitId],
+      [organizationUnitId],
+      [organizationUnitId]
+    ]);
+    expect(repository.firebaseProviderSubjectChecks).toEqual([
+      brotherPrincipal.id,
+      brotherPrincipal.id,
+      brotherPrincipal.id
+    ]);
+    expect(publisher.privateCounts).toEqual([
+      [brotherSessionId, 1, "2026-05-25T12:00:00.000Z"],
+      [brotherSessionId, 1, "2026-05-25T12:00:00.000Z"],
+      [brotherSessionId, 0, "2026-05-25T12:00:00.000Z"]
+    ]);
+    expect(publisher.grants).toEqual([
+      ["firebase-brother-1", brotherSessionId, 45_000, "2026-05-25T12:00:00.000Z"],
+      ["firebase-brother-1", brotherSessionId, 45_000, "2026-05-25T12:00:00.000Z"]
+    ]);
+    expect(publisher.revocations).toEqual([["firebase-brother-1", brotherSessionId]]);
+  });
+
   it("blocks non-brothers, idle users, missing memberships, and out-of-scope sessions", async () => {
     await expect(
       serviceWith().joinBrotherSession(candidatePrincipal, brotherSessionId, now)
@@ -167,6 +254,16 @@ describe("SilentPrayerService", () => {
     ).rejects.toBeInstanceOf(NotFoundException);
     await expect(
       serviceWith({ brotherJoinable: null }).joinBrotherSession(
+        brotherPrincipal,
+        brotherSessionId,
+        now
+      )
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      serviceWith().heartbeatBrotherSession(candidatePrincipal, brotherSessionId, now)
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      serviceWith({ brotherJoinable: null }).leaveBrotherSession(
         brotherPrincipal,
         brotherSessionId,
         now
@@ -202,6 +299,7 @@ function serviceWith(
     publicJoinable?: PublicSilentPrayerEventSummary | null;
     brotherJoinable?: BrotherSilentPrayerEventSummary | null;
     organizationUnitIds?: readonly string[] | null;
+    publisher?: SilentPrayerRealtimePublisher;
   } = {}
 ): SilentPrayerService {
   const repositoryOptions: {
@@ -224,7 +322,8 @@ function serviceWith(
 
   return new SilentPrayerService(
     options.repository ?? repositoryWith(repositoryOptions),
-    new SilentPrayerPresenceService(new InMemorySilentPrayerPresenceStore())
+    new SilentPrayerPresenceService(new InMemorySilentPrayerPresenceStore()),
+    options.publisher
   );
 }
 
@@ -234,9 +333,13 @@ function repositoryWith(
     brotherJoinable?: BrotherSilentPrayerEventSummary | null;
     organizationUnitIds?: readonly string[] | null;
   } = {}
-): SilentPrayerRepository & { brotherSessionScopeChecks: string[][] } {
+): SilentPrayerRepository & {
+  brotherSessionScopeChecks: string[][];
+  firebaseProviderSubjectChecks: string[];
+} {
   return {
     brotherSessionScopeChecks: [],
+    firebaseProviderSubjectChecks: [],
     findPublicSessions() {
       return Promise.resolve(options.publicJoinable === null ? [] : [publicSession]);
     },
@@ -249,7 +352,8 @@ function repositoryWith(
       this.brotherSessionScopeChecks.push([...organizationUnitIds]);
       return Promise.resolve(options.brotherJoinable === null ? [] : [brotherSession]);
     },
-    findBrotherJoinableSession() {
+    findBrotherJoinableSession(_id, organizationUnitIds) {
+      this.brotherSessionScopeChecks.push([...organizationUnitIds]);
       return Promise.resolve(
         options.brotherJoinable === undefined ? brotherSession : options.brotherJoinable
       );
@@ -260,6 +364,46 @@ function repositoryWith(
           ? [organizationUnitId]
           : options.organizationUnitIds
       );
+    },
+    findFirebaseProviderSubject(userId) {
+      this.firebaseProviderSubjectChecks.push(userId);
+      return Promise.resolve("firebase-brother-1");
     }
   };
+}
+
+class FakeSilentPrayerRealtimePublisher implements SilentPrayerRealtimePublisher {
+  readonly publicCounts: Array<[string, number, string]> = [];
+  readonly privateCounts: Array<[string, number, string]> = [];
+  readonly grants: Array<[string, string, number, string]> = [];
+  readonly revocations: Array<[string, string]> = [];
+
+  publishPublicCount(eventId: string, activeCount: number, now: Date): Promise<void> {
+    this.publicCounts.push([eventId, activeCount, now.toISOString()]);
+
+    return Promise.resolve();
+  }
+
+  publishPrivateCount(eventId: string, activeCount: number, now: Date): Promise<void> {
+    this.privateCounts.push([eventId, activeCount, now.toISOString()]);
+
+    return Promise.resolve();
+  }
+
+  grantPrivateRead(
+    firebaseUid: string,
+    eventId: string,
+    ttlMs: number,
+    now: Date
+  ): Promise<void> {
+    this.grants.push([firebaseUid, eventId, ttlMs, now.toISOString()]);
+
+    return Promise.resolve();
+  }
+
+  revokePrivateRead(firebaseUid: string, eventId: string): Promise<void> {
+    this.revocations.push([firebaseUid, eventId]);
+
+    return Promise.resolve();
+  }
 }

@@ -22,6 +22,19 @@ export const publicSilentPrayerJoinRequestSchema = z
   })
   .strict();
 
+export const publicSilentPrayerPresenceRequestSchema =
+  publicSilentPrayerJoinRequestSchema
+    .extend({
+      eventId: silentPrayerEventIdSchema.optional()
+    })
+    .strict();
+
+export const silentPrayerEventPresenceRequestSchema = z
+  .object({
+    eventId: silentPrayerEventIdSchema.optional()
+  })
+  .strict();
+
 export const publicSilentPrayerSocketJoinPayloadSchema =
   publicSilentPrayerJoinRequestSchema
     .extend({
@@ -41,6 +54,13 @@ export const silentPrayerPresenceSchema = z
     activeCount: z.number().int().min(0),
     expiresAt: z.iso.datetime(),
     socketRoom: z.string().trim().min(1).max(240)
+  })
+  .strict();
+
+export const silentPrayerAggregatePresenceResponseSchema = z
+  .object({
+    activeCount: z.number().int().min(0),
+    expiresAt: z.iso.datetime()
   })
   .strict();
 
@@ -98,6 +118,12 @@ export const brotherSilentPrayerJoinResponseSchema = z
   .object({
     session: brotherSilentPrayerEventSummarySchema,
     presence: silentPrayerPresenceSchema
+  })
+  .strict();
+
+export const silentPrayerPresenceActionResponseSchema = z
+  .object({
+    presence: silentPrayerAggregatePresenceResponseSchema
   })
   .strict();
 
@@ -190,6 +216,12 @@ export type SilentPrayerPaginationQueryDto = z.infer<
 export type PublicSilentPrayerJoinRequestDto = z.infer<
   typeof publicSilentPrayerJoinRequestSchema
 >;
+export type PublicSilentPrayerPresenceRequestDto = z.infer<
+  typeof publicSilentPrayerPresenceRequestSchema
+>;
+export type SilentPrayerEventPresenceRequestDto = z.infer<
+  typeof silentPrayerEventPresenceRequestSchema
+>;
 export type PublicSilentPrayerSocketJoinPayloadDto = z.infer<
   typeof publicSilentPrayerSocketJoinPayloadSchema
 >;
@@ -197,6 +229,9 @@ export type SilentPrayerSocketEventPayloadDto = z.infer<
   typeof silentPrayerSocketEventPayloadSchema
 >;
 export type SilentPrayerPresenceDto = z.infer<typeof silentPrayerPresenceSchema>;
+export type SilentPrayerAggregatePresenceResponseDto = z.infer<
+  typeof silentPrayerAggregatePresenceResponseSchema
+>;
 export type PublicSilentPrayerEventSummaryDto = z.infer<
   typeof publicSilentPrayerEventSummarySchema
 >;
@@ -214,6 +249,9 @@ export type PublicSilentPrayerJoinResponseDto = z.infer<
 >;
 export type BrotherSilentPrayerJoinResponseDto = z.infer<
   typeof brotherSilentPrayerJoinResponseSchema
+>;
+export type SilentPrayerPresenceActionResponseDto = z.infer<
+  typeof silentPrayerPresenceActionResponseSchema
 >;
 export type AdminSilentPrayerEventSummaryDto = z.infer<
   typeof adminSilentPrayerEventSummarySchema

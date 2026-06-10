@@ -28,6 +28,7 @@ export abstract class SilentPrayerRepository {
     now?: Date
   ): Promise<BrotherSilentPrayerEventSummary | null>;
   abstract findActiveBrotherOrganizationUnitIds(userId: string): Promise<readonly string[] | null>;
+  abstract findFirebaseProviderSubject(userId: string): Promise<string | null>;
 }
 
 @Injectable()
@@ -111,6 +112,24 @@ export class PrismaSilentPrayerRepository implements SilentPrayerRepository {
     return memberships.length > 0
       ? memberships.map((membership) => membership.organizationUnitId)
       : null;
+  }
+
+  async findFirebaseProviderSubject(userId: string): Promise<string | null> {
+    const account = await this.prisma.identityProviderAccount.findFirst({
+      where: {
+        userId,
+        provider: "firebase",
+        revokedAt: null
+      },
+      select: {
+        providerSubject: true
+      },
+      orderBy: {
+        createdAt: "asc"
+      }
+    });
+
+    return account?.providerSubject ?? null;
   }
 }
 

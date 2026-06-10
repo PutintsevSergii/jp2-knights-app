@@ -207,6 +207,15 @@ Because RTDB has no Redis-style automatic TTL deletion, add cleanup behavior:
   the event being touched;
 - add a scheduled cleanup job only if pilot usage shows stale records growing.
 
+Status: initial API provider implementation complete. The API now selects
+`firebase-rtdb` through `SILENT_PRAYER_REALTIME_PROVIDER`, uses a Firebase Admin
+RTDB-backed presence store, derives hashed participant keys with
+`SILENT_PRAYER_PRESENCE_HASH_SECRET`, ignores/removes expired presence rows
+during counts, publishes public/private aggregate count paths after server-side
+authorization, and issues/revokes private read grants using active Firebase
+provider subjects. Firebase emulator/rules tests and native-device validation
+remain pending.
+
 ### Step 5: Replace Mobile Socket.IO With A Realtime Client Port
 
 Do not call Firebase SDK directly from React Native screens. Add a mobile port:
@@ -237,6 +246,13 @@ Mobile flow for RTDB:
 The mobile model must continue to expose only aggregate count and user-facing
 status.
 
+Status: initial implementation complete. Mobile now has a provider-neutral
+`SilentPrayerRealtime` port, keeps Socket.IO as the default compatibility
+provider, supports `firebase-rtdb` aggregate-count listeners through
+`EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`, sends heartbeat and
+leave through the REST contracts, and subscribes only to one public/private
+aggregate count path while the silent-prayer screen is active.
+
 ### Step 6: Add RTDB Security Rules
 
 Create committed rules documentation and, when Firebase tooling is introduced,
@@ -259,6 +275,14 @@ Then open only the aggregate read paths:
 - private count path: read only when `auth.uid` has an unexpired grant;
 - all presence/grant paths: no client read or write unless explicitly needed for
   private count rule evaluation.
+
+Status: baseline rules file committed at
+[`infra/firebase/database.rules.json`](../../infra/firebase/database.rules.json).
+Rules are deny-by-default, allow public aggregate reads, gate private aggregate
+reads through unexpired grants, and deny client presence/grant reads and writes.
+Firebase emulator/rules tests are wired through `pnpm test:firebase-rules` with
+committed `firebase.json`, `@firebase/rules-unit-testing`, and Firebase CLI
+tooling.
 
 Validation checklist:
 
@@ -284,6 +308,9 @@ Add failing tests before implementation where possible:
 - mobile RTDB listener updates aggregate count and unsubscribes on route exit;
 - mobile auth change closes private count listeners;
 - RTDB rules deny unauthorized private count reads and all client writes.
+- Firebase emulator rules tests verify public aggregate reads, unexpired
+  API-issued private read grants, expired/ungranted denial paths, and denied
+  client writes to count, presence, and grant paths.
 
 Required gates before merging:
 
@@ -297,8 +324,15 @@ pnpm contract:check
 pnpm db:migrate:check
 ```
 
-Run Firebase rules/emulator tests if Firebase tooling exists in the repo by the
-time this slice is implemented.
+Run Firebase rules/emulator tests before enabling the live RTDB provider:
+
+```bash
+pnpm test:firebase-rules
+```
+
+The command starts the Firebase Realtime Database Emulator and requires Java. On
+this macOS workspace it uses the Android Studio bundled JBR when `JAVA_HOME` is
+not set.
 
 ### Step 8: Deployment Rollout
 

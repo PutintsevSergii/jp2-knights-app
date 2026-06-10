@@ -40,8 +40,8 @@ import {
 import {
   startPublicSilentPrayerRealtime,
   type SilentPrayerRealtimeSession,
-  type SilentPrayerSocketError
-} from "./silent-prayer-socket.js";
+  type SilentPrayerRealtimeError
+} from "./silent-prayer-realtime.js";
 import {
   applyPublicSilentPrayerJoin,
   applyPublicSilentPrayerPresence,
@@ -366,7 +366,7 @@ export function useMobilePublicContentController({
     publicSilentPrayerRealtime.current = null;
   }
 
-  function handlePublicSilentPrayerSocketError(error: SilentPrayerSocketError) {
+  function handlePublicSilentPrayerSocketError(error: SilentPrayerRealtimeError) {
     if (error.code === "NOT_FOUND") {
       setPublicSilentPrayerState("empty");
       return;

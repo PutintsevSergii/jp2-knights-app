@@ -10,7 +10,9 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ["tools/firebase/*.ts", "tools/firebase/*.mjs"]
+        },
         tsconfigRootDir: import.meta.dirname
       }
     },

@@ -3,10 +3,12 @@ import {
   brotherSilentPrayerListResponseSchema,
   publicSilentPrayerJoinResponseSchema,
   publicSilentPrayerListResponseSchema,
+  silentPrayerPresenceActionResponseSchema,
   type BrotherSilentPrayerJoinResponseDto,
   type BrotherSilentPrayerListResponseDto,
   type PublicSilentPrayerJoinResponseDto,
-  type PublicSilentPrayerListResponseDto
+  type PublicSilentPrayerListResponseDto,
+  type SilentPrayerPresenceActionResponseDto
 } from "@jp2/shared-validation";
 import type { MobileScreenState } from "./navigation.js";
 import {
@@ -47,6 +49,8 @@ export interface JoinPublicSilentPrayerSessionOptions {
   fetchImpl?: SilentPrayerFetch;
 }
 
+export type PublicSilentPrayerPresenceActionOptions = JoinPublicSilentPrayerSessionOptions;
+
 export interface FetchBrotherSilentPrayerSessionsOptions extends SilentPrayerListUrlQuery {
   baseUrl?: string;
   authToken?: string;
@@ -59,6 +63,8 @@ export interface JoinBrotherSilentPrayerSessionOptions {
   authToken?: string;
   fetchImpl?: SilentPrayerFetch;
 }
+
+export type BrotherSilentPrayerPresenceActionOptions = JoinBrotherSilentPrayerSessionOptions;
 
 export async function fetchPublicSilentPrayerSessions(
   options: FetchPublicSilentPrayerSessionsOptions = {}
@@ -83,6 +89,18 @@ export async function joinPublicSilentPrayerSession(
   );
 
   return publicSilentPrayerJoinResponseSchema.parse(await response.json());
+}
+
+export async function heartbeatPublicSilentPrayerSession(
+  options: PublicSilentPrayerPresenceActionOptions
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  return requestPublicSilentPrayerPresenceAction(options, "heartbeat");
+}
+
+export async function leavePublicSilentPrayerSession(
+  options: PublicSilentPrayerPresenceActionOptions
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  return requestPublicSilentPrayerPresenceAction(options, "leave");
 }
 
 export async function fetchBrotherSilentPrayerSessions(
@@ -111,6 +129,18 @@ export async function joinBrotherSilentPrayerSession(
   return brotherSilentPrayerJoinResponseSchema.parse(await response.json());
 }
 
+export async function heartbeatBrotherSilentPrayerSession(
+  options: BrotherSilentPrayerPresenceActionOptions
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  return requestBrotherSilentPrayerPresenceAction(options, "heartbeat");
+}
+
+export async function leaveBrotherSilentPrayerSession(
+  options: BrotherSilentPrayerPresenceActionOptions
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  return requestBrotherSilentPrayerPresenceAction(options, "leave");
+}
+
 export function buildPublicSilentPrayerSessionsUrl(
   baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
   query: SilentPrayerListUrlQuery = {}
@@ -132,6 +162,20 @@ export function buildPublicSilentPrayerJoinUrl(
   );
 }
 
+export function buildPublicSilentPrayerHeartbeatUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildPublicSilentPrayerPresenceActionUrl(id, "heartbeat", baseUrl);
+}
+
+export function buildPublicSilentPrayerLeaveUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildPublicSilentPrayerPresenceActionUrl(id, "leave", baseUrl);
+}
+
 export function buildBrotherSilentPrayerSessionsUrl(
   baseUrl = DEFAULT_PUBLIC_API_BASE_URL,
   query: SilentPrayerListUrlQuery = {}
@@ -151,6 +195,20 @@ export function buildBrotherSilentPrayerJoinUrl(
     `brother/silent-prayer-events/${encodeURIComponent(id)}/join`,
     baseUrl
   );
+}
+
+export function buildBrotherSilentPrayerHeartbeatUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildBrotherSilentPrayerPresenceActionUrl(id, "heartbeat", baseUrl);
+}
+
+export function buildBrotherSilentPrayerLeaveUrl(
+  id: string,
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildBrotherSilentPrayerPresenceActionUrl(id, "leave", baseUrl);
 }
 
 export function silentPrayerAnonymousSessionId(seed = Date.now()): string {
@@ -186,4 +244,57 @@ export class BrotherSilentPrayerHttpError extends Error {
   ) {
     super(`Brother silent-prayer request failed with HTTP ${status}.`);
   }
+}
+
+async function requestPublicSilentPrayerPresenceAction(
+  options: PublicSilentPrayerPresenceActionOptions,
+  action: "heartbeat" | "leave"
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  const response = await requestPublicJsonMobileApi<SilentPrayerFetchResponse>(
+    buildPublicSilentPrayerPresenceActionUrl(options.id, action, options.baseUrl),
+    options.fetchImpl,
+    JSON.stringify({
+      anonymousSessionId: options.anonymousSessionId,
+      eventId: options.id
+    }),
+    (status) => new PublicSilentPrayerHttpError(status)
+  );
+
+  return silentPrayerPresenceActionResponseSchema.parse(await response.json());
+}
+
+async function requestBrotherSilentPrayerPresenceAction(
+  options: BrotherSilentPrayerPresenceActionOptions,
+  action: "heartbeat" | "leave"
+): Promise<SilentPrayerPresenceActionResponseDto> {
+  const response = await requestPrivateJsonMobileApi<SilentPrayerFetchResponse>(
+    buildBrotherSilentPrayerPresenceActionUrl(options.id, action, options.baseUrl),
+    options,
+    JSON.stringify({ eventId: options.id }),
+    (status, code) => new BrotherSilentPrayerHttpError(status, code)
+  );
+
+  return silentPrayerPresenceActionResponseSchema.parse(await response.json());
+}
+
+function buildPublicSilentPrayerPresenceActionUrl(
+  id: string,
+  action: "heartbeat" | "leave",
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildMobileApiUrl(
+    `public/silent-prayer-events/${encodeURIComponent(id)}/${action}`,
+    baseUrl
+  );
+}
+
+function buildBrotherSilentPrayerPresenceActionUrl(
+  id: string,
+  action: "heartbeat" | "leave",
+  baseUrl = DEFAULT_PUBLIC_API_BASE_URL
+): string {
+  return buildMobileApiUrl(
+    `brother/silent-prayer-events/${encodeURIComponent(id)}/${action}`,
+    baseUrl
+  );
 }

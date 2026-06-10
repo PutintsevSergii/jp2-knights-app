@@ -19,6 +19,7 @@
     "lint": "nx run-many -t lint --all",
     "typecheck": "nx run-many -t typecheck --all",
     "test": "nx run-many -t test --all",
+    "test:firebase-rules": "node tools/firebase/run-database-rules-tests.mjs",
     "test:coverage": "vitest run --coverage",
     "build": "nx run-many -t build --all",
     "smoke:launch": "node tools/scripts/launch-smoke.mjs",
@@ -31,11 +32,13 @@
     "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm smoke:launch && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.1",
     "@eslint/js": "10.0.1",
     "@nestjs/testing": "11.1.19",
     "@types/node": "25.6.0",
     "@vitest/coverage-v8": "4.1.5",
     "eslint": "10.2.1",
+    "firebase-tools": "14.24.2",
     "nx": "22.7.1",
     "prettier": "3.8.3",
     "typescript": "6.0.3",
@@ -57,5 +60,11 @@
     "rxjs": "7.8.2",
     "socket.io": "4.8.1",
     "zod": "4.4.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@google-cloud/cloud-sql-connector": "1.3.3",
+      "universal-analytics": "0.5.3"
+    }
   }
 }

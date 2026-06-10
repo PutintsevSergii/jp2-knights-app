@@ -11,6 +11,10 @@ import { AdminSilentPrayerService } from "./admin-silent-prayer.service.js";
 import { SilentPrayerPresenceService } from "./silent-prayer-presence.service.js";
 import { createConfiguredSilentPrayerPresenceStore } from "./silent-prayer-presence.store.js";
 import { SilentPrayerPresenceStore } from "./silent-prayer-presence.types.js";
+import {
+  createConfiguredSilentPrayerRealtimePublisher,
+  SilentPrayerRealtimePublisher
+} from "./silent-prayer-realtime.publisher.js";
 import { SilentPrayerGateway } from "./silent-prayer.gateway.js";
 import {
   BrotherSilentPrayerController,
@@ -38,6 +42,10 @@ import { SilentPrayerService } from "./silent-prayer.service.js";
     {
       provide: SilentPrayerPresenceStore,
       useFactory: createConfiguredSilentPrayerPresenceStore
+    },
+    {
+      provide: SilentPrayerRealtimePublisher,
+      useFactory: createConfiguredSilentPrayerRealtimePublisher
     },
     {
       provide: SilentPrayerRepository,
