@@ -72,7 +72,9 @@ prisma_startup_retry_delay_ms = 1000
 - Terraform state must not contain plaintext application secrets.
 - Terraform may create Secret Manager resources and IAM bindings.
 - Secret versions should be added outside Terraform or through a secured CI
-  process that does not commit values.
+  process that does not commit values. Use
+  [secret-version-runbook.md](secret-version-runbook.md) for the safe manual
+  flow.
 - Use remote state only after project policy is agreed. For the first pilot,
   local state may be acceptable if access is controlled and backed up.
 
@@ -101,6 +103,10 @@ prisma_startup_retry_delay_ms = 1000
   Cloud SQL, RTDB, Firebase Auth, Secret Manager, or push providers.
 - Production migrations run only in the Cloud Run migration job before service
   traffic moves to the new revision.
+- Cloud SQL runtime verification is documented in
+  [cloud-sql-runtime-checklist.md](cloud-sql-runtime-checklist.md), including
+  migration job logs, API revision startup logs, shallow `/api/health`, and
+  pool/cost review.
 
 ## Rollback Model
 
@@ -131,9 +137,19 @@ The third Terraform milestone now adds Firebase RTDB provisioning/import wiring:
 `google-beta` provider support, Firebase project enablement/import target,
 Realtime Database instance management, API `FIREBASE_DATABASE_URL` wiring from
 the Terraform-managed database URL, RTDB URL/name outputs, and documented
-Firebase CLI rules deployment. The next Terraform/deployment milestone should
-add deploy scripts, backup/restore procedure, launch smoke checklist, and domain
-mapping if the owner has confirmed the project/domain choices.
+Firebase CLI rules deployment.
+
+The fourth deployment milestone now adds dry-run-first Cloud Run build, push,
+migration, service-update, and smoke commands through
+`tools/deploy/cloud-run-deploy.mjs`, plus
+[backup-restore-runbook.md](backup-restore-runbook.md) and
+[launch-smoke-checklist.md](launch-smoke-checklist.md).
+
+The fifth deployment milestone now adds
+[domain-and-dns-runbook.md](domain-and-dns-runbook.md) plus
+`tools/deploy/domain-validate.mjs` for dry-run-first custom-domain validation.
+Live domain mapping remains manual or future Terraform work until the owner
+confirms project/domain choices and DNS provider policy.
 
 Do not implement a Memorystore module for live pilot infrastructure. Implement
 and verify the Firebase RTDB silent-prayer migration plan in

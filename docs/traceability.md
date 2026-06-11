@@ -9,7 +9,7 @@ Use this document to:
 - Find the expected implementation surface for any V1 feature
 - Report progress to stakeholders (update the narrative below each phase completion)
 
-**Last Updated**: June 11, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, API-owned public/candidate/brother normalized today modules with local fallback plus configurable cached/retried HTTP liturgical provider boundary, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, native-device RTDB validation preflight command and pilot checklist, Cloud Run/Cloud SQL Prisma pool/retry/shutdown hardening with shallow health readiness and Cloud Run Job migration docs, Phase 13 API/Admin production Dockerfiles and local container smoke scaffolding, Terraform foundation for Google API enablement, service accounts, Artifact Registry, Secret Manager shells, placeholder Cloud Run services, Cloud SQL PostgreSQL, Cloud Run Prisma migration job, Firebase RTDB provisioning/import wiring, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
+**Last Updated**: June 11, 2026 (Phases 0–9, Phase 11, and Phase 12 privacy/audit/content-approval hardening complete; Phase 10A/10B remains in progress; Google Stitch public mobile screen alignment across Home/About/Prayer Library/Public Events/Join Request, role-aware main-screen redesign planning with liturgical-day and guest-attendable event modules, API-owned public/candidate/brother normalized today modules with local fallback plus configurable cached/retried HTTP liturgical provider boundary, fixed four-tab public bottom navigation with Join only on anonymous guest Home, Stitch Ecclesia token palette, audit-log filtering/pagination with exact filtered totals, sensitive-key/name redaction, and shared action catalog, candidate request/profile/roadmap export-erasure retention buckets and centralized workflow metadata, Admin Lite Super Admin privacy action metadata and workflow overview for candidate request/profile/roadmap submission export-erasure, candidate profile subject export local access, formation assignment lifecycle history, and own event participation intent lifecycle metadata, device-token revocation, Admin Lite content editor approval-before-publish workflow with approval/publish actor metadata, backend publish guards that reject legacy published-without-approval rows, published approval-retention guards, Admin Lite remediation warning copy, formalized V1 content approval workflow, bounded V1 legal/privacy operation set, Admin Lite silent-prayer workflow, Google Cloud launch planning, Firebase Realtime Database silent-prayer live-provider plan, API-owned public/brother silent-prayer REST heartbeat/leave contracts, mobile provider-neutral RTDB aggregate-count listener support, API Firebase Admin RTDB presence/publisher support with hashed participant keys and private read grants, deny-by-default RTDB rules baseline, Firebase RTDB emulator rules tests for aggregate public/private count access and denied client writes, native-device RTDB validation preflight command and pilot checklist, Cloud Run/Cloud SQL Prisma pool/retry/shutdown hardening with shallow health readiness and Cloud Run Job migration docs, Phase 13 API/Admin production Dockerfiles and local container smoke scaffolding, Terraform foundation for Google API enablement, service accounts, Artifact Registry, Secret Manager shells, placeholder Cloud Run services, Cloud SQL PostgreSQL, Cloud Run Prisma migration job, Firebase RTDB provisioning/import wiring, dry-run-first Cloud Run deploy helper, backup/restore runbook, launch smoke checklist, custom-domain/DNS runbook and validation helper, auth cookie/CORS/redirect checklist, support/rollback runbook, pilot launch approval record template, Secret Manager version runbook, Cloud SQL runtime checklist, deployment operator handoff runbook, no Redis/Memorystore live infrastructure decision, and product/API scope wording aligned)
 
 ---
 
@@ -884,6 +884,63 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   `FIREBASE_DATABASE_URL` from the Terraform-managed database URL, outputs the
   RTDB URL/name, documents import commands for owner-created Firebase resources,
   and keeps RTDB Security Rules deployment as an explicit Firebase CLI step.
+- Phase 13 fourth deployment-readiness milestone now adds a dry-run-first Cloud
+  Run deploy helper at `tools/deploy/cloud-run-deploy.mjs`, exposed through
+  `pnpm deploy:cloud-run` and `pnpm deploy:cloud-run:plan`. It plans or executes
+  API/Admin image builds, Artifact Registry pushes, the Cloud Run Prisma
+  migration job, API/Admin Cloud Run service updates, and deployed API/Admin
+  HTTP smoke checks without storing secret values. Deployment docs now also
+  include a non-production Cloud SQL backup/restore runbook and a final launch
+  smoke checklist for guest, Idle, candidate, brother, silent-prayer RTDB, and
+  Admin Lite flows.
+- Phase 13 fifth deployment-readiness milestone now adds
+  `docs/deployment/domain-and-dns-runbook.md` and
+  `tools/deploy/domain-validate.mjs`, exposed through `pnpm deploy:domains`
+  and `pnpm deploy:domains:plan`. The helper prints a non-mutating validation
+  plan by default and, with `check --execute`, validates HTTPS URLs, DNS
+  resolution, API `/api/health`, Admin `/admin/dashboard`, and Firebase
+  auth-domain shape. Actual DNS updates, Firebase authorized-domain changes,
+  and certificate provisioning remain owner-controlled live steps.
+- Phase 13 sixth deployment-readiness milestone now adds
+  `docs/deployment/auth-cookie-cors-checklist.md`, covering Firebase
+  authorized-domain review, `jp2_session` production cookie attributes, Admin
+  Lite server-side cookie forwarding, logout clearing, unauthenticated private
+  API rejection, no wildcard credentialed REST CORS, and Firebase RTDB
+  aggregate-only realtime validation.
+- Phase 13 seventh deployment-readiness milestone now adds
+  `docs/deployment/support-and-rollback-runbook.md`, covering launch support
+  incident intake, privacy/security severity triggers, Cloud Run revision
+  inspection, traffic rollback commands, database/data-safety rules, and
+  post-rollback privacy checks. The runbook explicitly avoids destructive
+  production database rollback and keeps Super Admin privacy workflows in the
+  rollback validation surface.
+- Phase 13 eighth deployment-readiness milestone now adds
+  `docs/deployment/pilot-launch-approval-record.md`, a generic evidence and
+  approval template for the final pilot decision. It records quality gates,
+  Terraform/migration/domain/auth/restore/smoke evidence, product/privacy
+  approvals, known-good rollback revisions, and go/no-go status without
+  committing owner-specific values, secrets, raw cookies, provider tokens, or
+  private participant/candidate/brother data.
+- Phase 13 ninth deployment-readiness milestone now adds
+  `docs/deployment/secret-version-runbook.md`, covering Secret Manager version
+  creation, metadata-only verification, redeploy-after-secret-change flow,
+  rotation, disabling/destroying old versions, exposure response, and launch
+  gates without committing values or storing plaintext in Terraform state.
+- Phase 13 tenth deployment-readiness milestone now adds
+  `docs/deployment/cloud-sql-runtime-checklist.md`, covering migration job
+  execution evidence, Cloud Run job/revision log inspection, API startup DB
+  connectivity, Prisma pool settings, shallow `/api/health` validation,
+  Cloud SQL connection/cost review, and rollback/failure handling without
+  logging database URLs, secrets, or private candidate/brother data.
+- Phase 13 eleventh deployment-readiness milestone now adds
+  `docs/deployment/deployment-operator-handoff.md`, an ordered operator handoff
+  across quality checks, dry-run deployment planning, image build/push,
+  Terraform apply, Secret Manager versions, Firebase RTDB rules, migration job
+  execution, Cloud Run revision deploys, domain/auth validation, launch smoke,
+  support/rollback handoff, and final pilot approval evidence. It defines stop
+  conditions and safe evidence rules without authorizing out-of-scope features,
+  destructive production database rollback, secret-value logging, or private
+  participant/candidate/brother data capture.
 - Next planned live-realtime slice: run native-device validation for
   public/brother RTDB aggregate counts before live Terraform apply. Owner direction on
   June 3, 2026 excludes Redis/Memorystore from live pilot and production

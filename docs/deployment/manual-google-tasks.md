@@ -63,6 +63,9 @@ Rules:
   throwaway test environment.
 - Do not commit `.env.production` or service-account JSON files.
 - Prefer `gcloud secrets versions add` or CI secret injection.
+- Follow the
+  [secret version runbook](secret-version-runbook.md) for metadata-only
+  verification, redeploy, rotation, and exposure response.
 
 ## Pilot Launch Approval
 
@@ -75,4 +78,7 @@ Before pilot traffic is allowed:
 5. Run backup restore test in non-production.
 6. Run Guest, Idle, Candidate, Brother, Officer, and Super Admin smoke flows.
 7. Confirm rollback procedure.
-8. Approve launch in writing.
+8. Fill the
+   [pilot launch approval record](pilot-launch-approval-record.md) in the
+   launch ticket or release notes without committing owner-specific values.
+9. Approve launch in writing.

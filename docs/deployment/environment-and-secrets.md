@@ -3,6 +3,8 @@
 This document defines the deployment configuration needed for Google Cloud.
 Secret values must never be committed. Terraform should create secret shells;
 secret versions should be set through a secure manual or CI-controlled process.
+See [secret-version-runbook.md](secret-version-runbook.md) for safe version
+creation, metadata-only verification, redeploy, rotation, and incident handling.
 
 ## Environments
 

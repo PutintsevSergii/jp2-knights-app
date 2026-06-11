@@ -131,8 +131,18 @@ Current repo baseline:
   owner-created Firebase import commands, generated RTDB URL output, API
   `FIREBASE_DATABASE_URL` wiring from Terraform, and explicit Firebase CLI rules
   deployment guidance
-- intentionally pending: deploy scripts, custom domains, backup/restore, launch
-  smoke checklist, and live apply
+- implemented fourth milestone: dry-run-first Cloud Run build/push/migrate/deploy
+  helper, backup/restore runbook, and launch smoke checklist
+- implemented fifth milestone: custom-domain/DNS runbook and dry-run-first
+  validation helper
+- implemented sixth milestone: auth cookie, CORS, and redirect-domain checklist
+- implemented seventh milestone: support/rollback runbook
+- implemented eighth milestone: pilot launch approval evidence template
+- implemented ninth milestone: Secret Manager version and rotation runbook
+- implemented tenth milestone: Cloud SQL runtime verification checklist
+- implemented eleventh milestone: deployment operator handoff sequence
+- intentionally pending: owner DNS changes, custom-domain live validation, and
+  live apply
 
 Agent deliverables:
 
@@ -163,7 +173,8 @@ Exit criteria:
 
 Agent deliverables:
 
-- Add scripts or documented commands to set secret versions.
+- Secret-version setup and rotation runbook:
+  [secret-version-runbook.md](secret-version-runbook.md).
 - Wire Cloud Run services to Secret Manager.
 - Document Firebase web/mobile config variables.
 
@@ -184,12 +195,19 @@ Exit criteria:
 
 Agent deliverables:
 
-- Build and push scripts for API/Admin images.
-- Cloud Run service revision deployment commands or CI pipeline.
-- Cloud Run migration job execution command.
-- Smoke test commands for API, Admin, auth, public content, and silent prayer.
-- Cloud SQL connection/pool smoke checks using the deployed API revision logs and
-  migration job result, while keeping `/api/health` shallow.
+- Maintain the dry-run-first Cloud Run deploy helper:
+  `tools/deploy/cloud-run-deploy.mjs`.
+- Build and push API/Admin images through `pnpm deploy:cloud-run build --execute`
+  and `pnpm deploy:cloud-run push --execute`.
+- Run the Cloud Run migration job through
+  `pnpm deploy:cloud-run migrate --execute`.
+- Update API/Admin Cloud Run revisions through
+  `pnpm deploy:cloud-run deploy --execute`.
+- Run deployed HTTP smoke checks through `pnpm deploy:cloud-run smoke`.
+- Cloud SQL connection/pool smoke checks:
+  [cloud-sql-runtime-checklist.md](cloud-sql-runtime-checklist.md).
+- Deployment operator handoff sequence:
+  [deployment-operator-handoff.md](deployment-operator-handoff.md).
 
 Human tasks:
 
@@ -206,9 +224,11 @@ Exit criteria:
 
 Agent deliverables:
 
-- Custom-domain setup instructions.
-- Cookie, CORS, and redirect-domain validation checklist.
-- Smoke checks for custom domains.
+- Custom-domain setup instructions:
+  [domain-and-dns-runbook.md](domain-and-dns-runbook.md).
+- Cookie, CORS, and redirect-domain validation checklist:
+  [auth-cookie-cors-checklist.md](auth-cookie-cors-checklist.md).
+- Smoke checks for custom domains through `pnpm deploy:domains check --execute`.
 
 Human tasks:
 
@@ -226,15 +246,25 @@ Exit criteria:
 
 Agent deliverables:
 
-- Backup and restore test procedure.
-- Support runbook.
-- Rollback procedure.
-- Final scenario smoke checklist.
+- Backup and restore test procedure:
+  [backup-restore-runbook.md](backup-restore-runbook.md).
+- Support runbook:
+  [support-and-rollback-runbook.md](support-and-rollback-runbook.md).
+- Rollback procedure:
+  [support-and-rollback-runbook.md](support-and-rollback-runbook.md#rollback-procedure).
+- Final scenario smoke checklist:
+  [launch-smoke-checklist.md](launch-smoke-checklist.md).
+- Pilot launch approval record:
+  [pilot-launch-approval-record.md](pilot-launch-approval-record.md).
+- Ordered deployment operator handoff:
+  [deployment-operator-handoff.md](deployment-operator-handoff.md).
 
 Human tasks:
 
 - Run restore test in non-production.
 - Approve official content, privacy wording, and pilot seed data.
+- Fill the pilot launch approval record in the launch ticket or release notes
+  without committing owner-specific values.
 - Approve pilot launch.
 
 Exit criteria:

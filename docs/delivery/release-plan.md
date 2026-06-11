@@ -21,9 +21,11 @@
 9. OpenAPI/client contract generation passes in CI.
 10. Mobile, admin, and API launch from documented commands.
 11. Demo mode is disabled or impossible in pilot production builds.
-12. Google Cloud deployment plan, environment/secrets matrix, Terraform plan,
-    and manual owner tasks are complete for the selected pilot environment.
-13. Human owner approves pilot launch.
+12. Google Cloud deployment plan, operator handoff, environment/secrets matrix,
+    Terraform plan, and manual owner tasks are complete for the selected pilot
+    environment.
+13. Human owner approves pilot launch with the evidence template in
+    [deployment/pilot-launch-approval-record.md](../deployment/pilot-launch-approval-record.md).
 
 ## Launch-Readiness Wrap-Up
 
@@ -36,6 +38,8 @@ Before pilot launch, perform a final wrap-up pass:
 - verify production configuration rejects `demo` mode;
 - verify Google Cloud deployment prerequisites in
   [deployment/google-cloud-launch-plan.md](../deployment/google-cloud-launch-plan.md);
+- follow the ordered operator handoff in
+  [deployment/deployment-operator-handoff.md](../deployment/deployment-operator-handoff.md);
 - update root README run commands and support runbooks.
 
 ## Rollback
