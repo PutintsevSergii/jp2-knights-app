@@ -18,6 +18,10 @@ export {
   type CandidateAnnouncementsScreen
 } from "./candidate-announcements-screen.js";
 export {
+  buildCandidateAnnouncementDetailScreen,
+  type CandidateAnnouncementDetailScreen
+} from "./candidate-announcement-detail-screen.js";
+export {
   buildCandidateEventDetailScreen,
   type CandidateEventDetailScreen
 } from "./candidate-event-detail-screen.js";

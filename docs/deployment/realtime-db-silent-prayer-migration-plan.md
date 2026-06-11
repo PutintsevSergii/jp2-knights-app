@@ -345,8 +345,11 @@ pnpm validate:mobile-rtdb-native -- --platform android
 The preflight checks that mobile is in `api` runtime mode, the mobile realtime
 provider is `firebase-rtdb`, Firebase client RTDB values are present, the API
 base URL is HTTPS and device-reachable rather than localhost, and native
-Google/Firebase sign-in has the platform OAuth client id plus app scheme needed
-for the brother validation path. It does not print secret or credential values.
+Google/Firebase sign-in has the platform OAuth client id, app scheme, and
+Firebase-registered native bundle/package identifier needed for the brother
+validation path. `apps/mobile/app.config.js` maps the same scheme and native
+identifier environment values into Expo config. The command does not print
+secret or credential values.
 
 Native-device validation still requires a real configured target. Passing the
 preflight alone does not prove RTDB behavior; it only prevents known-bad

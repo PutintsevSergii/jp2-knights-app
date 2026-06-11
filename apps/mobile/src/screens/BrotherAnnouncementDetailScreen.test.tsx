@@ -1,73 +1,55 @@
 import { describe, expect, it, vi } from "vitest";
 import { fallbackBrotherAnnouncements } from "../brother-companion.js";
-import { buildBrotherAnnouncementsScreen } from "../brother-screens.js";
-import { BrotherAnnouncementsScreen } from "./BrotherAnnouncementsScreen.js";
+import { buildBrotherAnnouncementDetailScreen } from "../brother-screens.js";
+import { BrotherAnnouncementDetailScreen } from "./BrotherAnnouncementDetailScreen.js";
 
-describe("BrotherAnnouncementsScreen", () => {
-  it("renders Figma-style one-way announcement cards and forwards navigation actions", () => {
+describe("BrotherAnnouncementDetailScreen", () => {
+  it("renders a one-way brother announcement detail and forwards navigation actions", () => {
     const onAction = vi.fn();
-    const screen = buildBrotherAnnouncementsScreen({
+    const screen = buildBrotherAnnouncementDetailScreen({
       state: "ready",
       response: fallbackBrotherAnnouncements,
+      selectedAnnouncementId: fallbackBrotherAnnouncements.announcements[0]!.id,
       runtimeMode: "api"
     });
-    const element = BrotherAnnouncementsScreen({ screen, onAction });
+    const element = BrotherAnnouncementDetailScreen({ screen, onAction });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Brother Announcements")).toBe(true);
-    expect(findText(element, "1 brother-visible announcement")).toBe(true);
     expect(findText(element, "Brother Formation Notice")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(true);
+    expect(findText(element, "Pinned announcement")).toBe(true);
     expect(findText(element, "May 7, 2026, 12:00")).toBe(true);
     expect(findText(element, "One-way announcement")).toBe(true);
     expect(JSON.stringify(element)).not.toMatch(
-      /chat|comment|read receipt|delivery|participants|roster|candidate/i
+      /candidate|roster|participant|chat|comment|read receipt|delivery/i
     );
 
-    findPressableByLabel(element, "View Brother Formation Notice")?.props.onPress?.();
+    findPressableByLabel(element, "Brother Announcements")?.props.onPress?.();
     findPressableByLabel(element, "Home")?.props.onPress?.();
-    findPressableByLabel(element, "Events")?.props.onPress?.();
-    findPressableByLabel(element, "Prayer")?.props.onPress?.();
-    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
-      id: "view-announcement-detail",
-      label: "View Details",
-      targetRoute: "BrotherAnnouncementDetail",
-      targetId: fallbackBrotherAnnouncements.announcements[0]!.id
+      id: "announcements",
+      label: "Brother Announcements",
+      targetRoute: "BrotherAnnouncements"
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "today",
       label: "Home",
       targetRoute: "BrotherToday"
     });
-    expect(onAction).toHaveBeenNthCalledWith(3, {
-      id: "events",
-      label: "Events",
-      targetRoute: "BrotherEvents"
-    });
-    expect(onAction).toHaveBeenNthCalledWith(4, {
-      id: "prayers",
-      label: "Prayer",
-      targetRoute: "BrotherPrayers"
-    });
-    expect(onAction).toHaveBeenNthCalledWith(5, {
-      id: "profile",
-      label: "Profile",
-      targetRoute: "BrotherProfile"
-    });
   });
 
-  it("renders non-ready state copy without announcement cards", () => {
-    const screen = buildBrotherAnnouncementsScreen({
-      state: "offline",
+  it("renders empty state when the announcement is not available", () => {
+    const screen = buildBrotherAnnouncementDetailScreen({
+      state: "ready",
+      response: fallbackBrotherAnnouncements,
+      selectedAnnouncementId: "00000000-0000-4000-8000-000000000000",
       runtimeMode: "api"
     });
-    const element = BrotherAnnouncementsScreen({ screen });
+    const element = BrotherAnnouncementDetailScreen({ screen });
 
-    expect(findText(element, "Offline")).toBe(true);
-    expect(findText(element, "Reconnect to refresh brother announcements.")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(false);
+    expect(findText(element, "Brother Announcement")).toBe(true);
+    expect(findText(element, "This brother-visible announcement is not available.")).toBe(true);
+    expect(findText(element, "One-way announcement")).toBe(false);
   });
 });
 

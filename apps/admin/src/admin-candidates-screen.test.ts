@@ -43,7 +43,15 @@ describe("admin candidate screens", () => {
     expect(screen.fields.find((field) => field.name === "responsibleOfficerId")?.readOnly).toBe(
       false
     );
-    expect(screen.actions.map((action) => action.id)).toEqual(["save", "refresh"]);
+    expect(screen.actions.map((action) => action.id)).toEqual([
+      "save",
+      "convertToBrother",
+      "refresh"
+    ]);
+    expect(screen.actions.find((action) => action.id === "convertToBrother")).toMatchObject({
+      requestMethod: "POST",
+      requestPath: `admin/candidates/${candidateProfile.id}/convert-to-brother`
+    });
   });
 
   it("adds Super Admin privacy actions only when explicitly allowed", () => {
@@ -67,6 +75,7 @@ describe("admin candidate screens", () => {
 
     expect(superAdminScreen.actions.map((action) => action.id)).toEqual([
       "save",
+      "convertToBrother",
       "export",
       "erase",
       "refresh"

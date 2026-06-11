@@ -9,7 +9,8 @@ export type AdminCandidateActionId =
   | "activate"
   | "archive"
   | "export"
-  | "erase";
+  | "erase"
+  | "convertToBrother";
 
 export interface AdminCandidateAction {
   id: AdminCandidateActionId;

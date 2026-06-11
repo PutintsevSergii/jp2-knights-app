@@ -8,6 +8,7 @@ import {
 } from "./candidate-dashboard.js";
 import { fallbackCandidateRoadmap } from "./roadmap.js";
 import {
+  buildCandidateAnnouncementDetailScreen,
   buildCandidateAnnouncementsScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
@@ -177,7 +178,13 @@ describe("mobile candidate screen models", () => {
         title: "Candidate Formation Update",
         body: "The next candidate formation note is available from your responsible officer.",
         publishedLabel: "May 7, 2026, 12:00",
-        pinned: true
+        pinned: true,
+        detailAction: {
+          id: "view-announcement-detail",
+          label: "View Details",
+          targetRoute: "CandidateAnnouncementDetail",
+          targetId: fallbackCandidateAnnouncements.announcements[0]!.id
+        }
       }
     ]);
     expect(screen.sections).toEqual([
@@ -189,12 +196,81 @@ describe("mobile candidate screen models", () => {
     expect(screen.sections[0]?.body).toContain("responsible officer");
     expect(screen.actions).toEqual([
       {
+        id: "open-first-announcement",
+        label: "Open first announcement",
+        targetRoute: "CandidateAnnouncementDetail",
+        targetId: fallbackCandidateAnnouncements.announcements[0]!.id
+      },
+      {
         id: "dashboard",
         label: "Dashboard",
         targetRoute: "CandidateDashboard"
       }
     ]);
     expect(JSON.stringify(screen)).not.toMatch(/brother|membership|degree/i);
+  });
+
+  it("builds candidate announcement detail from the authorized list payload only", () => {
+    const screen = buildCandidateAnnouncementDetailScreen({
+      state: "ready",
+      response: fallbackCandidateAnnouncements,
+      selectedAnnouncementId: fallbackCandidateAnnouncements.announcements[0]!.id,
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateAnnouncementDetail",
+      state: "ready",
+      title: "Candidate Formation Update",
+      body: "The next candidate formation note is available from your responsible officer.",
+      publishedLabel: "May 7, 2026, 12:00",
+      pinned: true,
+      demoChromeVisible: false
+    });
+    expect(screen.sections).toEqual([
+      {
+        id: "announcement-detail",
+        title: "Pinned announcement",
+        body: "The next candidate formation note is available from your responsible officer."
+      },
+      {
+        id: "announcement-published",
+        title: "Published",
+        body: "May 7, 2026, 12:00"
+      }
+    ]);
+    expect(screen.actions).toEqual([
+      {
+        id: "announcements",
+        label: "Candidate Announcements",
+        targetRoute: "CandidateAnnouncements"
+      },
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        targetRoute: "CandidateDashboard"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(
+      /brother|membership|degree|chat|comment|read receipt|delivery|participant/i
+    );
+  });
+
+  it("fails candidate announcement detail closed when the id is not in the scoped list", () => {
+    const screen = buildCandidateAnnouncementDetailScreen({
+      state: "ready",
+      response: fallbackCandidateAnnouncements,
+      selectedAnnouncementId: "00000000-0000-4000-8000-000000000000",
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateAnnouncementDetail",
+      state: "empty",
+      title: "Candidate Announcement",
+      body: "This candidate-visible announcement is not available.",
+      sections: []
+    });
   });
 
   it("builds plan-to-attend action when the candidate has no active intent", () => {

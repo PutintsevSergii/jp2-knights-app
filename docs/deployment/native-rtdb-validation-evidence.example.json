@@ -1,0 +1,41 @@
+{
+  "platform": "ios",
+  "preflightPassed": true,
+  "validatedAt": "2026-06-11T12:00:00.000Z",
+  "apiBaseUrl": "https://api.pilot.example.test/api",
+  "firebaseProjectId": "jp2-pilot",
+  "deviceTarget": "physical iPhone or native simulator label",
+  "scenarios": [
+    {
+      "id": "guest-public-count",
+      "status": "passed",
+      "evidence": [
+        "Public silent-prayer list route loaded through API with HTTP 200.",
+        "Guest join used REST heartbeat endpoint and RTDB public aggregate count changed 0 -> 1 -> 0."
+      ]
+    },
+    {
+      "id": "brother-private-count",
+      "status": "passed",
+      "evidence": [
+        "Brother sign-in resolved through API session and brother silent-prayer list loaded with HTTP 200.",
+        "Brother join used REST heartbeat endpoint and RTDB private aggregate count changed 0 -> 1 -> 0 with API-issued read grant."
+      ]
+    },
+    {
+      "id": "privacy-denial",
+      "status": "passed",
+      "evidence": [
+        "Client reads/writes outside aggregate count paths were denied by RTDB rules.",
+        "No participant, session, user, roster, or prayer-history data was visible to the app."
+      ]
+    },
+    {
+      "id": "leave-cleanup",
+      "status": "passed",
+      "evidence": [
+        "Leaving the screen unsubscribed the listener, sent REST leave, and aggregate count decremented after leave or expiry."
+      ]
+    }
+  ]
+}

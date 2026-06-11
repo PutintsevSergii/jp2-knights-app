@@ -33,10 +33,12 @@ export function validateMobileRtdbNativeEnv({
   expectRequired(env, issues, "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID");
 
   if (resolvedPlatform === "ios") {
+    expectRequired(env, issues, "EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER");
     expectRequired(env, issues, "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID");
   }
 
   if (resolvedPlatform === "android") {
+    expectRequired(env, issues, "EXPO_PUBLIC_ANDROID_PACKAGE");
     expectRequired(env, issues, "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID");
   }
 
@@ -66,6 +68,7 @@ export function formatNativeRtdbValidationReport(result) {
     "Next native-device validation steps:",
     "- Start the API with SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb and the matching Firebase Admin RTDB values.",
     "- Start Expo on a physical device or native simulator using this environment.",
+    "- Confirm the Expo app scheme and native bundle/package identifier match the Firebase app registration.",
     "- As a guest, join a public silent-prayer session and confirm the aggregate count updates from RTDB.",
     "- Sign in as a brother, join a brother-visible silent-prayer session, and confirm only the aggregate private count updates.",
     "- Confirm the client cannot read presence, grant, participant, anonymous-session, or user-id paths."

@@ -18,6 +18,7 @@ import {
 } from "./candidate-dashboard.js";
 import {
   buildCandidateAnnouncementsScreen,
+  buildCandidateAnnouncementDetailScreen,
   buildCandidateDashboardScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
@@ -32,6 +33,7 @@ import {
 import { fetchCandidateRoadmap, roadmapLoadFailureState } from "./roadmap-api.js";
 import { fallbackCandidateRoadmap } from "./roadmap.js";
 import { CandidateAnnouncementsScreen } from "./screens/CandidateAnnouncementsScreen.js";
+import { CandidateAnnouncementDetailScreen } from "./screens/CandidateAnnouncementDetailScreen.js";
 import { CandidateEventDetailScreen } from "./screens/CandidateEventDetailScreen.js";
 import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
@@ -52,6 +54,9 @@ export function MobileCandidateSurface({
   onRouteChange
 }: MobileCandidateSurfaceProps) {
   const [selectedCandidateEventId, setSelectedCandidateEventId] = useState<string | undefined>();
+  const [selectedCandidateAnnouncementId, setSelectedCandidateAnnouncementId] = useState<
+    string | undefined
+  >();
   const candidateDashboard = usePrivateRouteResource({
     route,
     activeRoute: "CandidateDashboard",
@@ -84,7 +89,10 @@ export function MobileCandidateSurface({
   });
   const candidateAnnouncements = usePrivateRouteResource({
     route,
-    activeRoute: "CandidateAnnouncements",
+    activeRoute:
+      route === "CandidateAnnouncementDetail"
+        ? "CandidateAnnouncementDetail"
+        : "CandidateAnnouncements",
     runtimeMode,
     authToken,
     initialApiState: "empty",
@@ -205,6 +213,15 @@ export function MobileCandidateSurface({
       }
     }
 
+    if (nextRoute === "CandidateAnnouncementDetail") {
+      setSelectedCandidateAnnouncementId(targetId);
+
+      if (runtimeMode === "demo") {
+        candidateAnnouncements.setData(fallbackCandidateAnnouncements);
+        candidateAnnouncements.setState(targetId ? "ready" : "empty");
+      }
+    }
+
     onRouteChange(nextRoute);
   }
 
@@ -231,6 +248,24 @@ export function MobileCandidateSurface({
         screen={buildCandidateAnnouncementsScreen({
           state: candidateAnnouncements.state,
           response: candidateAnnouncements.data,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isCandidateRoute(action.targetRoute)) {
+            void handleCandidateRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "CandidateAnnouncementDetail") {
+    return (
+      <CandidateAnnouncementDetailScreen
+        screen={buildCandidateAnnouncementDetailScreen({
+          state: candidateAnnouncements.state,
+          response: candidateAnnouncements.data,
+          selectedAnnouncementId: selectedCandidateAnnouncementId,
           runtimeMode
         })}
         onAction={(action) => {

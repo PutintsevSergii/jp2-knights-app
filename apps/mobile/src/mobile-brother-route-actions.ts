@@ -5,7 +5,8 @@ import type {
   BrotherSilentPrayerJoinResponseDto,
   BrotherSilentPrayerListResponseDto,
   MyOrganizationUnitsResponseDto,
-  BrotherEventDetailResponseDto
+  BrotherEventDetailResponseDto,
+  BrotherAnnouncementListResponseDto
 } from "@jp2/shared-validation";
 import {
   cancelBrotherEventParticipation,
@@ -13,6 +14,7 @@ import {
 } from "./brother-companion-api.js";
 import {
   fallbackBrotherEventDetail,
+  fallbackBrotherAnnouncements,
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
 import type { BrotherRoute } from "./brother-screens.js";
@@ -56,11 +58,13 @@ export interface UseBrotherRouteActionsOptions {
   onRouteChange: (route: BrotherRoute) => void;
   setSelectedOrganizationUnitId: (id: string | undefined) => void;
   setSelectedBrotherEventId: (id: string | undefined) => void;
+  setSelectedBrotherAnnouncementId: (id: string | undefined) => void;
   setBrotherSilentPrayerJoin: Dispatch<
     SetStateAction<BrotherSilentPrayerJoinResponseDto | undefined>
   >;
   brotherSilentPrayerRealtime: MutableRefObject<SilentPrayerRealtimeSession | null>;
   myOrganizationUnits: PrivateRouteResource<MyOrganizationUnitsResponseDto>;
+  brotherAnnouncements: PrivateRouteResource<BrotherAnnouncementListResponseDto>;
   brotherRoadmap: PrivateRouteResource<AssignedRoadmapResponseDto>;
   brotherSilentPrayer: PrivateRouteResource<BrotherSilentPrayerListResponseDto>;
   brotherEventDetail: PrivateRouteResource<BrotherEventDetailResponseDto>;
@@ -108,6 +112,15 @@ export function useBrotherRouteActions(options: UseBrotherRouteActionsOptions) {
 
     if (nextRoute === "BrotherEventDetail") {
       await openBrotherEventDetail(targetId, actionId);
+    }
+
+    if (nextRoute === "BrotherAnnouncementDetail") {
+      options.setSelectedBrotherAnnouncementId(targetId);
+
+      if (options.runtimeMode === "demo") {
+        options.brotherAnnouncements.setData(fallbackBrotherAnnouncements);
+        options.brotherAnnouncements.setState(targetId ? "ready" : "empty");
+      }
     }
 
     if (nextRoute === "OrganizationUnitDetail") {

@@ -8,11 +8,14 @@ import type {
   AdminCandidateProfileIdentityAccessReviewExportDto,
   AdminCandidateProfileListResponseDto,
   AdminCandidateProfileMembershipExportDto,
+  AdminCandidateProfileBrotherConversionResponseDto,
+  AdminCandidateProfileBrotherMembershipDto,
   AdminCandidateProfileOfficerAssignmentExportDto,
   AdminCandidateProfileProviderAccountExportDto,
   AdminCandidateProfileRoadmapAssignmentExportDto,
   AdminCandidateProfileSummaryDto,
   AdminCandidateProfileUserRoleExportDto,
+  ConvertCandidateProfileToBrotherDto,
   UpdateAdminCandidateProfileDto
 } from "@jp2/shared-validation";
 
@@ -25,6 +28,7 @@ export type AdminCandidateProfileUserRoleExport = AdminCandidateProfileUserRoleE
 export type AdminCandidateProfileIdentityAccessReviewExport =
   AdminCandidateProfileIdentityAccessReviewExportDto;
 export type AdminCandidateProfileMembershipExport = AdminCandidateProfileMembershipExportDto;
+export type AdminCandidateProfileBrotherMembership = AdminCandidateProfileBrotherMembershipDto;
 export type AdminCandidateProfileOfficerAssignmentExport =
   AdminCandidateProfileOfficerAssignmentExportDto;
 export type AdminCandidateProfileRoadmapAssignmentExport =
@@ -35,4 +39,7 @@ export type AdminCandidateProfileListResponse = AdminCandidateProfileListRespons
 export type AdminCandidateProfileDetailResponse = AdminCandidateProfileDetailResponseDto;
 export type AdminCandidateProfileExportResponse = AdminCandidateProfileExportResponseDto;
 export type AdminCandidateProfileErasureResponse = AdminCandidateProfileErasureResponseDto;
+export type AdminCandidateProfileBrotherConversionResponse =
+  AdminCandidateProfileBrotherConversionResponseDto;
 export type UpdateAdminCandidateProfile = UpdateAdminCandidateProfileDto;
+export type ConvertCandidateProfileToBrother = ConvertCandidateProfileToBrotherDto;

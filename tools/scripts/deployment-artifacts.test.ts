@@ -41,9 +41,13 @@ describe("Phase 13 deployment artifacts", () => {
     const approvalRecord = await read("docs/deployment/pilot-launch-approval-record.md");
     const supportRunbook = await read("docs/deployment/support-and-rollback-runbook.md");
     const operatorHandoff = await read("docs/deployment/deployment-operator-handoff.md");
+    const nativeRtdbEvidence = await read("docs/deployment/native-rtdb-validation-evidence.example.json");
     const deploymentReadme = await read("docs/deployment/README.md");
     const terraformReadme = await read("infra/terraform/README.md");
     const domainScript = await read("tools/deploy/domain-validate.mjs");
+    const mobileExpoConfig = await read("apps/mobile/app.config.js");
+    const packageJson = await read("package.json");
+    const evidenceScript = await read("tools/scripts/validate-mobile-rtdb-evidence.mjs");
 
     expect(backupRunbook).toContain("Non-Production Restore Test");
     expect(backupRunbook).toContain("gcloud sql backups list");
@@ -94,6 +98,23 @@ describe("Phase 13 deployment artifacts", () => {
     expect(operatorHandoff).toContain("Do not record secret values");
     expect(operatorHandoff).toContain("Owner/operator-owned during live launch");
     expect(operatorHandoff).not.toMatch(/DATABASE_URL=.*:|FIREBASE_SERVICE_ACCOUNT_JSON=.*\{/);
+    expect(nativeRtdbEvidence).toContain('"guest-public-count"');
+    expect(nativeRtdbEvidence).toContain('"brother-private-count"');
+    expect(nativeRtdbEvidence).toContain('"privacy-denial"');
+    expect(nativeRtdbEvidence).toContain('"leave-cleanup"');
+    expect(nativeRtdbEvidence).not.toMatch(/DATABASE_URL=.*:|FIREBASE_SERVICE_ACCOUNT_JSON=.*\{/);
+    expect(packageJson).toContain(
+      '"validate:mobile-rtdb-evidence": "node tools/scripts/validate-mobile-rtdb-evidence.mjs"'
+    );
+    expect(evidenceScript).toContain("guest-public-count");
+    expect(evidenceScript).toContain("brother-private-count");
+    expect(evidenceScript).toContain("privacy-denial");
+    expect(evidenceScript).toContain("leave-cleanup");
+    expect(evidenceScript).toContain("Evidence must not include secret, token, cookie");
+    expect(mobileExpoConfig).toContain("EXPO_PUBLIC_APP_SCHEME");
+    expect(mobileExpoConfig).toContain("EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER");
+    expect(mobileExpoConfig).toContain("bundleIdentifier");
+    expect(mobileExpoConfig).toContain("EXPO_PUBLIC_ANDROID_PACKAGE");
     expect(domainScript).toContain("Domain validation checks require --execute");
     expect(domainScript).toContain("lookup(url.hostname)");
     expect(domainScript).toContain("/api/health");

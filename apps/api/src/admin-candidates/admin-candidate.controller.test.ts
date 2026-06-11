@@ -75,6 +75,32 @@ describe("AdminCandidateController", () => {
           archivedAt: "2026-06-01T17:05:00.000Z"
         });
       },
+      convertCandidateProfileToBrother: (
+        receivedPrincipal: CurrentUserPrincipal,
+        id: string,
+        body: { joinedAt?: string; currentDegree?: string | null }
+      ) => {
+        expect(receivedPrincipal).toBe(principal);
+        expect(id).toBe(candidateProfile.id);
+        expect(body).toEqual({ joinedAt: "2026-06-11" });
+        return Promise.resolve({
+          candidateProfile: {
+            ...candidateProfile,
+            status: "converted_to_brother"
+          },
+          membership: {
+            id: "34343434-3434-4343-8343-343434343434",
+            userId: candidateProfile.userId,
+            organizationUnitId: candidateProfile.assignedOrganizationUnitId ?? "",
+            status: "active",
+            currentDegree: null,
+            joinedAt: "2026-06-11",
+            createdAt: "2026-06-11T07:00:00.000Z",
+            updatedAt: "2026-06-11T07:00:00.000Z",
+            archivedAt: null
+          }
+        });
+      },
       updateCandidateProfile: (
         receivedPrincipal: CurrentUserPrincipal,
         id: string,
@@ -126,6 +152,17 @@ describe("AdminCandidateController", () => {
       }
     );
     await expect(
+      controller.convertCandidateProfileToBrother({ principal }, candidateProfile.id, {
+        joinedAt: "2026-06-11"
+      })
+    ).resolves.toMatchObject({
+      candidateProfile: { status: "converted_to_brother" },
+      membership: {
+        organizationUnitId: candidateProfile.assignedOrganizationUnitId,
+        status: "active"
+      }
+    });
+    await expect(
       controller.updateCandidateProfile({ principal }, candidateProfile.id, { status: "paused" })
     ).resolves.toMatchObject({
       candidateProfile: { status: "paused" }
@@ -145,6 +182,9 @@ describe("AdminCandidateController", () => {
     expect(() => controller.eraseCandidateProfile({}, candidateProfile.id)).toThrow(
       "CurrentUserGuard"
     );
+    expect(() =>
+      controller.convertCandidateProfileToBrother({}, candidateProfile.id, {})
+    ).toThrow("CurrentUserGuard");
     expect(() =>
       controller.updateCandidateProfile({}, candidateProfile.id, { status: "paused" })
     ).toThrow("CurrentUserGuard");

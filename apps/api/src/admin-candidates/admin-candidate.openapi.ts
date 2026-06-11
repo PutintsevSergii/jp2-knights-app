@@ -344,6 +344,51 @@ export const adminCandidateProfileErasureResponseOpenApiSchema = {
   }
 };
 
+export const adminCandidateProfileBrotherMembershipOpenApiSchema = {
+  type: "object",
+  required: [
+    "id",
+    "userId",
+    "organizationUnitId",
+    "status",
+    "currentDegree",
+    "joinedAt",
+    "createdAt",
+    "updatedAt",
+    "archivedAt"
+  ],
+  additionalProperties: false,
+  properties: {
+    id: { type: "string", format: "uuid" },
+    userId: { type: "string", format: "uuid" },
+    organizationUnitId: { type: "string", format: "uuid" },
+    status: { type: "string", enum: ["active", "archived", "inactive"] },
+    currentDegree: { type: "string", nullable: true, minLength: 1, maxLength: 120 },
+    joinedAt: { type: "string", nullable: true, format: "date" },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+    archivedAt: { type: "string", nullable: true, format: "date-time" }
+  }
+};
+
+export const convertCandidateProfileToBrotherOpenApiSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    joinedAt: { type: "string", format: "date" },
+    currentDegree: { type: "string", nullable: true, minLength: 1, maxLength: 120 }
+  }
+};
+
+export const adminCandidateProfileBrotherConversionResponseOpenApiSchema = {
+  type: "object",
+  required: ["candidateProfile", "membership"],
+  properties: {
+    candidateProfile: adminCandidateProfileOpenApiSchema,
+    membership: adminCandidateProfileBrotherMembershipOpenApiSchema
+  }
+};
+
 export const updateAdminCandidateProfileOpenApiSchema = {
   type: "object",
   minProperties: 1,

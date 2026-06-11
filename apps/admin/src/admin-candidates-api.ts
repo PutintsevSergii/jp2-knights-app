@@ -1,12 +1,15 @@
 import {
   adminCandidateProfileDetailResponseSchema,
+  adminCandidateProfileBrotherConversionResponseSchema,
   adminCandidateProfileErasureResponseSchema,
   adminCandidateProfileExportResponseSchema,
   adminCandidateProfileListResponseSchema,
+  type AdminCandidateProfileBrotherConversionResponseDto,
   type AdminCandidateProfileDetailResponseDto,
   type AdminCandidateProfileErasureResponseDto,
   type AdminCandidateProfileExportResponseDto,
   type AdminCandidateProfileListResponseDto,
+  type ConvertCandidateProfileToBrotherDto,
   type UpdateAdminCandidateProfileDto
 } from "@jp2/shared-validation";
 import { adminPrivacyWorkflowOperationPath } from "@jp2/shared-types";
@@ -52,6 +55,19 @@ export async function eraseAdminCandidateProfile(
   );
 
   return adminCandidateProfileErasureResponseSchema.parse(await response.json());
+}
+
+export async function convertAdminCandidateProfileToBrother(
+  id: string,
+  data: ConvertCandidateProfileToBrotherDto,
+  options: AdminContentRequestOptions = {}
+): Promise<AdminCandidateProfileBrotherConversionResponseDto> {
+  const response = await requestAdminApi(`admin/candidates/${id}/convert-to-brother`, options, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  return adminCandidateProfileBrotherConversionResponseSchema.parse(await response.json());
 }
 
 export async function updateAdminCandidateProfile(

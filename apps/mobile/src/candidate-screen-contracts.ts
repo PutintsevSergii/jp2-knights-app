@@ -8,6 +8,7 @@ export type CandidateRoute =
   | "CandidateRoadmap"
   | "CandidateEvents"
   | "CandidateAnnouncements"
+  | "CandidateAnnouncementDetail"
   | "CandidateEventDetail";
 
 export interface CandidateScreenAction {
@@ -76,14 +77,20 @@ export function candidateEventCountBody(count: number): string {
 }
 
 export function candidateStateCopy(
-  screen: "dashboard" | "events" | "announcements" | "eventDetail" | "roadmap",
+  screen:
+    | "dashboard"
+    | "events"
+    | "announcements"
+    | "announcementDetail"
+    | "eventDetail"
+    | "roadmap",
   state: MobileScreenState
 ): { title: string; body: string } {
   return candidateStateCopies[screen][state];
 }
 
 const candidateStateCopies: Record<
-  "dashboard" | "events" | "announcements" | "eventDetail" | "roadmap",
+  "dashboard" | "events" | "announcements" | "announcementDetail" | "eventDetail" | "roadmap",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   dashboard: {
@@ -174,6 +181,36 @@ const candidateStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh candidate announcements."
+    }
+  },
+  announcementDetail: {
+    ready: {
+      title: "Candidate Announcement",
+      body: "Candidate announcement detail is available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Candidate announcement detail is loading."
+    },
+    empty: {
+      title: "Candidate Announcement",
+      body: "This candidate-visible announcement is not available."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Candidate announcement detail could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active candidate profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before candidate announcements are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh candidate announcement detail."
     }
   },
   eventDetail: {

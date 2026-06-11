@@ -60,39 +60,52 @@ them, defines stop conditions, and lists evidence that is safe to record.
    - Confirm aggregate public/private count reads and denied client writes using
      the emulator tests or the owner-approved Firebase project validation path.
 
-7. Run the Cloud Run migration job.
+7. Run native RTDB validation and evidence checks.
+   - Run `pnpm validate:mobile-rtdb-native -- --platform ios` or
+     `pnpm validate:mobile-rtdb-native -- --platform android` with the same
+     environment used by the native target.
+   - Complete the guest public count, brother private count, privacy-denial,
+     and leave/cleanup checks from
+     `docs/delivery/pilot-validation-plan.md`.
+   - Copy `docs/deployment/native-rtdb-validation-evidence.example.json` to a
+     local uncommitted evidence file, fill sanitized metadata only, and run
+     `pnpm validate:mobile-rtdb-evidence -- --file <local-evidence-file>`.
+   - Record only route names, HTTP status codes, aggregate count transitions,
+     and pass/fail summaries.
+
+8. Run the Cloud Run migration job.
    - Run `pnpm deploy:cloud-run migrate --execute`.
    - Follow `docs/deployment/cloud-sql-runtime-checklist.md` for execution
-     evidence, logs, Prisma pool settings, and `/api/health`.
+   evidence, logs, Prisma pool settings, and `/api/health`.
    - Record execution IDs and success/failure status only.
 
-8. Deploy API/Admin revisions and HTTP smoke checks.
+9. Deploy API/Admin revisions and HTTP smoke checks.
    - Run `pnpm deploy:cloud-run deploy --execute`.
    - Run `pnpm deploy:cloud-run smoke --execute`.
    - Confirm API `/api/health` and Admin `/admin/dashboard` without recording
-     cookies or tokens.
+   cookies or tokens.
 
-9. Validate custom domains, DNS, cookies, CORS, and redirects.
+10. Validate custom domains, DNS, cookies, CORS, and redirects.
    - Follow `docs/deployment/domain-and-dns-runbook.md`.
    - Run `pnpm deploy:domains check --execute`.
    - Follow `docs/deployment/auth-cookie-cors-checklist.md`.
    - Confirm Firebase authorized domains, `jp2_session` cookie attributes,
-     Admin Lite server-side cookie forwarding, logout clearing, and no wildcard
-     credentialed REST CORS.
+   Admin Lite server-side cookie forwarding, logout clearing, and no wildcard
+   credentialed REST CORS.
 
-10. Run the launch smoke checklist.
+11. Run the launch smoke checklist.
     - Follow `docs/deployment/launch-smoke-checklist.md`.
     - Cover Guest/Public, Idle approval, Candidate, Brother, silent-prayer RTDB,
       Admin Lite, production demo rejection, and rollback-decision checks.
     - Record only aggregate counts, route names, HTTP status codes, and sanitized
       screenshots or notes.
 
-11. Prepare support and rollback handoff.
+12. Prepare support and rollback handoff.
     - Follow `docs/deployment/support-and-rollback-runbook.md`.
     - Record known-good API/Admin revision names, rollback commands, incident
       channels, owner contacts, and privacy/security escalation rules.
 
-12. Complete the pilot approval record.
+13. Complete the pilot approval record.
     - Fill the launch ticket or release note copy of
       `docs/deployment/pilot-launch-approval-record.md`.
     - The owner must explicitly choose `GO`, `GO WITH EXCEPTION`, or `NO-GO`.
@@ -118,6 +131,8 @@ Stop the launch and move to rollback or owner review when any of these occur:
   fails.
 - Silent-prayer validation exposes participant lists or user/session/socket-room
   identifiers instead of aggregate counts only.
+- Native RTDB evidence validation fails or the evidence requires recording raw
+  cookies, tokens, secret values, private identifiers, rosters, or raw logs.
 - Officer access leaks outside the scoped chorągiew or Super Admin privacy
   workflows become visible to non-Super Admin users.
 
@@ -126,8 +141,8 @@ Stop the launch and move to rollback or owner review when any of these occur:
 Safe evidence:
 
 - Command names, timestamps, revision names, image digests, job execution IDs,
-  HTTP status codes, sanitized route names, aggregate count values, and owner
-  approval decisions.
+  HTTP status codes, sanitized route names, aggregate count transitions, native
+  platform labels, Firebase project ids, and owner approval decisions.
 
 Unsafe evidence:
 

@@ -1,6 +1,6 @@
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
-import type { BrotherAnnouncementsScreen as BrotherAnnouncementsScreenModel } from "../brother-screens.js";
+import type { BrotherAnnouncementDetailScreen as BrotherAnnouncementDetailScreenModel } from "../brother-screens.js";
 import type { BrotherScreenAction } from "../brother-screen-contracts.js";
 import { BrotherBottomNav } from "./shared/BrotherBottomNav.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
@@ -8,12 +8,15 @@ import { MegaphoneIcon } from "./shared/MegaphoneIcon.js";
 import { MobileTopBar } from "./shared/MobileTopBar.js";
 import { ScreenStatePanel } from "./shared/ScreenStatePanel.js";
 
-export interface BrotherAnnouncementsScreenProps {
-  screen: BrotherAnnouncementsScreenModel;
+export interface BrotherAnnouncementDetailScreenProps {
+  screen: BrotherAnnouncementDetailScreenModel;
   onAction?: (action: BrotherScreenAction) => void;
 }
 
-export function BrotherAnnouncementsScreen({ screen, onAction }: BrotherAnnouncementsScreenProps) {
+export function BrotherAnnouncementDetailScreen({
+  screen,
+  onAction
+}: BrotherAnnouncementDetailScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
@@ -26,49 +29,39 @@ export function BrotherAnnouncementsScreen({ screen, onAction }: BrotherAnnounce
             </View>
           ) : null}
 
-          <View style={styles.hero}>
-            <View style={styles.heroIcon}>
-              <MegaphoneIcon emphasized={screen.announcementCards.some((card) => card.pinned)} />
-            </View>
-            <View style={styles.heroCopy}>
-              <Text style={styles.title}>{screen.title}</Text>
-              <Text style={styles.subtitle}>{screen.body}</Text>
-            </View>
-          </View>
-
           {screen.state === "ready" ? (
-            <View style={styles.cardStack}>
-              {screen.announcementCards.map((announcement) => (
-                <View
-                  key={announcement.id}
-                  style={[styles.card, announcement.pinned ? styles.pinnedCard : null]}
-                >
-                  <View style={styles.cardHeader}>
-                    <View style={styles.cardIcon}>
-                      <MegaphoneIcon emphasized={announcement.pinned} />
-                    </View>
-                    <View style={styles.cardTitleGroup}>
-                      <Text style={styles.cardTitle}>{announcement.title}</Text>
-                      <Text style={styles.cardDate}>{announcement.publishedLabel}</Text>
-                    </View>
-                    {announcement.pinned ? (
-                      <View style={styles.pinBadge}>
-                        <Text style={styles.pinBadgeText}>Pinned</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={styles.cardBody}>{announcement.body}</Text>
-                  <Text style={styles.privacyText}>One-way announcement</Text>
+            <View style={[styles.detailCard, screen.pinned ? styles.pinnedCard : null]}>
+              <View style={styles.headerRow}>
+                <View style={styles.iconWrap}>
+                  <MegaphoneIcon emphasized={screen.pinned} />
+                </View>
+                <View style={styles.titleGroup}>
+                  <Text style={styles.eyebrow}>
+                    {screen.pinned ? "Pinned announcement" : "Announcement"}
+                  </Text>
+                  <Text style={styles.title}>{screen.title}</Text>
+                  {screen.publishedLabel ? (
+                    <Text style={styles.date}>{screen.publishedLabel}</Text>
+                  ) : null}
+                </View>
+              </View>
+
+              <Text style={styles.body}>{screen.body}</Text>
+              <Text style={styles.privacyText}>One-way announcement</Text>
+
+              <View style={styles.actionRow}>
+                {screen.actions.map((action) => (
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={`View ${announcement.title}`}
-                    onPress={() => onAction?.(announcement.detailAction)}
-                    style={styles.detailButton}
+                    accessibilityLabel={action.label}
+                    key={action.id}
+                    onPress={() => onAction?.(action)}
+                    style={styles.actionButton}
                   >
-                    <Text style={styles.detailButtonText}>{announcement.detailAction.label}</Text>
+                    <Text style={styles.actionButtonText}>{action.label}</Text>
                   </Pressable>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
           ) : (
             <View style={styles.statePanelOffset}>
@@ -107,49 +100,12 @@ const styles = StyleSheet.create({
   bannerOffset: {
     alignSelf: "flex-start"
   },
-  hero: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: designTokens.space[4]
-  },
-  heroIcon: {
-    alignItems: "center",
+  detailCard: {
     backgroundColor: colors.background.surface,
     borderColor: colors.border.subtle,
     borderRadius: designTokens.radius.md,
     borderWidth: 1,
-    height: 48,
-    justifyContent: "center",
-    width: 48
-  },
-  heroCopy: {
-    flex: 1,
-    gap: designTokens.space[1]
-  },
-  title: {
-    color: colors.text.primary,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.screenTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    letterSpacing: 0,
-    lineHeight: designTokens.typography.lineHeight.screenTitle
-  },
-  subtitle: {
-    color: colors.brand.brown,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.body,
-    fontWeight: designTokens.typography.weight.regular,
-    lineHeight: designTokens.typography.lineHeight.body
-  },
-  cardStack: {
-    gap: designTokens.space[4]
-  },
-  card: {
-    backgroundColor: colors.background.surface,
-    borderColor: colors.border.subtle,
-    borderRadius: designTokens.radius.md,
-    borderWidth: 1,
-    gap: designTokens.space[3],
+    gap: designTokens.space[4],
     padding: designTokens.space[6],
     shadowColor: designTokens.elevation.subtle.color,
     shadowOffset: {
@@ -163,52 +119,47 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.status.danger,
     borderLeftWidth: 4
   },
-  cardHeader: {
+  headerRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: designTokens.space[3]
+    gap: designTokens.space[4]
   },
-  cardIcon: {
+  iconWrap: {
     alignItems: "center",
     backgroundColor: colors.brand.linen,
-    borderRadius: designTokens.radius.sm,
-    height: 40,
+    borderRadius: designTokens.radius.md,
+    height: 48,
     justifyContent: "center",
-    width: 40
+    width: 48
   },
-  cardTitleGroup: {
+  titleGroup: {
     flex: 1,
     gap: designTokens.space[1]
   },
-  cardTitle: {
-    color: colors.text.primary,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.cardTitle,
-    fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.cardTitle
-  },
-  cardDate: {
+  eyebrow: {
     color: colors.text.subdued,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    fontWeight: designTokens.typography.weight.medium,
-    lineHeight: designTokens.typography.lineHeight.label
-  },
-  pinBadge: {
-    backgroundColor: colors.brand.gold,
-    borderRadius: designTokens.radius.sm,
-    paddingHorizontal: designTokens.space[2],
-    paddingVertical: designTokens.space[1]
-  },
-  pinBadgeText: {
-    color: colors.brand.goldDeep,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
     letterSpacing: 0,
     lineHeight: designTokens.typography.lineHeight.label
   },
-  cardBody: {
+  title: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.screenTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    letterSpacing: 0,
+    lineHeight: designTokens.typography.lineHeight.screenTitle
+  },
+  date: {
+    color: colors.text.subdued,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.medium,
+    lineHeight: designTokens.typography.lineHeight.label
+  },
+  body: {
     color: colors.brand.brown,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.body,
@@ -222,14 +173,18 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.medium,
     lineHeight: designTokens.typography.lineHeight.label
   },
-  detailButton: {
-    alignSelf: "flex-start",
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: designTokens.space[3]
+  },
+  actionButton: {
     backgroundColor: colors.action.secondary,
     borderRadius: designTokens.radius.sm,
     paddingHorizontal: designTokens.space[3],
     paddingVertical: designTokens.space[2]
   },
-  detailButtonText: {
+  actionButtonText: {
     color: colors.action.secondaryText,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,

@@ -72,6 +72,7 @@ pnpm deploy:cloud-run smoke
 
 ## Silent Prayer RTDB Smoke
 
+- Native-device RTDB preflight passes for the selected platform.
 - Firebase RTDB rules are deployed before enabling live RTDB use.
 - Guest public aggregate count can be read from the allowed public count path.
 - Brother private aggregate count requires an API-issued Firebase UID grant.
@@ -79,6 +80,9 @@ pnpm deploy:cloud-run smoke
 - Client writes to public counts, private counts, presence rows, and read grants
   are denied.
 - REST heartbeat/leave keeps participant identity out of responses.
+- Sanitized native RTDB evidence passes
+  `pnpm validate:mobile-rtdb-evidence -- --file <local-evidence-file>` before it
+  is attached to the launch ticket.
 
 ## Admin Lite Smoke
 

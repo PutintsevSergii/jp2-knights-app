@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { AdminContentHttpError } from "./admin-content-api.js";
 import { fallbackAdminCandidateProfiles } from "./admin-content-fixtures.js";
 import {
+  convertAdminCandidateProfileToBrother,
   eraseAdminCandidateProfile,
   exportAdminCandidateProfile,
   fetchAdminCandidateProfile,
@@ -172,6 +173,30 @@ describe("admin candidate API client", () => {
           })
       })
     );
+    const convertFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            candidateProfile: {
+              ...candidateProfile,
+              status: "converted_to_brother"
+            },
+            membership: {
+              id: "34343434-3434-4343-8343-343434343434",
+              userId: candidateProfile.userId,
+              organizationUnitId: candidateProfile.assignedOrganizationUnitId,
+              status: "active",
+              currentDegree: null,
+              joinedAt: "2026-06-11",
+              createdAt: "2026-06-11T07:00:00.000Z",
+              updatedAt: "2026-06-11T07:00:00.000Z",
+              archivedAt: null
+            }
+          })
+      })
+    );
 
     await expect(
       fetchAdminCandidateProfiles({
@@ -237,6 +262,31 @@ describe("admin candidate API client", () => {
       {
         method: "POST",
         headers: { authorization: "Bearer token_1" }
+      }
+    );
+    await expect(
+      convertAdminCandidateProfileToBrother(
+        candidateProfile.id,
+        { joinedAt: "2026-06-11" },
+        {
+          baseUrl: "https://api.example.test",
+          authToken: "token_1",
+          fetchImpl: convertFetch
+        }
+      )
+    ).resolves.toMatchObject({
+      candidateProfile: { status: "converted_to_brother" },
+      membership: { status: "active", joinedAt: "2026-06-11" }
+    });
+    expect(convertFetch).toHaveBeenCalledWith(
+      `https://api.example.test/admin/candidates/${candidateProfile.id}/convert-to-brother`,
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer token_1",
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({ joinedAt: "2026-06-11" })
       }
     );
   });

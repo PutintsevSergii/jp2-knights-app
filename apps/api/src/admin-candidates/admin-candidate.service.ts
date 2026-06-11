@@ -11,10 +11,12 @@ import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { AdminCandidateRepository } from "./admin-candidate.repository.js";
 import type {
   AdminCandidateProfileDetail,
+  AdminCandidateProfileBrotherConversionResponse,
   AdminCandidateProfileDetailResponse,
   AdminCandidateProfileErasureResponse,
   AdminCandidateProfileExportResponse,
   AdminCandidateProfileListResponse,
+  ConvertCandidateProfileToBrother,
   UpdateAdminCandidateProfile
 } from "./admin-candidate.types.js";
 
@@ -208,6 +210,62 @@ export class AdminCandidateService {
 
     return { candidateProfile };
   }
+
+  async convertCandidateProfileToBrother(
+    principal: CurrentUserPrincipal,
+    id: string,
+    data: ConvertCandidateProfileToBrother
+  ): Promise<AdminCandidateProfileBrotherConversionResponse> {
+    assertCanReadCandidates(principal);
+    const scopeOrganizationUnitIds = adminScopeFor(principal);
+    const beforeCandidateProfile = await this.candidateRepository.findCandidateProfile(
+      id,
+      scopeOrganizationUnitIds
+    );
+
+    if (!beforeCandidateProfile) {
+      throw new NotFoundException("Candidate profile was not found in the current admin scope.");
+    }
+
+    if (beforeCandidateProfile.status === "converted_to_brother") {
+      throw new ConflictException("Candidate profile has already been converted to brother.");
+    }
+
+    if (beforeCandidateProfile.status === "archived") {
+      throw new ConflictException("Archived candidate profiles cannot be converted to brother.");
+    }
+
+    if (!beforeCandidateProfile.assignedOrganizationUnitId) {
+      throw new ConflictException(
+        "Candidate profile must be assigned to an organization unit before conversion."
+      );
+    }
+
+    const convertedAt = new Date();
+    const conversion = await this.candidateRepository.convertCandidateProfileToBrother(
+      id,
+      data,
+      principal.id,
+      convertedAt,
+      scopeOrganizationUnitIds
+    );
+
+    if (!conversion) {
+      throw new NotFoundException("Candidate profile was not found in the current admin scope.");
+    }
+
+    await this.auditLog.record({
+      action: "admin.candidateProfile.convertToBrother",
+      actorUserId: principal.id,
+      entityType: "candidate_profile",
+      entityId: conversion.candidateProfile.id,
+      scopeOrganizationUnitId: conversion.candidateProfile.assignedOrganizationUnitId,
+      beforeSummary: summarizeCandidateProfileForAudit(beforeCandidateProfile),
+      afterSummary: summarizeCandidateProfileBrotherConversionForAudit(conversion)
+    });
+
+    return conversion;
+  }
 }
 
 function assertCanReadCandidates(principal: CurrentUserPrincipal): void {
@@ -308,5 +366,23 @@ function summarizeCandidateProfileErasureAfterAudit(
     archived: Boolean(candidateProfile.archivedAt),
     erasedPersonalData: true,
     revokedCandidateAccess: true
+  };
+}
+
+function summarizeCandidateProfileBrotherConversionForAudit(
+  conversion: AdminCandidateProfileBrotherConversionResponse
+): AuditSummary {
+  return {
+    candidateProfileId: conversion.candidateProfile.id,
+    userId: conversion.candidateProfile.userId,
+    candidateRequestId: conversion.candidateProfile.candidateRequestId,
+    assignedOrganizationUnitId: conversion.candidateProfile.assignedOrganizationUnitId,
+    responsibleOfficerId: conversion.candidateProfile.responsibleOfficerId,
+    status: conversion.candidateProfile.status,
+    membershipId: conversion.membership.id,
+    membershipOrganizationUnitId: conversion.membership.organizationUnitId,
+    membershipStatus: conversion.membership.status,
+    candidateAccessRevoked: true,
+    brotherAccessGranted: true
   };
 }

@@ -84,6 +84,17 @@ function buildDetailActions(
   }
 
   if (canWrite && profile.status !== "converted_to_brother") {
+    if (profile.assignedOrganizationUnitId && profile.status !== "archived") {
+      actions.unshift({
+        id: "convertToBrother",
+        label: "Convert to Brother",
+        targetRoute: "AdminCandidateDetail",
+        targetId: profile.id,
+        requestMethod: "POST",
+        requestPath: `admin/candidates/${profile.id}/convert-to-brother`
+      });
+    }
+
     actions.unshift({
       id: "save",
       label: "Save Candidate",

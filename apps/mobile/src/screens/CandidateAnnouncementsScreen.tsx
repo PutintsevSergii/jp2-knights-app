@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { designTokens } from "@jp2/shared-design-tokens";
 import type { CandidateAnnouncementsScreen as CandidateAnnouncementsScreenModel } from "../candidate-screens.js";
 import type { CandidateScreenAction } from "../candidate-screen-contracts.js";
@@ -61,6 +61,14 @@ export function CandidateAnnouncementsScreen({
                     ) : null}
                   </View>
                   <Text style={styles.cardBody}>{announcement.body}</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`View ${announcement.title}`}
+                    onPress={() => onAction?.(announcement.detailAction)}
+                    style={styles.detailButton}
+                  >
+                    <Text style={styles.detailButtonText}>{announcement.detailAction.label}</Text>
+                  </Pressable>
                 </View>
               ))}
             </View>
@@ -208,6 +216,21 @@ const styles = StyleSheet.create({
     fontSize: designTokens.typography.size.body,
     fontWeight: designTokens.typography.weight.regular,
     lineHeight: designTokens.typography.lineHeight.body
+  },
+  detailButton: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.action.secondary,
+    borderRadius: designTokens.radius.sm,
+    paddingHorizontal: designTokens.space[3],
+    paddingVertical: designTokens.space[2]
+  },
+  detailButtonText: {
+    color: colors.action.secondaryText,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    letterSpacing: 0,
+    lineHeight: designTokens.typography.lineHeight.label
   },
   statePanelOffset: {
     paddingTop: designTokens.space[8]

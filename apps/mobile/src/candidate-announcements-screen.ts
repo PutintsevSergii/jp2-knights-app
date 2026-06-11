@@ -17,6 +17,7 @@ export interface CandidateAnnouncementCard {
   body: string;
   publishedLabel: string;
   pinned: boolean;
+  detailAction: CandidateScreenAction;
 }
 
 export interface CandidateAnnouncementsScreen {
@@ -56,6 +57,12 @@ export function buildCandidateAnnouncementsScreen(options: {
       body: candidateAnnouncementBody(announcement)
     })),
     actions: [
+      {
+        id: "open-first-announcement",
+        label: "Open first announcement",
+        targetRoute: "CandidateAnnouncementDetail",
+        targetId: options.response.announcements[0]?.id
+      },
       {
         id: "dashboard",
         label: "Dashboard",
@@ -106,7 +113,13 @@ function buildCandidateAnnouncementCard(
     title: announcement.title,
     body: announcement.body,
     publishedLabel: formatAnnouncementPublishedAt(announcement.publishedAt),
-    pinned: announcement.pinned
+    pinned: announcement.pinned,
+    detailAction: {
+      id: "view-announcement-detail",
+      label: "View Details",
+      targetRoute: "CandidateAnnouncementDetail",
+      targetId: announcement.id
+    }
   };
 }
 

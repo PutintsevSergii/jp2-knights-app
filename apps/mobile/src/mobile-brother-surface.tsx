@@ -21,6 +21,7 @@ import {
   fallbackMyOrganizationUnits
 } from "./brother-companion.js";
 import {
+  buildBrotherAnnouncementDetailScreen,
   buildBrotherAnnouncementsScreen,
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
@@ -47,15 +48,16 @@ import { fallbackBrotherSilentPrayerSessions } from "./silent-prayer.js";
 import type { SilentPrayerRealtimeSession } from "./silent-prayer-socket.js";
 import { useBrotherRouteActions } from "./mobile-brother-route-actions.js";
 import { BrotherAnnouncementsScreen } from "./screens/BrotherAnnouncementsScreen.js";
+import { BrotherAnnouncementDetailScreen } from "./screens/BrotherAnnouncementDetailScreen.js";
 import { BrotherEventDetailScreen } from "./screens/BrotherEventDetailScreen.js";
 import { BrotherEventsScreen } from "./screens/BrotherEventsScreen.js";
+import { BrotherProfileScreen } from "./screens/BrotherProfileScreen.js";
 import { BrotherPrayersScreen } from "./screens/BrotherPrayersScreen.js";
 import { BrotherRoadmapScreen } from "./screens/BrotherRoadmapScreen.js";
 import { BrotherSilentPrayerScreen } from "./screens/BrotherSilentPrayerScreen.js";
 import { BrotherTodayScreen } from "./screens/BrotherTodayScreen.js";
 import { MyOrganizationUnitsScreen } from "./screens/MyOrganizationUnitsScreen.js";
 import { OrganizationUnitDetailScreen } from "./screens/OrganizationUnitDetailScreen.js";
-import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
 
 export interface MobileBrotherSurfaceProps {
   route: BrotherRoute;
@@ -76,6 +78,9 @@ export function MobileBrotherSurface({
     () => fallbackMyOrganizationUnits.organizationUnits[0]?.id
   );
   const [selectedBrotherEventId, setSelectedBrotherEventId] = useState<string | undefined>();
+  const [selectedBrotherAnnouncementId, setSelectedBrotherAnnouncementId] = useState<
+    string | undefined
+  >();
   const [brotherSilentPrayerJoin, setBrotherSilentPrayerJoin] = useState<
     BrotherSilentPrayerJoinResponseDto | undefined
   >();
@@ -143,7 +148,8 @@ export function MobileBrotherSurface({
   });
   const brotherAnnouncements = usePrivateRouteResource({
     route,
-    activeRoute: "BrotherAnnouncements",
+    activeRoute:
+      route === "BrotherAnnouncementDetail" ? "BrotherAnnouncementDetail" : "BrotherAnnouncements",
     runtimeMode,
     authToken,
     initialApiState: "empty",
@@ -219,7 +225,7 @@ export function MobileBrotherSurface({
     failureState: brotherCompanionLoadFailureState
   });
 
-  const { handleBrotherAction, handlePrivateContentAction } = useBrotherRouteActions({
+  const { handleBrotherAction } = useBrotherRouteActions({
     route,
     runtimeMode,
     publicApiBaseUrl,
@@ -227,9 +233,11 @@ export function MobileBrotherSurface({
     onRouteChange,
     setSelectedOrganizationUnitId,
     setSelectedBrotherEventId,
+    setSelectedBrotherAnnouncementId,
     setBrotherSilentPrayerJoin,
     brotherSilentPrayerRealtime,
     myOrganizationUnits,
+    brotherAnnouncements,
     brotherRoadmap,
     brotherSilentPrayer,
     brotherEventDetail
@@ -237,13 +245,13 @@ export function MobileBrotherSurface({
 
   if (route === "BrotherProfile") {
     return (
-      <PrivateContentScreen
+      <BrotherProfileScreen
         screen={buildBrotherProfileScreen({
           state: brotherProfile.state,
           response: brotherProfile.data,
           runtimeMode
         })}
-        onAction={handlePrivateContentAction}
+        onAction={handleBrotherAction}
       />
     );
   }
@@ -294,6 +302,20 @@ export function MobileBrotherSurface({
         screen={buildBrotherAnnouncementsScreen({
           state: brotherAnnouncements.state,
           response: brotherAnnouncements.data,
+          runtimeMode
+        })}
+        onAction={handleBrotherAction}
+      />
+    );
+  }
+
+  if (route === "BrotherAnnouncementDetail") {
+    return (
+      <BrotherAnnouncementDetailScreen
+        screen={buildBrotherAnnouncementDetailScreen({
+          state: brotherAnnouncements.state,
+          response: brotherAnnouncements.data,
+          selectedAnnouncementId: selectedBrotherAnnouncementId,
           runtimeMode
         })}
         onAction={handleBrotherAction}

@@ -28,6 +28,7 @@ describe("mobile RTDB native validation preflight", () => {
       platform: "ios",
       env: {
         ...basePilotEnv,
+        EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER: "org.jp2.pilot",
         EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: "ios-client-id"
       }
     });
@@ -42,13 +43,17 @@ describe("mobile RTDB native validation preflight", () => {
     );
   });
 
-  it("requires the Android native OAuth client for Android validation", () => {
+  it("requires the Android package and native OAuth client for Android validation", () => {
     const result = validationModule.validateMobileRtdbNativeEnv({
       platform: "android",
       env: basePilotEnv
     });
 
     expect(result.ok).toBe(false);
+    expect(result.issues).toContainEqual({
+      key: "EXPO_PUBLIC_ANDROID_PACKAGE",
+      message: "Required for native Firebase/RTDB validation."
+    });
     expect(result.issues).toContainEqual({
       key: "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID",
       message: "Required for native Firebase/RTDB validation."
@@ -63,6 +68,7 @@ describe("mobile RTDB native validation preflight", () => {
         EXPO_PUBLIC_APP_RUNTIME_MODE: "demo",
         EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER: "redis-socket",
         EXPO_PUBLIC_API_BASE_URL: "https://localhost:3000/api",
+        EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER: "org.jp2.pilot",
         EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: "ios-client-id"
       }
     });
@@ -83,6 +89,7 @@ describe("mobile RTDB native validation preflight", () => {
       env: {
         ...basePilotEnv,
         EXPO_PUBLIC_FIREBASE_DATABASE_URL: "https://example.test",
+        EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER: "org.jp2.pilot",
         EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: "ios-client-id"
       }
     });

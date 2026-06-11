@@ -17,6 +17,7 @@ export interface BrotherAnnouncementCard {
   body: string;
   publishedLabel: string;
   pinned: boolean;
+  detailAction: BrotherScreenAction;
 }
 
 export interface BrotherAnnouncementsScreen {
@@ -56,6 +57,12 @@ export function buildBrotherAnnouncementsScreen(options: {
       body: brotherAnnouncementBody(announcement)
     })),
     actions: [
+      {
+        id: "open-first-announcement",
+        label: "Open first announcement",
+        targetRoute: "BrotherAnnouncementDetail",
+        targetId: options.response.announcements[0]?.id
+      },
       {
         id: "today",
         label: "Brother Today",
@@ -106,7 +113,13 @@ function buildBrotherAnnouncementCard(
     title: announcement.title,
     body: announcement.body,
     publishedLabel: formatAnnouncementPublishedAt(announcement.publishedAt),
-    pinned: announcement.pinned
+    pinned: announcement.pinned,
+    detailAction: {
+      id: "view-announcement-detail",
+      label: "View Details",
+      targetRoute: "BrotherAnnouncementDetail",
+      targetId: announcement.id
+    }
   };
 }
 

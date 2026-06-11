@@ -10,16 +10,21 @@ import {
   UseGuards
 } from "@nestjs/common";
 import { ApiBody, ApiOkResponse, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { updateAdminCandidateProfileSchema } from "@jp2/shared-validation";
+import {
+  convertCandidateProfileToBrotherSchema,
+  updateAdminCandidateProfileSchema
+} from "@jp2/shared-validation";
 import { CurrentUserGuard } from "../auth/current-user.guard.js";
 import type { RequestWithPrincipal } from "../auth/current-user.types.js";
 import { apiErrorOpenApiSchema } from "../errors/api-error.openapi.js";
 import { ZodValidationPipe } from "../validation/zod-validation.pipe.js";
 import {
   adminCandidateProfileDetailResponseOpenApiSchema,
+  adminCandidateProfileBrotherConversionResponseOpenApiSchema,
   adminCandidateProfileErasureResponseOpenApiSchema,
   adminCandidateProfileExportResponseOpenApiSchema,
   adminCandidateProfileListResponseOpenApiSchema,
+  convertCandidateProfileToBrotherOpenApiSchema,
   updateAdminCandidateProfileOpenApiSchema
 } from "./admin-candidate.openapi.js";
 import { AdminCandidateService } from "./admin-candidate.service.js";
@@ -28,6 +33,8 @@ import type {
   AdminCandidateProfileErasureResponse,
   AdminCandidateProfileExportResponse,
   AdminCandidateProfileListResponse,
+  AdminCandidateProfileBrotherConversionResponse,
+  ConvertCandidateProfileToBrother,
   UpdateAdminCandidateProfile
 } from "./admin-candidate.types.js";
 
@@ -104,6 +111,47 @@ export class AdminCandidateController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string
   ): Promise<AdminCandidateProfileErasureResponse> {
     return this.candidateService.eraseCandidateProfile(requirePrincipal(request), id);
+  }
+
+  @Post(":id/convert-to-brother")
+  @UseGuards(CurrentUserGuard)
+  @ApiOkResponse({
+    description: "Converted candidate profile with active brother membership.",
+    schema: adminCandidateProfileBrotherConversionResponseOpenApiSchema
+  })
+  @ApiParam({ name: "id", schema: { type: "string", format: "uuid" } })
+  @ApiBody({ schema: convertCandidateProfileToBrotherOpenApiSchema })
+  @ApiResponse({
+    status: 400,
+    description: "The conversion payload failed validation.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 403,
+    description: "The current admin cannot convert candidates in this scope.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 404,
+    description: "The candidate profile is not visible in the current admin scope.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  @ApiResponse({
+    status: 409,
+    description: "The candidate profile is not eligible for brother conversion.",
+    content: { "application/json": { schema: apiErrorOpenApiSchema } }
+  })
+  convertCandidateProfileToBrother(
+    @Req() request: RequestWithPrincipal,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body(new ZodValidationPipe(convertCandidateProfileToBrotherSchema))
+    body: ConvertCandidateProfileToBrother
+  ): Promise<AdminCandidateProfileBrotherConversionResponse> {
+    return this.candidateService.convertCandidateProfileToBrother(
+      requirePrincipal(request),
+      id,
+      body
+    );
   }
 
   @Get(":id")

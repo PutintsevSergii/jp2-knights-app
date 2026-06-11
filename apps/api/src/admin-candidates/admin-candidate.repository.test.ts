@@ -976,6 +976,119 @@ describe("PrismaAdminCandidateRepository", () => {
       include: expect.any(Object) as unknown
     });
   });
+
+  it("converts a candidate profile to brother through role and membership writes", async () => {
+    const {
+      candidateProfileFindFirst,
+      candidateProfileUpdate,
+      membershipCreate,
+      membershipFindFirst,
+      userRoleCreate,
+      userRoleFindFirst,
+      userRoleUpdateMany,
+      userUpdate,
+      prisma
+    } = prismaMock();
+    candidateProfileFindFirst.mockResolvedValueOnce(profileRecord);
+    userRoleFindFirst.mockResolvedValueOnce(null);
+    membershipFindFirst.mockResolvedValueOnce(null);
+    membershipCreate.mockResolvedValueOnce({
+      id: "34343434-3434-4343-8343-343434343434",
+      userId: profileRecord.userId,
+      organizationUnitId: profileRecord.assignedOrganizationUnitId,
+      status: "active",
+      currentDegree: "First Degree",
+      joinedAt: new Date("2026-06-11T00:00:00.000Z"),
+      createdAt: new Date("2026-06-11T07:00:00.000Z"),
+      updatedAt: new Date("2026-06-11T07:00:00.000Z"),
+      archivedAt: null
+    });
+    candidateProfileUpdate.mockResolvedValueOnce({
+      ...profileRecord,
+      status: "converted_to_brother"
+    });
+
+    const conversion = await new PrismaAdminCandidateRepository(
+      prisma
+    ).convertCandidateProfileToBrother(
+      profileRecord.id,
+      { joinedAt: "2026-06-11", currentDegree: "First Degree" },
+      "admin_1",
+      new Date("2026-06-11T08:00:00.000Z"),
+      ["11111111-1111-4111-8111-111111111111"]
+    );
+
+    expect(conversion?.candidateProfile).toMatchObject({
+      id: profileRecord.id,
+      status: "converted_to_brother"
+    });
+    expect(conversion).toMatchObject({
+      membership: {
+        id: "34343434-3434-4343-8343-343434343434",
+        userId: profileRecord.userId,
+        organizationUnitId: profileRecord.assignedOrganizationUnitId,
+        status: "active",
+        currentDegree: "First Degree",
+        joinedAt: "2026-06-11",
+        createdAt: "2026-06-11T07:00:00.000Z",
+        updatedAt: "2026-06-11T07:00:00.000Z",
+        archivedAt: null
+      }
+    });
+    expect(candidateProfileFindFirst).toHaveBeenCalledWith({
+      where: {
+        archivedAt: null,
+        assignedOrganizationUnitId: {
+          in: ["11111111-1111-4111-8111-111111111111"]
+        },
+        id: profileRecord.id
+      },
+      select: {
+        id: true,
+        userId: true,
+        assignedOrganizationUnitId: true
+      }
+    });
+    expect(userUpdate).toHaveBeenCalledWith({
+      where: { id: profileRecord.userId },
+      data: { status: "active" }
+    });
+    expect(userRoleUpdateMany).toHaveBeenCalledWith({
+      where: {
+        userId: profileRecord.userId,
+        role: "CANDIDATE",
+        revokedAt: null
+      },
+      data: {
+        revokedAt: new Date("2026-06-11T08:00:00.000Z")
+      }
+    });
+    expect(userRoleCreate).toHaveBeenCalledWith({
+      data: {
+        userId: profileRecord.userId,
+        role: "BROTHER",
+        createdBy: "admin_1"
+      }
+    });
+    expect(membershipCreate).toHaveBeenCalledWith({
+      data: {
+        userId: profileRecord.userId,
+        organizationUnitId: profileRecord.assignedOrganizationUnitId,
+        status: "active",
+        currentDegree: "First Degree",
+        joinedAt: new Date("2026-06-11T00:00:00.000Z"),
+        archivedAt: null
+      }
+    });
+    expect(candidateProfileUpdate).toHaveBeenCalledWith({
+      where: { id: profileRecord.id },
+      data: {
+        status: "converted_to_brother",
+        archivedAt: null
+      },
+      include: expect.any(Object) as unknown
+    });
+  });
 });
 
 function prismaMock(): {
@@ -990,8 +1103,10 @@ function prismaMock(): {
   identityProviderAccountFindMany: ReturnType<typeof vi.fn>;
   identityProviderAccountUpdateMany: ReturnType<typeof vi.fn>;
   identityAccessReviewFindMany: ReturnType<typeof vi.fn>;
+  membershipCreate: ReturnType<typeof vi.fn>;
   membershipFindFirst: ReturnType<typeof vi.fn>;
   membershipFindMany: ReturnType<typeof vi.fn>;
+  membershipUpdate: ReturnType<typeof vi.fn>;
   notificationPreferenceDeleteMany: ReturnType<typeof vi.fn>;
   notificationPreferenceFindMany: ReturnType<typeof vi.fn>;
   officerAssignmentFindMany: ReturnType<typeof vi.fn>;
@@ -999,6 +1114,7 @@ function prismaMock(): {
   roadmapAssignmentFindMany: ReturnType<typeof vi.fn>;
   userRoleFindMany: ReturnType<typeof vi.fn>;
   userRoleFindFirst: ReturnType<typeof vi.fn>;
+  userRoleCreate: ReturnType<typeof vi.fn>;
   userRoleUpdateMany: ReturnType<typeof vi.fn>;
   userUpdate: ReturnType<typeof vi.fn>;
   prisma: PrismaService;
@@ -1014,8 +1130,34 @@ function prismaMock(): {
   const identityProviderAccountFindMany = vi.fn(() => Promise.resolve([]));
   const identityProviderAccountUpdateMany = vi.fn(() => Promise.resolve({ count: 1 }));
   const identityAccessReviewFindMany = vi.fn(() => Promise.resolve([]));
+  const membershipCreate = vi.fn(() =>
+    Promise.resolve({
+      id: "34343434-3434-4343-8343-343434343434",
+      userId: profileRecord.userId,
+      organizationUnitId: profileRecord.assignedOrganizationUnitId,
+      status: "active",
+      currentDegree: null,
+      joinedAt: new Date("2026-06-11T08:00:00.000Z"),
+      createdAt: new Date("2026-06-11T08:00:00.000Z"),
+      updatedAt: new Date("2026-06-11T08:00:00.000Z"),
+      archivedAt: null
+    })
+  );
   const membershipFindFirst = vi.fn(() => Promise.resolve(null));
   const membershipFindMany = vi.fn(() => Promise.resolve([]));
+  const membershipUpdate = vi.fn(() =>
+    Promise.resolve({
+      id: "34343434-3434-4343-8343-343434343434",
+      userId: profileRecord.userId,
+      organizationUnitId: profileRecord.assignedOrganizationUnitId,
+      status: "active",
+      currentDegree: null,
+      joinedAt: new Date("2026-06-11T08:00:00.000Z"),
+      createdAt: new Date("2026-06-11T08:00:00.000Z"),
+      updatedAt: new Date("2026-06-11T08:00:00.000Z"),
+      archivedAt: null
+    })
+  );
   const notificationPreferenceDeleteMany = vi.fn(() => Promise.resolve({ count: 4 }));
   const notificationPreferenceFindMany = vi.fn(() => Promise.resolve([]));
   const officerAssignmentFindMany = vi.fn(() => Promise.resolve([]));
@@ -1023,11 +1165,13 @@ function prismaMock(): {
   const roadmapAssignmentFindMany = vi.fn(() => Promise.resolve([]));
   const userRoleFindMany = vi.fn(() => Promise.resolve([]));
   const userRoleFindFirst = vi.fn(() => Promise.resolve(null));
+  const userRoleCreate = vi.fn(() => Promise.resolve({}));
   const userRoleUpdateMany = vi.fn(() => Promise.resolve({ count: 1 }));
   const userUpdate = vi.fn(() => Promise.resolve({}));
   const tx = {
     candidateProfile: {
       findUnique: candidateProfileFindUnique,
+      update: candidateProfileUpdate,
       updateMany: candidateProfileUpdateMany
     },
     deviceToken: {
@@ -1051,7 +1195,14 @@ function prismaMock(): {
       update: userUpdate
     },
     userRole: {
+      create: userRoleCreate,
+      findFirst: userRoleFindFirst,
       updateMany: userRoleUpdateMany
+    },
+    membership: {
+      create: membershipCreate,
+      findFirst: membershipFindFirst,
+      update: membershipUpdate
     }
   };
 
@@ -1067,8 +1218,10 @@ function prismaMock(): {
     identityProviderAccountFindMany,
     identityProviderAccountUpdateMany,
     identityAccessReviewFindMany,
+    membershipCreate,
     membershipFindFirst,
     membershipFindMany,
+    membershipUpdate,
     notificationPreferenceDeleteMany,
     notificationPreferenceFindMany,
     officerAssignmentFindMany,
@@ -1076,6 +1229,7 @@ function prismaMock(): {
     roadmapAssignmentFindMany,
     userRoleFindMany,
     userRoleFindFirst,
+    userRoleCreate,
     userRoleUpdateMany,
     userUpdate,
     prisma: {
@@ -1106,8 +1260,10 @@ function prismaMock(): {
         findMany: notificationPreferenceFindMany
       },
       membership: {
+        create: membershipCreate,
         findFirst: membershipFindFirst,
-        findMany: membershipFindMany
+        findMany: membershipFindMany,
+        update: membershipUpdate
       },
       officerAssignment: {
         findFirst: officerAssignmentFindFirst,
@@ -1120,6 +1276,7 @@ function prismaMock(): {
         update: userUpdate
       },
       userRole: {
+        create: userRoleCreate,
         findMany: userRoleFindMany,
         findFirst: userRoleFindFirst,
         updateMany: userRoleUpdateMany

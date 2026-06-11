@@ -10,6 +10,7 @@ import {
 } from "./brother-companion.js";
 import { fallbackBrotherRoadmap } from "./roadmap.js";
 import {
+  buildBrotherAnnouncementDetailScreen,
   buildBrotherAnnouncementsScreen,
   buildBrotherProfileScreen,
   buildBrotherEventDetailScreen,
@@ -83,6 +84,39 @@ describe("brother screen models", () => {
 
     expect(screen.route).toBe("BrotherProfile");
     expect(screen.body).toBe("Demo Brother - brother@example.test");
+    expect(screen.profileSummary).toEqual({
+      displayName: "Demo Brother",
+      email: "brother@example.test",
+      initials: "DB",
+      currentDegreeLabel: "First Degree",
+      organizationUnitLabel: "Pilot Choragiew"
+    });
+    expect(screen.contactRows).toEqual([
+      {
+        id: "email",
+        label: "Email",
+        value: "brother@example.test"
+      },
+      {
+        id: "phone",
+        label: "Phone",
+        value: "Not recorded"
+      },
+      {
+        id: "language",
+        label: "Language",
+        value: "en"
+      }
+    ]);
+    expect(screen.membershipCards).toEqual([
+      expect.objectContaining({
+        organizationUnitName: "Pilot Choragiew",
+        typeLabel: "Choragiew",
+        locationLabel: "Riga, Latvia",
+        currentDegreeLabel: "First Degree",
+        joinedLabel: "Joined Jan 15, 2026"
+      })
+    ]);
     expect(screen.sections.map((section) => section.title)).toContain("Pilot Choragiew");
     expect(screen.actions).toEqual([
       {
@@ -252,12 +286,81 @@ describe("brother screen models", () => {
     expect(screen.sections[0]?.body).toContain("Pilot Choragiew");
     expect(screen.actions).toEqual([
       {
+        id: "open-first-announcement",
+        label: "Open first announcement",
+        targetRoute: "BrotherAnnouncementDetail",
+        targetId: fallbackBrotherAnnouncements.announcements[0]!.id
+      },
+      {
         id: "today",
         label: "Brother Today",
         targetRoute: "BrotherToday"
       }
     ]);
     expect(JSON.stringify(screen)).not.toMatch(/chat|comment|reply|read receipt/i);
+  });
+
+  it("builds Brother Announcement Detail from the authorized list payload only", () => {
+    const screen = buildBrotherAnnouncementDetailScreen({
+      state: "ready",
+      response: fallbackBrotherAnnouncements,
+      selectedAnnouncementId: fallbackBrotherAnnouncements.announcements[0]!.id,
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "BrotherAnnouncementDetail",
+      state: "ready",
+      title: "Brother Formation Notice",
+      body: "A brother formation note is available for Pilot Choragiew.",
+      publishedLabel: "May 7, 2026, 12:00",
+      pinned: true,
+      demoChromeVisible: false
+    });
+    expect(screen.sections).toEqual([
+      {
+        id: "announcement-detail",
+        title: "Pinned announcement",
+        body: "A brother formation note is available for Pilot Choragiew."
+      },
+      {
+        id: "announcement-published",
+        title: "Published",
+        body: "May 7, 2026, 12:00"
+      }
+    ]);
+    expect(screen.actions).toEqual([
+      {
+        id: "announcements",
+        label: "Brother Announcements",
+        targetRoute: "BrotherAnnouncements"
+      },
+      {
+        id: "today",
+        label: "Brother Today",
+        targetRoute: "BrotherToday"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(
+      /candidate|roster|participant|chat|comment|reply|read receipt|delivery/i
+    );
+  });
+
+  it("fails Brother Announcement Detail closed when the id is not in the scoped list", () => {
+    const screen = buildBrotherAnnouncementDetailScreen({
+      state: "ready",
+      response: fallbackBrotherAnnouncements,
+      selectedAnnouncementId: "00000000-0000-4000-8000-000000000000",
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "BrotherAnnouncementDetail",
+      state: "empty",
+      title: "Brother Announcement",
+      body: "This brother-visible announcement is not available.",
+      sections: []
+    });
   });
 
   it("builds Brother Prayers with visible scoped prayer cards and no tracking actions", () => {

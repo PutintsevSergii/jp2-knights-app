@@ -21,6 +21,7 @@
     "test": "nx run-many -t test --all",
     "test:firebase-rules": "node tools/firebase/run-database-rules-tests.mjs",
     "validate:mobile-rtdb-native": "node tools/scripts/validate-mobile-rtdb-native.mjs",
+    "validate:mobile-rtdb-evidence": "node tools/scripts/validate-mobile-rtdb-evidence.mjs",
     "test:coverage": "vitest run --coverage",
     "build": "nx run-many -t build --all",
     "smoke:launch": "node tools/scripts/launch-smoke.mjs",

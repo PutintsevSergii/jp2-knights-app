@@ -178,6 +178,7 @@ export { isBrotherRoute, isCandidateRoute, isPublicRoute } from "./mobile-routes
 export type { MobileAppRoute } from "./mobile-routes.js";
 export {
   buildCandidateAnnouncementsScreen,
+  buildCandidateAnnouncementDetailScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
   buildCandidateRoadmapScreen,
@@ -185,6 +186,7 @@ export {
 } from "./candidate-screens.js";
 export {
   buildBrotherAnnouncementsScreen,
+  buildBrotherAnnouncementDetailScreen,
   buildBrotherEventDetailScreen,
   buildBrotherEventsScreen,
   buildBrotherProfileScreen,
@@ -197,6 +199,7 @@ export {
 } from "./brother-screens.js";
 export type {
   BrotherAnnouncementsScreen,
+  BrotherAnnouncementDetailScreen,
   BrotherProfileScreen,
   BrotherPrayersScreen,
   BrotherRoadmapScreen,
@@ -214,6 +217,7 @@ export type {
 } from "./brother-screens.js";
 export type {
   CandidateAnnouncementsScreen,
+  CandidateAnnouncementDetailScreen,
   CandidateDashboardScreen,
   CandidateEventDetailScreen,
   CandidateEventsScreen,

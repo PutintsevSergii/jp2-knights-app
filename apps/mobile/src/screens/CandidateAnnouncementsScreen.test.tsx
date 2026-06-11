@@ -24,15 +24,22 @@ describe("CandidateAnnouncementsScreen", () => {
       /chat|comment|read receipt|delivery|participants|brother|membership|degree/i
     );
 
+    findPressableByLabel(element, "View Candidate Formation Update")?.props.onPress?.();
     findPressableByLabel(element, "Home")?.props.onPress?.();
     findPressableByLabel(element, "Events")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
+      id: "view-announcement-detail",
+      label: "View Details",
+      targetRoute: "CandidateAnnouncementDetail",
+      targetId: fallbackCandidateAnnouncements.announcements[0]!.id
+    });
+    expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "dashboard",
       label: "Home",
       targetRoute: "CandidateDashboard"
     });
-    expect(onAction).toHaveBeenNthCalledWith(2, {
+    expect(onAction).toHaveBeenNthCalledWith(3, {
       id: "events",
       label: "Events",
       targetRoute: "CandidateEvents"

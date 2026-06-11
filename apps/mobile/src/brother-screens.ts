@@ -29,6 +29,10 @@ export {
   type BrotherAnnouncementsScreen
 } from "./brother-announcements-screen.js";
 export {
+  buildBrotherAnnouncementDetailScreen,
+  type BrotherAnnouncementDetailScreen
+} from "./brother-announcement-detail-screen.js";
+export {
   buildBrotherEventDetailScreen,
   type BrotherEventDetailScreen
 } from "./brother-event-detail-screen.js";

@@ -46,6 +46,8 @@ creation, metadata-only verification, redeploy, rotation, and incident handling.
 | `EXPO_PUBLIC_FIREBASE_DATABASE_URL` | Mobile | `https://project-id-default-rtdb.region.firebasedatabase.app` | Required when `EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`; mobile uses it only for aggregate-count listeners |
 | `EXPO_PUBLIC_API_BASE_URL` | Mobile | `https://api.example.org/api` | Required for native RTDB validation; use a device-reachable HTTPS URL, not localhost |
 | `EXPO_PUBLIC_APP_SCHEME` | Mobile | `jp2` | Required for native Google/Firebase auth redirects |
+| `EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER` | Mobile | `org.jp2.pilot` | Required for native iOS validation; must match the Firebase iOS app registration |
+| `EXPO_PUBLIC_ANDROID_PACKAGE` | Mobile | `org.jp2.pilot` | Required for native Android validation; must match the Firebase Android app registration |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Mobile | OAuth client id | Required for Google sign-in |
 | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Mobile | OAuth client id | Required for native iOS validation |
 | `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | Mobile | OAuth client id | Required for native Android validation |
@@ -129,8 +131,15 @@ creation, metadata-only verification, redeploy, rotation, and incident handling.
   committed baseline is
   [`infra/firebase/database.rules.json`](../../infra/firebase/database.rules.json).
 - Firebase authorized domains include Admin and API domains where applicable.
-- Mobile native sign-in has matching iOS/Android OAuth clients.
+- Mobile native sign-in has matching iOS/Android app identifiers and OAuth
+  clients. `apps/mobile/app.config.js` maps `EXPO_PUBLIC_APP_SCHEME`,
+  `EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER`, and `EXPO_PUBLIC_ANDROID_PACKAGE` into
+  the Expo native config without committing owner-specific values.
 - `pnpm validate:mobile-rtdb-native -- --platform ios` or
   `pnpm validate:mobile-rtdb-native -- --platform android` passes before the
   native RTDB silent-prayer validation run.
+- After the native run, sanitized evidence based on
+  `docs/deployment/native-rtdb-validation-evidence.example.json` passes
+  `pnpm validate:mobile-rtdb-evidence -- --file <local-evidence-file>` before
+  it is attached to the pilot launch ticket.
 - Secrets are stored only in Secret Manager or the secure CI secret store.

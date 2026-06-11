@@ -27,6 +27,7 @@ export function isCandidateRoute(route: MobileAppRoute): route is CandidateRoute
     route === "CandidateRoadmap" ||
     route === "CandidateEvents" ||
     route === "CandidateAnnouncements" ||
+    route === "CandidateAnnouncementDetail" ||
     route === "CandidateEventDetail"
   );
 }
@@ -39,6 +40,7 @@ export function isBrotherRoute(route: MobileAppRoute): route is BrotherRoute {
     route === "MyOrganizationUnits" ||
     route === "BrotherEvents" ||
     route === "BrotherAnnouncements" ||
+    route === "BrotherAnnouncementDetail" ||
     route === "BrotherEventDetail" ||
     route === "BrotherPrayers" ||
     route === "OrganizationUnitDetail" ||

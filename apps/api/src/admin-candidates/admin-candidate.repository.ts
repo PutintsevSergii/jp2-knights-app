@@ -5,6 +5,7 @@ import { mergeNotificationPreferenceRecords } from "../auth/notification-prefere
 import type { NotificationPreferenceSettings } from "../auth/auth-notification.types.js";
 import type {
   AdminCandidateProfileDetail,
+  AdminCandidateProfileBrotherMembership,
   AdminCandidateProfileDeviceTokenExport,
   AdminCandidateProfileEventParticipationExport,
   AdminCandidateProfileIdentityAccessReviewExport,
@@ -14,6 +15,7 @@ import type {
   AdminCandidateProfileRoadmapAssignmentExport,
   AdminCandidateProfileSummary,
   AdminCandidateProfileUserRoleExport,
+  ConvertCandidateProfileToBrother,
   UpdateAdminCandidateProfile
 } from "./admin-candidate.types.js";
 
@@ -55,6 +57,16 @@ export abstract class AdminCandidateRepository {
     id: string,
     erasedAt: Date
   ): Promise<AdminCandidateProfileDetail | null>;
+  abstract convertCandidateProfileToBrother(
+    id: string,
+    data: ConvertCandidateProfileToBrother,
+    actorUserId: string,
+    convertedAt: Date,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ): Promise<{
+    candidateProfile: AdminCandidateProfileDetail;
+    membership: AdminCandidateProfileBrotherMembership;
+  } | null>;
   abstract updateCandidateProfile(
     id: string,
     data: UpdateAdminCandidateProfile,
@@ -456,6 +468,112 @@ export class PrismaAdminCandidateRepository extends AdminCandidateRepository {
 
     return toAdminCandidateProfile(record);
   }
+
+  async convertCandidateProfileToBrother(
+    id: string,
+    data: ConvertCandidateProfileToBrother,
+    actorUserId: string,
+    convertedAt: Date,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ): Promise<{
+    candidateProfile: AdminCandidateProfileDetail;
+    membership: AdminCandidateProfileBrotherMembership;
+  } | null> {
+    const existing = await this.prisma.candidateProfile.findFirst({
+      where: {
+        ...scopedCandidateProfileWhere(scopeOrganizationUnitIds),
+        id
+      },
+      select: {
+        id: true,
+        userId: true,
+        assignedOrganizationUnitId: true
+      }
+    });
+
+    if (!existing || !existing.assignedOrganizationUnitId) {
+      return null;
+    }
+    const organizationUnitId = existing.assignedOrganizationUnitId;
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: existing.userId },
+        data: { status: "active" }
+      });
+      await tx.userRole.updateMany({
+        where: {
+          userId: existing.userId,
+          role: "CANDIDATE",
+          revokedAt: null
+        },
+        data: {
+          revokedAt: convertedAt
+        }
+      });
+
+      const existingBrotherRole = await tx.userRole.findFirst({
+        where: {
+          userId: existing.userId,
+          role: "BROTHER",
+          revokedAt: null
+        },
+        select: { id: true }
+      });
+
+      if (!existingBrotherRole) {
+        await tx.userRole.create({
+          data: {
+            userId: existing.userId,
+            role: "BROTHER",
+            createdBy: actorUserId
+          }
+        });
+      }
+
+      const membershipData = {
+        status: "active" as const,
+        ...(data.currentDegree !== undefined ? { currentDegree: data.currentDegree } : {}),
+        joinedAt: data.joinedAt ? new Date(`${data.joinedAt}T00:00:00.000Z`) : convertedAt,
+        archivedAt: null
+      };
+      const existingMembership = await tx.membership.findFirst({
+        where: {
+          userId: existing.userId,
+          organizationUnitId
+        },
+        orderBy: [{ createdAt: "asc" }],
+        select: { id: true }
+      });
+
+      const membership = existingMembership
+        ? await tx.membership.update({
+            where: { id: existingMembership.id },
+            data: membershipData
+          })
+        : await tx.membership.create({
+            data: {
+              userId: existing.userId,
+              organizationUnitId,
+              ...membershipData
+            }
+          });
+
+      const candidateProfile = await tx.candidateProfile.update({
+        where: { id },
+        data: {
+          status: "converted_to_brother",
+          archivedAt: null
+        },
+        include: candidateProfileInclude
+      });
+
+      return {
+        candidateProfile: toAdminCandidateProfile(candidateProfile),
+        membership: toBrotherMembership(membership)
+      };
+    });
+  }
 }
 
 type CandidateProfileRecord = {
@@ -533,6 +651,10 @@ type MembershipExportRecord = {
   createdAt: Date;
   updatedAt: Date;
   archivedAt: Date | null;
+};
+
+type BrotherMembershipRecord = MembershipExportRecord & {
+  userId: string;
 };
 
 type OfficerAssignmentExportRecord = {
@@ -703,6 +825,20 @@ function toIdentityAccessReviewExport(
 function toMembershipExport(record: MembershipExportRecord): AdminCandidateProfileMembershipExport {
   return {
     id: record.id,
+    organizationUnitId: record.organizationUnitId,
+    status: record.status,
+    currentDegree: record.currentDegree,
+    joinedAt: record.joinedAt ? toDateOnly(record.joinedAt) : null,
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+    archivedAt: record.archivedAt ? record.archivedAt.toISOString() : null
+  };
+}
+
+function toBrotherMembership(record: BrotherMembershipRecord): AdminCandidateProfileBrotherMembership {
+  return {
+    id: record.id,
+    userId: record.userId,
     organizationUnitId: record.organizationUnitId,
     status: record.status,
     currentDegree: record.currentDegree,

@@ -1,40 +1,43 @@
 import { describe, expect, it, vi } from "vitest";
-import { fallbackBrotherAnnouncements } from "../brother-companion.js";
-import { buildBrotherAnnouncementsScreen } from "../brother-screens.js";
-import { BrotherAnnouncementsScreen } from "./BrotherAnnouncementsScreen.js";
+import { fallbackBrotherProfile } from "../brother-companion.js";
+import { buildBrotherProfileScreen } from "../brother-screens.js";
+import { BrotherProfileScreen } from "./BrotherProfileScreen.js";
 
-describe("BrotherAnnouncementsScreen", () => {
-  it("renders Figma-style one-way announcement cards and forwards navigation actions", () => {
+describe("BrotherProfileScreen", () => {
+  it("renders read-only contact basics and membership cards without roster features", () => {
     const onAction = vi.fn();
-    const screen = buildBrotherAnnouncementsScreen({
+    const screen = buildBrotherProfileScreen({
       state: "ready",
-      response: fallbackBrotherAnnouncements,
+      response: fallbackBrotherProfile,
       runtimeMode: "api"
     });
-    const element = BrotherAnnouncementsScreen({ screen, onAction });
+    const element = BrotherProfileScreen({ screen, onAction });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
-    expect(findText(element, "Brother Announcements")).toBe(true);
-    expect(findText(element, "1 brother-visible announcement")).toBe(true);
-    expect(findText(element, "Brother Formation Notice")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(true);
-    expect(findText(element, "May 7, 2026, 12:00")).toBe(true);
-    expect(findText(element, "One-way announcement")).toBe(true);
+    expect(findText(element, "Demo Brother")).toBe(true);
+    expect(findText(element, "brother@example.test")).toBe(true);
+    expect(findText(element, "First Degree")).toBe(true);
+    expect(findText(element, "Pilot Choragiew")).toBe(true);
+    expect(findText(element, "Contact Basics")).toBe(true);
+    expect(findText(element, "Phone")).toBe(true);
+    expect(findText(element, "Not recorded")).toBe(true);
+    expect(findText(element, "Membership")).toBe(true);
+    expect(findText(element, "Joined Jan 15, 2026")).toBe(true);
+    expect(findText(element, "Riga, Latvia")).toBe(true);
+    expect(findText(element, "Read-only")).toBe(true);
     expect(JSON.stringify(element)).not.toMatch(
-      /chat|comment|read receipt|delivery|participants|roster|candidate/i
+      /roster|member list|participant|candidate|chat|comment|edit|approve/i
     );
 
-    findPressableByLabel(element, "View Brother Formation Notice")?.props.onPress?.();
+    findPressableByLabel(element, "My choragiew")?.props.onPress?.();
     findPressableByLabel(element, "Home")?.props.onPress?.();
     findPressableByLabel(element, "Events")?.props.onPress?.();
     findPressableByLabel(element, "Prayer")?.props.onPress?.();
-    findPressableByLabel(element, "Profile")?.props.onPress?.();
 
     expect(onAction).toHaveBeenNthCalledWith(1, {
-      id: "view-announcement-detail",
-      label: "View Details",
-      targetRoute: "BrotherAnnouncementDetail",
-      targetId: fallbackBrotherAnnouncements.announcements[0]!.id
+      id: "organization-units",
+      label: "My choragiew",
+      targetRoute: "MyOrganizationUnits"
     });
     expect(onAction).toHaveBeenNthCalledWith(2, {
       id: "today",
@@ -51,23 +54,19 @@ describe("BrotherAnnouncementsScreen", () => {
       label: "Prayer",
       targetRoute: "BrotherPrayers"
     });
-    expect(onAction).toHaveBeenNthCalledWith(5, {
-      id: "profile",
-      label: "Profile",
-      targetRoute: "BrotherProfile"
-    });
   });
 
-  it("renders non-ready state copy without announcement cards", () => {
-    const screen = buildBrotherAnnouncementsScreen({
+  it("renders non-ready state copy without profile details", () => {
+    const screen = buildBrotherProfileScreen({
       state: "offline",
       runtimeMode: "api"
     });
-    const element = BrotherAnnouncementsScreen({ screen });
+    const element = BrotherProfileScreen({ screen });
 
     expect(findText(element, "Offline")).toBe(true);
-    expect(findText(element, "Reconnect to refresh brother announcements.")).toBe(true);
-    expect(findText(element, "Pinned")).toBe(false);
+    expect(findText(element, "Reconnect to refresh brother profile.")).toBe(true);
+    expect(findText(element, "Contact Basics")).toBe(false);
+    expect(findText(element, "Membership")).toBe(false);
   });
 });
 

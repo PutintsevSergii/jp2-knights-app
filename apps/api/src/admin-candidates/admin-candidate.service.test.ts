@@ -82,6 +82,113 @@ describe("AdminCandidateService", () => {
     expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
   });
 
+  it("converts a scoped active candidate profile to brother and audits redacted metadata", async () => {
+    const repository = new FakeRepository();
+    const auditLog = new FakeAuditLog();
+    const service = new AdminCandidateService(repository, auditLog as unknown as AuditLogService);
+
+    await expect(
+      service.convertCandidateProfileToBrother(officer, profile.id, {
+        joinedAt: "2026-06-11",
+        currentDegree: "First Degree"
+      })
+    ).resolves.toEqual({
+      candidateProfile: {
+        ...profile,
+        status: "converted_to_brother"
+      },
+      membership: repository.brotherMembership
+    });
+    expect(repository.lastConversion).toMatchObject({
+      id: profile.id,
+      data: {
+        joinedAt: "2026-06-11",
+        currentDegree: "First Degree"
+      },
+      actorUserId: officer.id,
+      scopeOrganizationUnitIds: officer.officerOrganizationUnitIds
+    });
+    expect(repository.lastConversion?.convertedAt).toBeInstanceOf(Date);
+    expect(auditLog.records).toHaveLength(1);
+    expect(auditLog.records[0]).toMatchObject({
+      action: "admin.candidateProfile.convertToBrother",
+      entityType: "candidate_profile",
+      entityId: profile.id,
+      scopeOrganizationUnitId: profile.assignedOrganizationUnitId,
+      beforeSummary: {
+        candidateProfileId: profile.id,
+        userId: profile.userId,
+        status: "active"
+      },
+      afterSummary: {
+        candidateProfileId: profile.id,
+        userId: profile.userId,
+        status: "converted_to_brother",
+        membershipId: repository.brotherMembership.id,
+        membershipOrganizationUnitId: profile.assignedOrganizationUnitId,
+        candidateAccessRevoked: true,
+        brotherAccessGranted: true
+      }
+    });
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("anna@example.test");
+    expect(JSON.stringify(auditLog.records[0])).not.toContain("Anna Nowak");
+  });
+
+  it("rejects candidate-to-brother conversion for duplicate, archived, or unassigned profiles", async () => {
+    const service = new AdminCandidateService(new FakeRepository(), auditLog());
+
+    await expect(
+      service.convertCandidateProfileToBrother(
+        superAdmin,
+        profile.id,
+        {}
+      )
+    ).resolves.toMatchObject({
+      candidateProfile: { status: "converted_to_brother" }
+    });
+
+    const convertedRepository = new FakeRepository();
+    convertedRepository.findRecord = { ...profile, status: "converted_to_brother" };
+    await expect(
+      new AdminCandidateService(convertedRepository, auditLog()).convertCandidateProfileToBrother(
+        superAdmin,
+        profile.id,
+        {}
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(convertedRepository.lastConversion).toBeUndefined();
+
+    const archivedRepository = new FakeRepository();
+    archivedRepository.findRecord = {
+      ...profile,
+      status: "archived",
+      archivedAt: "2026-06-01T00:00:00.000Z"
+    };
+    await expect(
+      new AdminCandidateService(archivedRepository, auditLog()).convertCandidateProfileToBrother(
+        superAdmin,
+        profile.id,
+        {}
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(archivedRepository.lastConversion).toBeUndefined();
+
+    const unassignedRepository = new FakeRepository();
+    unassignedRepository.findRecord = {
+      ...profile,
+      assignedOrganizationUnitId: null,
+      assignedOrganizationUnitName: null
+    };
+    await expect(
+      new AdminCandidateService(unassignedRepository, auditLog()).convertCandidateProfileToBrother(
+        superAdmin,
+        profile.id,
+        {}
+      )
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(unassignedRepository.lastConversion).toBeUndefined();
+  });
+
   it("exports archived candidate profile personal data for Super Admins and audits redacted metadata", async () => {
     const repository = new FakeRepository();
     repository.exportRecord = {
@@ -291,12 +398,27 @@ describe("AdminCandidateService", () => {
     await expect(
       service.updateCandidateProfile(officer, profile.id, { status: "paused" })
     ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.convertCandidateProfileToBrother(officer, profile.id, {})
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });
 
 class FakeRepository implements AdminCandidateRepository {
   visible = true;
+  findRecord: AdminCandidateProfileDetail = profile;
   exportRecord: AdminCandidateProfileDetail | null = profile;
+  brotherMembership = {
+    id: "34343434-3434-4343-8343-343434343434",
+    userId: profile.userId,
+    organizationUnitId: profile.assignedOrganizationUnitId ?? "11111111-1111-4111-8111-111111111111",
+    status: "active" as const,
+    currentDegree: "First Degree",
+    joinedAt: "2026-06-11",
+    createdAt: "2026-06-11T07:00:00.000Z",
+    updatedAt: "2026-06-11T07:00:00.000Z",
+    archivedAt: null
+  };
   providerAccounts = [
     {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -421,6 +543,15 @@ class FakeRepository implements AdminCandidateRepository {
   lastEventParticipationUserId: string | undefined;
   lastNonCandidateAccessUserId: string | undefined;
   lastNotificationPreferenceUserId: string | undefined;
+  lastConversion:
+    | {
+        id: string;
+        data: { joinedAt?: string; currentDegree?: string | null };
+        actorUserId: string;
+        convertedAt: Date;
+        scopeOrganizationUnitIds: readonly string[] | null;
+      }
+    | undefined;
 
   listCandidateProfiles(scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
@@ -429,7 +560,7 @@ class FakeRepository implements AdminCandidateRepository {
 
   findCandidateProfile(_id: string, scopeOrganizationUnitIds: readonly string[] | null) {
     this.lastScope = scopeOrganizationUnitIds;
-    return Promise.resolve(this.visible ? profile : null);
+    return Promise.resolve(this.visible ? this.findRecord : null);
   }
 
   findCandidateProfileForExport(id: string) {
@@ -495,6 +626,31 @@ class FakeRepository implements AdminCandidateRepository {
   eraseCandidateProfile(id: string) {
     this.lastErasureId = id;
     return Promise.resolve(this.erasedRecord);
+  }
+
+  convertCandidateProfileToBrother(
+    id: string,
+    data: { joinedAt?: string; currentDegree?: string | null },
+    actorUserId: string,
+    convertedAt: Date,
+    scopeOrganizationUnitIds: readonly string[] | null
+  ) {
+    this.lastConversion = {
+      id,
+      data,
+      actorUserId,
+      convertedAt,
+      scopeOrganizationUnitIds
+    };
+    this.lastScope = scopeOrganizationUnitIds;
+    return Promise.resolve(
+      this.visible
+        ? {
+            candidateProfile: { ...this.findRecord, status: "converted_to_brother" as const },
+            membership: this.brotherMembership
+          }
+        : null
+    );
   }
 
   updateCandidateProfile(

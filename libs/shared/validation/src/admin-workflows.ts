@@ -230,6 +230,32 @@ export const adminCandidateProfileErasureResponseSchema = z.object({
   archivedAt: z.iso.datetime()
 });
 
+export const adminCandidateProfileBrotherMembershipSchema = z
+  .object({
+    id: z.uuid(),
+    userId: z.uuid(),
+    organizationUnitId: z.uuid(),
+    status: membershipStatusSchema,
+    currentDegree: z.string().trim().min(1).max(120).nullable(),
+    joinedAt: z.iso.date().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.iso.datetime().nullable()
+  })
+  .strict();
+
+export const convertCandidateProfileToBrotherSchema = z
+  .object({
+    joinedAt: z.iso.date().optional(),
+    currentDegree: z.string().trim().min(1).max(120).nullable().optional()
+  })
+  .strict();
+
+export const adminCandidateProfileBrotherConversionResponseSchema = z.object({
+  candidateProfile: adminCandidateProfileDetailSchema,
+  membership: adminCandidateProfileBrotherMembershipSchema
+});
+
 export const adminCandidateProfileListResponseSchema = z.object({
   candidateProfiles: z.array(adminCandidateProfileSummarySchema)
 });
@@ -415,6 +441,9 @@ export type AdminCandidateProfileIdentityAccessReviewExportDto = z.infer<
 export type AdminCandidateProfileMembershipExportDto = z.infer<
   typeof adminCandidateProfileMembershipExportSchema
 >;
+export type AdminCandidateProfileBrotherMembershipDto = z.infer<
+  typeof adminCandidateProfileBrotherMembershipSchema
+>;
 export type AdminCandidateProfileOfficerAssignmentExportDto = z.infer<
   typeof adminCandidateProfileOfficerAssignmentExportSchema
 >;
@@ -430,10 +459,16 @@ export type AdminCandidateProfileExportResponseDto = z.infer<
 export type AdminCandidateProfileErasureResponseDto = z.infer<
   typeof adminCandidateProfileErasureResponseSchema
 >;
+export type AdminCandidateProfileBrotherConversionResponseDto = z.infer<
+  typeof adminCandidateProfileBrotherConversionResponseSchema
+>;
 export type AdminCandidateProfileListResponseDto = z.infer<
   typeof adminCandidateProfileListResponseSchema
 >;
 export type UpdateAdminCandidateProfileDto = z.infer<typeof updateAdminCandidateProfileSchema>;
+export type ConvertCandidateProfileToBrotherDto = z.infer<
+  typeof convertCandidateProfileToBrotherSchema
+>;
 export type ConvertCandidateRequestDto = z.infer<typeof convertCandidateRequestSchema>;
 export type UpdateAdminCandidateRequestDto = z.infer<typeof updateAdminCandidateRequestSchema>;
 export type AdminDashboardTaskDto = z.infer<typeof adminDashboardTaskSchema>;

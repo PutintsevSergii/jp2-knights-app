@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   adminAnnouncementDetailResponseSchema,
   adminAnnouncementListResponseSchema,
+  adminCandidateProfileBrotherConversionResponseSchema,
   adminCandidateProfileDetailResponseSchema,
   adminCandidateProfileErasureResponseSchema,
   adminCandidateProfileExportResponseSchema,
@@ -33,6 +34,7 @@ import {
   candidateEventListResponseSchema,
   candidateDashboardResponseSchema,
   contentStatusSchema,
+  convertCandidateProfileToBrotherSchema,
   convertCandidateRequestSchema,
   createAdminRoadmapAssignmentRequestSchema,
   createAdminAnnouncementRequestSchema,
@@ -956,6 +958,49 @@ describe("shared validation", () => {
         displayName: "Anna Nowak",
         status: "active"
       }
+    });
+    expect(
+      convertCandidateProfileToBrotherSchema.parse({
+        joinedAt: "2026-06-11",
+        currentDegree: null
+      })
+    ).toEqual({
+      joinedAt: "2026-06-11",
+      currentDegree: null
+    });
+    expect(
+      adminCandidateProfileBrotherConversionResponseSchema.parse({
+        candidateProfile: {
+          id: "77777777-7777-4777-8777-777777777777",
+          userId: "88888888-8888-4888-8888-888888888888",
+          candidateRequestId: candidateRequest.id,
+          displayName: "Anna Nowak",
+          email: candidateRequest.email,
+          preferredLanguage: "en",
+          assignedOrganizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          assignedOrganizationUnitName: candidateRequest.assignedOrganizationUnitName,
+          responsibleOfficerId: "99999999-9999-4999-8999-999999999999",
+          responsibleOfficerName: "Demo Officer",
+          status: "converted_to_brother",
+          createdAt: candidateRequest.createdAt,
+          updatedAt: candidateRequest.updatedAt,
+          archivedAt: null
+        },
+        membership: {
+          id: "34343434-3434-4343-8343-343434343434",
+          userId: "88888888-8888-4888-8888-888888888888",
+          organizationUnitId: candidateRequest.assignedOrganizationUnitId,
+          status: "active",
+          currentDegree: null,
+          joinedAt: "2026-06-11",
+          createdAt: "2026-06-11T07:00:00.000Z",
+          updatedAt: "2026-06-11T07:00:00.000Z",
+          archivedAt: null
+        }
+      })
+    ).toMatchObject({
+      candidateProfile: { status: "converted_to_brother" },
+      membership: { status: "active" }
     });
     expect(
       adminCandidateProfileExportResponseSchema.parse({

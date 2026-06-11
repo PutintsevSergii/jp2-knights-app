@@ -9,6 +9,7 @@ export type BrotherRoute =
   | "MyOrganizationUnits"
   | "BrotherEvents"
   | "BrotherAnnouncements"
+  | "BrotherAnnouncementDetail"
   | "BrotherEventDetail"
   | "BrotherPrayers"
   | "OrganizationUnitDetail"
@@ -90,6 +91,7 @@ export function brotherStateCopy(
     | "organizationUnits"
     | "events"
     | "announcements"
+    | "announcementDetail"
     | "eventDetail"
     | "prayers"
     | "organizationUnitDetail"
@@ -106,6 +108,7 @@ const brotherStateCopies: Record<
   | "organizationUnits"
   | "events"
   | "announcements"
+  | "announcementDetail"
   | "eventDetail"
   | "prayers"
   | "organizationUnitDetail"
@@ -290,6 +293,36 @@ const brotherStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh brother announcements."
+    }
+  },
+  announcementDetail: {
+    ready: {
+      title: "Brother Announcement",
+      body: "Brother announcement detail is available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Brother announcement detail is loading."
+    },
+    empty: {
+      title: "Brother Announcement",
+      body: "This brother-visible announcement is not available."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Brother announcement detail could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active brother profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before brother announcements are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh brother announcement detail."
     }
   },
   eventDetail: {
