@@ -31,12 +31,21 @@ export interface JoinRequestConsent {
   textVersion: string;
 }
 
+export interface JoinRequestFormStep {
+  id: string;
+  stepNumber: string;
+  title: string;
+  body: string;
+  fieldIds: JoinRequestFieldId[];
+}
+
 export interface JoinRequestFormScreen {
   route: "JoinRequestForm";
   state: MobileScreenState;
   title: string;
   body: string;
   fields: JoinRequestFormField[];
+  steps: JoinRequestFormStep[];
   consent: JoinRequestConsent;
   errorMessage?: string | undefined;
   actions: PublicScreenAction[];
@@ -63,6 +72,7 @@ export function buildJoinRequestFormScreen(
     title: copy.title,
     body: copy.body,
     fields: options.state === "ready" ? joinRequestFormFields : [],
+    steps: options.state === "ready" ? joinRequestFormSteps : [],
     consent: joinRequestConsent,
     errorMessage: options.errorMessage,
     actions: [homeAction],
@@ -127,6 +137,37 @@ const joinRequestFormFields: JoinRequestFormField[] = [
     required: false,
     keyboardType: "default",
     multiline: true
+  }
+];
+
+const joinRequestFormSteps: JoinRequestFormStep[] = [
+  {
+    id: "identity",
+    stepNumber: "01",
+    title: "Your name",
+    body: "Tell the local officers who is asking for formation information.",
+    fieldIds: ["firstName", "lastName"]
+  },
+  {
+    id: "contact",
+    stepNumber: "02",
+    title: "Contact details",
+    body: "Use an email and optional phone number where a local officer can follow up.",
+    fieldIds: ["email", "phone"]
+  },
+  {
+    id: "location",
+    stepNumber: "03",
+    title: "Local context",
+    body: "Share your country, city, and preferred language for the first response.",
+    fieldIds: ["country", "city", "preferredLanguage"]
+  },
+  {
+    id: "message",
+    stepNumber: "04",
+    title: "Personal note",
+    body: "Add anything helpful for the officer review. This is optional.",
+    fieldIds: ["message"]
   }
 ];
 

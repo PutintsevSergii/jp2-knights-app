@@ -12,7 +12,8 @@ describe("JoinRequestFormScreen", () => {
       screen: buildJoinRequestFormScreen({ state: "ready", runtimeMode: "demo" }),
       draft: {
         ...emptyJoinRequestFormDraft,
-        firstName: "Anna"
+        firstName: "Anna",
+        preferredLanguage: "English"
       },
       consentAccepted: false,
       onChangeField,
@@ -20,9 +21,24 @@ describe("JoinRequestFormScreen", () => {
       onSubmit
     });
 
+    expect(findText(element, "Candidate Request")).toBe(true);
+    expect(findText(element, "Your name")).toBe(true);
+    expect(findText(element, "Contact details")).toBe(true);
+    expect(findText(element, "Local context")).toBe(true);
+    expect(findText(element, "Personal note")).toBe(true);
+    expect(findText(element, "Consent and submission")).toBe(true);
+    expect(findText(element, "Preferred language")).toBe(true);
+    expect(findText(element, "This request does not create an account or promise membership.")).toBe(
+      true
+    );
+
     const firstNameInput = findElementByAccessibilityLabel(element, "First name");
     firstNameInput?.props.onChangeText?.("Maria");
     expect(onChangeField).toHaveBeenCalledWith("firstName", "Maria");
+
+    const preferredLanguageInput = findElementByAccessibilityLabel(element, "Preferred language");
+    preferredLanguageInput?.props.onChangeText?.("Polish");
+    expect(onChangeField).toHaveBeenCalledWith("preferredLanguage", "Polish");
 
     const consentCheckbox = findElementByAccessibilityLabel(element, "Consent");
     consentCheckbox?.props.onPress?.();

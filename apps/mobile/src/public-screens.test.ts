@@ -572,6 +572,18 @@ describe("mobile public screen models", () => {
       "country",
       "city"
     ]);
+    expect(screen.steps.map((step) => step.id)).toEqual([
+      "identity",
+      "contact",
+      "location",
+      "message"
+    ]);
+    expect(screen.steps.map((step) => step.fieldIds)).toEqual([
+      ["firstName", "lastName"],
+      ["email", "phone"],
+      ["country", "city", "preferredLanguage"],
+      ["message"]
+    ]);
     expect(screen.consent.textVersion).toBe(JOIN_REQUEST_CONSENT_TEXT_VERSION);
     expect(screen.actions).toEqual([
       {
@@ -586,12 +598,14 @@ describe("mobile public screen models", () => {
     expect(buildJoinRequestFormScreen({ state: "loading", runtimeMode: "api" })).toMatchObject({
       state: "loading",
       title: "Submitting",
-      fields: []
+      fields: [],
+      steps: []
     });
     expect(buildJoinRequestFormScreen({ state: "offline", runtimeMode: "demo" })).toMatchObject({
       state: "offline",
       title: "Offline",
       fields: [],
+      steps: [],
       demoChromeVisible: true
     });
   });

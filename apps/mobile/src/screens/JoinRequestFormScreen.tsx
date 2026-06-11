@@ -28,7 +28,7 @@ export function JoinRequestFormScreen({
   onSubmit,
   onNavigate
 }: JoinRequestFormScreenProps) {
-  const visibleFields = screen.fields.filter((field) => field.id !== "preferredLanguage");
+  const fieldsById = new Map(screen.fields.map((field) => [field.id, field]));
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
@@ -36,36 +36,54 @@ export function JoinRequestFormScreen({
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
-        <View style={styles.introBand}>
-          <Text style={styles.introText}>
-            Membership in the JP2 Knights is a commitment to fraternity and spiritual formation.
-            Please submit this request for review by a local officer.
-          </Text>
+        <View style={styles.hero}>
+          <Text style={styles.eyebrow}>Candidate Request</Text>
+          <Text style={styles.title}>{screen.title}</Text>
+          <Text style={styles.subtitle}>{screen.body}</Text>
         </View>
 
-        <View style={styles.formCard}>
-          {screen.errorMessage ? (
-            <Text accessibilityRole="alert" style={styles.errorText}>
-              {screen.errorMessage}
-            </Text>
-          ) : null}
+        {screen.errorMessage ? (
+          <Text accessibilityRole="alert" style={styles.errorText}>
+            {screen.errorMessage}
+          </Text>
+        ) : null}
 
-          {visibleFields.map((field) => (
-            <View key={field.id} style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>{fieldLabel(field)}</Text>
-              <TextInput
-                accessibilityLabel={field.label}
-                autoCapitalize={field.id === "email" ? "none" : "sentences"}
-                keyboardType={field.keyboardType}
-                multiline={field.multiline}
-                onChangeText={(value) => onChangeField?.(field.id, value)}
-                style={[styles.input, field.multiline ? styles.messageInput : undefined]}
-                value={draft[field.id]}
-              />
+        {screen.steps.map((step) => {
+          const stepFields = step.fieldIds
+            .map((fieldId) => fieldsById.get(fieldId))
+            .filter((field): field is JoinRequestFormField => Boolean(field));
+
+          return (
+            <View key={step.id} style={styles.stepCard}>
+              <View style={styles.stepHeader}>
+                <Text style={styles.stepNumber}>{step.stepNumber}</Text>
+                <View style={styles.stepTitleGroup}>
+                  <Text style={styles.stepTitle}>{step.title}</Text>
+                  <Text style={styles.stepBody}>{step.body}</Text>
+                </View>
+              </View>
+              {stepFields.map((field) => (
+                <View key={field.id} style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>{fieldLabel(field)}</Text>
+                  <TextInput
+                    accessibilityLabel={field.label}
+                    autoCapitalize={field.id === "email" ? "none" : "sentences"}
+                    keyboardType={field.keyboardType}
+                    multiline={field.multiline}
+                    onChangeText={(value) => onChangeField?.(field.id, value)}
+                    style={[styles.input, field.multiline ? styles.messageInput : undefined]}
+                    value={draft[field.id]}
+                  />
+                </View>
+              ))}
             </View>
-          ))}
+          );
+        })}
 
-          {screen.state === "ready" ? (
+        {screen.state === "ready" ? (
+          <View style={styles.consentCard}>
+            <Text style={styles.stepNumber}>05</Text>
+            <Text style={styles.stepTitle}>Consent and submission</Text>
             <Pressable
               accessibilityLabel="Consent"
               accessibilityRole="checkbox"
@@ -76,13 +94,11 @@ export function JoinRequestFormScreen({
               <View style={[styles.checkbox, consentAccepted ? styles.checkboxChecked : undefined]}>
                 <Text style={styles.checkboxMark}>{consentAccepted ? "✓" : ""}</Text>
               </View>
-              <Text style={styles.consentText}>
-                I understand this is a request for information and does not guarantee membership.
-              </Text>
+              <Text style={styles.consentText}>{screen.consent.label}</Text>
             </Pressable>
-          ) : null}
-
-          {screen.state === "ready" ? (
+            <Text style={styles.consentFinePrint}>
+              This request does not create an account or promise membership.
+            </Text>
             <Pressable
               accessibilityLabel="Submit Request"
               accessibilityRole="button"
@@ -91,8 +107,8 @@ export function JoinRequestFormScreen({
             >
               <Text style={styles.submitButtonText}>Submit Request</Text>
             </Pressable>
-          ) : null}
-        </View>
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -113,31 +129,87 @@ const styles = StyleSheet.create({
     flex: 1
   },
   content: {
+    gap: designTokens.space[4],
+    padding: designTokens.space[4],
     paddingBottom: 112
   },
-  introBand: {
-    backgroundColor: colors.text.primary,
-    paddingHorizontal: designTokens.space[4],
-    paddingVertical: designTokens.space[3]
+  hero: {
+    alignItems: "center",
+    gap: designTokens.space[2],
+    paddingTop: designTokens.space[2]
   },
-  introText: {
-    color: colors.border.chrome,
+  eyebrow: {
+    color: colors.brand.goldDark,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
-    lineHeight: designTokens.typography.lineHeight.secondary,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
+  title: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.screenTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.screenTitle,
     textAlign: "center"
   },
-  formCard: {
-    backgroundColor: colors.background.surface,
-    gap: designTokens.space[1],
-    margin: designTokens.space[4],
-    padding: designTokens.space[3]
+  subtitle: {
+    color: colors.brand.brown,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.body,
+    lineHeight: designTokens.typography.lineHeight.body,
+    textAlign: "center"
   },
   errorText: {
     color: colors.status.danger,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.secondary,
     fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.secondary
+  },
+  stepCard: {
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.md,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[4],
+    shadowColor: designTokens.elevation.subtle.color,
+    shadowOffset: {
+      width: designTokens.elevation.subtle.offsetX,
+      height: designTokens.elevation.subtle.offsetY
+    },
+    shadowOpacity: designTokens.elevation.subtle.opacity,
+    shadowRadius: designTokens.elevation.subtle.radius
+  },
+  stepHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: designTokens.space[3]
+  },
+  stepNumber: {
+    color: colors.brand.goldDark,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
+  },
+  stepTitleGroup: {
+    flex: 1,
+    gap: designTokens.space[1]
+  },
+  stepTitle: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle
+  },
+  stepBody: {
+    color: colors.text.muted,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.secondary,
     lineHeight: designTokens.typography.lineHeight.secondary
   },
   fieldGroup: {
@@ -164,6 +236,14 @@ const styles = StyleSheet.create({
   messageInput: {
     height: 64,
     textAlignVertical: "top"
+  },
+  consentCard: {
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.md,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[4]
   },
   consentRow: {
     alignItems: "flex-start",
@@ -193,6 +273,12 @@ const styles = StyleSheet.create({
   consentText: {
     color: colors.text.muted,
     flex: 1,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    lineHeight: designTokens.typography.lineHeight.compactLabel
+  },
+  consentFinePrint: {
+    color: colors.text.muted,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     lineHeight: designTokens.typography.lineHeight.compactLabel
