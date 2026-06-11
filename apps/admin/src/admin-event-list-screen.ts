@@ -48,6 +48,35 @@ function eventRow(event: AdminEventSummaryDto, canWrite: boolean): AdminContentR
     title: event.title,
     primaryMeta: `${event.type} / ${formatAdminDateTime(event.startAt)}`,
     secondaryMeta: event.locationLabel ?? "Location not set",
+    detailItems: [
+      {
+        id: "type",
+        label: "Type",
+        value: event.type
+      },
+      {
+        id: "start",
+        label: "Start",
+        value: formatAdminDateTime(event.startAt)
+      },
+      {
+        id: "end",
+        label: "End",
+        value: event.endAt ? formatAdminDateTime(event.endAt) : "Not set"
+      },
+      {
+        id: "location",
+        label: "Location",
+        value: event.locationLabel ?? "Location not set"
+      },
+      {
+        id: "scope",
+        label: "Scope",
+        value: event.targetOrganizationUnitId
+          ? `Scoped to ${event.targetOrganizationUnitId}`
+          : "Global public scope"
+      }
+    ],
     approvalWarning: approvalWarningForAdminContent({
       status: event.status,
       approvedAt: event.approvedAt

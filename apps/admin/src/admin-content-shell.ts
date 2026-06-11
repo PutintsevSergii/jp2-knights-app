@@ -445,6 +445,7 @@ function renderEditorStyle(screen: AdminContentEditorScreen): string {
     `.admin-content__button--secondary{background:${screen.theme.surface};color:${screen.theme.text};border:1px solid ${screen.theme.border};}`,
     `.admin-content__button--danger{background:${screen.theme.danger};color:${screen.theme.primaryActionText};}`,
     `.admin-content__form{background:${screen.theme.surface};border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:16px;display:grid;gap:12px;max-width:760px;}`,
+    `.admin-content__form--event{border-left:4px solid ${screen.theme.primaryAction};max-width:860px;}`,
     ".admin-content__field{display:grid;gap:4px;}",
     ".admin-content__label{font-weight:600;}",
     `.admin-content__input{border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:8px;font:inherit;color:${screen.theme.text};background:${screen.theme.background};}`,
@@ -471,7 +472,7 @@ function renderEditorForm(screen: AdminContentEditorScreen): string {
   }
 
   return [
-    `<form class="admin-content__form" data-content-id="${escapeAttribute(screen.contentId ?? "")}" data-mode="${screen.mode}">`,
+    `<form class="admin-content__form admin-content__form--${screen.kind}" data-content-kind="${screen.kind}" data-content-id="${escapeAttribute(screen.contentId ?? "")}" data-mode="${screen.mode}">`,
     screen.fields.map(renderEditorField).join(""),
     "</form>"
   ].join("");

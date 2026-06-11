@@ -392,8 +392,11 @@ describe("admin content shell routes", () => {
       statusCode: 200
     });
     expect(eventRendered.document).toContain("Event: Open Evening");
+    expect(eventRendered.document).toContain('data-content-kind="event"');
+    expect(eventRendered.document).toContain("admin-content__form--event");
     expect(eventRendered.document).toContain('data-action="approve"');
     expect(eventRendered.document).not.toContain("Attendees");
+    expect(eventRendered.document).not.toContain("RSVP");
     expect(silentPrayerRendered).toMatchObject({
       route: "AdminSilentPrayerEditor",
       state: "ready",

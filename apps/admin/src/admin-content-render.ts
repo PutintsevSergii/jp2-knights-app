@@ -58,6 +58,15 @@ function renderStyle(screen: AdminContentListScreen): string {
     `.admin-content__button--danger{background:${screen.theme.danger};color:${screen.theme.primaryActionText};}`,
     `.admin-content__empty{background:${screen.theme.surface};border:1px solid ${screen.theme.border};border-radius:${screen.theme.radius}px;padding:16px;}`,
     ".admin-content__demo{font-size:12px;font-weight:700;text-transform:uppercase;}",
+    ".admin-content__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}",
+    `.admin-content__card{background:${screen.theme.surface};border:1px solid ${screen.theme.border};border-left:4px solid ${screen.theme.primaryAction};border-radius:${screen.theme.radius}px;padding:16px;display:grid;gap:14px;}`,
+    ".admin-content__card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}",
+    ".admin-content__card-title{font-size:18px;line-height:24px;margin:0;}",
+    ".admin-content__card-meta{display:grid;gap:8px;}",
+    ".admin-content__detail{display:grid;grid-template-columns:minmax(72px,0.4fr) minmax(0,1fr);gap:8px;font-size:13px;}",
+    `.admin-content__detail-label{color:${screen.theme.mutedText};font-weight:700;}`,
+    ".admin-content__detail-value{min-width:0;overflow-wrap:anywhere;}",
+    "@media (max-width:760px){.admin-content__header{display:block;}.admin-content__actions{margin-top:12px;}.admin-content__detail{grid-template-columns:1fr;gap:2px;}}",
     "</style>"
   ].join("");
 }
@@ -77,6 +86,10 @@ function renderRows(screen: AdminContentListScreen): string {
     return renderAdminEmptyState(screen.title, screen.body);
   }
 
+  if (screen.route === "AdminEventList") {
+    return renderEventCards(screen.rows);
+  }
+
   return [
     '<table class="admin-content__table">',
     "<thead><tr>",
@@ -89,6 +102,42 @@ function renderRows(screen: AdminContentListScreen): string {
     "<tbody>",
     screen.rows.map(renderRow).join(""),
     "</tbody></table>"
+  ].join("");
+}
+
+function renderEventCards(rows: AdminContentRow[]): string {
+  return [
+    '<div class="admin-content__cards" data-content-layout="event-cards">',
+    rows.map(renderEventCard).join(""),
+    "</div>"
+  ].join("");
+}
+
+function renderEventCard(row: AdminContentRow): string {
+  return [
+    `<article class="admin-content__card" data-content-id="${escapeAttribute(row.id)}">`,
+    '<div class="admin-content__card-head">',
+    `<h2 class="admin-content__card-title">${escapeHtml(row.title)}</h2>`,
+    `<span class="admin-content__badge">${escapeHtml(row.status)}</span>`,
+    "</div>",
+    `<div class="admin-content__meta">${escapeHtml(row.primaryMeta)}</div>`,
+    '<div class="admin-content__card-meta">',
+    (row.detailItems ?? []).map(renderEventDetail).join(""),
+    "</div>",
+    row.approvalWarning
+      ? `<div class="admin-content__warning">${escapeHtml(row.approvalWarning)}</div>`
+      : "",
+    `<div class="admin-content__actions">${row.actions.map(renderAction).join("")}</div>`,
+    "</article>"
+  ].join("");
+}
+
+function renderEventDetail(detail: NonNullable<AdminContentRow["detailItems"]>[number]): string {
+  return [
+    '<div class="admin-content__detail">',
+    `<span class="admin-content__detail-label">${escapeHtml(detail.label)}</span>`,
+    `<span class="admin-content__detail-value">${escapeHtml(detail.value)}</span>`,
+    "</div>"
   ].join("");
 }
 

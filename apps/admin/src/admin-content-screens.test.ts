@@ -168,6 +168,33 @@ describe("admin content screen models", () => {
       title: "Open Evening",
       primaryMeta: "open-evening / 2026-06-10T18:00:00.000Z",
       secondaryMeta: "Riga",
+      detailItems: [
+        {
+          id: "type",
+          label: "Type",
+          value: "open-evening"
+        },
+        {
+          id: "start",
+          label: "Start",
+          value: "2026-06-10T18:00:00.000Z"
+        },
+        {
+          id: "end",
+          label: "End",
+          value: "Not set"
+        },
+        {
+          id: "location",
+          label: "Location",
+          value: "Riga"
+        },
+        {
+          id: "scope",
+          label: "Scope",
+          value: "Scoped to 11111111-1111-4111-8111-111111111111"
+        }
+      ],
       status: "published",
       visibility: "ORGANIZATION_UNIT",
       targetOrganizationUnitId: "11111111-1111-4111-8111-111111111111"

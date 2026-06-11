@@ -35,11 +35,18 @@ export interface AdminContentRow {
   title: string;
   primaryMeta: string;
   secondaryMeta: string;
+  detailItems?: AdminContentRowDetail[] | undefined;
   approvalWarning?: string | undefined;
   status: string;
   visibility: string;
   targetOrganizationUnitId: string | null;
   actions: AdminContentAction[];
+}
+
+export interface AdminContentRowDetail {
+  id: string;
+  label: string;
+  value: string;
 }
 
 export interface AdminContentTheme {

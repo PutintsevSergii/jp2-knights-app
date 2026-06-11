@@ -55,6 +55,75 @@ const readyPrayerScreen: AdminContentListScreen = {
   theme: adminContentTheme
 };
 
+const readyEventScreen: AdminContentListScreen = {
+  route: "AdminEventList",
+  state: "ready",
+  title: "Events",
+  body: "Manage event content.",
+  rows: [
+    {
+      id: "44444444-4444-4444-8444-444444444444",
+      title: "Open Evening",
+      primaryMeta: "open-evening / 2026-06-10T18:00:00.000Z",
+      secondaryMeta: "Riga",
+      detailItems: [
+        {
+          id: "type",
+          label: "Type",
+          value: "open-evening"
+        },
+        {
+          id: "start",
+          label: "Start",
+          value: "2026-06-10T18:00:00.000Z"
+        },
+        {
+          id: "location",
+          label: "Location",
+          value: "Riga"
+        },
+        {
+          id: "scope",
+          label: "Scope",
+          value: "Global public scope"
+        }
+      ],
+      status: "published",
+      visibility: "PUBLIC",
+      targetOrganizationUnitId: null,
+      actions: [
+        {
+          id: "edit",
+          label: "Edit",
+          targetRoute: "AdminEventEditor",
+          targetId: "44444444-4444-4444-8444-444444444444"
+        },
+        {
+          id: "cancel",
+          label: "Cancel",
+          targetRoute: "AdminEventEditor",
+          targetId: "44444444-4444-4444-8444-444444444444"
+        },
+        {
+          id: "archive",
+          label: "Archive",
+          targetRoute: "AdminEventEditor",
+          targetId: "44444444-4444-4444-8444-444444444444"
+        }
+      ]
+    }
+  ],
+  actions: [
+    {
+      id: "refresh",
+      label: "Refresh",
+      targetRoute: "AdminEventEditor"
+    }
+  ],
+  demoChromeVisible: false,
+  theme: adminContentTheme
+};
+
 describe("admin content renderer", () => {
   it("renders a ready list screen as an accessible admin table with action metadata", () => {
     const rendered = renderAdminContentListScreen(readyPrayerScreen);
@@ -67,6 +136,19 @@ describe("admin content renderer", () => {
     expect(rendered.html).toContain('data-action="create"');
     expect(rendered.html).toContain('data-action="approve"');
     expect(rendered.html).toContain('data-target-id="33333333-3333-4333-8333-333333333333"');
+  });
+
+  it("renders event management as responsive cards without attendee actions", () => {
+    const rendered = renderAdminContentListScreen(readyEventScreen);
+
+    expect(rendered.route).toBe("AdminEventList");
+    expect(rendered.html).toContain('data-content-layout="event-cards"');
+    expect(rendered.html).toContain('class="admin-content__card"');
+    expect(rendered.html).toContain("Open Evening");
+    expect(rendered.html).toContain("Global public scope");
+    expect(rendered.html).toContain('data-action="cancel"');
+    expect(rendered.html).not.toContain("<table");
+    expect(rendered.html).not.toMatch(/attendee|participant|rsvp/i);
   });
 
   it("renders empty and forbidden states without mutation actions", () => {
