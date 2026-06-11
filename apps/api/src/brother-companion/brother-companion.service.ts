@@ -3,6 +3,7 @@ import { canAccessBrotherMode } from "@jp2/shared-auth";
 import type { OrganizationUnitSummaryDto } from "@jp2/shared-validation";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
+import { LiturgicalCalendarProvider } from "../public/liturgical-calendar.provider.js";
 import { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import type {
   BrotherAnnouncementListQuery,
@@ -19,7 +20,10 @@ import type {
 
 @Injectable()
 export class BrotherCompanionService {
-  constructor(private readonly brotherCompanionRepository: BrotherCompanionRepository) {}
+  constructor(
+    private readonly brotherCompanionRepository: BrotherCompanionRepository,
+    private readonly liturgicalCalendarProvider: LiturgicalCalendarProvider
+  ) {}
 
   async getProfile(principal: CurrentUserPrincipal): Promise<BrotherProfileResponse> {
     const profile = await this.loadProfile(principal);
@@ -34,8 +38,13 @@ export class BrotherCompanionService {
       organizationUnits.map((organizationUnit) => organizationUnit.id)
     );
     const primaryMembership = profile.memberships[0];
+    const today = await this.liturgicalCalendarProvider.getToday({
+      country: twoLetterCountry(primaryMembership?.organizationUnit.country),
+      language: profile.preferredLanguage ?? undefined
+    });
 
     return {
+      today,
       profileSummary: {
         displayName: profile.displayName,
         currentDegree: primaryMembership?.currentDegree ?? null,
@@ -147,6 +156,12 @@ export class BrotherCompanionService {
 
     return profile;
   }
+}
+
+function twoLetterCountry(country: string | null | undefined): string | undefined {
+  const trimmed = country?.trim();
+
+  return trimmed?.length === 2 ? trimmed.toUpperCase() : undefined;
 }
 
 function buildTodayCards(

@@ -67,9 +67,19 @@ export class PublicController {
     required: false,
     schema: { type: "string", minLength: 2, maxLength: 10 }
   })
+  @ApiQuery({
+    name: "date",
+    required: false,
+    schema: { type: "string", format: "date" }
+  })
+  @ApiQuery({
+    name: "country",
+    required: false,
+    schema: { type: "string", minLength: 2, maxLength: 2 }
+  })
   getPublicHome(
     @Query(new ZodValidationPipe(publicHomeQuerySchema)) query: PublicHomeQuery
-  ): PublicHomeResponse {
+  ): Promise<PublicHomeResponse> {
     return this.publicHomeService.getHome(query);
   }
 

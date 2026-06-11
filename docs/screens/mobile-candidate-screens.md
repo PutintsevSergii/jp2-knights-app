@@ -42,7 +42,7 @@ The next Stitch design pass should make `CandidateDashboard` answer "what
 should I do next?" immediately. Prioritize:
 
 - personalized greeting and candidate status;
-- today's civil date and liturgical day/season/rank/color;
+- API-owned today's civil date and liturgical day/season/rank/color;
 - one dominant next formation action from the dashboard/roadmap model;
 - assigned choragiew/unit summary;
 - responsible officer contact with email/phone actions only when configured;

@@ -1,6 +1,10 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
 import { DatabaseModule } from "../database/database.module.js";
+import {
+  createConfiguredLiturgicalCalendarProvider,
+  LiturgicalCalendarProvider,
+} from "../public/liturgical-calendar.provider.js";
 import { CandidateAnnouncementController } from "./candidate-announcement.controller.js";
 import { CandidateDashboardController } from "./candidate-dashboard.controller.js";
 import { CandidateEventController } from "./candidate-event.controller.js";
@@ -22,6 +26,10 @@ import { CandidateDashboardService } from "./candidate-dashboard.service.js";
     {
       provide: CandidateDashboardRepository,
       useClass: PrismaCandidateDashboardRepository
+    },
+    {
+      provide: LiturgicalCalendarProvider,
+      useFactory: createConfiguredLiturgicalCalendarProvider
     }
   ],
   exports: [CandidateDashboardService]

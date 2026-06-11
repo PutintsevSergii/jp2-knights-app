@@ -2,7 +2,14 @@ import { z } from "zod";
 
 export const publicHomeQuerySchema = z
   .object({
-    language: z.string().trim().min(2).max(10).optional()
+    language: z.string().trim().min(2).max(10).optional(),
+    date: z.iso.date().optional(),
+    country: z
+      .string()
+      .trim()
+      .length(2)
+      .transform((value) => value.toUpperCase())
+      .optional()
   })
   .strict();
 
@@ -34,11 +41,27 @@ export const publicHomeEventSummarySchema = z.object({
   visibility: z.enum(["PUBLIC", "FAMILY_OPEN"])
 });
 
+export const publicHomeTodaySchema = z.object({
+  civilDate: z.object({
+    date: z.iso.date(),
+    displayLabel: z.string().trim().min(1).max(120)
+  }),
+  liturgicalDay: z.object({
+    name: z.string().trim().min(1).max(240),
+    season: z.string().trim().min(1).max(120).nullable(),
+    rank: z.string().trim().min(1).max(120).nullable(),
+    color: z.string().trim().min(1).max(80).nullable(),
+    source: z.string().trim().min(1).max(120),
+    state: z.enum(["ready", "unavailable", "fallback"])
+  })
+});
+
 export const publicHomeResponseSchema = z.object({
   intro: z.object({
     title: z.string().trim().min(1).max(120),
     body: z.string().trim().min(1).max(1000)
   }),
+  today: publicHomeTodaySchema,
   prayerOfDay: z
     .object({
       title: z.string().trim().min(1).max(200),
@@ -184,6 +207,7 @@ export const publicCandidateRequestResponseSchema = z.object({
 });
 
 export type PublicHomeQueryDto = z.infer<typeof publicHomeQuerySchema>;
+export type PublicHomeTodayDto = z.infer<typeof publicHomeTodaySchema>;
 export type PublicHomeResponseDto = z.infer<typeof publicHomeResponseSchema>;
 export type PublicContentPageQueryDto = z.infer<typeof publicContentPageQuerySchema>;
 export type PublicContentPageResponseDto = z.infer<typeof publicContentPageResponseSchema>;

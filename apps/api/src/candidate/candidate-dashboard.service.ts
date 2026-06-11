@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { canAccessCandidateMode } from "@jp2/shared-auth";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { assertNotIdleApprovalPrincipal } from "../auth/idle-approval.exception.js";
+import { LiturgicalCalendarProvider } from "../public/liturgical-calendar.provider.js";
 import { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import type {
   CandidateAnnouncementListQuery,
@@ -15,16 +16,24 @@ import type {
 
 @Injectable()
 export class CandidateDashboardService {
-  constructor(private readonly candidateDashboardRepository: CandidateDashboardRepository) {}
+  constructor(
+    private readonly candidateDashboardRepository: CandidateDashboardRepository,
+    private readonly liturgicalCalendarProvider: LiturgicalCalendarProvider
+  ) {}
 
   async getDashboard(principal: CurrentUserPrincipal): Promise<CandidateDashboardResponse> {
     const profile = await this.loadProfile(principal);
+    const today = await this.liturgicalCalendarProvider.getToday({
+      country: twoLetterCountry(profile.assignedOrganizationUnit?.country),
+      language: profile.preferredLanguage ?? undefined
+    });
 
     const upcomingEvents = await this.candidateDashboardRepository.findUpcomingEvents(
       profile.assignedOrganizationUnit?.id ?? null
     );
 
     return {
+      today,
       profile,
       nextStep: buildNextStep(profile),
       upcomingEvents,
@@ -104,6 +113,12 @@ export class CandidateDashboardService {
 
     return profile;
   }
+}
+
+function twoLetterCountry(country: string | null | undefined): string | undefined {
+  const trimmed = country?.trim();
+
+  return trimmed?.length === 2 ? trimmed.toUpperCase() : undefined;
 }
 
 function buildNextStep(profile: CandidateDashboardResponse["profile"]) {

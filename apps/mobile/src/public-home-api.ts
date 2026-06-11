@@ -17,6 +17,8 @@ export type PublicHomeFetch = MobilePublicFetch;
 export interface FetchPublicHomeOptions {
   baseUrl?: string;
   language?: string;
+  date?: string;
+  country?: string;
   fetchImpl?: PublicHomeFetch;
 }
 
@@ -24,7 +26,11 @@ export async function fetchPublicHome(
   options: FetchPublicHomeOptions = {}
 ): Promise<PublicHomeResponseDto> {
   const response = await requestPublicMobileApi<PublicHomeFetchResponse>(
-    buildPublicHomeUrl(options.baseUrl, options.language),
+    buildPublicHomeUrl(options.baseUrl, {
+      country: options.country,
+      date: options.date,
+      language: options.language
+    }),
     options.fetchImpl,
     (status) => new PublicHomeHttpError(status)
   );
@@ -32,11 +38,29 @@ export async function fetchPublicHome(
   return publicHomeResponseSchema.parse(await response.json());
 }
 
-export function buildPublicHomeUrl(baseUrl = DEFAULT_MOBILE_API_BASE_URL, language?: string) {
-  const url = new URL("public/home", normalizeBaseUrl(baseUrl));
+export interface BuildPublicHomeUrlOptions {
+  language?: string | undefined;
+  date?: string | undefined;
+  country?: string | undefined;
+}
 
-  if (language) {
-    url.searchParams.set("language", language);
+export function buildPublicHomeUrl(
+  baseUrl = DEFAULT_MOBILE_API_BASE_URL,
+  options: BuildPublicHomeUrlOptions | string = {}
+) {
+  const url = new URL("public/home", normalizeBaseUrl(baseUrl));
+  const query = typeof options === "string" ? { language: options } : options;
+
+  if (query.language) {
+    url.searchParams.set("language", query.language);
+  }
+
+  if (query.date) {
+    url.searchParams.set("date", query.date);
+  }
+
+  if (query.country) {
+    url.searchParams.set("country", query.country);
   }
 
   return url.toString();

@@ -29,9 +29,39 @@ const publicHomeEventSummaryOpenApiSchema = {
   }
 };
 
+export const publicHomeTodayOpenApiSchema = {
+  type: "object",
+  required: ["civilDate", "liturgicalDay"],
+  additionalProperties: false,
+  properties: {
+    civilDate: {
+      type: "object",
+      required: ["date", "displayLabel"],
+      additionalProperties: false,
+      properties: {
+        date: { type: "string", format: "date" },
+        displayLabel: { type: "string", minLength: 1, maxLength: 120 }
+      }
+    },
+    liturgicalDay: {
+      type: "object",
+      required: ["name", "season", "rank", "color", "source", "state"],
+      additionalProperties: false,
+      properties: {
+        name: { type: "string", minLength: 1, maxLength: 240 },
+        season: { type: "string", nullable: true, minLength: 1, maxLength: 120 },
+        rank: { type: "string", nullable: true, minLength: 1, maxLength: 120 },
+        color: { type: "string", nullable: true, minLength: 1, maxLength: 80 },
+        source: { type: "string", minLength: 1, maxLength: 120 },
+        state: { type: "string", enum: ["ready", "unavailable", "fallback"] }
+      }
+    }
+  }
+};
+
 export const publicHomeResponseOpenApiSchema = {
   type: "object",
-  required: ["intro", "prayerOfDay", "nextEvents", "ctas"],
+  required: ["intro", "today", "prayerOfDay", "nextEvents", "ctas"],
   additionalProperties: false,
   properties: {
     intro: {
@@ -43,6 +73,7 @@ export const publicHomeResponseOpenApiSchema = {
         body: { type: "string", minLength: 1, maxLength: 1000 }
       }
     },
+    today: publicHomeTodayOpenApiSchema,
     prayerOfDay: {
       nullable: true,
       oneOf: [

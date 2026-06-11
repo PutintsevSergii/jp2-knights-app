@@ -68,7 +68,7 @@ The next Stitch design pass should make `BrotherToday` a daily command center
 instead of a generic dashboard. Prioritize:
 
 - personalized greeting plus current degree and primary choragiew/unit;
-- today's civil date and liturgical day/season/rank/color;
+- API-owned today's civil date and liturgical day/season/rank/color;
 - one dominant "today's focus" action chosen from formation, silent prayer,
   upcoming event, or latest announcement;
 - roadmap progress and next step status;

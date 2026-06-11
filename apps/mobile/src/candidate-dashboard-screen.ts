@@ -16,6 +16,7 @@ export interface CandidateDashboardScreen {
   state: MobileScreenState;
   title: string;
   body: string;
+  today: CandidateDashboardResponseDto["today"] | null;
   sections: CandidateScreenSection[];
   actions: CandidateScreenAction[];
   demoChromeVisible: boolean;
@@ -44,6 +45,7 @@ export function buildCandidateDashboardScreen(
     state: "ready",
     title: "Candidate Dashboard",
     body: candidateDashboardBody(options.response),
+    today: options.response.today,
     sections: buildCandidateDashboardSections(options.response),
     actions: buildCandidateDashboardActions(options.response),
     demoChromeVisible: options.runtimeMode === "demo",
@@ -168,6 +170,7 @@ function stateOnlyCandidateDashboard(
     state,
     title: copy.title,
     body: copy.body,
+    today: null,
     sections: [],
     actions: [],
     demoChromeVisible,

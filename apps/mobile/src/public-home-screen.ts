@@ -16,6 +16,7 @@ export interface PublicHomeScreen {
   state: MobileScreenState;
   title: string;
   body: string;
+  today: PublicHomeResponseDto["today"] | null;
   sections: PublicScreenSection[];
   actions: PublicScreenAction[];
   demoChromeVisible: boolean;
@@ -44,6 +45,7 @@ export function buildPublicHomeScreen(launchState: MobileLaunchState): PublicHom
     state: launchState.state,
     title: publicHome.intro.title,
     body: publicHome.intro.body,
+    today: publicHome.today,
     sections: [
       ...(launchState.idleApproval ? [buildIdleApprovalSection(launchState)] : []),
       ...buildPublicHomeSections(publicHome)
@@ -120,6 +122,7 @@ function stateOnlyPublicHome(
     state,
     title: copy.title,
     body: copy.body,
+    today: null,
     sections: [],
     actions: [],
     demoChromeVisible,

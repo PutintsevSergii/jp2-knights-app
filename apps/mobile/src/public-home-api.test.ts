@@ -12,6 +12,20 @@ const publicHomePayload = {
     title: "JP2 App",
     body: "Approved public content"
   },
+  today: {
+    civilDate: {
+      date: "2026-06-11",
+      displayLabel: "Thursday, June 11"
+    },
+    liturgicalDay: {
+      name: "Liturgical calendar unavailable",
+      season: null,
+      rank: null,
+      color: null,
+      source: "local-fallback",
+      state: "fallback"
+    }
+  },
   prayerOfDay: null,
   nextEvents: [],
   ctas: [
@@ -26,8 +40,14 @@ const publicHomePayload = {
 
 describe("mobile public home API client", () => {
   it("builds the public home URL from the configured API base URL", () => {
-    expect(buildPublicHomeUrl("https://api.example.test", "en")).toBe(
-      "https://api.example.test/public/home?language=en"
+    expect(
+      buildPublicHomeUrl("https://api.example.test", {
+        country: "LV",
+        date: "2026-06-11",
+        language: "en"
+      })
+    ).toBe(
+      "https://api.example.test/public/home?language=en&date=2026-06-11&country=LV"
     );
     expect(buildPublicHomeUrl("https://api.example.test/")).toBe(
       "https://api.example.test/public/home"
@@ -56,9 +76,16 @@ describe("mobile public home API client", () => {
     );
 
     await expect(
-      fetchPublicHome({ baseUrl: "https://api.example.test", fetchImpl })
+      fetchPublicHome({
+        baseUrl: "https://api.example.test",
+        country: "LV",
+        date: "2026-06-11",
+        fetchImpl
+      })
     ).resolves.toEqual(publicHomePayload);
-    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/public/home");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/public/home?date=2026-06-11&country=LV"
+    );
   });
 
   it("rejects payloads that include non-public event visibility", async () => {

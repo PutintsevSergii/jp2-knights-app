@@ -35,6 +35,7 @@ describe("mobile candidate screen models", () => {
       "CandidateEvents"
     ]);
     expect(screen.sections.map((section) => section.id)).toContain("next-step");
+    expect(screen.today).toEqual(fallbackCandidateDashboard.today);
     expect(JSON.stringify(screen)).not.toMatch(/brother|membership|degree/i);
   });
 

@@ -1,6 +1,10 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
 import { DatabaseModule } from "../database/database.module.js";
+import {
+  createConfiguredLiturgicalCalendarProvider,
+  LiturgicalCalendarProvider,
+} from "../public/liturgical-calendar.provider.js";
 import { BrotherCompanionController } from "./brother-companion.controller.js";
 import {
   BrotherCompanionRepository,
@@ -16,6 +20,10 @@ import { BrotherCompanionService } from "./brother-companion.service.js";
     {
       provide: BrotherCompanionRepository,
       useClass: PrismaBrotherCompanionRepository
+    },
+    {
+      provide: LiturgicalCalendarProvider,
+      useFactory: createConfiguredLiturgicalCalendarProvider
     }
   ],
   exports: [BrotherCompanionService]

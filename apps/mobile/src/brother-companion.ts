@@ -48,6 +48,20 @@ export const fallbackBrotherProfile = brotherProfileResponseSchema.parse({
 }) satisfies BrotherProfileResponseDto;
 
 export const fallbackBrotherToday = brotherTodayResponseSchema.parse({
+  today: {
+    civilDate: {
+      date: "2026-06-11",
+      displayLabel: "Thursday, June 11"
+    },
+    liturgicalDay: {
+      name: "Liturgical calendar unavailable",
+      season: null,
+      rank: null,
+      color: null,
+      source: "local-fallback",
+      state: "fallback"
+    }
+  },
   profileSummary: {
     displayName: "Demo Brother",
     currentDegree: "First Degree",

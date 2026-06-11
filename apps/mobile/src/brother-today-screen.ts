@@ -46,6 +46,7 @@ export interface BrotherTodayScreen {
   state: MobileScreenState;
   title: string;
   body: string;
+  today: BrotherTodayResponseDto["today"] | null;
   sections: BrotherScreenSection[];
   actions: BrotherScreenAction[];
   profileSummary?: BrotherTodayProfileSummary | undefined;
@@ -74,6 +75,7 @@ export function buildBrotherTodayScreen(options: {
     state: "ready",
     title: "Brother Today",
     body: brotherTodayBody(options.response),
+    today: options.response.today,
     sections: buildTodaySections(options.response),
     actions: buildTodayActions(options.response),
     profileSummary: buildProfileSummary(options.response),
@@ -216,6 +218,7 @@ function stateOnlyBrotherToday(
     state,
     title: copy.title,
     body: copy.body,
+    today: null,
     sections: [],
     actions: [],
     quickActions: [],

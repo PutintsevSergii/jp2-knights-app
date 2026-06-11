@@ -22,6 +22,21 @@ import {
   JOIN_REQUEST_CONSENT_TEXT_VERSION
 } from "./public-screens.js";
 
+const today = {
+  civilDate: {
+    date: "2026-06-11",
+    displayLabel: "Thursday, June 11"
+  },
+  liturgicalDay: {
+    name: "Liturgical calendar unavailable",
+    season: null,
+    rank: null,
+    color: null,
+    source: "local-fallback",
+    state: "fallback" as const
+  }
+};
+
 describe("mobile public screen models", () => {
   it("builds public home from the shared fallback DTO without private fields", () => {
     const screen = buildPublicHomeScreen(resolveMobileLaunchState(null));
@@ -65,6 +80,7 @@ describe("mobile public screen models", () => {
             title: "JP2 App",
             body: "Public content"
           },
+          today,
           prayerOfDay: null,
           nextEvents: [],
           ctas: [
@@ -96,6 +112,7 @@ describe("mobile public screen models", () => {
             title: "JP2 App",
             body: "Public content"
           },
+          today,
           prayerOfDay: {
             title: "Prayer of the Day",
             body: "Public prayer body"
@@ -143,6 +160,7 @@ describe("mobile public screen models", () => {
             title: "JP2 App",
             body: "Public content"
           },
+          today,
           prayerOfDay: null,
           nextEvents: [
             {

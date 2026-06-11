@@ -1,17 +1,36 @@
 import { describe, expect, it } from "vitest";
 import type { PublicCandidateRequestService } from "./public-candidate-request.service.js";
 import type { PublicContentService } from "./public-content.service.js";
+import type { PublicHomeService } from "./public-home.service.js";
 import { PublicController } from "./public.controller.js";
-import type { CreatePublicCandidateRequest, PublicContentPageQuery } from "./public.types.js";
+import type {
+  CreatePublicCandidateRequest,
+  PublicContentPageQuery,
+  PublicHomeQuery
+} from "./public.types.js";
 
 describe("PublicController", () => {
-  it("serves public home without an authenticated principal", () => {
+  it("serves public home without an authenticated principal", async () => {
     const controller = controllerWith();
 
-    expect(controller.getPublicHome({ language: "en" })).toEqual({
+    await expect(controller.getPublicHome({ language: "en" })).resolves.toEqual({
       intro: {
         title: "JP2 App",
         body: "Public discovery content is being prepared for approval."
+      },
+      today: {
+        civilDate: {
+          date: "2026-06-11",
+          displayLabel: "Thursday, June 11"
+        },
+        liturgicalDay: {
+          name: "Liturgical calendar unavailable",
+          season: null,
+          rank: null,
+          color: null,
+          source: "local-fallback",
+          state: "fallback"
+        }
       },
       prayerOfDay: null,
       nextEvents: [],
@@ -137,12 +156,26 @@ describe("PublicController", () => {
 function controllerWith(): PublicController {
   return new PublicController(
     {
-      getHome: (query) => {
+      getHome: (query: PublicHomeQuery) => {
         expect(query).toEqual({ language: "en" });
-        return {
+        return Promise.resolve({
           intro: {
             title: "JP2 App",
             body: "Public discovery content is being prepared for approval."
+          },
+          today: {
+            civilDate: {
+              date: "2026-06-11",
+              displayLabel: "Thursday, June 11"
+            },
+            liturgicalDay: {
+              name: "Liturgical calendar unavailable",
+              season: null,
+              rank: null,
+              color: null,
+              source: "local-fallback",
+              state: "fallback"
+            }
           },
           prayerOfDay: null,
           nextEvents: [],
@@ -154,9 +187,9 @@ function controllerWith(): PublicController {
               targetRoute: "JoinRequestForm"
             }
           ]
-        };
+        });
       }
-    },
+    } as unknown as PublicHomeService,
     {
       getContentPage: (slug: string, query: PublicContentPageQuery) => {
         expect(slug).toBe("about-order");

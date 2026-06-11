@@ -16,6 +16,8 @@ describe("BrotherTodayScreen", () => {
     expect(findText(element, "JP2 Knights")).toBe(true);
     expect(findTextContaining(element, "Peace, Demo")).toBe(true);
     expect(findText(element, "First Degree")).toBe(true);
+    expect(findText(element, "Thursday, June 11")).toBe(true);
+    expect(findText(element, "Liturgical calendar unavailable")).toBe(true);
     expect(findText(element, "Today's Focus")).toBe(true);
     expect(findText(element, "Brother Gathering")).toBe(true);
     expect(findText(element, "Community Board")).toBe(true);

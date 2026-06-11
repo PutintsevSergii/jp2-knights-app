@@ -17,6 +17,13 @@ export function BrotherTodayScreen({ screen, onAction }: BrotherTodayScreenProps
   const roadmapAction = screen.quickActions.find((action) => action.targetRoute === "BrotherRoadmap");
   const prayerAction = screen.quickActions.find((action) => action.targetRoute === "BrotherPrayers");
   const event = screen.upcomingEventCards[0];
+  const liturgicalChips = screen.today
+    ? [
+        screen.today.liturgicalDay.color,
+        screen.today.liturgicalDay.season,
+        screen.today.liturgicalDay.rank
+      ].filter(isChipValue)
+    : [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -30,7 +37,7 @@ export function BrotherTodayScreen({ screen, onAction }: BrotherTodayScreenProps
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
           {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
-          {screen.state === "ready" && screen.profileSummary ? (
+          {screen.state === "ready" && screen.profileSummary && screen.today ? (
             <>
               <View style={styles.greetingBlock}>
                 <Text style={styles.greeting}>Peace, {firstName(screen.profileSummary.displayName)}</Text>
@@ -56,13 +63,19 @@ export function BrotherTodayScreen({ screen, onAction }: BrotherTodayScreenProps
                   </View>
                   <View style={styles.metaRow}>
                     <MaterialSymbol name="calendar_today" size={20} color={colors.text.subdued} />
-                    <Text style={styles.metaText}>October 21 • Monday</Text>
+                    <Text style={styles.metaText}>{screen.today.civilDate.displayLabel}</Text>
                   </View>
-                  <View style={styles.surfaceChip}>
-                    <Text style={styles.surfaceChipText}>Ordinary Time</Text>
-                  </View>
+                  {liturgicalChips.length > 0 ? (
+                    <View style={styles.badgeRow}>
+                      {liturgicalChips.map((chip) => (
+                        <View key={chip} style={styles.surfaceChip}>
+                          <Text style={styles.surfaceChipText}>{chip}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
                   <View style={styles.rule} />
-                  <Text style={styles.prayerCue}>"Meditate on the Mercy of God"</Text>
+                  <Text style={styles.prayerCue}>{screen.today.liturgicalDay.name}</Text>
                 </View>
 
                 <Pressable
@@ -266,6 +279,10 @@ function shortQuickLabel(label: string): string {
   if (label.includes("Profile")) return "Profile";
 
   return label;
+}
+
+function isChipValue(value: string | null): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 const colors = designTokens.color;

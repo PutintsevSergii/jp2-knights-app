@@ -5,6 +5,20 @@ export const fallbackPublicHome = publicHomeResponseSchema.parse({
     title: "JP2 App",
     body: "Public discovery content is being prepared for approval."
   },
+  today: {
+    civilDate: {
+      date: "2026-06-11",
+      displayLabel: "Thursday, June 11"
+    },
+    liturgicalDay: {
+      name: "Liturgical calendar unavailable",
+      season: null,
+      rank: null,
+      color: null,
+      source: "local-fallback",
+      state: "fallback"
+    }
+  },
   prayerOfDay: null,
   nextEvents: [],
   ctas: [

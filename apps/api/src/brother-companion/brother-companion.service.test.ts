@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
+import type { LiturgicalCalendarProvider } from "../public/liturgical-calendar.provider.js";
 import type { BrotherCompanionRepository } from "./brother-companion.repository.js";
 import { BrotherCompanionService } from "./brother-companion.service.js";
 import type {
@@ -92,6 +93,21 @@ const prayer: BrotherPrayerSummary = {
   }
 };
 
+const today = {
+  civilDate: {
+    date: "2026-06-11",
+    displayLabel: "Thursday, June 11"
+  },
+  liturgicalDay: {
+    name: "Liturgical calendar unavailable",
+    season: null,
+    rank: null,
+    color: null,
+    source: "local-fallback",
+    state: "fallback" as const
+  }
+};
+
 const brother: CurrentUserPrincipal = {
   id: profile.id,
   email: profile.email,
@@ -124,7 +140,8 @@ describe("BrotherCompanionService", () => {
   it("builds today from active profile, membership scope, and brother-visible events", async () => {
     const repository = repositoryWith(profile, [event]);
 
-    await expect(new BrotherCompanionService(repository).getToday(brother)).resolves.toEqual({
+    await expect(service(repository).getToday(brother)).resolves.toEqual({
+      today,
       profileSummary: {
         displayName: "Demo Brother",
         currentDegree: "First Degree",
@@ -188,29 +205,27 @@ describe("BrotherCompanionService", () => {
       ]
     };
 
-    const today = await new BrotherCompanionService(
-      repositoryWith(profileWithoutDegree, [])
-    ).getToday(brother);
+    const daily = await service(repositoryWith(profileWithoutDegree, [])).getToday(brother);
 
-    expect(today.profileSummary).toEqual({
+    expect(daily.profileSummary).toEqual({
       displayName: "Demo Brother",
       currentDegree: null,
       organizationUnitName: "Pilot Choragiew"
     });
-    expect(today.cards.find((card) => card.id === "profile")?.body).toBe(
+    expect(daily.cards.find((card) => card.id === "profile")?.body).toBe(
       "Your profile is active. Current degree details are not recorded yet."
     );
-    expect(today.cards.find((card) => card.id === "organization-units")?.body).toBe(
+    expect(daily.cards.find((card) => card.id === "organization-units")?.body).toBe(
       "You have 2 active organization-unit assignments."
     );
-    expect(today.organizationUnits).toEqual([organizationUnit, secondOrganizationUnit]);
+    expect(daily.organizationUnits).toEqual([organizationUnit, secondOrganizationUnit]);
   });
 
   it("lists brother-visible prayers using active membership organization-unit scope", async () => {
     const repository = repositoryWith(profile, [event], [prayer]);
 
     await expect(
-      new BrotherCompanionService(repository).listPrayers(brother, {
+      service(repository).listPrayers(brother, {
         language: "en",
         limit: 20,
         offset: 0
@@ -230,7 +245,7 @@ describe("BrotherCompanionService", () => {
     const repository = repositoryWith(profile, [eventListItem]);
 
     await expect(
-      new BrotherCompanionService(repository).listEvents(brother, {
+      service(repository).listEvents(brother, {
         from: "2026-05-01T00:00:00.000Z",
         type: "formation",
         limit: 20,
@@ -250,7 +265,7 @@ describe("BrotherCompanionService", () => {
     const repository = repositoryWith(profile, [eventListItem], [], eventDetail);
 
     await expect(
-      new BrotherCompanionService(repository).getEvent(brother, event.id)
+      service(repository).getEvent(brother, event.id)
     ).resolves.toEqual({
       event: eventDetail
     });
@@ -267,7 +282,7 @@ describe("BrotherCompanionService", () => {
     const repository = repositoryWith(profile, [eventListItem]);
 
     await expect(
-      new BrotherCompanionService(repository).listAnnouncements(brother, {
+      service(repository).listAnnouncements(brother, {
         limit: 10,
         offset: 5
       })
@@ -283,7 +298,7 @@ describe("BrotherCompanionService", () => {
 
   it("returns not found for event details hidden from the active brother", async () => {
     await expect(
-      new BrotherCompanionService(repositoryWith(profile, [eventListItem], [], null)).getEvent(
+      service(repositoryWith(profile, [eventListItem], [], null)).getEvent(
         brother,
         event.id
       )
@@ -323,7 +338,13 @@ describe("BrotherCompanionService", () => {
 function service(
   repository: BrotherCompanionRepository = repositoryWith(profile, [event])
 ): BrotherCompanionService {
-  return new BrotherCompanionService(repository);
+  return new BrotherCompanionService(repository, todayProvider());
+}
+
+function todayProvider(): LiturgicalCalendarProvider {
+  return {
+    getToday: () => Promise.resolve(today)
+  };
 }
 
 function repositoryWith(

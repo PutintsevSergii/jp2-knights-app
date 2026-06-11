@@ -15,6 +15,10 @@ import {
 } from "./public-content.repository.js";
 import { PublicContentService } from "./public-content.service.js";
 import { PublicController } from "./public.controller.js";
+import {
+  createConfiguredLiturgicalCalendarProvider,
+  LiturgicalCalendarProvider,
+} from "./liturgical-calendar.provider.js";
 import { PublicHomeService } from "./public-home.service.js";
 
 @Module({
@@ -35,6 +39,10 @@ import { PublicHomeService } from "./public-home.service.js";
     {
       provide: PublicCandidateRequestRepository,
       useClass: PrismaPublicCandidateRequestRepository
+    },
+    {
+      provide: LiturgicalCalendarProvider,
+      useFactory: createConfiguredLiturgicalCalendarProvider
     }
   ]
 })

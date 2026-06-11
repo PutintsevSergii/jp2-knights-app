@@ -20,6 +20,13 @@ export function CandidateDashboardScreen({ screen, onNavigate }: CandidateDashbo
   const events = sectionsByPrefix(screen, "event-").slice(0, 2);
   const announcements = sectionsByPrefix(screen, "announcement-").slice(0, 1);
   const profileName = candidateName(screen.body);
+  const liturgicalChips = screen.today
+    ? [
+        screen.today.liturgicalDay.color,
+        screen.today.liturgicalDay.season,
+        screen.today.liturgicalDay.rank
+      ].filter(isChipValue)
+    : [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,7 +36,7 @@ export function CandidateDashboardScreen({ screen, onNavigate }: CandidateDashbo
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
           {screen.demoChromeVisible ? <DemoModeBanner /> : null}
 
-          {screen.state === "ready" ? (
+          {screen.state === "ready" && screen.today ? (
             <>
               <View style={styles.greetingBlock}>
                 <View style={styles.greetingRow}>
@@ -47,18 +54,19 @@ export function CandidateDashboardScreen({ screen, onNavigate }: CandidateDashbo
                 </View>
                 <View style={styles.metaRow}>
                   <MaterialSymbol name="calendar_today" size={20} color={colors.text.subdued} />
-                  <Text style={styles.metaText}>October 12</Text>
+                  <Text style={styles.metaText}>{screen.today?.civilDate.displayLabel}</Text>
                 </View>
                 <Text style={styles.sectionTitle}>Pray with the Church today</Text>
-                <Text style={styles.bodyText}>28th Sunday in Ordinary Time</Text>
-                <View style={styles.chipRow}>
-                  <View style={styles.surfaceChip}>
-                    <Text style={styles.surfaceChipText}>Green Vestments</Text>
+                <Text style={styles.bodyText}>{screen.today?.liturgicalDay.name}</Text>
+                {liturgicalChips.length > 0 ? (
+                  <View style={styles.chipRow}>
+                    {liturgicalChips.map((chip) => (
+                      <View key={chip} style={styles.surfaceChip}>
+                        <Text style={styles.surfaceChipText}>{chip}</Text>
+                      </View>
+                    ))}
                   </View>
-                  <View style={styles.surfaceChip}>
-                    <Text style={styles.surfaceChipText}>Ordinary Time</Text>
-                  </View>
-                </View>
+                ) : null}
               </View>
 
               <Pressable
@@ -240,6 +248,10 @@ function quickActions(): Array<{ id: string; label: string; targetRoute: Candida
       icon: "campaign"
     }
   ];
+}
+
+function isChipValue(value: string | null): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 const colors = designTokens.color;

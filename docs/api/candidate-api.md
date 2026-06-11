@@ -2,7 +2,7 @@
 
 | Method | Path                                  | Auth | Role      | Request                           | Response                                                         | Errors            | Visibility                         | Acceptance                  |
 | ------ | ------------------------------------- | ---- | --------- | --------------------------------- | ---------------------------------------------------------------- | ----------------- | ---------------------------------- | --------------------------- |
-| GET    | `/candidate/dashboard`                | Yes  | Candidate | none                              | next step, contact, events, announcements                        | 401 invalid token, 403 missing/forbidden/idle | candidate/public filtered          | No brother content          |
+| GET    | `/candidate/dashboard`                | Yes  | Candidate | none                              | today module, next step, contact, events, announcements          | 401 invalid token, 403 missing/forbidden/idle | candidate/public filtered          | No brother content          |
 | GET    | `/candidate/roadmap`                  | Yes  | Candidate | none                              | assigned roadmap stages/steps/submissions or `null`              | 403 missing/forbidden/idle | own assignment                     | Candidate sees guided path  |
 | GET    | `/candidate/events`                   | Yes  | Candidate | filters/pagination                | visible event list with own RSVP intent                          | 400               | public/family/candidate/own scoped | Brother-only hidden; no participant list |
 | GET    | `/candidate/events/:id`               | Yes  | Candidate | none                              | event detail with own participation intent                       | 403,404           | public/family/candidate/own scoped | No participant list         |
@@ -15,11 +15,15 @@
 
 Candidate endpoints must reject users without an active candidate profile even if they have a login.
 
-`GET /candidate/dashboard` returns the active candidate profile summary, assigned
-choragiew/contact fields when present, up to three upcoming candidate-visible
-events (`PUBLIC`, `FAMILY_OPEN`, `CANDIDATE`, or own `ORGANIZATION_UNIT`), and an
-announcements array reserved for Phase 9. It must never return brother-only
-events, memberships, degrees, brother profiles, or admin notes.
+`GET /candidate/dashboard` returns the API-owned normalized `today` module, the
+active candidate profile summary, assigned choragiew/contact fields when
+present, up to three upcoming candidate-visible events (`PUBLIC`,
+`FAMILY_OPEN`, `CANDIDATE`, or own `ORGANIZATION_UNIT`), and an announcements
+array reserved for Phase 9. The `today` module uses the backend
+`LiturgicalCalendarProvider` boundary with local fallback and configurable
+normalized HTTP provider support; mobile must not call third-party calendar
+providers directly. The dashboard must never return brother-only events,
+memberships, degrees, brother profiles, or admin notes.
 
 Candidate roadmap screens are read-only in default V1. `GET /candidate/roadmap`
 requires an active candidate profile, returns only the current user's assigned

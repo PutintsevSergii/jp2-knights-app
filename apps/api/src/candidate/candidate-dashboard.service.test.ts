@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import { describe, expect, it } from "vitest";
 import type { CurrentUserPrincipal } from "../auth/current-user.types.js";
 import { IDLE_APPROVAL_REQUIRED_CODE } from "../auth/idle-approval.exception.js";
+import type { LiturgicalCalendarProvider } from "../public/liturgical-calendar.provider.js";
 import type { CandidateDashboardRepository } from "./candidate-dashboard.repository.js";
 import { CandidateDashboardService } from "./candidate-dashboard.service.js";
 import type {
@@ -96,13 +97,29 @@ const announcement: CandidateAnnouncementSummary = {
   publishedAt: "2026-05-06T09:00:00.000Z"
 };
 
+const today = {
+  civilDate: {
+    date: "2026-06-11",
+    displayLabel: "Thursday, June 11"
+  },
+  liturgicalDay: {
+    name: "Liturgical calendar unavailable",
+    season: null,
+    rank: null,
+    color: null,
+    source: "local-fallback",
+    state: "fallback" as const
+  }
+};
+
 describe("CandidateDashboardService", () => {
   it("builds a dashboard from the active candidate profile and scoped events", async () => {
     const repository = dashboardRepository(profile);
 
     await expect(
-      new CandidateDashboardService(repository).getDashboard(candidate)
+      service(repository).getDashboard(candidate)
     ).resolves.toEqual({
+      today,
       profile,
       nextStep: {
         id: "review-roadmap",
@@ -125,9 +142,7 @@ describe("CandidateDashboardService", () => {
       responsibleOfficer: null
     };
 
-    const dashboard = await new CandidateDashboardService(
-      dashboardRepository(unassignedProfile)
-    ).getDashboard(candidate);
+    const dashboard = await service(dashboardRepository(unassignedProfile)).getDashboard(candidate);
 
     expect(dashboard.nextStep).toMatchObject({
       id: "await-assignment",
@@ -138,7 +153,7 @@ describe("CandidateDashboardService", () => {
 
   it("blocks non-candidate principals", async () => {
     await expect(
-      new CandidateDashboardService(dashboardRepository(profile)).getDashboard(brother)
+      service(dashboardRepository(profile)).getDashboard(brother)
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
@@ -146,7 +161,7 @@ describe("CandidateDashboardService", () => {
     const repository = dashboardRepository(profile);
 
     await expect(
-      new CandidateDashboardService(repository).listEvents(candidate, {
+      service(repository).listEvents(candidate, {
         from: "2026-05-01T00:00:00.000Z",
         type: "formation",
         limit: 20,
@@ -171,7 +186,7 @@ describe("CandidateDashboardService", () => {
     const repository = dashboardRepository(profile);
 
     await expect(
-      new CandidateDashboardService(repository).getEvent(candidate, event.id)
+      service(repository).getEvent(candidate, event.id)
     ).resolves.toEqual({
       event: eventDetail
     });
@@ -188,7 +203,7 @@ describe("CandidateDashboardService", () => {
     const repository = dashboardRepository(profile);
 
     await expect(
-      new CandidateDashboardService(repository).listAnnouncements(candidate, {
+      service(repository).listAnnouncements(candidate, {
         limit: 10,
         offset: 5
       })
@@ -204,10 +219,7 @@ describe("CandidateDashboardService", () => {
 
   it("returns not found for event details hidden from the active candidate", async () => {
     await expect(
-      new CandidateDashboardService(dashboardRepository(profile, null)).getEvent(
-        candidate,
-        event.id
-      )
+      service(dashboardRepository(profile, null)).getEvent(candidate, event.id)
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -215,10 +227,10 @@ describe("CandidateDashboardService", () => {
     const repository = dashboardRepository(profile);
 
     await expect(
-      new CandidateDashboardService(repository).getDashboard(idleUser)
+      service(repository).getDashboard(idleUser)
     ).rejects.toBeInstanceOf(ForbiddenException);
     await expect(
-      new CandidateDashboardService(repository).getDashboard(idleUser)
+      service(repository).getDashboard(idleUser)
     ).rejects.toMatchObject({
       response: {
         code: IDLE_APPROVAL_REQUIRED_CODE
@@ -233,10 +245,20 @@ describe("CandidateDashboardService", () => {
 
   it("blocks candidate users without an active profile", async () => {
     await expect(
-      new CandidateDashboardService(dashboardRepository(null)).getDashboard(candidate)
+      service(dashboardRepository(null)).getDashboard(candidate)
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 });
+
+function service(repository: CandidateDashboardRepository): CandidateDashboardService {
+  return new CandidateDashboardService(repository, todayProvider());
+}
+
+function todayProvider(): LiturgicalCalendarProvider {
+  return {
+    getToday: () => Promise.resolve(today)
+  };
+}
 
 function dashboardRepository(
   profileRecord: CandidateDashboardProfile | null,

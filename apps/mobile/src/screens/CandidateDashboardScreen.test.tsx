@@ -31,6 +31,8 @@ describe("CandidateDashboardScreen", () => {
     const pressable = findElementByType(element, "Pressable");
 
     expect(findText(element, "Demo mode")).toBe(true);
+    expect(findText(element, "Thursday, June 11")).toBe(true);
+    expect(findText(element, "Liturgical calendar unavailable")).toBe(true);
     expect(pressable).toBeDefined();
     pressable?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith("CandidateRoadmap");

@@ -370,13 +370,31 @@ describe("shared validation", () => {
   });
 
   it("validates public home query and response DTOs", () => {
-    expect(publicHomeQuerySchema.parse({ language: " en " })).toEqual({ language: "en" });
+    expect(
+      publicHomeQuerySchema.parse({ country: "lv", date: "2026-06-11", language: " en " })
+    ).toEqual({ country: "LV", date: "2026-06-11", language: "en" });
     expect(() => publicHomeQuerySchema.parse({ language: "e" })).toThrow();
+    expect(() => publicHomeQuerySchema.parse({ country: "Latvia" })).toThrow();
+    expect(() => publicHomeQuerySchema.parse({ date: "06/11/2026" })).toThrow();
 
     const response = {
       intro: {
         title: "JP2 App",
         body: "Public discovery content is being prepared for approval."
+      },
+      today: {
+        civilDate: {
+          date: "2026-06-11",
+          displayLabel: "Thursday, June 11"
+        },
+        liturgicalDay: {
+          name: "Liturgical calendar unavailable",
+          season: null,
+          rank: null,
+          color: null,
+          source: "local-fallback",
+          state: "fallback"
+        }
       },
       prayerOfDay: null,
       nextEvents: [],
@@ -1258,7 +1276,22 @@ describe("shared validation", () => {
   });
 
   it("validates candidate dashboard profile, next step, and safe event visibility", () => {
+    const today = {
+      civilDate: {
+        date: "2026-06-11",
+        displayLabel: "Thursday, June 11"
+      },
+      liturgicalDay: {
+        name: "Liturgical calendar unavailable",
+        season: null,
+        rank: null,
+        color: null,
+        source: "local-fallback",
+        state: "fallback"
+      }
+    };
     const response = {
+      today,
       profile: {
         id: "11111111-1111-4111-8111-111111111111",
         userId: "22222222-2222-4222-8222-222222222222",
@@ -1342,6 +1375,20 @@ describe("shared validation", () => {
       }
     };
     const todayResponse = {
+      today: {
+        civilDate: {
+          date: "2026-06-11",
+          displayLabel: "Thursday, June 11"
+        },
+        liturgicalDay: {
+          name: "Liturgical calendar unavailable",
+          season: null,
+          rank: null,
+          color: null,
+          source: "local-fallback",
+          state: "fallback"
+        }
+      },
       profileSummary: {
         displayName: "Demo Brother",
         currentDegree: "First Degree",

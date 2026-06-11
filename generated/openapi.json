@@ -8677,6 +8677,7 @@
                 "schema": {
                   "type": "object",
                   "required": [
+                    "today",
                     "profileSummary",
                     "cards",
                     "upcomingEvents",
@@ -8684,6 +8685,85 @@
                   ],
                   "additionalProperties": false,
                   "properties": {
+                    "today": {
+                      "type": "object",
+                      "required": [
+                        "civilDate",
+                        "liturgicalDay"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "civilDate": {
+                          "type": "object",
+                          "required": [
+                            "date",
+                            "displayLabel"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "date": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "displayLabel": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            }
+                          }
+                        },
+                        "liturgicalDay": {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "season",
+                            "rank",
+                            "color",
+                            "source",
+                            "state"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            },
+                            "season": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "rank": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "color": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "source": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "ready",
+                                "unavailable",
+                                "fallback"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
                     "profileSummary": {
                       "type": "object",
                       "required": [
@@ -10177,6 +10257,7 @@
                 "schema": {
                   "type": "object",
                   "required": [
+                    "today",
                     "profile",
                     "nextStep",
                     "upcomingEvents",
@@ -10184,6 +10265,85 @@
                   ],
                   "additionalProperties": false,
                   "properties": {
+                    "today": {
+                      "type": "object",
+                      "required": [
+                        "civilDate",
+                        "liturgicalDay"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "civilDate": {
+                          "type": "object",
+                          "required": [
+                            "date",
+                            "displayLabel"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "date": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "displayLabel": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            }
+                          }
+                        },
+                        "liturgicalDay": {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "season",
+                            "rank",
+                            "color",
+                            "source",
+                            "state"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            },
+                            "season": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "rank": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "color": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "source": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "ready",
+                                "unavailable",
+                                "fallback"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
                     "profile": {
                       "type": "object",
                       "required": [
@@ -12478,6 +12638,25 @@
         "operationId": "PublicController_getPublicHome",
         "parameters": [
           {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
             "name": "language",
             "required": false,
             "in": "query",
@@ -12497,6 +12676,7 @@
                   "type": "object",
                   "required": [
                     "intro",
+                    "today",
                     "prayerOfDay",
                     "nextEvents",
                     "ctas"
@@ -12520,6 +12700,85 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 1000
+                        }
+                      }
+                    },
+                    "today": {
+                      "type": "object",
+                      "required": [
+                        "civilDate",
+                        "liturgicalDay"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "civilDate": {
+                          "type": "object",
+                          "required": [
+                            "date",
+                            "displayLabel"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "date": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "displayLabel": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            }
+                          }
+                        },
+                        "liturgicalDay": {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "season",
+                            "rank",
+                            "color",
+                            "source",
+                            "state"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            },
+                            "season": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "rank": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "color": {
+                              "type": "string",
+                              "nullable": true,
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "source": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "ready",
+                                "unavailable",
+                                "fallback"
+                              ]
+                            }
+                          }
                         }
                       }
                     },

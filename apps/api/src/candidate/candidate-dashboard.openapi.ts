@@ -1,3 +1,5 @@
+import { publicHomeTodayOpenApiSchema } from "../public/public.openapi.js";
+
 const candidateDashboardOrganizationUnitOpenApiSchema = {
   type: "object",
   required: ["id", "name", "city", "country", "parish"],
@@ -182,9 +184,10 @@ const candidateDashboardAnnouncementSummaryOpenApiSchema = {
 
 export const candidateDashboardResponseOpenApiSchema = {
   type: "object",
-  required: ["profile", "nextStep", "upcomingEvents", "announcements"],
+  required: ["today", "profile", "nextStep", "upcomingEvents", "announcements"],
   additionalProperties: false,
   properties: {
+    today: publicHomeTodayOpenApiSchema,
     profile: {
       type: "object",
       required: [

@@ -48,6 +48,20 @@ describe("PublicHomeScreen", () => {
               title: "JP2 Knights",
               body: "A public welcome for men discerning prayer, service, and formation."
             },
+            today: {
+              civilDate: {
+                date: "2026-06-11",
+                displayLabel: "Thursday, June 11"
+              },
+              liturgicalDay: {
+                name: "Liturgical calendar unavailable",
+                season: null,
+                rank: null,
+                color: null,
+                source: "local-fallback",
+                state: "fallback"
+              }
+            },
             prayerOfDay: {
               title: "Prayer of the Day",
               body: "Lord, guide our work today."
@@ -106,6 +120,9 @@ describe("PublicHomeScreen", () => {
     });
 
     expect(findText(element, "JP2 Knights")).toBe(true);
+    expect(findText(element, "Thursday, June 11")).toBe(true);
+    expect(findText(element, "Liturgical calendar unavailable")).toBe(true);
+    expect(findText(element, "Wednesday, June 3")).toBe(false);
     expect(findText(element, "Prayer, fraternity, and formation")).toBe(true);
     expect(findText(element, "Morning Office Intention")).toBe(true);
     expect(findText(element, "The Path to Membership")).toBe(true);

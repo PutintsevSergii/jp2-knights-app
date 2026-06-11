@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { organizationUnitSummarySchema, roleSchema } from "./common.js";
+import { publicHomeTodaySchema } from "./public-content.js";
 
 const candidateDashboardOrganizationUnitSchema = z.object({
   id: z.uuid(),
@@ -34,6 +35,7 @@ export const candidateDashboardAnnouncementSummarySchema = z.object({
 });
 
 export const candidateDashboardResponseSchema = z.object({
+  today: publicHomeTodaySchema,
   profile: z.object({
     id: z.uuid(),
     userId: z.uuid(),
@@ -169,6 +171,7 @@ export const brotherTodayCardSchema = z.object({
 });
 
 export const brotherTodayResponseSchema = z.object({
+  today: publicHomeTodaySchema,
   profileSummary: z.object({
     displayName: z.string().trim().min(1).max(200),
     currentDegree: z.string().trim().min(1).max(120).nullable(),

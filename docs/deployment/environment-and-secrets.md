@@ -28,6 +28,11 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `PRISMA_POOL_TIMEOUT_SECONDS` | API, migration job | `10` | Prisma `pool_timeout` appended to `DATABASE_URL` when the URL does not already set it |
 | `PRISMA_STARTUP_RETRY_ATTEMPTS` | API | `5` | Production API boot DB connection retry attempts before Cloud Run marks the revision failed |
 | `PRISMA_STARTUP_RETRY_DELAY_MS` | API | `1000` | Delay between boot DB connection retries |
+| `LITURGICAL_CALENDAR_PROVIDER` | API | `fallback` | `fallback` uses the built-in civil-date provider; `http` calls a configured normalized provider endpoint server-side |
+| `LITURGICAL_CALENDAR_URL` | API | `https://calendar.example.org/today` | Required only when `LITURGICAL_CALENDAR_PROVIDER=http`; endpoint must return the shared `today` DTO |
+| `LITURGICAL_CALENDAR_TIMEOUT_MS` | API | `1500` | Bounded remote calendar call timeout, accepted range 100-10000 |
+| `LITURGICAL_CALENDAR_RETRY_ATTEMPTS` | API | `1` | Extra HTTP retry attempts before falling back, accepted range 0-3 |
+| `LITURGICAL_CALENDAR_CACHE_TTL_MS` | API | `21600000` | In-memory successful-response cache TTL, accepted range 0-86400000 |
 | `SILENT_PRAYER_REALTIME_PROVIDER` | API | `firebase-rtdb` | Required for live pilot/production. `redis-socket` is not allowed in live infrastructure unless a future owner-approved scope change reverses the June 3, 2026 no-Redis decision. `in-memory` remains non-production only. |
 | `EXPO_PUBLIC_SILENT_PRAYER_REALTIME_PROVIDER` | Mobile | `firebase-rtdb` | Selects the mobile aggregate-count listener provider. Defaults to current Socket.IO compatibility when unset. |
 | `FIREBASE_PROJECT_ID` | API | `jp2-auth` | Firebase project id |
@@ -71,6 +76,11 @@ secret versions should be set through a secure manual or CI-controlled process.
 | `PRISMA_POOL_TIMEOUT_SECONDS=10` | Terraform variable |
 | `PRISMA_STARTUP_RETRY_ATTEMPTS=5` | Terraform variable |
 | `PRISMA_STARTUP_RETRY_DELAY_MS=1000` | Terraform variable |
+| `LITURGICAL_CALENDAR_PROVIDER=fallback` or `http` | Terraform variable |
+| `LITURGICAL_CALENDAR_URL` | Terraform variable or secret, required only for `http` provider |
+| `LITURGICAL_CALENDAR_TIMEOUT_MS=1500` | Terraform variable |
+| `LITURGICAL_CALENDAR_RETRY_ATTEMPTS=1` | Terraform variable |
+| `LITURGICAL_CALENDAR_CACHE_TTL_MS=21600000` | Terraform variable |
 | `SILENT_PRAYER_PRESENCE_HASH_SECRET` | `jp2-silent-prayer-presence-hash-secret` secret when `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb` |
 | `DATABASE_URL` | `jp2-database-url` secret |
 | Firebase Admin credentials | `jp2-firebase-service-account-json` secret |
@@ -102,6 +112,10 @@ secret versions should be set through a secure manual or CI-controlled process.
   settings through `connection_limit` and `pool_timeout`.
 - `/api/health` stays a shallow process/runtime readiness endpoint; it must not
   query Cloud SQL, Firebase, RTDB, or any external provider.
+- Liturgical calendar lookup stays server-side. If
+  `LITURGICAL_CALENDAR_PROVIDER=http` is selected, runtime HTTP failures,
+  invalid normalized DTOs, and exhausted retries fall back to the local
+  civil-date provider instead of leaking provider errors to mobile clients.
 - Production Prisma migrations run from the Cloud Run migration job, not during
   API or Admin request-serving startup.
 - API starts with `SILENT_PRAYER_REALTIME_PROVIDER=firebase-rtdb`;

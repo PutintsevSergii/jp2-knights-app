@@ -10,6 +10,20 @@ import {
 } from "@jp2/shared-validation";
 
 export const fallbackCandidateDashboard = candidateDashboardResponseSchema.parse({
+  today: {
+    civilDate: {
+      date: "2026-06-11",
+      displayLabel: "Thursday, June 11"
+    },
+    liturgicalDay: {
+      name: "Liturgical calendar unavailable",
+      season: null,
+      rank: null,
+      color: null,
+      source: "local-fallback",
+      state: "fallback"
+    }
+  },
   profile: {
     id: "11111111-1111-4111-8111-111111111111",
     userId: "22222222-2222-4222-8222-222222222222",

@@ -20,6 +20,9 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
   const silentPrayerAction = screen.actions.find(
     (action) => action.targetRoute === "PublicSilentPrayer"
   );
+  const liturgicalChips = screen.today
+    ? [screen.today.liturgicalDay.season, screen.today.liturgicalDay.rank].filter(isChipValue)
+    : [];
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
@@ -44,21 +47,26 @@ export function PublicHomeScreen({ screen, onNavigate }: PublicHomeScreenProps) 
           </Pressable>
         </View>
 
-        <View style={styles.todayStrip}>
-          <Text style={styles.todayDate}>Wednesday, June 3</Text>
-          <Text style={styles.todayTitle}>Memorial of Saint Charles Lwanga and Companions</Text>
-          <View style={styles.chipRow}>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>Ordinary Time</Text>
-            </View>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>Memorial</Text>
-            </View>
-            <View style={styles.redChip}>
-              <Text style={styles.redChipText}>Red</Text>
-            </View>
+        {screen.today ? (
+          <View style={styles.todayStrip}>
+            <Text style={styles.todayDate}>{screen.today.civilDate.displayLabel}</Text>
+            <Text style={styles.todayTitle}>{screen.today.liturgicalDay.name}</Text>
+            {liturgicalChips.length > 0 || screen.today.liturgicalDay.color ? (
+              <View style={styles.chipRow}>
+                {liturgicalChips.map((chip) => (
+                  <View key={chip} style={styles.chip}>
+                    <Text style={styles.chipText}>{chip}</Text>
+                  </View>
+                ))}
+                {screen.today.liturgicalDay.color ? (
+                  <View style={styles.colorChip}>
+                    <Text style={styles.colorChipText}>{screen.today.liturgicalDay.color}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </View>
-        </View>
+        ) : null}
 
         <View style={styles.hero}>
           <View style={styles.heroWash} />
@@ -193,6 +201,10 @@ function orderedPublicActions(actions: PublicHomeScreenModel["actions"]) {
   );
 }
 
+function isChipValue(value: string | null): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 const colors = designTokens.color;
 
 const styles = StyleSheet.create({
@@ -282,16 +294,16 @@ const styles = StyleSheet.create({
     fontWeight: designTokens.typography.weight.bold,
     lineHeight: designTokens.typography.lineHeight.compactLabel
   },
-  redChip: {
+  colorChip: {
     backgroundColor: colors.background.surface,
-    borderColor: colors.status.danger,
+    borderColor: colors.border.subtle,
     borderRadius: designTokens.radius.pill,
     borderWidth: 1,
     paddingHorizontal: designTokens.space[3],
     paddingVertical: designTokens.space[1]
   },
-  redChipText: {
-    color: colors.status.danger,
+  colorChipText: {
+    color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,

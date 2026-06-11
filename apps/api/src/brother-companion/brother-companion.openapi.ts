@@ -1,4 +1,5 @@
 import { organizationUnitSummaryOpenApiSchema } from "../organization/organization.openapi.js";
+import { publicHomeTodayOpenApiSchema } from "../public/public.openapi.js";
 
 const brotherPaginationOpenApiSchema = {
   type: "object",
@@ -244,9 +245,10 @@ export const brotherProfileResponseOpenApiSchema = {
 
 export const brotherTodayResponseOpenApiSchema = {
   type: "object",
-  required: ["profileSummary", "cards", "upcomingEvents", "organizationUnits"],
+  required: ["today", "profileSummary", "cards", "upcomingEvents", "organizationUnits"],
   additionalProperties: false,
   properties: {
+    today: publicHomeTodayOpenApiSchema,
     profileSummary: {
       type: "object",
       required: ["displayName", "currentDegree", "organizationUnitName"],

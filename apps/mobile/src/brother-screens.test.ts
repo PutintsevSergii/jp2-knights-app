@@ -38,6 +38,7 @@ describe("brother screen models", () => {
       organizationUnitLabel: "Pilot Choragiew",
       initials: "DB"
     });
+    expect(screen.today).toEqual(fallbackBrotherToday.today);
     expect(screen.quickActions.map((action) => action.targetRoute)).toEqual([
       "BrotherProfile",
       "MyOrganizationUnits",

@@ -2,7 +2,7 @@
 
 | Method | Path                                         | Auth | Role    | Request                            | Response                                                                      | Errors      | Acceptance                                              |
 | ------ | -------------------------------------------- | ---- | ------- | ---------------------------------- | ----------------------------------------------------------------------------- | ----------- | ------------------------------------------------------- |
-| GET    | `/brother/today`                             | Yes  | Brother | none                               | profile summary, action cards, next visible events, active organization units | 401 invalid token, 403 missing/forbidden/idle, 404 | Personalized dashboard; no candidate/admin-only content |
+| GET    | `/brother/today`                             | Yes  | Brother | none                               | today module, profile summary, action cards, next visible events, active organization units | 401 invalid token, 403 missing/forbidden/idle, 404 | Personalized dashboard; no candidate/admin-only content |
 | GET    | `/brother/profile`                           | Yes  | Brother | none                               | own profile, roles, active membership summaries                               | 401 invalid token, 403 missing/forbidden/idle, 404 | Critical data read-only                                 |
 | GET    | `/brother/my-organization-units`             | Yes  | Brother | none                               | active organization unit summaries                                            | 404         | Own scope only                                          |
 | GET    | `/brother/events`                            | Yes  | Brother | filters/pagination                 | visible events                                                                | 400         | Visibility enforced                                     |
@@ -21,9 +21,13 @@
 - `GET /brother/profile` requires an active authenticated brother and returns only
   the current user's profile and active memberships. It does not expose brother
   lists or editable critical fields.
-- `GET /brother/today` requires the same active brother profile, returns daily
-  action cards, active organization-unit summaries, and upcoming events filtered
-  to `PUBLIC`, `FAMILY_OPEN`, `BROTHER`, or the brother's own organization units.
+- `GET /brother/today` requires the same active brother profile, returns the
+  API-owned normalized `today` module through the backend
+  `LiturgicalCalendarProvider` boundary with local fallback and configurable
+  normalized HTTP provider support, daily action cards, active organization-unit
+  summaries, and upcoming events filtered to `PUBLIC`, `FAMILY_OPEN`, `BROTHER`,
+  or the brother's own organization units. Mobile must not call third-party
+  calendar providers directly.
 - `GET /brother/events` requires the same active brother profile, supports
   `from`, `type`, `limit`, and `offset`, and returns only currently published
   non-cancelled events visible to brothers: `PUBLIC`, `FAMILY_OPEN`, `BROTHER`,
