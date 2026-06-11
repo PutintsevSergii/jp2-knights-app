@@ -34,9 +34,9 @@ describe("mobile RTDB native validation evidence", () => {
     const result = evidenceModule.validateNativeRtdbEvidence({
       ...validEvidence,
       scenarios: [
-        scenario("guest-public-count"),
-        scenario("brother-private-count", "failed"),
-        scenario("privacy-denial")
+        scenario("guest-public-count", guestPublicEvidence),
+        scenario("brother-private-count", brotherPrivateEvidence, "failed"),
+        scenario("privacy-denial", privacyDenialEvidence)
       ]
     });
 
@@ -57,16 +57,16 @@ describe("mobile RTDB native validation evidence", () => {
       operatorEmail: "officer@example.test",
       rawLog: "DATABASE_URL=postgresql://user:pass@example/db",
       scenarios: [
-        scenario("guest-public-count"),
+        scenario("guest-public-count", guestPublicEvidence),
         {
-          ...scenario("brother-private-count"),
+          ...scenario("brother-private-count", brotherPrivateEvidence),
           firebaseUid: "firebase-user-123",
           participantIds: ["participant-1"],
           evidence: ["jp2_session=raw-cookie-value"]
         },
-        scenario("privacy-denial"),
+        scenario("privacy-denial", privacyDenialEvidence),
         {
-          ...scenario("leave-cleanup"),
+          ...scenario("leave-cleanup", leaveCleanupEvidence),
           roster: ["Brother One"]
         }
       ]
@@ -83,6 +83,58 @@ describe("mobile RTDB native validation evidence", () => {
         "$.scenarios[3].roster"
       ])
     );
+  });
+
+  it("rejects vague evidence that does not prove aggregate-only RTDB observations", () => {
+    const result = evidenceModule.validateNativeRtdbEvidence({
+      ...validEvidence,
+      scenarios: [
+        scenario("guest-public-count", ["The screen worked."]),
+        scenario("brother-private-count", ["Brother route passed."]),
+        scenario("privacy-denial", ["Privacy looked okay."]),
+        scenario("leave-cleanup", ["Closed the app."])
+      ]
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        {
+          key: "scenarios.guest-public-count.evidence",
+          message: "Evidence must include public aggregate count change."
+        },
+        {
+          key: "scenarios.brother-private-count.evidence",
+          message: "Evidence must include API-issued private read grant."
+        },
+        {
+          key: "scenarios.privacy-denial.evidence",
+          message: "Evidence must include client read/write denial."
+        },
+        {
+          key: "scenarios.leave-cleanup.evidence",
+          message: "Evidence must include listener cleanup."
+        }
+      ])
+    );
+  });
+
+  it("rejects non-string evidence notes", () => {
+    const result = evidenceModule.validateNativeRtdbEvidence({
+      ...validEvidence,
+      scenarios: [
+        scenario("guest-public-count", [{ note: "public aggregate count changed" }]),
+        scenario("brother-private-count", brotherPrivateEvidence),
+        scenario("privacy-denial", privacyDenialEvidence),
+        scenario("leave-cleanup", leaveCleanupEvidence)
+      ]
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContainEqual({
+      key: "scenarios.guest-public-count.evidence",
+      message: "Evidence notes must be non-empty strings."
+    });
   });
 
   it("rejects malformed top-level evidence metadata", () => {
@@ -128,13 +180,32 @@ describe("mobile RTDB native validation evidence", () => {
   });
 });
 
-function scenario(id: string, status = "passed") {
+function scenario(id: string, evidence: unknown[], status = "passed") {
   return {
     id,
     status,
-    evidence: ["route validated, HTTP 200, aggregate count changed 0 -> 1 -> 0"]
+    evidence
   };
 }
+
+const guestPublicEvidence = [
+  "Public silent-prayer list route loaded through API with HTTP 200.",
+  "Guest join used REST heartbeat and RTDB public aggregate count changed 0 -> 1 -> 0."
+];
+
+const brotherPrivateEvidence = [
+  "Brother sign-in resolved through API session and brother silent-prayer list loaded with HTTP 200.",
+  "Brother join used REST heartbeat and RTDB private aggregate count changed 0 -> 1 -> 0 with API-issued read grant."
+];
+
+const privacyDenialEvidence = [
+  "Client reads and writes outside aggregate count paths were denied by RTDB rules.",
+  "No participant, session, user, roster, or private data was visible to the app."
+];
+
+const leaveCleanupEvidence = [
+  "Leaving the screen unsubscribed the listener, sent REST leave, and aggregate count decremented after leave or expiry."
+];
 
 const validEvidence = {
   platform: "ios",
@@ -144,9 +215,9 @@ const validEvidence = {
   firebaseProjectId: "jp2-pilot",
   deviceTarget: "iPhone physical device",
   scenarios: [
-    scenario("guest-public-count"),
-    scenario("brother-private-count"),
-    scenario("privacy-denial"),
-    scenario("leave-cleanup")
+    scenario("guest-public-count", guestPublicEvidence),
+    scenario("brother-private-count", brotherPrivateEvidence),
+    scenario("privacy-denial", privacyDenialEvidence),
+    scenario("leave-cleanup", leaveCleanupEvidence)
   ]
 };

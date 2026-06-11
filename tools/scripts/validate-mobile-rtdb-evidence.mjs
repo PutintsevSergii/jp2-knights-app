@@ -9,6 +9,49 @@ const REQUIRED_SCENARIOS = [
   "leave-cleanup"
 ];
 
+const REQUIRED_SCENARIO_EVIDENCE = {
+  "guest-public-count": [
+    {
+      name: "public aggregate count change",
+      pattern: /\bpublic\b[\s\S]*\baggregate\b[\s\S]*(0\s*[-=]>\s*1|1\s*[-=]>\s*0|increment|decrement|changed)/i
+    },
+    {
+      name: "REST join or heartbeat path",
+      pattern: /\b(rest|http)\b[\s\S]*\b(join|heartbeat)\b/i
+    }
+  ],
+  "brother-private-count": [
+    {
+      name: "private aggregate count change",
+      pattern: /\b(private|brother)\b[\s\S]*\baggregate\b[\s\S]*(0\s*[-=]>\s*1|1\s*[-=]>\s*0|increment|decrement|changed)/i
+    },
+    {
+      name: "API-issued private read grant",
+      pattern: /\b(api-issued|api issued|server-issued|server issued)\b[\s\S]*\bread grant\b/i
+    }
+  ],
+  "privacy-denial": [
+    {
+      name: "client read/write denial",
+      pattern: /\b(client|app)\b[\s\S]*\b(read|write|reads|writes)\b[\s\S]*\b(denied|deny|rejected|blocked)\b/i
+    },
+    {
+      name: "no private identity/roster data visible",
+      pattern: /\bno\b[\s\S]*(participant|session|user|roster|identity|private data)[\s\S]*(visible|exposed|returned|readable)\b/i
+    }
+  ],
+  "leave-cleanup": [
+    {
+      name: "listener cleanup",
+      pattern: /\b(unsubscribed|unsubscribe|listener cleanup|listener removed)\b/i
+    },
+    {
+      name: "leave or expiry decremented aggregate count",
+      pattern: /\b(leave|left|expiry|expired)\b[\s\S]*\b(aggregate count|count)\b[\s\S]*(decrement|0\s*[-=]>\s*1|1\s*[-=]>\s*0|returned to 0|changed)/i
+    }
+  ]
+};
+
 const FORBIDDEN_KEY_PARTS = [
   "accessToken",
   "anonymousSessionId",
@@ -145,6 +188,31 @@ function expectRequiredScenarios(evidence, issues) {
       issues.push({
         key: `scenarios.${id}.evidence`,
         message: "Record sanitized evidence notes such as route names, status codes, and aggregate counts."
+      });
+      continue;
+    }
+
+    if (scenario.evidence.some((item) => typeof item !== "string" || item.trim().length === 0)) {
+      issues.push({
+        key: `scenarios.${id}.evidence`,
+        message: "Evidence notes must be non-empty strings."
+      });
+      continue;
+    }
+
+    expectScenarioEvidence(id, scenario.evidence, issues);
+  }
+}
+
+function expectScenarioEvidence(id, evidence, issues) {
+  const requiredChecks = REQUIRED_SCENARIO_EVIDENCE[id] ?? [];
+  const notes = evidence.join("\n");
+
+  for (const check of requiredChecks) {
+    if (!check.pattern.test(notes)) {
+      issues.push({
+        key: `scenarios.${id}.evidence`,
+        message: `Evidence must include ${check.name}.`
       });
     }
   }

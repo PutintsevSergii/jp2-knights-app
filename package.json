@@ -35,7 +35,8 @@
     "prisma:validate": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma",
     "db:seed": "node prisma/seed.mjs",
     "db:migrate:check": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/jp2_app prisma validate --schema prisma/schema.prisma && node tools/scripts/db-migrate-check.mjs",
-    "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm smoke:launch && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check"
+    "diff:check": "git diff --check && git diff --cached --check",
+    "quality": "pnpm prisma:generate && pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm smoke:launch && pnpm validate:mobile-rtdb-evidence -- --file docs/deployment/native-rtdb-validation-evidence.example.json && pnpm contract:generate && pnpm contract:check && pnpm db:migrate:check && pnpm diff:check"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "5.0.1",

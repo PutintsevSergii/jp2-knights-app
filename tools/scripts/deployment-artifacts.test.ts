@@ -106,6 +106,11 @@ describe("Phase 13 deployment artifacts", () => {
     expect(packageJson).toContain(
       '"validate:mobile-rtdb-evidence": "node tools/scripts/validate-mobile-rtdb-evidence.mjs"'
     );
+    expect(packageJson).toContain('"diff:check": "git diff --check && git diff --cached --check"');
+    expect(packageJson).toContain(
+      "pnpm validate:mobile-rtdb-evidence -- --file docs/deployment/native-rtdb-validation-evidence.example.json"
+    );
+    expect(packageJson).toContain("pnpm db:migrate:check && pnpm diff:check");
     expect(evidenceScript).toContain("guest-public-count");
     expect(evidenceScript).toContain("brother-private-count");
     expect(evidenceScript).toContain("privacy-denial");

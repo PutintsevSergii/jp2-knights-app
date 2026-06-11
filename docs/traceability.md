@@ -913,11 +913,20 @@ start` scripts, Nx `admin:build` now runs `next build`, and the previous
   `pnpm validate:mobile-rtdb-evidence -- --file <local-evidence-file>` and
   `docs/deployment/native-rtdb-validation-evidence.example.json`. The validator
   requires sanitized proof for guest public aggregate counts, brother private
-  aggregate counts, privacy denial, and leave/cleanup, while failing closed on
+  aggregate counts, privacy denial, and leave/cleanup, and now rejects vague
+  pass/fail notes that do not show the expected REST heartbeat/join path,
+  public/private aggregate count change, API-issued private read grant,
+  client read/write denial, no private identity/roster visibility, listener
+  unsubscribe, and leave/expiry decrement observations. It also fails closed on
   obvious secret values, raw cookies/tokens, participant/session/user
-  identifiers, rosters, raw logs, and email addresses. This does not complete
-  the physical native-device run; it gates the owner/operator evidence package
-  before launch-ticket attachment.
+  identifiers, rosters, raw logs, email addresses, and non-string evidence
+  notes. This does not complete the physical native-device run; it gates the
+  owner/operator evidence package before launch-ticket attachment. `pnpm quality`
+  now validates the committed example evidence file so launch documentation
+  drift fails the normal quality gate. Phase 13 quality hardening also adds
+  `pnpm diff:check` to run `git diff --check` and `git diff --cached --check`
+  at the end of `pnpm quality`, matching the operator handoff whitespace gate
+  for unstaged and staged launch changes.
 - Phase 13 containerization now includes root `.dockerignore` rules, production
   API and Admin Lite Dockerfiles under `infra/docker`, profile-gated local
   compose app services, and documented build/smoke commands for `/api/health`

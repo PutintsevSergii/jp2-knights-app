@@ -355,6 +355,21 @@ Native-device validation still requires a real configured target. Passing the
 preflight alone does not prove RTDB behavior; it only prevents known-bad
 configuration from starting the device run.
 
+After the native run, validate the sanitized evidence package before attaching
+it to a launch ticket:
+
+```bash
+pnpm validate:mobile-rtdb-evidence -- --file docs/deployment/native-rtdb-validation-evidence.example.json
+```
+
+Use a local copy of the example file for real evidence. The checker requires
+scenario notes that show the REST join/heartbeat path, public and private
+aggregate count changes, the API-issued private read grant, client read/write
+denials, no private identity or roster visibility, listener unsubscribe, and
+leave or expiry decrement behavior. It rejects non-string notes and obvious
+secret, token, cookie, raw-log, participant, session, user, roster, and email
+captures.
+
 ### Step 8: Deployment Rollout
 
 Use a feature-flagged rollout:
