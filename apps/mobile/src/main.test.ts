@@ -6,6 +6,7 @@ import {
   buildCurrentUserUrl,
   buildCandidateAnnouncementsScreen,
   buildCandidateAnnouncementsUrl,
+  buildCandidateContactScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventDetailUrl,
   buildCandidateEventParticipationUrl,
@@ -339,6 +340,13 @@ describe("mobile shell", () => {
         runtimeMode: "demo"
       }).route
     ).toBe("CandidateDashboard");
+    expect(
+      buildCandidateContactScreen({
+        state: "ready",
+        response: fallbackCandidateDashboard,
+        runtimeMode: "demo"
+      }).route
+    ).toBe("CandidateContact");
     expect(buildCandidateEventsUrl("https://api.example.test")).toBe(
       "https://api.example.test/candidate/events"
     );

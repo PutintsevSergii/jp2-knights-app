@@ -37,7 +37,12 @@ describe("PublicContentListScreen", () => {
 
     expect(findText(element, "Demo mode")).toBe(true);
     expect(findText(element, "Open Evening")).toBe(true);
-    expect(findText(element, "View Details ›")).toBe(true);
+    expect(findText(element, "Public")).toBe(true);
+    expect(findText(element, "Open Evening")).toBe(true);
+    expect(findText(element, "Jun 10, 2026, 18:00")).toBe(true);
+    expect(findText(element, "Riga")).toBe(true);
+    expect(findText(element, "View Details")).toBe(true);
+    expect(JSON.stringify(element)).not.toMatch(/rsvp|participants|attendee|roster/i);
     pressable?.props.onPress?.();
     expect(onNavigate).toHaveBeenCalledWith(
       "PublicEventDetail",

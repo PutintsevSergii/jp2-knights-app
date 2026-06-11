@@ -83,14 +83,21 @@ export function candidateStateCopy(
     | "announcements"
     | "announcementDetail"
     | "eventDetail"
-    | "roadmap",
+    | "roadmap"
+    | "contact",
   state: MobileScreenState
 ): { title: string; body: string } {
   return candidateStateCopies[screen][state];
 }
 
 const candidateStateCopies: Record<
-  "dashboard" | "events" | "announcements" | "announcementDetail" | "eventDetail" | "roadmap",
+  | "dashboard"
+  | "events"
+  | "announcements"
+  | "announcementDetail"
+  | "eventDetail"
+  | "roadmap"
+  | "contact",
   Record<MobileScreenState, { title: string; body: string }>
 > = {
   dashboard: {
@@ -271,6 +278,36 @@ const candidateStateCopies: Record<
     offline: {
       title: "Offline",
       body: "Reconnect to refresh candidate roadmap."
+    }
+  },
+  contact: {
+    ready: {
+      title: "Contact Officer",
+      body: "Responsible officer contact is available."
+    },
+    loading: {
+      title: "Loading",
+      body: "Responsible officer contact is loading."
+    },
+    empty: {
+      title: "Contact Officer",
+      body: "Your responsible officer contact is being prepared."
+    },
+    error: {
+      title: "Unable to Load",
+      body: "Responsible officer contact could not be loaded."
+    },
+    forbidden: {
+      title: "Access Denied",
+      body: "An active candidate profile is required."
+    },
+    idleApproval: {
+      title: "Account Approval Pending",
+      body: "Your sign-in is waiting for officer approval before contact details are available."
+    },
+    offline: {
+      title: "Offline",
+      body: "Reconnect to refresh responsible officer contact."
     }
   }
 };

@@ -438,6 +438,22 @@ describe("mobile public screen models", () => {
         body: "Jun 10, 2026, 18:00 - Riga"
       }
     ]);
+    expect(screen.eventCards).toEqual([
+      {
+        id: "00000000-0000-0000-0000-000000000008",
+        title: "Open Evening",
+        typeLabel: "Open Evening",
+        statusLabel: "Public",
+        dateLabel: "Jun 10, 2026, 18:00",
+        locationLabel: "Riga",
+        detailAction: {
+          id: "view-event-detail",
+          label: "View Details",
+          targetRoute: "PublicEventDetail",
+          targetId: "00000000-0000-0000-0000-000000000008"
+        }
+      }
+    ]);
     expect(JSON.stringify(screen)).not.toMatch(/brother formation|private|membership/i);
   });
 

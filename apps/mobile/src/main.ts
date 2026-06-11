@@ -179,6 +179,7 @@ export type { MobileAppRoute } from "./mobile-routes.js";
 export {
   buildCandidateAnnouncementsScreen,
   buildCandidateAnnouncementDetailScreen,
+  buildCandidateContactScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
   buildCandidateRoadmapScreen,
@@ -218,6 +219,7 @@ export type {
 export type {
   CandidateAnnouncementsScreen,
   CandidateAnnouncementDetailScreen,
+  CandidateContactScreen,
   CandidateDashboardScreen,
   CandidateEventDetailScreen,
   CandidateEventsScreen,

@@ -19,6 +19,7 @@ import {
 import {
   buildCandidateAnnouncementsScreen,
   buildCandidateAnnouncementDetailScreen,
+  buildCandidateContactScreen,
   buildCandidateDashboardScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
@@ -34,6 +35,7 @@ import { fetchCandidateRoadmap, roadmapLoadFailureState } from "./roadmap-api.js
 import { fallbackCandidateRoadmap } from "./roadmap.js";
 import { CandidateAnnouncementsScreen } from "./screens/CandidateAnnouncementsScreen.js";
 import { CandidateAnnouncementDetailScreen } from "./screens/CandidateAnnouncementDetailScreen.js";
+import { CandidateContactScreen } from "./screens/CandidateContactScreen.js";
 import { CandidateEventDetailScreen } from "./screens/CandidateEventDetailScreen.js";
 import { CandidateEventsScreen } from "./screens/CandidateEventsScreen.js";
 import { PrivateContentScreen } from "./screens/PrivateContentScreen.js";
@@ -59,7 +61,7 @@ export function MobileCandidateSurface({
   >();
   const candidateDashboard = usePrivateRouteResource({
     route,
-    activeRoute: "CandidateDashboard",
+    activeRoute: route === "CandidateContact" ? "CandidateContact" : "CandidateDashboard",
     runtimeMode,
     authToken,
     initialApiState: "loading",
@@ -143,11 +145,6 @@ export function MobileCandidateSurface({
     targetId?: string,
     actionId?: string
   ) {
-    if (nextRoute === "CandidateContact") {
-      onRouteChange("CandidateDashboard");
-      return;
-    }
-
     if (nextRoute === "CandidateEvents" && targetId && actionId === "plan-to-attend") {
       if (runtimeMode === "demo") {
         candidateEvents.setData((current) => markCandidateEventInList(current, targetId));
@@ -300,6 +297,23 @@ export function MobileCandidateSurface({
         screen={buildCandidateRoadmapScreen({
           state: candidateRoadmap.state,
           response: candidateRoadmap.data,
+          runtimeMode
+        })}
+        onAction={(action) => {
+          if (isCandidateRoute(action.targetRoute)) {
+            void handleCandidateRoute(action.targetRoute, action.targetId, action.id);
+          }
+        }}
+      />
+    );
+  }
+
+  if (route === "CandidateContact") {
+    return (
+      <CandidateContactScreen
+        screen={buildCandidateContactScreen({
+          state: candidateDashboard.state,
+          response: candidateDashboard.data,
           runtimeMode
         })}
         onAction={(action) => {

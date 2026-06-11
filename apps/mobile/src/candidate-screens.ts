@@ -10,6 +10,12 @@ export {
   type CandidateDashboardScreen
 } from "./candidate-dashboard-screen.js";
 export {
+  buildCandidateContactScreen,
+  type CandidateContactAction,
+  type CandidateContactOfficer,
+  type CandidateContactScreen
+} from "./candidate-contact-screen.js";
+export {
   buildCandidateEventsScreen,
   type CandidateEventsScreen
 } from "./candidate-events-screen.js";

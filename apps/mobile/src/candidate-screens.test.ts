@@ -10,6 +10,7 @@ import { fallbackCandidateRoadmap } from "./roadmap.js";
 import {
   buildCandidateAnnouncementDetailScreen,
   buildCandidateAnnouncementsScreen,
+  buildCandidateContactScreen,
   buildCandidateEventDetailScreen,
   buildCandidateEventsScreen,
   buildCandidateDashboardScreen,
@@ -57,6 +58,78 @@ describe("mobile candidate screen models", () => {
       primaryActionText: designTokens.color.action.primaryText,
       spacing: designTokens.space[4],
       radius: designTokens.radius.md
+    });
+  });
+
+  it("builds read-only candidate officer contact with external deep links only", () => {
+    const screen = buildCandidateContactScreen({
+      state: "ready",
+      response: {
+        ...fallbackCandidateDashboard,
+        profile: {
+          ...fallbackCandidateDashboard.profile,
+          responsibleOfficer: {
+            ...fallbackCandidateDashboard.profile.responsibleOfficer!,
+            phone: "+37120000000"
+          }
+        }
+      },
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateContact",
+      state: "ready",
+      title: "Contact Officer",
+      body: "Responsible Officer - officer@example.test",
+      demoChromeVisible: false
+    });
+    expect(screen.officer).toEqual({
+      displayName: "Responsible Officer",
+      email: "officer@example.test",
+      phoneLabel: "+37120000000",
+      assignmentLabel: "Pilot Choragiew - Riga, Latvia"
+    });
+    expect(screen.contactActions).toEqual([
+      {
+        id: "email",
+        label: "Email officer",
+        url: "mailto:officer%40example.test"
+      },
+      {
+        id: "phone",
+        label: "Call officer",
+        url: "tel:%2B37120000000"
+      }
+    ]);
+    expect(screen.actions).toEqual([
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        targetRoute: "CandidateDashboard"
+      }
+    ]);
+    expect(JSON.stringify(screen)).not.toMatch(/chat|comment|in-app|thread|message/i);
+  });
+
+  it("fails candidate officer contact closed when no responsible officer exists", () => {
+    const screen = buildCandidateContactScreen({
+      state: "ready",
+      response: {
+        ...fallbackCandidateDashboard,
+        profile: {
+          ...fallbackCandidateDashboard.profile,
+          responsibleOfficer: null
+        }
+      },
+      runtimeMode: "api"
+    });
+
+    expect(screen).toMatchObject({
+      route: "CandidateContact",
+      state: "empty",
+      title: "Contact Officer",
+      contactActions: []
     });
   });
 

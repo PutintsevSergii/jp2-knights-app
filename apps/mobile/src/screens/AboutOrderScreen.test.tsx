@@ -17,6 +17,10 @@ describe("AboutOrderScreen", () => {
     expect(element).toBeTruthy();
     expect(element.props.style).toBeDefined();
     expect(findText(element, "About the Order")).toBe(true);
+    expect(findText(element, "Foundational Principles")).toBe(true);
+    expect(findText(element, "Public Formation")).toBe(true);
+    expect(findText(element, "Public information approved for guest discovery.")).toBe(true);
+    expect(findText(element, fallbackAboutOrderContentPage.body)).toBe(true);
   });
 
   it("invokes public route navigation actions", () => {

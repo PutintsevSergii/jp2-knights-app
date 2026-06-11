@@ -2,9 +2,13 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { designTokens } from "@jp2/shared-design-tokens";
 import type {
   PublicContentListScreen as PublicContentListScreenModel,
+  PublicEventsListScreen as PublicEventsListScreenModel,
   PublicScreenSection
 } from "../public-screens.js";
+import { CalendarIcon } from "./shared/CalendarIcon.js";
 import { DemoModeBanner } from "./shared/DemoModeBanner.js";
+import { EventStatusBadge } from "./shared/EventStatusBadge.js";
+import { PinIcon } from "./shared/PinIcon.js";
 import { PublicScreenTopBar } from "./shared/PublicScreenTopBar.js";
 
 export interface PublicContentListScreenProps {
@@ -62,11 +66,9 @@ function renderPrayerLibrary(
 }
 
 function renderPublicEventsList(
-  screen: PublicContentListScreenModel,
+  screen: PublicEventsListScreenModel,
   onNavigate: PublicContentListScreenProps["onNavigate"]
 ) {
-  const eventSections = screen.sections.filter((section) => section.id.startsWith("event-"));
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: screen.theme.background }]}>
       <PublicScreenTopBar title="Public Events" onBack={() => onNavigate?.("PublicHome", undefined)} />
@@ -79,8 +81,8 @@ function renderPublicEventsList(
         </Text>
 
         <View style={styles.cardStack}>
-          {eventSections.map((section) => (
-            <View key={section.id}>{renderEventCard(section, screen, onNavigate)}</View>
+          {screen.eventCards.map((event) => (
+            <View key={event.id}>{renderEventCard(event, onNavigate)}</View>
           ))}
         </View>
       </ScrollView>
@@ -122,33 +124,32 @@ function renderPrayerCard(
 }
 
 function renderEventCard(
-  section: PublicScreenSection,
-  screen: PublicContentListScreenModel,
+  event: PublicEventsListScreenModel["eventCards"][number],
   onNavigate: PublicContentListScreenProps["onNavigate"]
 ) {
-  const action = actionForSection(screen, section, "PublicEventDetail");
-  const parts = section.body.split(" - ");
-  const date = parts[0] ?? section.body;
-  const location = parts.slice(1).join(" - ") || "Public location";
-
   return (
     <View style={styles.eventCard}>
-      <View style={styles.badgeRow}>
-        <View style={styles.blueBadge}>
-          <Text style={styles.blueBadgeText}>Family Open</Text>
-        </View>
-        <Text style={styles.eventKind}>Prayer</Text>
+      <View style={styles.eventCardHeader}>
+        <Text style={styles.eventCardTitle}>{event.title}</Text>
+        <EventStatusBadge label={event.statusLabel} tone="needed" style={styles.publicEventBadge} />
       </View>
-      <Text style={styles.cardTitle}>{section.title}</Text>
-      <Text style={styles.eventMeta}>□ {date}</Text>
-      <Text style={styles.eventMeta}>⌖ {location}</Text>
+      <Text style={styles.eventKind}>{event.typeLabel}</Text>
+      <View style={styles.eventMetaRow}>
+        <CalendarIcon />
+        <Text style={styles.eventMeta}>{event.dateLabel}</Text>
+      </View>
+      <View style={styles.eventMetaRow}>
+        <PinIcon />
+        <Text style={styles.eventMeta}>{event.locationLabel}</Text>
+      </View>
+      <View style={styles.eventDivider} />
       <Pressable
-        accessibilityLabel={action?.label ?? `View ${section.title}`}
+        accessibilityLabel={event.detailAction.label}
         accessibilityRole="button"
-        onPress={() => (action ? onNavigate?.(action.targetRoute, action.targetId) : undefined)}
+        onPress={() => onNavigate?.(event.detailAction.targetRoute, event.detailAction.targetId)}
         style={styles.detailsButton}
       >
-        <Text style={styles.detailsButtonText}>View Details ›</Text>
+        <Text style={styles.detailsButtonText}>{event.detailAction.label}</Text>
       </Pressable>
     </View>
   );
@@ -222,10 +223,19 @@ const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: colors.background.surface,
     borderColor: colors.border.subtle,
-    borderRadius: designTokens.radius.sm,
+    borderLeftColor: colors.brand.gold,
+    borderLeftWidth: 4,
+    borderRadius: designTokens.radius.md,
     borderWidth: 1,
-    gap: designTokens.space[2],
-    padding: designTokens.space[4]
+    gap: designTokens.space[4],
+    padding: designTokens.space[4],
+    shadowColor: designTokens.elevation.subtle.color,
+    shadowOffset: {
+      width: designTokens.elevation.subtle.offsetX,
+      height: designTokens.elevation.subtle.offsetY
+    },
+    shadowOpacity: designTokens.elevation.subtle.opacity,
+    shadowRadius: designTokens.elevation.subtle.radius
   },
   cardTitleRow: {
     alignItems: "center",
@@ -290,46 +300,59 @@ const styles = StyleSheet.create({
     fontSize: designTokens.typography.size.secondary,
     lineHeight: designTokens.typography.lineHeight.secondary
   },
-  badgeRow: {
-    alignItems: "center",
+  eventCardHeader: {
+    alignItems: "flex-start",
     flexDirection: "row",
-    gap: designTokens.space[2]
+    gap: designTokens.space[3],
+    justifyContent: "space-between"
   },
-  blueBadge: {
-    backgroundColor: colors.brand.linen,
-    borderRadius: designTokens.radius.sm,
-    paddingHorizontal: designTokens.space[2],
-    paddingVertical: designTokens.space[1]
+  eventCardTitle: {
+    color: colors.text.primary,
+    flex: 1,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.cardTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.cardTitle
   },
-  blueBadgeText: {
+  publicEventBadge: {
+    maxWidth: 112
+  },
+  eventKind: {
     color: colors.brand.goldDark,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.compactLabel
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
   },
-  eventKind: {
-    color: colors.text.muted,
-    fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.label,
-    lineHeight: designTokens.typography.lineHeight.compactLabel
+  eventMetaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: designTokens.space[2]
   },
   eventMeta: {
-    color: colors.text.muted,
+    color: colors.brand.brown,
+    flex: 1,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.secondary,
     lineHeight: designTokens.typography.lineHeight.secondary
   },
+  eventDivider: {
+    backgroundColor: colors.border.soft,
+    height: 1
+  },
   detailsButton: {
     alignItems: "center",
-    borderColor: colors.text.primary,
+    alignSelf: "flex-end",
+    borderColor: colors.brand.goldDark,
     borderRadius: designTokens.radius.sm,
     borderWidth: 1,
-    marginTop: designTokens.space[2],
-    paddingVertical: designTokens.space[3]
+    minHeight: 28,
+    paddingHorizontal: designTokens.space[4],
+    paddingVertical: designTokens.space[2]
   },
   detailsButtonText: {
-    color: colors.text.primary,
+    color: colors.brand.goldDark,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.button,
     fontWeight: designTokens.typography.weight.bold,

@@ -17,10 +17,21 @@ export interface PublicEventsListScreen {
   state: MobileScreenState;
   title: string;
   body: string;
+  eventCards: PublicEventCard[];
   sections: PublicScreenSection[];
   actions: PublicScreenAction[];
   demoChromeVisible: boolean;
   theme: PublicScreenTheme;
+}
+
+export interface PublicEventCard {
+  id: string;
+  title: string;
+  typeLabel: string;
+  statusLabel: string;
+  dateLabel: string;
+  locationLabel: string;
+  detailAction: PublicScreenAction;
 }
 
 export interface BuildPublicEventsListScreenOptions {
@@ -45,6 +56,7 @@ export function buildPublicEventsListScreen(
     state: "ready",
     title: "Public Events",
     body: "Upcoming public and family-open events.",
+    eventCards: options.response.events.map(toPublicEventCard),
     sections: options.response.events.map((event) => ({
       id: `event-${event.id}`,
       title: event.title,
@@ -69,10 +81,32 @@ function stateOnlyPublicEventsList(
     state,
     title: copy.title,
     body: copy.body,
+    eventCards: [],
     sections: [],
     actions: [],
     demoChromeVisible,
     theme: publicScreenTheme
+  };
+}
+
+function toPublicEventCard(
+  event: PublicEventListResponseDto["events"][number]
+): PublicEventCard {
+  const eventBody = publicEventBody(event);
+
+  return {
+    id: event.id,
+    title: event.title,
+    typeLabel: labelFromEnum(event.type),
+    statusLabel: event.visibility === "FAMILY_OPEN" ? "Family Open" : "Public",
+    dateLabel: eventBody.split(" - ")[0] ?? eventBody,
+    locationLabel: event.locationLabel ?? "Public location",
+    detailAction: {
+      id: "view-event-detail",
+      label: "View Details",
+      targetRoute: "PublicEventDetail",
+      targetId: event.id
+    }
   };
 }
 
@@ -85,4 +119,12 @@ function openFirstEventAction(id: string | undefined): PublicScreenAction | unde
         targetId: id
       }
     : undefined;
+}
+
+function labelFromEnum(value: string): string {
+  return value
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`)
+    .join(" ");
 }

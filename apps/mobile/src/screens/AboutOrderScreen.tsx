@@ -22,10 +22,15 @@ export function AboutOrderScreen({ screen, onNavigate }: AboutOrderScreenProps) 
 
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>Foundational Principles</Text>
-          <Text style={styles.title}>The Vision of the Order</Text>
+          <Text style={styles.title}>{screen.title}</Text>
+          <Text style={styles.subtitle}>{screen.body}</Text>
         </View>
 
         <View style={styles.article}>
+          <View style={styles.articleHeader}>
+            <Text style={styles.articleKicker}>Public Formation</Text>
+            <Text style={styles.articleTitle}>{screen.sections[0]?.title ?? screen.title}</Text>
+          </View>
           {articleBlocks(body).map((block) =>
             block.kind === "heading" ? (
               <Text key={block.id} style={styles.articleHeading}>
@@ -40,6 +45,7 @@ export function AboutOrderScreen({ screen, onNavigate }: AboutOrderScreenProps) 
         </View>
 
         <View style={styles.footer}>
+          <Text style={styles.footerEyebrow}>Next Step</Text>
           <Text style={styles.footerTitle}>Continue the Journey</Text>
           {joinAction ? (
             <Pressable
@@ -130,16 +136,16 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: designTokens.space[6],
-    padding: designTokens.space[4],
+    paddingHorizontal: designTokens.space[4],
+    paddingTop: designTokens.space[6],
     paddingBottom: 112
   },
   hero: {
     alignItems: "center",
-    gap: designTokens.space[2],
-    paddingTop: designTokens.space[4]
+    gap: designTokens.space[3]
   },
   eyebrow: {
-    color: colors.text.subdued,
+    color: colors.brand.goldDark,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.label,
     fontWeight: designTokens.typography.weight.bold,
@@ -147,23 +153,59 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   title: {
-    color: colors.brand.goldDark,
+    color: colors.text.primary,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.sectionTitle,
+    fontSize: designTokens.typography.size.screenTitle,
     fontWeight: designTokens.typography.weight.bold,
-    lineHeight: designTokens.typography.lineHeight.sectionTitle,
+    letterSpacing: 0,
+    lineHeight: designTokens.typography.lineHeight.screenTitle,
+    textAlign: "center"
+  },
+  subtitle: {
+    color: colors.brand.brown,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.body,
+    lineHeight: designTokens.typography.lineHeight.body,
     textAlign: "center"
   },
   article: {
     backgroundColor: colors.background.surface,
-    borderColor: colors.border.soft,
-    borderRadius: designTokens.radius.sm,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.md,
     borderWidth: 1,
     gap: designTokens.space[4],
-    padding: designTokens.space[4]
+    padding: designTokens.space[6],
+    shadowColor: designTokens.elevation.subtle.color,
+    shadowOffset: {
+      width: designTokens.elevation.subtle.offsetX,
+      height: designTokens.elevation.subtle.offsetY
+    },
+    shadowOpacity: designTokens.elevation.subtle.opacity,
+    shadowRadius: designTokens.elevation.subtle.radius
+  },
+  articleHeader: {
+    borderBottomColor: colors.border.soft,
+    borderBottomWidth: 1,
+    gap: designTokens.space[2],
+    paddingBottom: designTokens.space[4]
+  },
+  articleKicker: {
+    color: colors.brand.goldDark,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
+  },
+  articleTitle: {
+    color: colors.text.primary,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.sectionTitle,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.sectionTitle
   },
   articleHeading: {
-    color: colors.brand.brown,
+    color: colors.brand.goldDark,
     fontFamily: designTokens.typography.fontFamily.mobile,
     fontSize: designTokens.typography.size.cardTitle,
     fontWeight: designTokens.typography.weight.bold,
@@ -172,12 +214,25 @@ const styles = StyleSheet.create({
   articleBody: {
     color: colors.text.muted,
     fontFamily: designTokens.typography.fontFamily.mobile,
-    fontSize: designTokens.typography.size.secondary,
-    lineHeight: designTokens.typography.lineHeight.secondary
+    fontSize: designTokens.typography.size.body,
+    lineHeight: designTokens.typography.lineHeight.body
   },
   footer: {
     alignItems: "center",
-    gap: designTokens.space[3]
+    backgroundColor: colors.background.surface,
+    borderColor: colors.border.subtle,
+    borderRadius: designTokens.radius.md,
+    borderWidth: 1,
+    gap: designTokens.space[3],
+    padding: designTokens.space[4]
+  },
+  footerEyebrow: {
+    color: colors.brand.goldDark,
+    fontFamily: designTokens.typography.fontFamily.mobile,
+    fontSize: designTokens.typography.size.label,
+    fontWeight: designTokens.typography.weight.bold,
+    lineHeight: designTokens.typography.lineHeight.compactLabel,
+    textTransform: "uppercase"
   },
   footerTitle: {
     color: colors.text.primary,
